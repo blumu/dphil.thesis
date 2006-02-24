@@ -1,0 +1,671 @@
+\documentclass[fragile]{beamer}
+
+\newif\iflongonly
+
+%\documentclass{article}
+%\usepackage[envcountsect]{beamerarticle}
+
+% class options [notes], [notes=only], [trans], [handout], [compress], [draft]
+
+\input xy
+\xyoption{all}
+
+
+\theoremstyle{plain}
+\newtheorem{thm}{Theorem}[section]
+\newtheorem{cor}[thm]{Corollary}
+\newtheorem{lem}[thm]{Lemma}
+
+\usepackage{bigcenter}
+\usepackage{url}
+
+\mode<article> % only for the article version
+{
+  \usepackage{fullpage}
+  \usepackage{pgf}
+  \usepackage{hyperref}
+  %\setjobnamebeamerversion{talk00.beamer}
+}
+
+\usepackage[latin1]{inputenc}
+\usepackage[english]{babel}
+\usepackage{times}
+\usepackage[T1]{fontenc}
+
+\mode<presentation> {
+  %\setbeamercovered{transparent}
+  \setbeamertemplate{background canvas}[vertical shading][bottom=white,top=structure.fg!25]
+  \usetheme{Warsaw}
+  \setbeamersize{text margin left=0.7cm}
+
+  %\setbeamertemplate{headline}{}
+  %\setbeamertemplate{footline}{}
+  %\usetheme{Dresden}
+  %\usetheme{Warsaw}
+  %\usetheme{Berlin}
+  %\useoutertheme{default}
+  %\useinnertheme{default}
+  %\usefonttheme[onlysmall]{structurebold}
+}
+
+%%\href{http://www.famille-blum.org/~william/mscthesis/}
+
+%%%%%%%%%%%%%%%%%%%%% BEGIN OF MY DEFINITIONS
+\def\union{\cup}
+\def\st{\ |\ }
+\def\zor{\vee}
+\def\zand{\wedge}
+\def\natset{\mathbb{N}}
+\def\boolset{\mathbb{B}}
+\def\iff{\Longleftrightarrow}
+\def\imp{\Rightarrow}
+\def\error{\textcolor{red}{\oslash}}
+\def\evaluates{\textcolor{orange}{\Downarrow}}
+\newcommand{\lsem}{[\![}
+\newcommand{\rsem}{]\!]}
+\def\sem#1{{\lsem #1 \rsem}}
+\def\vec#1{\stackrel{\rightarrow}{#1}}
+\newcommand{\toeq}{\stackrel{=}{\to}}
+\newcommand{\todesc}{\stackrel{\downarrow}{\to}}
+\def\dsp{\displaystyle}
+\newcommand{\tosub}[1]{\raisebox{-7.0pt}
+        {$\ \stackrel{\textstyle\to}{\scriptstyle#1}\ $}}
+\def\rule#1#2{ \dsp \frac{#1}{#2}}
+
+\def\grtypecolor#1{\textcolor{blue}{#1}}
+\def\hiordcolor#1{\textcolor{cyan}{#1}}
+\def\jf#1#2#3{{#1}, \grtypecolor{#2} |\hiordcolor{#3}}
+
+\def\anyint{?^{\tt int}}
+\def\anybool{?^{\tt bool}}
+%\def\terminates{\lightning}
+\def\tyjf#1#2{\Gamma \vdash #1:#2}
+
+\newtheorem{defn}{Definition}[section]
+
+%%%%%%%%%%%%%%%%%%%%% END OF MY DEFINITIONS
+
+\title{Termination Analysis of a subset of CoreML}
+\author[W. Blum]{William Blum\\
+\href{mailto://william.blum@comlab.ox.ac.uk}{\tiny william.blum@comlab.ox.ac.uk} }
+\institute[University Of Oxford]{Oxford University Computing Laboratory}
+\date{BCTCS Nottingham}
+
+\begin{document}
+
+
+\frame{\titlepage}
+
+\section<presentation>*{Outline}
+
+\begin{frame}
+  \frametitle{Outline}
+  \tableofcontents[part=1]
+\end{frame}
+
+\AtBeginSection[] {
+   \begin{frame}<beamer>
+     \frametitle{Outline}
+     \tableofcontents[currentpart,currentsection]
+   \end{frame}
+ }
+
+
+\part<presentation>{Main Talk}
+
+\section[Size-change Principle for first-order programs]{Size-change Principle for first-order programs}
+
+% ==================================================================================
+
+\begin{frame}[fragile]
+\frametitle{First order programs}
+    \small
+
+ \begin{columns}
+   \column{7cm}
+\textbf{Untyped functional language} recursion, if-then-else,
+primitive operators, single data type
+ \vspace{0.4cm}
+
+\uncover<2->{
+\textbf{Call-by-value evaluation semantics}: \\
+$\begin{array}{ll}
+\mathcal{E} \sem{\tt f} \vec{x} = v &  \mbox{{\tt f} evaluates to {\tt v} on input $\vec{x}$}, \\
+\mathcal{E} \sem{\tt f} \vec{x} = \bot &  \mbox{{\tt f} does not terminate on input $\vec{x}$}.
+  \end{array}
+$
+\vspace{0.4cm}
+}
+
+\uncover<3->{
+\textbf{Exact call semantics}: a computation is described by a state transition sequence.
+\vspace{0.6cm}
+}
+\uncover<4->{
+\textbf{Finite approximation} of the call semantics: the control flow graph.
+\vspace{0.4cm}
+}
+
+  \column{4.3cm}
+\begin{block}{Example}
+\begin{verbatim}
+f(x) = gcd(x,18)
+gcd(x,y) =
+ if y == 0 then x
+ else gcd(y, x mod y)
+\end{verbatim}
+
+\end{block}
+
+\vspace{0.1cm}
+
+\uncover<3->{
+\begin{block}{}
+ $f,4 \to gcd,(4,18) \to gcd,(18,2) \to gcd,(2,2) \to gcd,(2,0)$
+\end{block}
+\vspace{0.1cm}
+}
+
+\visible<4->{
+\begin{block}{}
+\begin{center} \includegraphics{flow0}
+\end{center}
+\end{block}
+}
+\end{columns}
+\end{frame}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\frame{ \frametitle{Termination}
+
+    \begin{block}{Characterization of termination}
+    P terminates on all input values \\
+$\iff$ Infinite state transition sequences are invalid computations.
+    \end{block}
+\note[item]{Characterization of termination is proved  by analysis of the definition of the evaluation semantics}
+
+\begin{itemize}
+\uncover<2->{
+\item \emph{What is an invalid computation?} \ \\
+For instance: a computation in which some positive integer variable
+decreases infinitely... }
+
+\uncover<3->{
+\item \emph{The Size-Change Principle} proves that
+for any computation corresponding to an infinite path in the control
+flow, the value of some well-founded variable decreases infinitely.
+\end{itemize}}
+}
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\frame{ \frametitle{Size-change graphs (SCG)}
+
+\textbf{Definition}: A SCG describes a program call. It consists of
+a {\color{red} source set of vertices}, a {\color{blue} target set
+of vertices} and a set of labeled arcs.
+
+
+The SCG
+\def\objectstyle{\scriptstyle}
+\def\labelstyle{\scriptstyle}
+$\left( \vcenter {\xymatrix  @R=0.3cm {
+ {\color{red} x} \ar[r]^{=} & {\color{blue} x} \\
+*{} & {\color{blue} y } }} \right)$ describes the call from {\tt f}
+to {\tt gcd}.
+
+
+\textbf{Safety:} $\todesc$ arcs denote decreases in parameter value, $\toeq$ arcs denote non increase in parameter value.
+
+\note[item]{
+A SCG $G$ \textbf{safely} describes a call if:
+    \begin{itemize}
+    \item when $x \todesc y \in G$, the value used for the call parameter {\tt y} is strictly less than
+    the value of input parameter {\tt x}.
+
+    \item when $x \toeq y \in G$, the value used for the call parameter {\tt y} is
+    not greater than the value of input parameter {\tt x}.
+    \end{itemize}
+}
+\vspace{0.2cm}
+
+\emph{Example}: consider the call ``$\tt gcd(\underbrace{\color{red}{\tt y}}_{\color{blue}{\tt x}},
+\underbrace{\color{red}{\tt x} {\tt\ mod\ } \color{red}{\tt y}}_{\color{blue}{\tt y}})$'':
+
+
+$ \left( \vcenter {\xymatrix @R=0.6cm
+ {
+ {\color{red} x} \ar[rd]^{=} & {\color{blue} x} \\
+ {\color{red} y} \ar[r]^{\downarrow} \ar[ur]^{=} & {\color{blue} y }  }} \right)
+ \qquad  \left( \vcenter {\xymatrix @R=0.6cm {
+ {\color{red} x} \ar[rd]^{=} & {\color{blue} x} \\
+ {\color{red} y} \ar[r]^{=} & {\color{blue} y}  }} \right)
+ \qquad  \left( \vcenter{ \xymatrix @R=0.6cm {
+ {\color{red} x} \ar[r]^{=} & {\color{blue} x} \\
+ {\color{red} y} \ar[r]^{\downarrow} & {\color{blue} y}  }} \right)
+ \qquad  \left( \vcenter{ \xymatrix @R=0.6cm {
+ {\color{red} x}  & {\color{blue} x} \\
+ {\color{red} y} & {\color{blue} y} }} \right)
+$
+
+Only one of these SCG is not safe for this call. \note[item]{the
+scg 1 2 4 are safe for this specific call}
+
+}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\frame{ \frametitle{Composition of size-change graphs}
+
+$$ \mbox{If } f \stackrel{G_1}{\longrightarrow} g \mbox{ and } g \stackrel{G_2}{\longrightarrow} h \mbox{ then }
+f \stackrel{G_1;G_2}{\longrightarrow} h$$
+\begin{eqnarray*}
+\overbrace{\xymatrix {
+ a \ar[r]^{=} \ar[rd]^{=} & x \ar[rd]^{=} \ar[r]^{\downarrow} & u \\
+*{} & y \ar[r]^{\downarrow} & v }}^{G_1 \qquad G_2} \quad & \equiv
+& \quad \overbrace{\xymatrix {
+ a \ar[r]^{\downarrow} \ar[rd]^{=} &  u \\
+*{} & v }}^{G_1 ; G_2}
+\end{eqnarray*}
+
+If $\mathcal{G}$ is a set of size-change graphs then $\overline{\mathcal{G}}$ denotes the composition closure of
+$\mathcal{G}$.
+
+}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\frame{ \frametitle{Size-change termination (SCT)}
+
+
+\textbf{Definition} Consider $\mathcal{G}$ a set of size-change
+graphs.
+
+A program {\tt P} is $\mathcal{G}$-SCT if
+
+\begin{itemize}
+  \item $\mathcal{G}$ safely describes {\tt P} (for every reachable call $c$ there is a corresponding SCG
+  $G_c \in \mathcal{G}$)
+  \item for all infinite computation $cs = \langle c_0 c_1 \ldots \rangle$,
+any sequence of size-change graphs $G_{c_0} G_{c_1} \ldots$ (describing safely the calls of $cs$) has an infinite descending thread.
+$$\xymatrix @R=0.6cm {
+ x & u \ar[rd]^{=} & u & x \ar[r]^{=} & \ldots\\
+ y & v  & v \ar[ru]^{\downarrow} & y & \ldots
+}
+$$
+\end{itemize}
+
+\note[item] {P is G-SCT means that G is fine enough to describe descents in infinite computation.}
+\note[item] {A thread is a sequence of arcs starting from any graph and going through the consecutive graphs in
+the sequence.}
+\note[item] {Descending means that there is at least one arc in the thread of type $\downarrow$}
+
+
+\uncover<2->{
+We assume that data-types are well-founded.
+\note[item]{well-founded = every non-empty subset E of X has a minimal element.}
+
+\begin{block}{Theorem}
+If {\tt P} is $\mathcal{G}$-SCT then {\tt P} terminates for all input values
+\end{block}
+}
+\note[item]{The theorem is a consequence of the definition: all infinite path in the CFD are impossible computation therefore
+P is terminating.}
+
+}
+
+\frame{ \frametitle{Deciding Size-Change Termination}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+
+\begin{block}{$\mathcal{G}$-SCT characterization [Jones et al. 2001]}
+$${\tt P} \mbox{ is \textbf{not} $\mathcal{G}$-SCT} $$
+$$\iff$$
+$$ \exists {\tt f} \stackrel{G}{\to} {\tt f} \in \overline{\mathcal{G}}
+        \mbox{ such that }
+ \left( \begin{array}{l} G;G = G \\ \forall {\tt x} \in gb({\tt f}) : {\tt x} \todesc {\tt x} \not \in G \end{array} \right)
+$$
+\end{block}
+
+Hence $\mathcal{G}$-SCT is decidable. And it is PSPACE-complete (see \cite{jones01})
+
+  \note[item]{The number of composition can be exponential in the size of the program size.}
+  \note[item]{Algorithm for deciding $\mathcal{G}$-SCT:
+    \begin{itemize}
+      \item describe safely each call by a SCG. This gives a set $\mathcal{G}$ of scgs.
+      \item compute the composition closure of $\mathcal{G}$
+      \item check the presence of non-descending asymptotic loop size-change graph
+    \end{itemize}
+  }
+}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\section{An extension for a subset of Core ML}
+
+
+\frame{ \frametitle{The language $\mathcal{L}_{ml}$}
+
+\textbf{Grammar:}
+{\small
+\begin{center}
+\begin{tabular}{ll}
+{\tt e ::= x, f}     & value identifiers \\
+{\tt\ \ \ \ | true | false } & boolean constants \\
+{\tt\ \ \ \ | if e then e else e} & conditional \\
+{\tt\ \ \ \ | n} & integer constants (n $\in \natset$)\\
+{\tt\ \ \ \ | e = e} & integer equality \\
+{\tt\ \ \ \ | succ e | pred e } & successor and predecessor\\
+{\tt\ \ \ \ | \alert{fun (x:ty) -> e}} & function abstraction \\
+{\tt\ \ \ \ | \alert{fun f=(x:ty) -> e}} & recursively defined function \\
+{\tt\ \ \ \ | e e } & function application \\
+{\tt\ \ \ \ | let x = e in e } & local variable definition
+\end{tabular}
+\end{center}
+}
+
+A program is a \alert{single} closed expression. \note[\item]{ {\tt
+P} is a closed expression, so how to prove termination for any input
+value? We will see that it is not a problem in our framework,
+fortunately.}
+
+\vspace{0.4cm} \textbf{Data types:} ground values +
+\alert{higher-order functions}.
+
+\note[\item]{note that we restrict the datatype to positive integers in order to have a well-founded set.}
+}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+
+\frame{ \frametitle{Semantics of $\mathcal{L}_{ml}$ (environment
+based)}
+
+\emph{Canonical expressions}: $\natset \union \boolset \union \{ {\tt e} \st {\tt e} \mbox{
+is an abstraction} \}$
+\begin{eqnarray*}
+State &=& \{ {\tt e}:\rho \st {\tt e} \in subexp({\tt P}), \rho \in Env, fv({\tt e}) \subseteq dom(\rho) \} \\
+Value &=& \{ {\tt e}:\rho \in State \st \mbox{{\tt e} canonical} \}\\
+Env &=& \{ \rho : X \to Value \st X \mbox{ finite set of variables} \}
+\end{eqnarray*}
+
+Let $s \in State$, $v \in Value$ and $\rho \in Env$
+
+\textbf{Call-by-value evaluation semantics} ``$s\ \evaluates\ v$''
+$$\tt\rule{}{v:\rho\ \evaluates\ v:\rho} (v \mbox{ canonical})$$
+
+\textbf{Run-time errors} ``$s\ \error$'' \qquad
+$\mbox{(ErrOp1)}\tt \rule{e:\rho\ \evaluates\ 0}{pred\ e:\rho\
+\error}$
+
+\note[item]{``$s\ \error$'' means ``trying to evaluate $s$ will
+raise an error and therefore the computation terminates.''}
+\note[item]{Error handling is important: this permits to detect the
+program \texttt{loop (desc x)} as terminating. Where \texttt{loop}
+is a program looping infinitely and \texttt{desc} is defined as
+``desc x=desc(x-1)'' (which is terminating since it raises an
+error).}
+
+\textbf{Call semantics} ``$ s \textcolor{red}{\to} s'$''
+$$\mbox{(CallG)} \rule{ \tt e_1:\rho\ \evaluates\ \mbox{\tt fun (x:ty)->} e_0 : \rho_0 \qquad
+                \tt e_2 : \rho\ \evaluates\ v_2
+                }
+                {
+                \tt e_1 e_2 : \rho \textcolor{red}{\tosub{c}} e_0 : \rho_0 [x\mapsto v_2]
+                }
+$$
+
+\note[item]{
+What is a call? Where do the calls occur?
+
+`` e1 $\to$ e2 if it is necessary to know an evaluation of e2 in order to deduce
+an evaluation of e1'', \cite{jones04}
+}
+}
+
+
+\frame{ \frametitle{Graph generation}
+
+\begin{itemize}
+\item Two SCG generated per call:
+$\hiordcolor{G^+}$ describing higher-order values and
+$\grtypecolor{G^0}$ for ground type values. \vspace{0.2cm}
+
+\item The \emph{free variables} of an expression correspond to the \emph{input parameters} in the first-order case.
+\vspace{0.2cm}
+
+\item We define well-founded notions of size for higher-order and ground type expressions.
+\vspace{0.2cm}
+
+\item We extend the semantic rules to generate safe SCG:
+$$\mbox{(ValueG)} \rule{}{
+        \jf{\tt v\ \evaluates\ v}{id_{\tt e}^{=}}{id_{\tt e}^{=}}
+        }
+        ({\tt v = e:\rho} \mbox{ in canonical form})
+$$
+
+\begin{bigcenter}
+(CallG)
+$\rule{ \jf{\tt e_1:\rho\ \evaluates\ \mbox{\tt fun
+(x:ty)->} e_0 : \rho_0} {G_1}{G_1^+} \qquad
+                \jf{\tt e_2 : \rho\ \evaluates\ v_2}{G_2}{G_2^+}
+                }
+                {
+                \jf{\tt e_1 e_2 : \rho \textcolor{red}{\tosub{c}}
+         e_0 : \rho_0 [x\mapsto v_2]}
+                {CallGr^0_x(G_1,G_2)} {CallGr^+_x(G_1^+,G_2^+)}
+                }
+$
+\end{bigcenter}
+
+\end{itemize}
+}
+
+
+
+%%%%%%%%%%%%%%%%
+\iflongonly \frame{ \frametitle{Safety of SCG for higher-order
+values}
+\begin{defn}[Size relation $\succeq$]
+\label{def:lambda_size}
+\begin{center}
+$\overbrace{e_1 : \rho_1}^{s_1} \succeq \overbrace{e_2 : \rho_2}^{s_2}$ \\
+$\iff$ \\
+$  support(s_1) \ni s_2
+  \zor \left( subexp(e_1) \ni e_2\ \zand\ {\rho_1}_{|fv(e_2)} = \rho_2 \right)
+$
+\end{center}
+
+\end{defn}
+where: \\
+$$ support({\tt e}:\rho) = \{ {\tt e} : \rho \} \union \bigcup_{{\tt x} \in fv({\tt e})} support(\rho({\tt x}))$$
+}
+
+\frame{ \frametitle{Safety of SCG for ground-type values}
+\note[item]{$\geq_{\tt int}$ denotes a well-founded order on the integers
+and $\succeq_{\tt bool}$ denotes a well-founded order on the boolean $\{ true, false\}$.}
+\begin{defn}[Size relation $\succeq_0$]\label{def:ml0_size}
+\begin{center}
+$\overbrace{e_1 : \rho_1}^{s_1} \succeq_0
+\overbrace{e_2 : \rho_2}^{s_2}$
+\end{center}
+$$\triangleq$$
+$$\begin{array}{ll}
+ \exists\ \Gamma \mbox{ s.t. } &
+             \left\{ \begin {array}{lll}
+             & \tyjf{e_1}{int}, \qquad \tyjf{e_2}{int}\\
+            & \mbox{ and }
+            s_1 \Downarrow n_1  \zand s_2 \Downarrow n_2
+            \implies n_1 \geq_{\tt int} n_2
+            \end{array} \right. \\
+            & or \\
+            &
+             \left\{ \begin {array}{lll}
+                & \tyjf{e_1}{bool}, \qquad \tyjf{e_2}{bool}\\
+                \mbox{ and } &
+                s_1 \Downarrow b_1  \zand s_2 \Downarrow b_2
+            \implies b_1 \succeq_{\tt bool} b_2
+            \end{array} \right. \\
+            & or \\
+            & \tyjf{e_1}{ty_1 \to ty_2} \quad\mbox{ and }\quad \tyjf{e_2}{ty_3 \to ty_4}
+\end{array}
+$$
+\end{defn}
+}
+\else
+\fi
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+
+\frame{ \frametitle{Finite approximation of the call semantics}
+
+\textbf{We need a ``control flow graph'' for ML programs} \\
+
+Solution:
+  \begin{itemize}
+    \item drop the $\rho$ components of the states
+    \item abstract integers by a single symbol ``$\anyint$''.
+  \end{itemize}
+  We obtain a finite abstraction of the computation.
+
+  The set of vertices of the control flow graph (i.e control points) is:
+   $$\mathcal{P} = subexp({\tt P}) \union \{ \anyint \}$$
+
+}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\iflongonly
+\frame{ \frametitle{Approximation (2)}
+
+\begin{lem}[Approximation]
+\label{lem:ml_approx} Suppose ${\tt P}:[] \to^* {\tt e}:\rho$ then
+for ${\tt e'} \in subexp({\tt P})$, $n \in \natset$, $b \in \boolset $ and $v$ an abstraction:
+\vspace{0.3cm}
+
+\begin{tabular}{lll}
+Exact semantics & & Approximation semantics\\
+$\jf{\tt e:\rho \to e':\rho'}{G^0}{G^+}$ & $\implies$ & $\jf{\tt e \to e'}{G^0}{G^+}$
+\\
+$ \jf{{\tt e}:\rho\ \evaluates\ n:[]}{G^0}{G^+}$ &
+$\implies$& $\jf{\tt e\ \evaluates\ \anyint}{G^0}{G^+}$
+\\
+ $\jf{{\tt e}:\rho\ \evaluates\ b:[]}{G^0}{G^+}$  & $\implies$& $\jf{\tt e\ \evaluates\
+\anybool}{G^0}{G^+}$
+\\
+ $ \jf{{\tt e}:\rho\ \evaluates\ v:\rho'}{G^0}{G^+}$  & $\implies$& $\jf{\tt e\ \evaluates\
+v}{G^0}{G^+}$
+\end{tabular}
+\end{lem}
+}
+\else
+\fi
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\frame{ \frametitle{The size-change principle}
+
+What do we have:
+\begin{itemize}
+\item Termination characterized by infinite call sequences
+\item Well-founded order on the data values
+\item Finite approximation of call semantics
+\item We can compute two safe sets of size-change graphs describing the calls
+(by applying the semantic rules exhaustively).
+\end{itemize}
+
+\note[item]{$\mathcal{G}$ can be computed by applying exhaustively
+the semantic rules starting with expression P until no new graphs or
+subexpressions are obtained. This process ends since P contains a
+finite number of subexpressions and possible size-change graphs.}
+
+\textbf{Hence the SCP can be applied! (twice)}
+
+}
+
+\frame{ \frametitle{Results}
+
+\begin{itemize}
+\item Counter example
+
+\note[item]{counter-example page 65 of the thesis}
+\begin{semiverbatim}
+let rec counter x =
+
+\ if x = 0 then counter (succ x) else 1
+
+in counter 7;;
+\end{semiverbatim}
+is terminating but not SCT.
+
+\item Ackerman's function: SCT relatively to ground-type values.
+
+\item Function computing the minimum of two numbers:
+    \begin{itemize}
+    \item is \alert{SCT} if we use the native representation of
+    integers provided by $\mathcal{L}_{ml}$,
+
+    \item \alert{is not SCT} if we use Church numeral to encode integers.
+    \end{itemize}
+
+\end{itemize}
+}
+
+
+\section*{Summary}
+
+\frame{ \frametitle{Conclusion}
+
+\begin{itemize}
+\item The Size-Change Principle from Neil D. Jones et al.
+    \begin{itemize}
+      \item based on a finite approximation of the call semantics,
+      \item and a safe description of the calls.
+    \end{itemize}
+\item Extension to a higher-order functional language
+    \begin{itemize}
+    \item detects decrease on ground-type values as well as higher-order values
+    \item allows local definition {\tt let}
+    \item handles recursion natively (no need to define a Y combinator)
+    \item handles numbers natively
+    \end{itemize}
+\item Further direction
+
+sequential composition,
+storage location and references,
+tuples
+list,
+user defined structures,
+for and while loop structures.
+\end{itemize}
+}
+
+\subsection<presentation>*{Bibliography}
+
+\begin{frame}
+  \frametitle<presentation>{Bibliography}
+
+  \begin{thebibliography}{10}
+
+  \beamertemplatearticlebibitems
+  \bibitem{jones01}
+    Chin~Soon~Lee, Neil~D.~Jones, and Amir~Ben-Amram.
+    \newblock The Size-Change Principle for Program Termination.
+    \newblock {\em Principles of Programming Languages}, pp. 81-92. Volume 28 of Principles of Programming Languages. ACM press 2001
+
+  \bibitem{jones04}
+    Neil~D.~Jones and Nina~Bohr
+    \newblock Termination Analysis of the Untyped
+    $\lambda$-Calculus.
+    \newblock {\em Rewriting Techniques and Applications.},Proceedings (V van Oostrom, ed.), pp. 1-23. Volume 3091 of LNCS. Springer-Verlag 2004.
+
+
+  \bibitem{pitts2002}
+    Andrew~M.~Pitts
+    \newblock Operational Semantics and Program Equivalence.
+    \newblock {\em Applied Semantics.}, pp. 378-412. Volume 2395 of LNCS. Springer-Verlag 2002
+
+  \end{thebibliography}
+\end{frame}
+
+\end{document}

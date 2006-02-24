@@ -1,0 +1,188 @@
+\documentclass[10pt,twocolumn]{article}
+\usepackage{a4wide}
+\usepackage{url}
+\usepackage{listings}
+
+
+\newcommand{\lsem}{[\![}
+\newcommand{\rsem}{]\!]}
+
+
+\def\sem#1{{\lsem #1 \rsem}}
+
+\title{Transformation of higher-order programs}
+\author{William Blum}
+
+\begin{document}
+\maketitle
+
+In this report, I give an overview of higher-order program
+transformations and try to identify some interesting theoretical
+problems related to that topic.
+
+Several kinds of transformation can be applied on programs. We
+distinguish mainly three categories: refactoring, optimization,
+compilation. The basic requirement common to all transformation is
+the preservation of the semantics of the program transformed. The
+performance (time and space complexity) needs not to be preserved.
+
+\section{Which transformation?}
+
+We give a short overview of the three kinds of transformation. I do not give a full survey of the topic here but just an introduction with some references to interesting related works.
+
+\subsection{Refactoring}
+
+The term ``refactoring'' refers to transformations that can be
+applied on programs at the source level. The aim of refactoring is
+not to derive new algorithm, but rather to give some automated ways
+of organizing and maintaining the source code of a program in order to make it more
+understandable.
+
+Refactoring is a source to source transformation. The simplest refactoring transformation is probably
+identifier renaming (also known as $\alpha$-conversion in the
+functional setting) but there are more complicated ones. Most
+refactoring tools come with a base of common refactoring functions,
+such as:
+
+\begin{description}
+\item [Method extraction] consists in extracting all the code involved in the
+computation of the final value of a variable. The code is moved to
+a new method, and the variable in the original code is replaced by a
+call to that method.
+\item[Inlining] Replacing all occurences of a calls to function f by the body of f.
+\item[Pull Up] involves moving a method from class B to class A where B derives from A.
+\item[Pull Down] involves moving a method from class A to class B where B derives from A.
+\end{description}
+
+There are several implementation of refactoring tools in the
+industry, mainly for first order programming languages like C++ and
+Java. Microsoft has implemented the standard refactoring functions
+in its development environment Visual Studio. There are also plugins
+available for Eclipse (\cite{verbaere_msc}).
+
+See \cite{Fowler99} for a complete reference on refactoring.
+
+For higher-order programming languages, there is a tool called HaRe
+(\cite{hare}). It's a refactoring tool for the Haskell language. It
+supports a dozen of refactoring including:
+$\alpha$-conversion, memoisation (improve a function by storing intermediate computation
+and changing the abstract data type accordingly), removing duplicated code, generalise or specialise
+a definition (by partial evaluation), layered data types (splitting or merging ADT).
+Ssee \cite{hare-catalog} for a catalogue of refactoring methods for functionnal languages.
+
+\subsection{Optimization}
+
+Optimization is achieved by applying transformation at the source level. The aim is to
+improve the performance of the executed code while conserving its semantics.
+
+Oege de Moor and Ganesh Sittampalam developed a tool called MAG (\cite{afp99moor}) for optimizing Haskell functionnal programs by transformation. Their approach relies on the observation that when writing a program, the programmer has to make a trade-off between abstraction and efficency. Abstraction usually improves readability while degrading performance. The idea is to let the programmer express the abstract version of the program as well as the transformation which will leed to an efficient version of the program. The program and its transformation together constitute a meta-program. MAG is based on this principle. Programs are expressed in Haskell and the transformations are expressed using rewriting rules.
+
+To illustrate how MAG works, we give here an example from \cite{afp99moor}:
+Consider the function reversing a list. A naive definition would be:
+\lstset{language=caml}
+\begin{lstlisting}
+let rec reverse l = match l with
+[] -> []
+| a::x = (reverse x) @ a
+\end{lstlisting}
+This is inefficient because the time complexity of the concatenation operator \verb|@| is linear in the size of the list. Therefore the function reverse has a quadractic time complexity.
+
+It is well known that this algorithm is equivalent to the following improved version:
+\begin{lstlisting}
+let rec fastreverse =
+ let fastreverse l ac = match l with
+ [] -> ac
+ | a::x = fastreverse x (a:ac)
+in fastreverse l []
+\end{lstlisting}
+
+This version can be automatically computed by MAG from the first version and the following transformation rules:
+
+\begin{lstlisting}
+cat0: [] @ xs = xs;
+cat1: (x::xs) @ ys = x::(xs@ys);
+catassoc: (xs @ ys) @ zs
+ = xs @ (ys @ zs);
+promotion: f (foldr plusl e xs)
+ = foldr crossl e' xs,
+  if {f e = e';
+   fun x y -> f (plusl x y)
+   = fun x y -> crossl x (f y)
+  }
+\end{lstlisting}
+
+These rules express properties about the concatenation operator and the promotion rule (which permits to swap f and foldr
+when f is an homomorphism).
+
+The key element of the MAG system is the matching algorithm that it used to determine which rewriting rule can be applied to the program,
+see \cite{sittampthesis} for more details about it.
+
+\subsection{Compilation}
+
+Compiling consists in transforming one program expressed in a
+language source into a program in target language. Usually the
+transformation is from a high-level to a low-level source language.
+Some optimization may take part during the compilation (loop fusion,...).
+
+\section{Challenges}
+
+\subsection{Correctness of transformation}
+
+Currently, most refactoring tools suffer from a major bugs: the
+transformations do not preserve the semantics of the programs
+transformed. The reason is that these transformations are not
+formally proved to be correct.
+
+We would like to have automatic procedures to determine whether a
+given transformation preserves the meaning of programs.
+
+In \cite{jungl}, Verbaere et al. proposed a scripting functionnal language which allow one
+to simply express source to source transformations. The functionnal nature of Jungl makes it easy to manipulate structures like abstract syntax trees and graphs used to represent programs.
+The patterns of the transformation are expressed with path queries (regular expression) over the AST.
+The following example from \cite{jungl} illustrates this: it is a pattern
+describing a path from a variable occurrence var to its declaration as a method parameter:
+\texttt{![var] parent+ [?m:Kind("MethodDecl")] child [?dec:Kind("ParamDecl")] \& ?dec.name == var.name}
+
+Jungl allows one to invent and implement very complex refactoring transformations in a concise way.
+
+No research has been done yet on the soundness of the transformation expressed in Jungl.
+Game semantics could be usefull here. It would be interesting to analyze Jungl programs
+in terms of transformation on strategies. If we can prove that a transformation conserves the strategies
+modulo the intrinsic preorder then it is sound. In other words, a transformation is sound if its strategy-transformer equivalent is the identity function of the set of startegies modulo the intrinsic preorder.
+The toy language Foil introduced in \cite{Ghica03} would be an interesting example to start with. In Foil, the full abstraction given by game semantics boils down to regular languages semantics and the observational equivalence becomes decidable.
+
+
+\subsubsection{Compilation}
+In order to prove soundness of a compiler, it would be necessary to give a game semantics of
+the source and target language and then prove that the compiler transformation preserve that semantics.
+
+
+\subsection{Higher-order pattern matching}
+
+Pattern matching is usually the key element of a program transformation tools. In order to apply transformation, the tool need to recognize
+a pattern in the program before being able to apply a transformation that follow this pattern.
+
+High-order pattern matching is a long standing problem in computer science.
+
+
+\section{Can we do transformation using game semantics?}
+
+Suppose that we have a mechanical procedure to obtain the AST of a program from a game semantics (a strategy)
+(is there such an algorithm for a restricted subset of Idealized Algol?). Let's denote this procedure
+$\phi$.
+
+$\phi$ could map a given game semantics to several possible programs having this semantics.
+
+
+Example: the term $M\ =\ \lambda x . if\ x\ then\ P\ else\ Q$
+
+$M\ true \Downarrow P$ therefore $\sem{M true} = \sem{P}$.
+
+What do we get from $\phi (\sem{true} )$ ?
+
+
+\bibliographystyle{plain}
+\bibliography{transformation}
+
+
+\end{document}

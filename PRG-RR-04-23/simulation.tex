@@ -1,0 +1,687 @@
+\section{Simulating $2$PDALs by non-deterministic $2$PDAs}
+
+We have just seen that the incorporation of labels (as names of
+links) into the stack alphabet will, in general, lead to an
+infinite alphabet. In this section, we show how these links and
+the way in which they are manipulated can be simulated by a
+\emph{non-deterministic} $2$PDA.
+
+Let $G$ be a possibly unsafe level-$2$ grammar and let the
+corresponding $2$PDAL be denoted by $2PDAL_G$. Furthermore, let
+$\Gamma$ be the stack alphabet described in the preceding section.
+Our non-deterministic $2$PDA will have stack alphabet $\Gamma \cup
+\{w^+ : w \in \Gamma\} \cup \{w^- : w \in \Gamma\} \cup \{w^{+/-}
+: w \in \Gamma\}$. The $+$ and $-$ take on the same role as
+before, i.e. the $-$ marks the start point of an instance of a
+link, whereas the $+$ the end point. Note however that they are
+\emph{anonymous} - they are no longer prefixed with natural
+numbers.  We will explain how to use them shortly.
+
+The crux of this proof lies in understanding how links are
+manipulated in $2PDAL_G$. We dedicate the following
+subsection to exactly this.
+
+\subsection{The use of links in $2PDAL_G$}
+
+Below we list some observations on the way links are manipulated.
+Recall that labels are preserved with $\push_2$ operations. For
+example, consider the following $2$-store of $2PDAL_G$
+\begin{equation}
+\nonumber \left [ \begin{array}{lll} \hbox{\tt [}a, & \mklink{b}{m-},
+& c\hbox{\tt ]}\\ \hbox{\tt [}\mklink{d}{m+}, & e, & f\hbox{\tt ]}
+\end{array} \right ]
+\end{equation}
+If we perform a $\push_2$, we will have
+\begin{equation}
+\nonumber \left [ \begin{array}{lll}
+\hbox{\tt [}a, & \mklink{b}{m-}, & c\hbox{\tt ]}\\
+\hbox{\tt [}a, & \mklink{b}{m-}, & c\hbox{\tt ]}\\
+\hbox{\tt [}\mklink{d}{m+}, & e, & f\hbox{\tt ]}
+\end{array} \right ]
+\end{equation}
+We now have two instances of the link $m$. One connects the upper
+$b$ to $d$, and the other connects the lower $b$ to $d$. By Lemma
+5.4(i), if there are two or more instances of a label $m$, then
+although each may have a different start point, they all share the
+same end point, as illustrated by the above example.
+
+\begin{lemma} \label{lem:useonceonly} In any run of $2PDAL_G$, if
+$(q_j,s)$ is a reachable configuration where $top_1(s) = {\$ t_1
+\cdots t_n}^{\langle m- \rangle \cup \lambda}$ and $j > 0$, then,
+for all $(q_k,s')$ such that $(q_j,s) \rightarrow_{+} (q_k,s')$,
+$top_1(s')$ is not labelled by $m-$.
+\end{lemma}
+
+\begin{proof} The key to this proof is recognising that $\pop_2$
+is never used, only the parameterised form $\pop_2(m)$ is used.
+There are two cases. If $j \leq n$, then the result follows from
+Lemma~\ref{lem:order}. However, if $j > n$, note that the next configuration after $(q_j,s)$ is $(q_{j-n}, s'')$ where
+$\mytop_1(s'') = {\varphi u_1 \cdots u_{n'}}^{\langle m+ \rangle \cup
+\lambda'}$. By Lemma 5.4(i), no item in $s''$ can be labelled by
+$m-$. Furthermore, any new labels introduced will be fresh.
+\end{proof}
+
+We say that a link $m$ is \textbfit{followed} (at a configuration
+$(q_j,s)$) if $\mytop_1(s) = {\$t_1 \cdots t_n}^{\langle m-
+\rangle \cup \lambda}$ for some $\lambda$ and some $n \geq 0$ such
+that $j > n$. A corollary of the above lemma is that any given
+link $m$ is followed at most once.
+
+%Note that whenever the 2PDAL is at such a configuration, it
+%performs a $\pop_2(m)$ on (an instance of) the link $m$, jumping
+%from the start point to the end point.
+
+
+%\begin{lemma} \label{lem:useonceonly} In any run of a 2PDAL, any given link
+%$m$ is followed at most once. Formally, if $(q_j,s)$ is a reachable
+%configuration at which a link $m$ is followed, then, for all $(q,s')$
+%such that $(q_j,s) \rightarrow^+ (q,s')$, no items labelled with $m-$
+%occurs in $s'$; in particular $\mytop_1(s')$ is not labelled by $m-$.
+%\end{lemma}
+%
+%\begin{proof} Suppose $\mytop_1(s) = {\$t_1 \cdots t_n}^{\langle m- \rangle
+%\cup \lambda}$ for some $n \geq 0$ and some $\lambda$, and such that
+%$j > n$. The next configuration after $(q_j, s)$ is $(q_{j-n}, s'')$
+%where $\mytop_1(s) = \$' u_1 \cdots u_{n'}^{\langle m+ \rangle \cup
+%\lambda'}$. By Lemma 5.4(i), no item in $s''$ can be labelled by
+%$m-$. Furthermore, any new labels introduced will be fresh.
+%\end{proof}
+
+%The above lemma is tantamount to saying that a link $m$ will be
+%followed at most once, and if it is followed then, in any subsequent
+%configurations, no items with label $m-$ exist.
+
+\subsection{Intuition}
+The important thing to note about $2PDAL_G$ is that not all links
+are followed. In the example illustrated in Section 5.2, no link
+apart from $1$ was followed. In fact, we may as well not have
+bothered to label the remaining links! This observation is the key
+to our construction.
+
+The simulating non-deterministic $2$PDA will follow the rules in
+Fig.~\ref{fig:pdal} almost exactly. The difference is that each time
+we are about to generate a link (i.e.~Case (4) of
+Fig.~\ref{fig:pdal}), we guess whether it will ever be followed in the
+future or not, and we label the start and end points of the link if
+and only if we guess that it will be followed. Furthermore, instead of
+a fresh label $m$, we simply mark the start point with a $-$ and the
+end point with a $+$.
+
+
+\subsubsection*{A controlled form of guessing}
+
+Now this presents a problem of ambiguity. Suppose we find ourselves in
+a configuration $(q,s)$ where $\mytop_1(s)$ is labelled by $-$, how
+can we tell which of the stack items labelled by a $+$ is the
+\emph{true} end point of this link? (True in the sense that if we did
+have the ability to name our links as with $2PDAL_G$, the topmost
+item would have label $m-$ for some $m$, and the \emph{real} end point
+would have label $m+$ for the same $m$.) The answer lies in the use of
+a \emph{controlled} form of guessing: when guessing whether a link
+will be followed in the future, the machine will not always be allowed
+to guess whichever way it pleases; instead we require the guess to be
+subject to some constraints. We shall see that as a consequence the
+following invariant can be maintained:
+\begin{quote}
+\emph{Assume that the topmost $1$-store has at least one item
+labelled by $-$. For the leftmost (closest to the top) of these, the
+corresponding end point can be found in the first $1$-store beneath it
+whose topmost item is marked with a $+$.}\footnote{The invariant is
+actually stronger than this, but this is sufficient to ensure that the
+simulation works correctly.}
+\end{quote}
+%(For example in the following
+%\begin{equation}
+%\nonumber \left [ \begin{array}{lll} \hbox{\tt [}{a}^{-}, & b, &
+%c\hbox{\tt ]}\\ \hbox{\tt [}d, & e, & f\hbox{\tt ]}\\ \hbox{\tt
+%[}g^{+}, & h, &i\hbox{\tt ]}\\ \hbox{\tt [}j^{+}, & k, &l\hbox{\tt ]}
+%\end{array} \right ]
+%\end{equation}
+%if the real end point of $a$ is $j$, we would have to perform 3
+%$\pop_2$'s were we to follow the link at $a$.)
+
+Before formalising the controlled form of guessing, we introduce a
+definition. Let $(q_0, s)$ be a reachable configuration of $2PDAL_G$
+such that
+\begin{equation}
+\nonumber \mytop_2(s) = [\varphi_{j_1} t_1 \cdots t_n^\lambda, A_1,
+\cdots, A_k, \cdots, A_N]
+\end{equation}
+where $N \geq 2$. We say that $\varphi_{j_1}$ \textbfit{ultimately
+refers to} $A_k$ just if:
+\begin{itemize}
+\item[(i)] For $i = 1, \cdots, k-1$, the $j_i$th level-$1$ argument of
+$A_i$ is a variable $\varphi_{j_{i+1}}$. We remind the reader of the
+notational convention for level-$1$ parameters set out in (\ref{convention}).
+\item[(ii)] The $j_{k}$th argument of $A_k$ is an application or a
+non-terminal.
+\end{itemize}
+So, for example, using the grammar in Example~\ref{ex:ex1}, the
+following is a reachable $2$-store for $2PDAL_G$ on input $h_1h_3h_3$:
+\begin{equation}
+\nonumber \begin{array}{rl}
+(q_0, & \hbox{\tt [}\mkstore{\varphi B,\mklink{(D \varphi x)}{1-},
+DGAB, S},\\
+& \mkstore{\mklink{\varphi B}{1+}, D (D \varphi x) y (\varphi y),
+DGAB,S}\hbox{\tt ]})
+\end{array}
+\end{equation}
+Here the topmost $\varphi$ ultimately refers to (the $G$ in) $DGAB$ (in
+the topmost $1$-store).
+
+Suppose that we are in a configuration $(q_0, s)$ of the
+non-deterministic $2$PDA where
+\begin{equation}
+\nonumber \mytop_2(s) = \mkstore{\varphi t_1 \cdots t_n^{?}, A_1,
+\cdots, A_j, \cdots, A_n}
+\end{equation}
+where $?$ may either denote a $-$ or no label at all. Furthermore,
+suppose that $\varphi$ ultimately refers to $A_j$. There are two possibilities:
+\begin{enumerate}
+\item[A.] None of the stack items $\varphi t_1 \cdots t_n^{?}, A_1,
+\cdots, A_j$ are labelled by a $-$; or \item[B.] There exists a stack item
+in  $\varphi t_1 \cdots t_n^{?}, A_1, \cdots, A_j$ labelled by a
+$-$.
+\end{enumerate}
+In the first case we leave it up to the $2$PDA to
+non-deterministically label $\varphi t_1 \cdots t_n$ (with $+$) in the
+configuration $(q_0, s)$ as well as its matching partner (with $-$). However,
+in the second case, we \emph{insist} that the $2$PDA label
+$\varphi t_1 \cdots t_n$ in the configuration $(q_0, s)$ as well
+as its matching partner, as given in Case (4) of Fig.~\ref{fig:pdal}.
+
+Let us illustrate why this maintains the above invariant with an
+example. Suppose we have the following configuration:
+\begin{equation}
+\nonumber \left [\begin{array}{l}
+\mkstore{\varphi x_1 x_2, {D \varphi x}^{-}, F(F\varphi x)y, {G\varphi
+x}^-, E, S}\\
+\mkstore{A^+, \cdots}\\
+\mkstore{B^+, \cdots}
+\end{array} \right ]
+\end{equation}
+Note that the topmost stack has two items labelled with a $-$, $D
+\varphi x$ and $G \varphi x$. By our invariant we know that $D \varphi
+x$ has end point $A^+$. And let us suppose that $G \varphi x$ points
+to $B^+$. Suppose that the $\varphi$ of the topmost item ultimately
+refers to (the subterm $F \varphi x$) in $F(F \varphi x)
+y$. Furthermore, suppose we go against our controlled form of guessing
+and allow the machine \emph{not} to label $\varphi x_1 x_2$ and its
+matching partner. Thus we arrive at
+\begin{equation}
+\nonumber \left [ \begin{array}{l}
+\mkstore{ \varphi, F(F\varphi x)y, {G\varphi x}^-, E, S}\\
+\mkstore{\varphi x_1 x_2, {D \varphi x}^{-}, F(F\varphi x)y, {G\varphi
+x}^-, E, S}\\
+\mkstore{A^+, \cdots}\\
+\mkstore{B^+, \cdots}
+\end{array} \right ]
+\end{equation}
+Note that now $G \varphi x$ is the leftmost item labelled with a
+$-$. Our invariant has been violated as the real end point of $G
+\varphi x$ is not $A^+$.
+
+%In the next section we will prove rigorously that obeying the above
+%convention will ensure that the above invariant is mained.
+
+\subsubsection*{Penalty for guessing wrongly}
+
+The cost of using non-determinism (regardless of how controlled it may
+be) is that we commit ourselves to following our guesses. When we find
+out that we have guessed wrongly, we shall have to abort the
+run. There are two cases. Suppose we find ourselves in a configuration
+$(q_j,s)$ where $\mytop_1(s) = {\$ x_1 \cdots x_n}^{-}$ and $j \leq
+n$. The fact that the topmost item is labelled by $-$ means that at
+some point in the past, we guessed that we would follow this link.
+%Recall that the non-deterministic $2$PDA only has the ability to label
+%items with a $+, -$ or $+/-$ and is not able to add a name to
+%links. Hence, when an item is labelled with a $-$, in the
+%corresponding $2$PDAL it will actually be labelled with a $m-$, and it
+%will have a corresponding end point $m+$ that presents itself as a
+%mere $+$ in the non-deterministic $2$PDA.
+But, by Lemma~\ref{lem:useonceonly} we have not yet followed the
+link nor will we ever follow it in the future.
+%But, as $j \leq n$, we have so far not followed the link $m$, nor (by
+%Lemma~\ref{lem:useonceonly}) will we ever follow it in future.
+The machine has guessed wrongly, and we abort immediately.
+Symmetrically if we find ourselves in a configuration $(q_j,s)$
+where $\mytop_1(s) = \$ x_1 \cdots x_n$ and $j > n$, then we also
+abort. Why? The absence of a $-$ label means that at some point in
+the past we guessed that we would \emph{not} follow this link, but
+we are now about to turn against our original guess.
+
+%\subsubsection*{Why it will work}
+%
+%We will show that for each word in the language of the $2$PDAL, there
+%is at least one way to guess correctly which stack items will be
+%labelled (with $+,-$ or $+/-$) such that the word is
+%accepted. Furthermore, these guesses will be consistent with our
+%controlled guessing. Conversely, we will show that every set of
+%guesses consistent with our controlled guessing will lead to the
+%acceptance of a word that belongs to the language of the $2$PDAL.
+
+\subsection{Definition of the non-deterministic $2$PDA, $2PDA_G$}
+Let $G$ be a (possibly unsafe) 2-grammar that generates a string
+language. The transition rules of the non-deterministic $2$PDA,
+$2PDA_G$, are given in Fig.~\ref{fig:2pda}.
+%\begin{figure*}[t]
+%\begin{center}
+%\makebox{
+%\begin{shadowbox}[17cm]
+%\begin{math}
+%\begin{array}{rclr}
+%\nonumber (q_0, a,  Dt_1 \cdots t_n^\lambda) & \rightarrow & (q_0, \push_1(E)) \mbox{ if $Dx_1 \cdots x_n \larr{a} E$ } & \rm{(1)}\\
+%\nonumber (q_0, \epsilon ,e) & \rightarrow & \mbox{accept} & \rm{(2)}\\
+%\nonumber (q_0, \epsilon ,x_j)& \rightarrow & (q_j, \pop_1) & \rm{(3)}\\
+%\nonumber \\
+%\nonumber (q_0, \epsilon, \varphi_j t_1 \cdots t_n) & \rightarrow
+%& \left \{ \begin{array}{l}
+%(q_0, \repl_1({\varphi_j t_1 \cdots t_n}^{+}) \compose \push_2 \compose \pop_1 \compose \repl_1({s_j}^{-}))\\
+%(q_0, \push_2 \compose \pop_1 \compose \repl_1(s_j))
+%\end{array} \right . & \begin{array}{r} \rm{(4.1)} \\ \rm{(4.1')}\end{array}\\
+%\nonumber & & \mbox{where Situation A holds and ${Ds_1 \cdots
+%s_{n'}}^{\lambda'}$ precedes
+%$\varphi_j t_1 \cdots t_n$} & \\
+%\nonumber (q_0, \epsilon, {\varphi_j t_1 \cdots t_n}^{\lambda }) &
+%\rightarrow & (q_0, \repl_1({\varphi_j t_1 \cdots t_n}^{+ \cup
+%\lambda})
+%\compose \push_2 \compose \pop_1 \compose \repl_1({s_j}^{-})) & \rm{(4.2)}\\
+%\nonumber & & \mbox{where Situation B holds and ${Ds_1 \cdots
+%s_{n'}}^{\lambda'}$ precedes
+%${\varphi_j t_1 \cdots t_n}^\lambda$ } & \\
+%\nonumber \\
+%\nonumber 1 \leq j \leq n, (q_j, \epsilon, \$t_1 \cdots t_n^\lambda) &
+%\rightarrow & \left \{ \begin{array}{ll}
+%(q_0, \repl_1(t_j)) &  - \not \in \lambda \\
+%\mbox{abort} &  - \in \lambda \end{array} \right . & \begin{array}{r} \rm{(5.1)} \\ \rm{(5.2)}\end{array} \\
+%\nonumber j > n , (q_j, \epsilon, \$t_1 \cdots t_n^\lambda) &
+%\rightarrow & \left \{ \begin{array}{ll}
+%\mbox{abort} & - \not \in \lambda\\
+%(q_{j-n}, \pop^+_2) & - \in \lambda \end{array} \right . & \begin{array}{r} \rm{(6.1)} \\ \rm{(6.2)}\end{array}
+%\end{array} \end{math}
+%\end{shadowbox}}
+%\end{center}
+%\caption{Transition rules of the non-deterministic $2$PDA,
+%$2PDA_G$ \label{fig:2pda}}
+%\end{figure*}
+\begin{figure*}[t]
+\begin{center}
+\makebox{
+\begin{shadowbox}[16.5cm]
+\begin{eqnarray}
+\nonumber (q_0, a,  Dt_1 \cdots t_n^\lambda) & \rightarrow & (q_0, \push_1(E)) \mbox{ if $Dx_1 \cdots x_n \larr{a} E$ }\\
+\nonumber (q_0, \epsilon ,e) & \rightarrow & \mbox{accept}\\
+\nonumber (q_0, \epsilon ,x_j)& \rightarrow & (q_j, \pop_1)\\
+\nonumber \\
+\nonumber (q_0, \epsilon, \varphi_j t_1 \cdots t_n) & \rightarrow
+& \left \{ \begin{array}{l}
+(q_0, \repl_1({\varphi_j t_1 \cdots t_n}^{+}) \compose \push_2 \compose \pop_1 \compose \repl_1({s_j}^{-}))\\
+(q_0, \push_2 \compose \pop_1 \compose \repl_1(s_j))
+\end{array} \right .\\
+\nonumber & & \mbox{where Situation A holds and ${Ds_1 \cdots s_{n'}}^{\lambda'}$ precedes
+$\varphi_j t_1 \cdots t_n$}\\
+\nonumber (q_0, \epsilon, {\varphi_j t_1 \cdots t_n}^{\lambda }) &
+\rightarrow & (q_0, \repl_1({\varphi_j t_1 \cdots t_n}^{+ \cup
+\lambda})
+\compose \push_2 \compose \pop_1 \compose \repl_1({s_j}^{-}))\\
+\nonumber & & \mbox{where Situation B holds and ${Ds_1 \cdots s_{n'}}^{\lambda'}$ precedes
+${\varphi_j t_1 \cdots t_n}^\lambda$ }\\
+\nonumber \\
+\nonumber 1 \leq j \leq n, (q_j, \epsilon, \$t_1 \cdots t_n^\lambda) &
+\rightarrow & \left \{ \begin{array}{ll}
+(q_0, \repl_1(t_j)) &  \mbox{if } - \not \in \lambda \\
+\mbox{abort} & \mbox{if } - \in \lambda \end{array} \right . \\
+\nonumber j > n, (q_j, \epsilon, \$t_1 \cdots t_n^\lambda) & \rightarrow &
+\left \{ \begin{array}{ll}
+\mbox{abort} & \mbox{if } - \not \in \lambda \\
+(q_{j-n}, \pop^+_2) & \mbox{if } - \in \lambda
+\end{array} \right .
+\end{eqnarray}
+\end{shadowbox}}
+\end{center}
+\caption{Transition rules of the non-deterministic $2$PDA, $2PDA_G$
+\label{fig:2pda}}
+\end{figure*}
+Note that, again, we assume that production rules of the grammar
+assume the format given in rule (\ref{convention}). The function
+$\pop_2^{+}$ performs a $\pop_2$ and then repeats until the topmost
+symbol it reads is marked with a $+$. Formally, let $s$ range over 2-stores, we define $\pop_2^+ (s) =
+p(\pop_2(s))$ where
+\begin{eqnarray}
+\nonumber p (s)  & = &  \left \{
+\begin{array}{ll}
+s & \hbox{if $\mytop_1(s)$ has label $+$}\\
+{p(\pop_2 (s))} & \mbox{otherwise}
+\end{array} \right .
+\end{eqnarray}
+Observe that the rules of the simulating non-deterministic $2$PDA
+(Fig.~\ref{fig:2pda}) are almost identical to those of the $2$PDAL
+(Fig.~\ref{fig:pdal}).
+
+\begin{remark}
+In the definition of the transition rules (Fig.~\ref{fig:2pda}), in
+case the $\mytop_1$ item of the 2-store is headed by a level-1
+variable, the $2$PDA has to work out whether it is situation A or
+B. This can be achieved by a little scratch work on the side: do a
+$\push_2$, inspect the topmost 1-store for as deep as necessary,
+followed by a $\pop_2$. Alternatively we could ask the oracle to tell
+us whether it is A or B, taking care to ensure that a wrong
+pronouncement will lead to an abort.
+\end{remark}
+
+\subsection{Proof of correctness}
+First some notations. Items labelled with superscripts $-, +$ or
+$+/-$, will be referred to as \textbfit{marked} items. In
+particular, if an item is marked with a $-$ or a $+/-$,
+then we say it is \textbfit{$-$marked}, indicating that one of its
+labels is indeed a $-$. Similarly, if an item is marked with a $+$
+or a $+/-$, then we say it is \textbfit{$+$marked}. If the topmost
+1-store of $s$ has at least one $-$marked item, then we say that
+the leftmost of these (closest to the top) items is the
+\textbfit{foremost}. (If the topmost 1-store of $s$ has no
+$-$marked items, then $s$ has no foremost item.) Let $\theta$ be a
+$-$marked item in a $2$-store $s$. We say that $\theta$ is
+$-$\textbfit{reachable} in $s$ just if $\theta$ is foremost in
+$s$, or if $s$ has a foremost item and $\theta$ is $-$reachable in
+$\pop_2^+(s)$. For example consider the following $2$-store:
+%$\pop_2^+ (s)$ is defined and has a foremost item and $\theta$ is
+%$-$reachable in $\pop_2^+ (s)$. For example consider the following
+%2-store:
+\begin{equation}
+\nonumber s \; = \; \left [ \begin{array}{lllll}
+\hbox{\tt [} a      , & b^- , & c   , & d^- , & e \hbox{\tt ]}\\
+\hbox{\tt [} f      , & g   , & h   , & i   , & j \hbox{\tt ]}\\
+\hbox{\tt [} k^{+/-}, & l   , & m   , & n   , & o \hbox{\tt ]}\\
+\hbox{\tt [} p^+    , & q   , & r^- , & s   , & t \hbox{\tt ]}\\
+\hbox{\tt [} u^+    , & v   , & w   , & x   , & y \hbox{\tt ]}
+\end{array} \right ]
+\end{equation}
+The foremost item is $b$. The items $b,k$ and $r$ are the only
+$-$reachable ones. Note that if  we perform a \emph{single}
+$\pop_2$, then there will be no foremost item. However, with
+another $\pop_2$, the foremost item will be $k$.
+
+Finally, we fix a possibly unsafe 2-grammar $G$ that generates a
+string language. Let $(q, s)$ and $(q', s')$ be reachable
+configurations of the $2PDA_G$ and $2PDAL_G$ respectively.
+Intuitively we write $s \bohm s'$ to mean that $s$ simulates $s'$.
+Precisely $s \bohm s'$ holds if either both $s$ and $s'$ are the
+empty 2-store, or the following hold
+\begin{itemize}
+\item[(i)] If $\mytop_1(s) = \mytop_1(s') = \bot$, then $pop_2(s)
+\bohm s'$, and
+\item[(ii)] If $\mytop_1(s) = {a}^{\lambda}$ and $\mytop_1(s') =
+{a'}^{\lambda'}$ then 
+\begin{itemize}
+\item[a.] $a = a'$ and
+\item[b.] If $\lambda$ has label $-$ then $\lambda'$ has label $m-$
+for some $m$. Similarly, if $\lambda$ has label $+$ then $\lambda'$
+has label $n+$ for some $n$; and
+
+%\[
+%\begin{array}{rcl}
+%\nonumber \mbox{$\lambda$ has label $-$} & \Rightarrow & \mbox{$\lambda'$ has label $m-$ for some $m$}\\
+%\nonumber \mbox{$\lambda$ has label $+$} & \Rightarrow &
+%\mbox{$\lambda'$ has label $m+$ for some $m$}
+%\end{array}
+%\], and
+
+\item[c.] $pop_1(s) \bohm pop_1(s')$
+\end{itemize}
+\end{itemize}
+
+\begin{lemma}\label{lem:consistency}
+Let $(q_0, \mkstore{\mkstore{S}}) = (p_0, s_0) \rightarrow \cdots
+\rightarrow (p_n, s_n)$ be a transition sequence of $2PDA_G$. Then
+there exists a unique (modulo renaming of labels) transition
+sequence $(p_0, s_0') \rightarrow \cdots \rightarrow (p_n, s_n')$
+of $2PDAL_G$ such that for all $i = 0, \cdots, n$:
+\begin{itemize}
+\item[(i)] $s_i \bohm s_i'$
+\item[(ii)] If $s \sqsubseteq s_i$ such that $\mytop_1(s)$ is
+$-$reachable in $s_i$, and if $s' \sqsubseteq s_i'$ such that $s \bohm
+s'$, then $\pop^+_2(s) \bohm \pop_2(m)(s')$ where $\mytop_1(s')$ has
+label $m-$.
+\end{itemize}
+\end{lemma}
+
+\begin{proof}
+Induction on the number of transitions.
+\end{proof}
+
+\begin{proposition} \label{prop:prop1}
+If a string is accepted by $2PDA_G$, it is also accepted by $2PDAL_G$.
+\end{proposition}
+
+\begin{proof}
+This follows from Lemma~\ref{lem:consistency} and the correctness of
+the $2$PDAL.
+\end{proof}
+
+\begin{proposition} \label{prop:prop2}
+If a string is accepted by $2PDAL_G$, it is also accepted by $2PDA_G$.
+\end{proposition}
+
+\begin{proof}
+Suppose there is an all-knowing oracle that always tells us
+\emph{correctly} whether or not we will ever follow a link. We need to
+check that the controlled guessing does not restrict the choices of
+the oracle.  Recall that when Situation B arises we do not allow our
+$2$PDA a choice: we \emph{always} guess that the link we are about to
+create will be followed in the future. We must check that the oracle
+agrees with this decision.
+
+Thus suppose that the current configuration is $(q_0, s)$ and
+$\mytop_2(s)$ is the following:
+\begin{equation}
+\nonumber \mkstore{A_1^{\lambda_1}, A_2^{\lambda_2}, \cdots, A_k^-,
+\cdots, A_{n-1}^{\lambda^{n-1}}, A_n^{\lambda_n}, \cdots}
+\end{equation}
+where $A_1 = \varphi_j t_1 \cdots t_m$, and $1\leq k < n$.
+Furthermore, suppose that $\varphi_j$ in $A_1$ ultimately refers to
+$A_n$. According to our rules, after a finite number of transition
+steps we reach the following configuration:
+\begin{eqnarray}
+\nonumber && \mkstore{t_{A_n}^{-}, \cdots } \\
+\nonumber && \mkstore{t_{A_n-1}^{+/-}, A_n^{\lambda_n} , \cdots}  \\
+\nonumber && \vdots \\
+\nonumber && \mkstore{t_{A_k}^{+/-}, A_{k+1}^{\lambda_{k+1}}, \cdots, A_{n-1}^{\lambda_{n-1}}, A_n^{\lambda_n}, \cdots}\\
+\nonumber && \vdots \\
+\nonumber && \mkstore{t_{A_2}^{+/-},  A_3^{\lambda_3}, \cdots,  A_k^-, \cdots, A_{n-1}^{\lambda^{n-1}}, A_n^{\lambda_n},\cdots}\\
+\nonumber && \mkstore{\varphi_j t_1 \cdots t_n^{+ \cup \lambda}, A_2^{\lambda_2}, \cdots, A_k^-, \cdots, A_{n-1}^{\lambda^{n-1}},A_n^{\lambda_n},\cdots}\\
+\nonumber && \vdots
+\end{eqnarray}
+where $t_{A_i}$ is a subterm of $A_i$. We must check that the above
+``forced'' choices would tally with those of the oracle. Suppose, for
+a contradiction, that it does not, and that $t_{A_i}$ for some $i$ is
+not $-$marked. There are two possibilities:
+\begin{enumerate}
+\item[(1)] $t_{A_n}$ is not $-$marked.
+\item[(2)] $t_{A_n}$ is $-$marked,
+but there exists an $i$ such that $t_{A_i}$ is not $-$marked for
+some $i < n$.
+\end{enumerate}
+For case (1), the proof of Lemma~\ref{lem:useonceonly} says that
+the link represented by $A_k^-$ has not yet been followed.
+However, it should not be difficult to see that by not marking
+$t_{A_n}$ we have eliminated the possibility of ever returning to
+$A_k^-$. In particular, this contradicts that the oracle's
+previous information that we would perform a $\pop_2^+$ at $A_k^-$
+(or a duplicate) in the future. For case (2), let $I = \max \{i :
+\mbox{$A_i$ is not $-$marked}\}$. Then, according to the oracle,
+we will perform a $\pop_2^+$ at $t_{A_{I+1}}$, however, the next
+configuration will be $(q_k, s')$ for $k>0$ and $\mytop_1(s') =
+t_{A_I}$. This is untenable, as by assumption $t_{A_I} = \varphi$
+for some level-$1$ variable $\varphi$, thus we must follow a link
+here unconditionally or we will be stuck. Again, this contradicts
+the oracle's information that we would not need to follow a link
+at $t_{A_I}$.
+\end{proof}
+
+Combining Propositions~\ref{prop:prop1} and \ref{prop:prop2} we can
+conclude:
+\begin{theorem}
+There is an effective transformation of any (possibly unsafe)
+string-language generating 2-grammar to a non-deterministic $2$PDA that
+accepts the same language. \myendproof
+\end{theorem}
+
+%\begin{remark} In Proposition \re{prop:prop2} it was shown that if
+%$w$ is accepted by a $2$PDAL then it is accepted by the
+%corresponding non-deterministic $2$PDA. In particular, it showed
+%that there is at least one way to guess which links are followed
+%in such a way that $w$ is accepted and such that the guesses are
+%consistent with our controlled guessing. However, it should also
+%be noted that there may be \emph{more} than one such way. Thus,
+%perhaps a truer reflection of what it means for a stack item to be
+%$-$marked is the following. If a stack item is $-$marked then,
+%should we ever visit this item in state $q_j$ for $j>0$ we will
+%always perform a $\pop_2^+$. Note that this says nothing about the
+%case where we \emph{never} visit this item in a state $q_j$ for
+%$j>0$.
+%\end{remark}
+
+
+\subsection{Some examples}
+
+\begin{example}
+We demonstrate the non-deterministic $2$PDA for the grammar in
+Example~\ref{ex:ex1} on input $h_1h_3h_2f_1a$. Recall that this word
+does not belong in the language. As before, the automaton starts in the configuration $(q_0, h_1h_3h_2f_1a,
+\mkstore{\mkstore{S}})$. After a few steps the configuration is:
+\begin{eqnarray}
+\nonumber (q_0, & h_2f_1a, & \mkstore{\mkstore{\varphi B, D(D
+\varphi x) y (\varphi y), DGAB,S}})
+\end{eqnarray}
+It is now up to the automaton to choose whether or not to label the
+start and end points of this link. Suppose it chooses to label:
+\begin{eqnarray}
+\nonumber (q_0, & h_2f_1a, & \hbox{\tt [}\mkstore{{(D \varphi x)}^{-}, DGAB, S},\\
+\nonumber & & \mkstore{{\varphi B}^{+}, D (D \varphi x) y (\varphi
+y), DGAB,S}\hbox{\tt ]})
+\end{eqnarray}
+After a few more steps the automaton arrives at another
+configuration where the topmost symbol is headed by a level-$1$
+variable.
+\begin{eqnarray}
+\nonumber (q_0, & f_1a, & \hbox{\tt [}\mkstore{\varphi x,H (F y) x,{(D
+\varphi x)}^{-}, DGAB, S}, \\
+\nonumber & &\mkstore{{\varphi B}^{+}, D (D \varphi x) y (\varphi
+y), DGAB,S}\hbox{\tt ]})
+\end{eqnarray}
+This time suppose it chooses not to label:
+\begin{eqnarray}
+\nonumber \rightarrow_+ (q_0, & a, & \hbox{\tt [}\mkstore{x,(F y),{(D \varphi x)}^{-}, DGAB, S}\\
+\nonumber & &\mkstore{\varphi x,H (F y) x,{(D \varphi x)}^{-}, DGAB, S}, \\
+\nonumber & &\mkstore{{\varphi B}^{+}, D (D \varphi x) y (\varphi
+y), DGAB,S}\hbox{\tt ]})\\
+\nonumber \rightarrow_+ (q_0, & a, & \hbox{\tt [}\mkstore{y,{(D \varphi x)}^{-}, DGAB, S}\\
+\nonumber & &\mkstore{\varphi x,H (F y) x,{(D \varphi x)}^{-}, DGAB, S}, \\
+\nonumber & &\mkstore{{\varphi B}^{+}, D (D \varphi x) y (\varphi
+y), DGAB,S}\hbox{\tt ]})\\
+\nonumber \rightarrow_+ (q_3, & a, & \hbox{\tt [}\mkstore{{(D \varphi x)}^{-}, DGAB, S}\\
+\nonumber & &\mkstore{\varphi x,H (F y) x,{(D \varphi x)}^{-}, DGAB, S}, \\
+\nonumber & &\mkstore{{\varphi B}^{+}, D (D \varphi x) y (\varphi
+y), DGAB,S}\hbox{\tt ]})\\
+\nonumber \rightarrow_+ (q_1, & a, & \hbox{\tt [}\mkstore{{\varphi
+B}^{+}, D (D \varphi x) y (\varphi
+y), DGAB,S}\hbox{\tt ]})\\
+\nonumber \rightarrow_+ (q_0, & a, & \hbox{\tt [}\mkstore{B, D (D
+\varphi x) y (\varphi y), DGAB,S}\hbox{\tt ]})
+\end{eqnarray}
+and, as the word $h_1h_3h_2f_1a$ is rejected, as required.
+\end{example}
+
+\begin{example}As another example using the same grammar, let us
+attempt a computation on the same word $h_1h_3h_2f_1a$ but this time
+using a different set of guesses.
+\begin{eqnarray}
+\nonumber (q_0, & h_1h_3h_2f_1a, & \mkstore{\mkstore{S}})\\
+\nonumber \rightarrow_+ (q_0, & h_2f_1a, & \hbox{\tt [}\mkstore{{(D \varphi x)}, DGAB, S},\\
+\nonumber & & \mkstore{{\varphi B}, D (D \varphi x) y (\varphi
+y), DGAB,S}\hbox{\tt ]})\\
+\nonumber \rightarrow_+ (q_0, & f_1a, & \hbox{\tt [}\mkstore{\varphi x,H (F y) x,{(D
+\varphi x)}, DGAB, S}, \\
+\nonumber & &\mkstore{{\varphi B}, D (D \varphi x) y (\varphi
+y), DGAB,S}\hbox{\tt ]})\\
+\nonumber \rightarrow_+ (q_0, & f_1a, & \hbox{\tt [}\mkstore{{(F y)}^{-},{(D\varphi x)}, DGAB, S}\\
+\nonumber & & \mkstore{{\varphi x}^{+},H (F y) x,{(D\varphi x)}, DGAB, S}, \\
+\nonumber & & \mkstore{{\varphi B}, D (D \varphi x) y (\varphi y),
+DGAB,S}\hbox{\tt ]})\\
+\nonumber \rightarrow_+ (q_0, & a, & \hbox{\tt [}\mkstore{x,{(F y)}^{-},{(D\varphi x)}, DGAB, S}\\
+\nonumber & & \mkstore{{\varphi x}^{+},H (F y) x,{(D\varphi x)}, DGAB, S}, \\
+\nonumber & & \mkstore{{\varphi B}, D (D \varphi x) y (\varphi y),
+DGAB,S}\hbox{\tt ]})\\
+\nonumber \rightarrow_+ (q_1, & a, & \hbox{\tt [}\mkstore{{(F y)}^{-},{(D\varphi x)}, DGAB, S}\\
+\nonumber & & \mkstore{{\varphi x}^{+},H (F y) x,{(D\varphi x)}, DGAB, S}, \\
+\nonumber & & \mkstore{{\varphi B}, D (D \varphi x) y (\varphi y),
+DGAB,S}\hbox{\tt ]})
+\end{eqnarray}
+But now the automaton aborts prematurely. The fact the the topmost
+symbol is labelled with a $-$ indicates that earlier the automaton
+guessed it would follow the link here. However, it is now in state
+$q_1$ and the first argument \emph{is} present, hence, the
+automaton guessed incorrectly. There are two other combinations of
+guesses that can consume the prefix $h_1h_3h_2f_1$; we leave it to
+the reader to check that neither results in acceptance of
+$h_1h_3h_2f_1a$.
+\end{example}
+
+\begin{example}
+Finally, as a last example, we use the same grammar, but this time our
+input word is $h_1h_3h_3b$. It can easily be checked that this is
+indeed a word in the language.
+\begin{eqnarray}
+\nonumber (q_0, & h_1h_3h_3b, & \mkstore{\mkstore{S}})\\
+\nonumber \rightarrow_+ (q_0, & h_3b, & \mkstore{\mkstore{\varphi B, D(D \varphi x) y (\varphi y), DGAB,S}})\\
+\nonumber \rightarrow_+ (q_0, & h_3b, &  \hbox{\tt [}\mkstore{ {(D \varphi x)}^{-}, DGAB,S}\\
+\nonumber & & \mkstore{{\varphi B}^{+}, D(D \varphi x) y (\varphi
+y), DGAB,S}\hbox{\tt ]})\\
+\nonumber \rightarrow_+ (q_0, & b, &  \hbox{\tt [}\mkstore{ \varphi B,{(D \varphi x)}^{-}, DGAB,S}\\
+\nonumber & & \mkstore{{\varphi B}^{+}, D(D \varphi x) y (\varphi
+y), DGAB,S} \hbox{\tt ]})
+\end{eqnarray}
+At this point, situation B occurs: $\varphi$ in the topmost item
+ultimately refers to ($G$ in) $DGAB$, therefore, our controlled form of
+guessing insists that the automaton label the link:
+\begin{eqnarray}
+\nonumber \rightarrow_+ (q_0, &b, &  \hbox{\tt [}\mkstore{ \varphi^{-}, DGAB,S}\\
+\nonumber & & \mkstore{{\varphi B}^{+}, {(D \varphi x)}, DGAB,S}\\
+\nonumber & & \mkstore{{\varphi B}^{+}, D(D \varphi x) y (\varphi
+y), DGAB,S}
+\hbox{\tt ]})\\
+\nonumber \rightarrow_+ (q_0, &b, &  \hbox{\tt[}\mkstore{ G^{-},S}\\
+\nonumber & & \mkstore{ \varphi^{+/-}, DGAB,S}\\
+\nonumber & & \mkstore{{\varphi B}^{+},{(D \varphi x)}^{-}, DGAB,S}\\
+\nonumber & & \mkstore{{\varphi B}^{+}, D(D \varphi x) y (\varphi y), DGAB,S} \hbox{\tt ]})\\
+\nonumber \rightarrow_+ (q_0, &b, &  \hbox{\tt[}\mkstore{x,G^{-},S}\\
+\nonumber & & \mkstore{ \varphi^{+/-}, DGAB,S}\\
+\nonumber & & \mkstore{{\varphi B}^{+},{(D \varphi x)}^{-}, DGAB,S}\\
+\nonumber & & \mkstore{{\varphi B}^{+}, D(D \varphi x) y (\varphi
+y), DGAB,S}
+\hbox{\tt ]})\\
+\nonumber \rightarrow_+ (q_1, &b, &  \hbox{\tt[}\mkstore{G^{-},S}\\
+\nonumber & & \mkstore{ \varphi^{+/-}, DGAB,S}\\
+\nonumber & & \mkstore{{\varphi B}^{+},{(D \varphi x)}^{-}, DGAB,S}\\
+\nonumber & & \mkstore{{\varphi B}^{+}, D(D \varphi x) y (\varphi
+y), DGAB,S}
+\hbox{\tt ]})\\
+\nonumber \rightarrow_+ (q_1, &b, &  \hbox{\tt[}\mkstore{ \varphi^{+/-}, DGAB,S}\\
+\nonumber & & \mkstore{{\varphi B}^{+},{(D \varphi x)}^{-}, DGAB,S}\\
+\nonumber & & \mkstore{{\varphi B}^{+}, D(D \varphi x) y (\varphi
+y), DGAB,S}
+\hbox{\tt ]})\\
+\nonumber \rightarrow_+ (q_1, &b, &  \hbox{\tt[}\mkstore{{\varphi B}^{+},{(D \varphi x)}^{-}, DGAB,S}\\
+\nonumber & & \mkstore{{\varphi B}^{+}, D(D \varphi x) y (\varphi
+y), DGAB,S}
+\hbox{\tt ]})\\
+\nonumber \rightarrow_+ (q_1, &b, &  \hbox{\tt[}\mkstore{B,{(D \varphi x)}^{-}, DGAB,S}\\
+\nonumber & & \mkstore{{\varphi B}^{+}, D(D \varphi x) y (\varphi
+y), DGAB,S}
+\hbox{\tt ]})\\
+\nonumber \rightarrow_+ (q_1, &\epsilon, &  \hbox{\tt[}\mkstore{\epsilon,B,{(D \varphi x)}^{-}, DGAB,S}\\
+\nonumber & & \mkstore{{\varphi B}^{+}, D(D \varphi x) y (\varphi
+y), DGAB,S} \hbox{\tt ]})
+\end{eqnarray}
+And the word is accepted as required.
+\end{example}

@@ -1,0 +1,903 @@
+\section{Higher-order grammars, safety and higher-order PDAs}
+% preliminaries: higher-order grammars and higher-order pushdown automata, and the result in KNU??
+
+In this section we introduce higher-order grammars (HOGs) and
+higher-order pushdown automata (HOPDAs). Both devices have
+appeared previously in the literature \cite{Dam82, DG86, KNU02,
+Eng91}, however, under two sets of definitions.
+
+In \cite{Dam82, DG86, Eng91}, HOGs and HOPDAs are introduced as
+generators and acceptors of \emph{string languages} respectively.
+Thus each HOG (HOPDA) generates (accepts) a language of strings. In contrast, Knapik \emph{et al.} \cite{KNU01, KNU02} introduce
+HOGs and HOPDAS as generators and acceptors of \emph{term trees}
+respectively. In particular, each HOG (HOPDA) generates (accepts)
+exactly one term tree.
+
+As stated in the introduction, our result concerns only the
+string-language setting. Therefore, unless otherwise stated, we
+will understand higher-order grammars and higher-order pushdown
+automata to be definitional devices for string languages. However,
+in Section 7 we will relate our result to the term-tree setting of
+\cite{KNU01, KNU02}.
+
+%\begin{remark} \label{stringsvtrees} Although the alternative
+%definition of higher-order grammars and higher-order pushdown automata
+%does not feature much in this paper, we will make references to it in
+%future sections.  In particular, we will have to compare the two
+%definitions. When such a situation arises, we will add the subscript
+%$s$ or $t$ when we want to make it absolutely clear which set of
+%definitions we are employing. Thus, we write $HOG_s$ and $HOPDA_s$
+%when these devices are used for defining languages of
+%strings. Similarly, we write $HOG_t$ and $HOPDA_t$ when these devices
+%are used for defining term trees.
+%\end{remark}
+
+\subsection{Safe $\lambda$-Calculus}
+We shall consider \emph{simple types} (or just \emph{types} for
+short) as defined by the grammar $A \, ::= \, o \; | \; A \funsp
+A$. Each type $A$, other than the ground type $o$, can be uniquely
+written as $(A_1, \cdots, A_n, o)$ for some $n \geq 1$, which is a
+shorthand for $A_1 \funsp \cdots \funsp A_n \funsp o$ (by
+convention, $\rightarrow$ associates to the right). We define the
+\emph{level}\footnote{This is sometimes referred to as
+\emph{order} in the literature.} of a type by $\level{o} = 0$ and
+$\level{A \funsp B} = \max(\level{A}+1, \level{B}).$ In the
+following we shall consider terms-in-context $\seq{\Gamma}{M : A}$
+of the simply-typed $\lambda$-calculus. Let $\Delta$ be a simply-typed
+alphabet i.e., each symbol in $\Delta$ has a simple type. We
+write $\terms{A}{\Delta}$ for the set of terms of type $A$ built
+up from the set $\Delta$ understood as constant symbols,
+\emph{without} using $\lambda$-abstraction.
+
+Following \cite{KNU02}, we say that $o$ is \textbfit{homogeneous},
+and for $n \geq 1$, $A = (A_1, \cdots, A_n, o)$ is
+\textbfit{homogeneous} just if $\level{A_1} \geq \level{A_2} \geq
+\cdots \geq \level{A_n}$, and each $A_i$ is homogeneous. Assuming
+$A = (\underbrace{A_{11}, \cdots, A_{1l_1}}_{\overline{A_1}},
+\cdots, \underbrace{A_{r1}, \cdots, A_{rl_r}}_{\overline{A_r}},
+o)$ is homogeneous, we write
+\[A \; = \;
+(\overline{A_1} \, | \, \cdots \, | \, \overline{A_r} \, | \, o)\]
+to mean: all types in each partition (or sequence) $\overline{A_i}
+= A_{i1}, \cdots, A_{il_i}$ have the same level, and $i < j \iff
+\level{A_{ia}}> \level{A_{jb}}$. Thus the notation organises the
+$A_{ij}$s into partitions according to their levels. Suppose $B =
+(\overline{B_1} \, | \, \cdots \, | \, \overline{B_m} \, | \, o)$.
+We write $(\overline{A_1} \, | \, \cdots \, | \, \overline{A_n} \,
+| \, {B})$ to mean \[(\overline{A_1} \, | \, \cdots \, | \,
+\overline{A_n} \, | \, \overline{B_1} \, | \, \cdots \, | \,
+\overline{B_m} \, | \, o).\]
+
+The \textbfit{Safe $\lambda$-Calculus} is a sub-system of the
+simply-typed $\lambda$-calculus. Typing judgements (or
+terms-in-context) are of the form
+\begin{equation}
+\nonumber \seq{\overline{x_1}:\overline{A_1} \, | \, \cdots \, | \,
+\overline{x_n} :  \overline{A_n}}{M : B} 
+\end{equation}
+which is shorthand for
+$\seq{x_{11} : A_{11}, \cdots, x_{1r}: A_{1r}, \cdots}{M : B}$. (We shall see shortly
+that for valid such judgements, $(\overline{A_1} \, | \, \cdots \,
+| \, \overline{A_n} \, | \, B)$ is a homogeneous type.)
+\emph{Valid typing judgements} of the system are defined by
+induction over the following rules, where $\Delta$ is a given
+homogeneously-typed alphabet:
+\[{{(\overline{A_1}
+\, | \, \cdots \, | \, \overline{A_n} \, | \, B) \hbox{
+homogeneous} \qquad {b : B} \; \in \; \Delta} \over
+{\seq{\overline{x_1} : \overline{A_1}\, | \, \cdots\, | \,
+\overline{x_n} : \overline{A_n}}{b : B}}}\]
+\[{{(\overline{A_1}
+\, | \, \cdots \, | \, \overline{A_n} \, | \, A_{ni}) \hbox{
+homogeneous}} \over {\seq{\overline{x_1} : \overline{A_1}\, | \,
+\cdots\, | \, \overline{x_n} : \overline{A_n}}{x_{ni} :
+A_{ni}}}}\]
+\[
+{
+{\seq{\overline{x_1} :
+\overline{A_1}\, | \, \cdots\, | \, \overline{x_{n+1}} : \overline{A_{n+1}}}{M : B}}
+\over
+{\seq{\overline{x_1} :
+\overline{A_1}\, | \, \cdots\, | \, \overline{x_{n}} : \overline{A_{n}}}{\lterm{\overline{x_{n+1}} : \overline{A_{n+1}}}{M} : (\overline{A_{n+1}} \, | \, B)}}
+}
+\]
+\[{\seq{\Gamma}{M : (\overline{B_1} \, | \, \cdots \, | \, \overline{B_m} \, | \, o)} \qquad
+\seq{\Gamma}{N_1 : B_{11}} \quad \cdots \quad \seq{\Gamma}{N_{l_1}
+: B_{1l_1}} }\over{ \seq{\Gamma}{M N_1 \cdots N_{l_1} :
+(\overline{B_2} \, | \, \cdots \, | \, \overline{B_m} \, | \, o)}}
+\] In the safe $\lambda$-calculus, when constructing
+$\lambda$-abstractions, \emph{all variables} of the relevant
+type-partition must be abstracted; when constructing applications,
+the operator-term must be applied to \emph{all operand-terms} (one
+for each type) of the relevant type-partition. For example $\seq{F
+: ((o, o), o, o, o), \varphi : (o, o), x : o}{F \varphi x : (o,
+o)}$ is not safe; it follows that \[\seq{F : ((o, o), o, o, o),
+\varphi : (o, o), x : o, y : o}{ F(F \varphi x)xy : o}\] is not
+safe. But $\seq{F : ((o, o), o, o, o), \varphi : (o, o)}{F \varphi
+a: (o, o)}$ is safe for some constant $a$, and so is $\seq{F :
+((o, o), o, o, o), \varphi : (o, o), x : o, y : o}{F \varphi x y:
+o}$.
+
+In the following, whenever it is clear from the context what the
+type of a term $M$ is, we shall write $\level{M}$ to mean the
+level of that type.
+\begin{lemma}\label{lem:safe}
+Suppose $\seq{\overline{x_1} :
+\overline{A_1}\, | \, \cdots\, | \, \overline{x_n} : \overline{A_n}}{M
+: B}$ is valid, where $B = (\overline{B_1} \, | \,
+\cdots \, | \, \overline{B_m} \, | \, o)$.
+\begin{itemize}
+\item[(i)] $(\overline{A_1} \, | \, \cdots \, | \, \overline{A_n}
+\, | \, \overline{B_1} \, | \, \cdots \, | \, \overline{B_m} \, |
+\, o)$ is homogeneous. \item[(ii)] Any free variable of $M$ has
+level at least $\level{M}$. \item[(iii)] For any subterm
+$\lterm{\Phi}{L}$ of $M$, if the variable $\varphi$ occurs in $L$
+and $\level{\varphi} < \level{\Phi}$ then $\varphi$ is bound in
+$L$. \myendproof
+\end{itemize}
+\end{lemma}
+
+We omit the straightforward proofs.
+
+\subsubsection*{What does ``safe'' mean?}
+
+Substitution is a fundamental operation in the $\lambda$-calculus.
+In the key clause of the definition
+\[ (\lterm{x}{M})[N / y] \; \defined \; \lterm{z}{((M[z / x]) [N / y])} \quad
+\hbox{where ``$z$ is fresh''}\] bound variables are renamed afresh to
+prevent variable capture. In the {safe $\lambda$-calculus}, one can
+get away without any renaming.
+
+\begin{lemma}In the safe $\lambda$-calculus, there is no need to
+rename bound variables afresh when performing substitution
+\[M[N_1 / x_1 , \cdots, N_n / x_n]\]
+provided the substitution is performed simultaneously on
+\emph{all} free variables of the same level in $M$
+i.e.~$\makeset{x_1, \cdots, x_n}$ is the set variables of the
+same level as $x_1$ that occur free in $M$.
+\end{lemma}
+
+\begin{proof} Suppose $\varphi$ occurs free in $M$, and
+bound variables in $M$ are not renamed in the substitution $M[N /
+\varphi]$. Further suppose $x$, a variable occurring free in $N$,
+is captured as a result of the substitution. I.e.~there is a
+subterm $\lterm{x}{L}$ of $M$ such that $\varphi$ occurs free in
+$L$. We compare $\level{x}$ with $\level{\varphi}$:
+
+\begin{itemize}
+\item {Case 1}: $\level{x} > \level{\varphi}$.
+
+This is impossible: Since $\lterm{x}{L}$ is safe, by
+Lemma~\ref{lem:safe}(iii), $L$ can have no free variables of level
+less than $\level{x}$.
+
+\item {Case 2}: $\level{x} < \level{\varphi}$.
+
+This is impossible: Since $N$ is safe and of level
+$\level{\varphi}$, by Lemma~\ref{lem:safe}(ii), it can have no
+free variable of level less than $\level{\varphi}$.
+
+\item {Case 3}: $\level{x} = \level{\varphi}$.
+
+If follows from the formation rule for $\lambda$-abstraction that
+$\varphi$ cannot occur free in $M$ since the subterm
+$\lterm{x}{L}$ must be in the scope of some subterm
+$\lterm{\varphi}{\cdots}$ of $M$, so that $\varphi$ does not occur free
+in $M$. Thus this case cannot arise either.
+\end{itemize}
+
+\end{proof}
+
+\subsection{Higher-order grammars and the OI-hierarchy}
+
+A \textbfit{higher-order grammar} (or HOG, for short) is a
+five-tuple $G = \anglebra{N, V, \Sigma, {\cal R}, S, e}$ such that
+\begin{itemize}
+\item[(i)] $N$ is a finite set of homogeneously-typed
+non-terminals, and $S$, the \emph{start symbol}, is a
+distinguished element of $N$ of type $o$
+
+\item[(ii)] $V$ is a finite set of typed variables
+
+\item[(iii)] $\Sigma$ is a finite alphabet
+
+\item[(iv)] $\cal R$ is a finite set of triples, called
+\emph{rewrite rules} (also referred to as production rules), of
+the form
+\[F x_1 \cdots x_n \; \larr{\alpha} \; E\]
+where $\alpha \in (\Sigma \cup \makeset{\epsilon})$, ${F : (A_1,
+\cdots, A_n, o)} \in N$, each ${x_i : A_i} \in V$, and $E$ is
+either a term in ${\cal T}^o(N \cup \{x_1, \cdots, x_m\})$ or is
+$e : o$. We say that $F$ has \textbfit{formal parameters} $x_1,
+\cdots, x_m$. In the case where there grammar has two or more
+rules with the non-terminal $F$ on the lefthand side, then we
+assume both rules have the same formal parameters in the same
+order. Following \cite{KNU01} we make the assumption that if $F
+\in N$ has type $(A_1, \cdots, A_n, o)$ and $n \geq 1$, then $A_n
+= o$. Thus, each non-terminal has at least one level-$0$ variable.
+Note that this is not really a restriction -- as this variable need
+not occur on the righthand side. We also assume that $S$ never occurs
+on the righthand side of a rewrite rule. We say that the rewrite rule has
+\emph{name} $F$ and \emph{label} $\alpha$; it has level $n$ just
+in case the type of its name has level $n$.
+\end{itemize}
+We say that $G$ is of level $n$ just in case $n$ is the level of
+the rewrite rule that has the highest-level. We say that $G$ is
+\textbfit{deterministic} if for every $F x_1 \cdots x_n
+\larr{\alpha} E$ and $F x_1 \cdots x_n \larr{\alpha'} E'$ in $\cal
+R$
+%(we identify rewrite rules that are
+%$\alpha$-equivalent\footnote{$F x_1 \cdots x_n \larr{\alpha} U$
+%and $F y_1 \cdots y_n \larr{\alpha} V$ in are said to be
+%$\alpha$-\emph{equivalent} if $U$ and $V[\overline{x_i / y_i}]$
+%are syntactically equal.})
+\begin{itemize}
+\item If $\alpha = \alpha'$ then $E = E'$.
+
+\item If $\alpha = \epsilon$ and $E \not = e$, then $\alpha = \alpha'$
+\end{itemize}
+We say that a deterministic HOG is \emph{real-time} if no rule has
+an $\epsilon$ label.
+
+
+\subsubsection*{The language of a HOG}
+We extend $\cal R$ to a family of binary relations $\larr{\alpha}$
+over $\terms{o}{N} \cup \makeset{e}$, where $\alpha$ ranges over
+$\Sigma \cup \makeset{\epsilon}$, by the rule: if $F x_1 \cdots
+x_n \larr{\alpha} E$ is a rule in $\cal R$ where $x_i : A_i$ then
+for each $M_i \in \terms{A_i}{N}$ we have
+\[ FM_1 \cdots M_n \larr{\alpha} E\overline{[M_i / x_i]}. \]
+
+A \emph{derivation} of $w \in \Sigma^\ast$ is a sequence $P_1,
+P_2, \cdots, P_{n}$ of terms in $\terms{o}{N}$, and a
+corresponding sequence $\alpha_1, \cdots, \alpha_n$ of elements in
+$\Sigma \cup \makeset{\epsilon}$ such that
+\[S = P_1 \larr{\alpha_1} P_2 \larr{\alpha_2} P_3 \larr{\alpha_3}
+\quad \cdots \quad \larr{\alpha_{n-1}} P_{n} \larr{\alpha_n} e
+\] and $w = \alpha_1 \cdots \alpha_n$. The \emph{language} generated by
+$G$, written $L(G)$, is the set of words over $\Sigma$ that have
+derivations in $G$. We say that two grammars are \emph{equivalent}
+if they generate the same language.
+
+\subsubsection*{Safe Grammars}
+
+A grammar is \textbfit{safe} if for each rewrite rule
+$F x_1 \cdots x_n \larr{\alpha} E$ we have that
+\[ \seq{x_1 : A_1, \cdots, x_n : A_n}{E :
+o}\]
+is a valid typing judgement of the safe $\lambda$-calculus, where $E$ is constructed possibly
+using symbols from $N$ as constants. Otherwise, the grammar is \textbfit{unsafe}.
+
+\subsubsection*{The OI-hierarchy}
+
+In \cite{Dam82}, Damm introduced the OI-hierarchy. The $n$th level
+of the hierarchy is generated by level-$n$ grammars (defined
+differently from our grammars). Furthermore,
+each level is strictly contained in the one above it. The first
+three levels correspond to the regular, the context-free, and the
+indexed languages \cite{Aho68}. Damm's definition of a level-$n$
+grammar, although packaged somewhat differently from ours, can be
+thought of as a special case of our definition. In particular, it
+is routine to show that a level-$n$ grammar using his definition
+corresponds to a \emph{safe} level-$n$ grammar in our definition
+(and the converse holds too). Thus, Damm's definition is such that
+the safety restriction -- referred to as derived types in his
+paper -- is always ``built-in''. For a note comparing the two
+definitions (ours and Damm's) we point the reader to \cite{dMO}.
+This note also motivates our preference for our definition.
+
+The reader familiar with the OI-hierarchy should note that our
+derivation relation is constructed so that all derivations are
+outside-in (which, in the monadic case, corresponds to a leftmost
+derivation). Bearing this in mind, the fact that our definition of
+a safe level-$n$ grammar coincides with Damm's definition of a
+level-$n$ grammar should be almost immediate.
+
+\begin{remark}
+We note there is nothing to be gained by allowing the rhs of rules
+to be $\lambda$-terms, since any such rule can be transformed to
+an equivalent system of rules, all of whose rhs are applicative
+terms. E.g.~the level-$3$ rule
+\[F \varphi \; \larr{\alpha} \; \varphi (\lterm{x}{ \varphi(\lterm{y}{x})})\]
+is equivalent to the following system of rules
+\[\begin{array}{rcl}
+F \, \varphi & \larr{\alpha} & \varphi \, (G \varphi) \\
+G \, \varphi \, x & \larr{\epsilon} & \varphi \, (H x) \\
+H \, x \, y & \larr{\epsilon} & x \\
+\end{array}\]
+\end{remark}
+
+%\begin{remark}\label{rem:otherdefinitions}
+%We relate our definition to the various versions of higher-order
+%grammar or recursion schemes in the literature.
+%
+%\medskip
+%
+%\noindent\emph{(i)} First we note there is nothing to be gained by
+%allowing the rhs of rules to be $\lambda$-terms, since any such
+%rule can be transformed to an equivalent system of rules, all of
+%whose rhs are applicative terms. E.g.~the level-$3$ rule
+%\[F \varphi \; \larr{a} \; \varphi (\lterm{x}{ \varphi(\lterm{y}{x})})\]
+%is equivalent to the following system of rules
+%\[\begin{array}{rcl}
+%F \, \varphi & \larr{a} & \varphi \, (G \varphi) \\
+%G \, \varphi \, x & \larr{\epsilon} & \varphi \, (H x) \\
+%H \, x \, y & \larr{\epsilon} & x \\
+%\end{array}\]
+%
+%\noindent\emph{(ii)} In \cite{KNU02} Knapik \emph{et al.} have
+%introduced (deterministic) \emph{level-$n$ grammars} for
+%generating $\Sigma$-trees (rather than languages), where $\Sigma$
+%is a finite alphabet of typed constants of level at most one. The
+%trees that are generated are just the syntax trees of potentially
+%infinite applicative terms built up from $\Sigma$: all nodes of
+%such a tree are labelled by constants from $\Sigma$, and if a node
+%is labelled by a constant $f : o^n \funsp o$ then it has exactly
+%$n$ descendants. In Section 7 we will show that we can
+%systematically transform such a grammar $G$ (say) into one of ours
+%$G'$ (say) in such a way that the language of $G'$ is
+%essentially\footnote{but not quite.} the \emph{branch language}
+%(in the sense of \cite{Cou83}) of the term-tree determined by the
+%grammar $G$. We will also examine the relationship between
+%string-language generating grammars (as introduced here) and
+%term-tree generating grammars with some pleasing results.
+%
+%%In their approach, rules are not
+%%labelled by symbols (as we do), instead the rhs of each rule is an
+%%applicative term that may contain occurrences of $\Sigma$-symbols.  We
+%%can systematically transform such a grammar $G$ (say) into one of ours
+%%$G'$ (say): the constants that occur in the rhs of $G$-rules determine
+%%the symbols that label the $G'$-rules in such a way that the language
+%%generated by the transform $G'$ is essentially the \emph{branch
+%%language} (in the sense of \cite{Cou83}) of the term-tree determined
+%%by the grammar $G$. E.g.~the level-2 grammar in the sense of Knapik
+%%\emph{et al.}
+%%\[\begin{array}{rll}
+%%F \, \varphi \, x & \larr{} & f(F (f(\varphi \, x)) x)\,(\varphi \, x)\\
+%%S & \larr{} & F \, g \, a \\
+%%\end{array}\]
+%%with constants $f : (o, o, o), g : (o, o)$ and $a : o$ can be transformed to
+%%the following system of labelled rules:
+%%\[\begin{array}{rlllrll}
+%%F \, \varphi \, x & \larr{f.1} & F (H (\varphi \, x)) x & \qquad & S & \larr{\epsilon} & F \, G \, A \\
+%%F \, \varphi \, x & \larr{f.2} & \varphi \, x & & G \, x & \larr{g.1} & x \\
+%%H \, y \, z & \larr{f.1} & y & & A & \larr{a.0} & \epsilon\\
+%%H \, y \, z & \larr{f.2} & z\\
+%%\end{array}\]
+%
+%\medskip
+%
+%\noindent\emph{(iii)} We should mention another, older, definition
+%of level-$n$ grammar, which constitutes the \emph{OI-hierarchy} of
+%Damm (see \cite{DG86, Dam82}). Damm's definition, although
+%packaged differently from ours, can be thought of as a special
+%case of ours. In particular, it is routine to show that a
+%level-$n$ grammar using his definition corresponds to a
+%\emph{safe} level-$n$ grammar in our definition (and the converse
+%holds too). Thus, Damm's definition is such that the safety
+%restriction (referred to as derived types) is always ``built-in''.
+%For a note comparing the two definitions (ours and Damm's) we
+%point the reader to \cite{dMO}. This article also motivates our
+%preference for our definition.
+%
+%\medskip
+%
+%\noindent\emph{(iv)} The reader familiar with the OI-hierarchy
+%\cite{Dam82} should note that our derivation relation is
+%constructed so that all derivations are outside-in (which, in the
+%monadic case, corresponds to a leftmost derivation).
+%\end{remark}
+
+\begin{example}\label{ex:ex1}
+Consider the following \emph{deterministic} grammar, where
+\[\Sigma = \makeset{h_1, h_2, h_3, f_1, f_2, g_1, a, b},\]
+the typed non-terminals are
+\[D : ((o, o), o, o, o), \quad H : ((o, o), o, o), \quad
+F: (o, o, o), \quad G : (o, o), \quad A, B : o\] with rules:
+\begin{equation}
+\begin{array}{cc}
+\begin{array}{rcl}
+\nonumber S & \larr{\epsilon} & DGAB\\
+\nonumber D\varphi x y & \larr{h_1} & D (\underline{D \varphi x}) y (\varphi y) \\
+\nonumber D\varphi x y & \larr{h_2} & H (\underline{F y}) x \\
+\nonumber D\varphi x y & \larr{h_3} & \varphi B \\
+\nonumber H \varphi x & \larr{\epsilon} & \varphi x
+\end{array} &
+\begin{array}{rcl}
+\nonumber G x & \larr{g_1} & x \\
+\nonumber F x y & \larr{f_1} & x \\
+\nonumber F x y & \larr{f_2} & y \\
+\nonumber A & \larr{a} & e\\
+\nonumber B & \larr{b} & e
+\end{array}
+\end{array}
+\end{equation}
+This is an unsafe grammar because of the underlined expressions:
+both of which are level-$1$ terms, but contain level-$0$
+variables.
+
+As this grammar is deterministic \cite{dMO} this means that each
+word in the language is generated in a unique way. Hence, it
+should be easy for the reader to check by hand that the words
+$h_1h_3h_2f_1b$ and $h_1h_3h_2f_2a$ are part of the language,
+whereas $h_1h_3h_2f_1a$ is not.
+\end{example}
+
+\subsection{Pointer machines}
+Pointer machines are a model of computation for string languages
+generated by higher-order grammars. The \textbfit{pointer machine}
+for an $n$-grammar $G = \anglebra{N, V, \Sigma, {\cal R}, S, e}$ has
+a (pushdown) stack.  A stack $\beta$ is a non-empty sequence
+$\mkstore{a_1, a_2, \cdots, a_n}$ where each $a_i \in \Gamma$, a
+set determined by $G$. The following operations are defined on a
+stack: for $a \in \Gamma$
+\[\begin{array}{rll}
+\head{\mkstore{a_1, a_2, \cdots, a_n}} & = & a_1 \\
+\tail{\mkstore{a_1, a_2, \cdots, a_n}} & = & \mkstore{a_2, \cdots, a_n}\\
+a : \mkstore{a_1, a_2, \cdots, a_n} & = & \mkstore{a, a_1, a_2, \cdots, a_n}.
+\end{array}\]
+The stack alphabet $\Gamma$ is a certain finite subset of
+$\terms{o}{N \cup V} \cup \{e\}$, which will be defined shortly.
+Each $a_i$, which we shall refer to as an \textbfit{item}, will
+have exactly one pointer for each variable (from $V$) that occurs
+in it. Thus an item in the stack may have several pointers
+emanating from it (apart from $a_n$ which has no pointers).
+Intuitively, a pointer is a physical link connecting an item $a_i$
+to some other item $a_j$ for $j > i$.
+
+%A \textbfit{pointer} is a physical link connecting an item $a_i$ to
+%some item $a_j$ for $j > i$. So for example, we could have:
+%\begin{equation}
+%\nonumber [{\rnode{x}{a_1}}, {\rnode{y}{a_2}}, {\rnode{z}{a_3}},
+%{\rnode{A}{a_4}}, {\rnode{B}{a_5}}] \ncarc[arcangle=90]{->}{x}{A}
+%\end{equation}
+%In this example there is a pointer from $a_1$ to $a_4$. As we will
+%see, the alphabet $\Gamma$ will be a finite subset of .
+
+We define the \textbfit{stack transition relation}. The behaviour
+of a pointer machine is given in terms of a labelled transition
+relation between stacks. A computation of a pointer machine begins
+with the stack containing a single item, which is the start symbol
+$S$. Thereafter, let $\beta$ be the stack. We use meta-variables
+$F$ and $x$ to range over $N$ (non-terminals) and $V$ (variables)
+respectively.
+\begin{itemize}
+\item[1.] Assume $\head{\beta} = F t_1 \cdots t_n$. If $F x_1
+\cdots  x_n \; \larr{\alpha} \; E$ is a $G$-rule then
+\[\beta \; \larr{\alpha} \; E: \beta \]
+and each occurrence of a variable $x_j$ in $E$ points to
+$\head{\beta}$, in other words $F t_1 \cdots t_n$. Further, the
+pointer structure of $\beta$ is preserved.
+
+\item[2.] Assume $\head\beta = x  t_1  \cdots  t_n$ and
+$x$ points to an item $a = D s_1 \cdots s_m$
+in $\beta$. Furthermore, suppose that $x$ is the $i$th formal
+parameter of $D$. Then
+\[ \beta \; \larr{\epsilon} \; s_i t_1  \cdots  t_n : \tail\beta\]
+all pointers in $\tail\beta$ are preserved and all pointers from $t_1,
+\cdots, t_n$, as well as those from $s_i$, are preserved.
+
+%\item[3.] Assume $\head\beta = f t_1 \cdots t_n$ where
+%$\arity{f} > 0$. Then \[ \beta \; \stackrel{f_i}{\rightarrow} \; t_i
+%: \tail\beta\] and the pointer structure of $\beta$ is
+%preserved, as are any pointers emanating from $t_i$.
+
+\item[3.] Assume $\head\beta = e$, then the pointer machine halts.
+\end{itemize}
+
+Let $\stackl S \stackr \larr{\alpha_1} P_1 \larr{\alpha_2} \cdots
+\larr{\alpha_{n-1}} P_n$ be a transition sequence of pointer machine
+stacks such that $\head P_n = e$. Then, we say that the word,
+$\alpha_1 \alpha_2 \cdots \alpha _{n-1}$ (over $\Sigma$), is \textbfit{accepted} by
+the pointer machine. We say that a word belongs to the language of
+a given pointer machine if and only if there exists a transition
+sequence of the pointer machine starting from $\stackl S \stackr$
+that results in the word being accepted.
+
+The language accepted by a pointer machine can easily be seen to
+be exactly the language of the higher-order grammar. In
+particular, it corresponds to linear head reduction in the
+$\lambda$-calculus.
+
+\begin{remark}
+\begin{enumerate}
+\item[(i)] Pointer machines are due to C. Stirling. The second author
+first learnt of the idea in \cite{Sti02}.
+\item[(ii)] The reader acquainted with \cite{KNU01, KNU02} should
+be able to easily modify the definition of a pointer machine to
+serve as a model of computation for term-trees generated by
+higher-order grammars.
+\end{enumerate}
+\end{remark}
+
+\subsubsection*{Stack alphabet}
+We write $R$ for the set consisting of the rhs of each rule from $\cal
+R$.  Let $\xi E_1 \cdots E_m$ be a ground-type term, where $\xi$ is
+either a variable or a non-terminal. We define
+\[
+     \args{\xi E_1 \cdots E_m} \; = \; \makeset{E_1, \cdots, E_m}.
+\]
+Now define two sets, $\Gamma$ (which is a set of ground-type terms) and
+$\exp$, by mutual induction over the following rules:
+\begin{center}
+\begin{tabular}{p{12cm}}
+\prule{}{R \subseteq \Gamma}\\ \prulec{}{\args{r} \subseteq \exp}{$r
+\in R$}\\ \prule{E^A \in \exp \quad x^A E_1 \cdots E_m \in \Gamma}{E
+\, E_1 \cdots E_m \in \Gamma} \\ \prule{\xi E_1 \cdots E_m \in
+\Gamma}{ \args{\xi E_1 \cdots E_m} \subseteq \exp}
+\end{tabular}
+\end{center}
+
+We can take $\Gamma$ to be the stack alphabet. ($\Gamma$ is a superset
+of what we actually need).
+
+\begin{lemma}
+$\Gamma$ is finite.
+\end{lemma}
+
+\begin{proof}
+We define a new set $\Gamma'$ (of ground-type terms) by induction over
+the rules: $R \subseteq \Gamma'$ and
+\[
+{E^A \in \exp' \quad x^A E_1 \cdots E_m \in \Gamma'}\over{E^A E_1
+\cdots E_m \in \Gamma'}
+\]
+where $\exp' = \makeset{ N : \hbox{$N$ is a subterm of some $r \in
+R$}}$, which is clearly finite. It is straightforward to see that $\exp
+\subseteq \exp'$ and $\Gamma \subseteq \Gamma'$. Therefore it suffices
+to prove that $\Gamma'$ is finite. We define a partial order over the
+set $\makeset{A : E^A \in \exp' }$ of types by:
+\[
+    A > B  \; \iff  \; A = A_1 \mor \cdots \mor A_n \mor B
+\]
+where $n > 0$. Now define a function $H : {\terms{o}{N \cup V}} \mor
+\terms{o}{N \cup V}$ as follows:
+\[
+   H(G) \; = \; R \cup G \cup
+      \makeset{ \xi^A U_1\cdots U_n E_1\cdots E_m :
+              x^B E_1 \cdots E_m \in G,
+              \xi^A U_1\cdots U_n : B \in \exp' }
+\]
+We observe that $\Gamma'$ is the fixpoint of $H$, which is reached
+after at most $j$ iterations of $H$, where $j$ is the length of the
+longest chain in the poset $\makeset{ A : E^A \in \exp' }$.
+\end{proof}
+
+\subsubsection*{Useful properties}
+We consider the operation of a pointer machine. The stack items of
+the pointer machine are of two types: \emph{incomplete} and
+\emph{complete}. A complete item is one that is headed by a
+non-terminal, so for example $F\overline{s}$ is a complete item.
+An incomplete item is headed by a variable. We call it incomplete,
+because it is, in a sense, work in progress: we will remain at
+this stack item (replacing the head variable) until it is finally
+headed by a non-terminal, in which case it will become complete.
+
+\begin{lemma}\label{lem:complete}
+All items of any reachable pointer machine stack $\beta$ are of
+level 0; further, $\tail\beta$ consists only of complete items.
+\end{lemma}
+
+\begin{proof} Induction on the number of stack transitions.
+\end{proof}
+
+\begin{lemma}\label{lem:pmgroups}
+Let $s_0s_1 \cdots s_k$ be an item in a reachable pointer machine
+stack $\beta$. Then the following hold:
+\begin{enumerate}
+\item[(i)] If $x$, a variable occurring in $s_0s_1 \cdots s_k$, points to a stack item $D t_1 \cdots t_m$ then $x$ is a formal
+parameter of $D$.
+
+\item[(ii)] For each $i$, the variables in $s_i$ all point to the same stack item.
+
+\item[(iii)] Suppose $s_i$ has a variable with pointer to an item
+$a$, and $s_j$ has a variable with pointer to an item $a'$. If $i
+< j$ then either $a$ and $a'$ are the same item or $a$ occurs
+deeper in the stack than $a'$.
+\end{enumerate}
+\end{lemma}
+
+\begin{proof}Induction on the number of stack transitions.\\
+\end{proof}
+
+Bearing these two observations in mind, we modify the definition of a
+pointer machine slightly to obtain a \textbfit{compacting pointer
+machine} for a HOG $G = \anglebra{N, V, \Sigma, {\cal R}, S, e}$. As
+before, it has a pushdown stack and a computation of a pointer machine
+begins with the stack containing only the start symbol
+$S$. Afterwards, the stack transition relation is defined as follows
+below. Let $\beta$ be the current stack:
+\begin{itemize}
+\item[1.] Assume $\head\beta = F t_1 \cdots t_n$. If $F x_1
+\cdots  x_n \; \larr{\alpha} \; E$ is a $G$-rule then
+\[\beta \; \larr{\alpha} \; E: \beta \]
+and each occurrence of a variable $x_j$ in $E$ points to
+$\head{\beta}$, in other words $F t_1 \cdots t_n$. Further the pointer
+structure of $\beta$ is preserved.
+
+\item[2.]
+\begin{itemize}
+\item[a.] Assume $\head\beta = x  t_1  \cdots  t_n$ and suppose
+that $x$ is a variable of level at least $1$, and points to an
+item $a = D s_1 \cdots s_m$ in $\beta$. Furthermore, suppose that
+$x$ is the $i$th formal parameter of $D$. Then
+\[ \beta \; \larr{\epsilon} \; s_i t_1  \cdots  t_n : \tail\beta\]
+all pointers in $\tail\beta$ are preserved and all pointers from
+$t_1, \cdots, t_n$, as well as those from $s_i$, are preserved.
+
+\item[b.] Assume $\head \beta = x$, $x$ is of level 0, and points
+to an item $\head \beta' = D s_1 \cdots s_m$ where $\beta'$ is a
+suffix of $\beta$. Furthermore, suppose that $x$ is the $i$th
+formal parameter for $D$. By Lemma ~\ref{lem:pmgroups} we know
+that all the variables in $s_i$ (if any) point to the \emph{same}
+item in $\beta'$, (say) $\head \beta''$ where $\beta''$ is a
+suffix of $\beta'$. Then
+\[ \beta \; \larr{\epsilon} \; s_i : {\beta''}\]
+all pointers in ${\beta''}$ are preserved as well as those from
+$s_i$\footnote{In particular, all pointers from variables in $s_i$ will
+be to $\head \beta''$.}. In the case where $s_i$ contains no
+variables $\beta''$ may be chosen arbitrarily.
+\end{itemize}
+%
+%\item[3.] Assume $\head\beta = f t_1 \cdots t_n$ where
+%$\arity{f} > 0$. By Lemma ~\ref{lem:pmgroups} we know that all the
+%variables in $t_i$ point to subterms of the \emph{same} item in
+%$\beta$, say this item is $\head{\beta'}$ where $\beta'$ is a suffix
+%of $\beta$. Then
+%\[ \beta \; \stackrel{f_i}{\rightarrow} \; t_i : {\beta'}\] and the pointer structure of $\beta'$ is
+%preserved, as are any pointers emanating from $t_i$.
+
+\item[3.] Assume $\head\beta = e$, then the pointer machine halts.
+\end{itemize}
+
+The key to understanding the compacting pointer machine is that it
+maintains the following invariant. If $\beta$ is the pointer
+stack, with $\head \beta = s_0 s_1 \cdots s_n$, then either 1)
+$s_n$ contains at least one variable with a pointer to $\tail
+\beta$ or 2) $s_n$ contains only non-terminals. As an example,
+suppose that
+\begin{equation}
+\nonumber \stackl {\rnode{phi}{\varphi}} {\rnode{x1}{x_1}}
+{\rnode{x2}{x_2}}, {\rnode{A}{A}}, {}\rnode{B}{B}, {\rnode{C}{C}},
+{\rnode{D}{D}}, {\rnode{E}{E}}\stackr \ncarc[arcangle=90]{->}{x2}{C}
+\end{equation}
+is a pointer stack of the original pointer machine, where
+$\varphi$ is a variable of level $1$ and $x_1,x_2$ are variables
+of level $0$. Here, $A, B, C, \cdots$  are meta-variables for terms in
+${\cal T}^o(N \cup V)$. Only one pointer has been shown: from variable $x_2$
+in the topmost item to $C$. Other pointers exist, but have not be
+indicated. By Lemma~\ref{lem:pmgroups}(iii) we know that $x_2$ and
+$\varphi$ must point to item $C$ or items deeper in the stack,
+namely, $D$ or $E$. In this instance the items $A$ and $B$ have
+now become redundant: for any stack configuration reachable from
+here, the topmost item will never contain a pointer to $A$ or $B$.
+Thus, for all intents and purposes, they may as well be cut out,
+and removing such redundancies is what the compacting pointer
+machine strives to achieve. So the above configuration would
+become:
+\begin{equation}
+\nonumber \stackl {\rnode{phi}{\varphi}} {\rnode{x1}{x_1}}
+{\rnode{x2}{x_2}}, {\rnode{C}{C}}, {\rnode{D}{D}}, {\rnode{E}{E}}\stackr
+\ncarc[arcangle=90]{->}{x2}{C}
+\end{equation}
+and all other pointers for remaining items are preserved. Hence
+the name compacting\footnote{Note that although the compacting
+pointer machine does remove such redundant segments, it is not
+optimal; in the sense that some such redundant segments may still
+exist. This, however, is deliberate.}.
+
+\begin{lemma} A compacting pointer machine is equivalent to a
+pointer machine. \myendproof
+\end{lemma}
+
+
+\subsubsection*{Representation}
+
+This section concerns notation for pointer machine stacks. Recall that
+each item in the stack may have several pointers emanating from it. In
+particular, suppose we have the following PM stack:
+\begin{equation}
+\nonumber \stackl
+{\rnode{x}{\varphi}}{\rnode{y}{y}}{\rnode{z}{z}},\;
+{\rnode{A}{F}}G{\rnode{w}{x}}AB,\; {\rnode{B}{D}}A, \; S \stackr
+\ncarc[arcangle=90]{->}{x}{B} \ncarc[arcangle=90]{->}{y}{A}
+\ncarc[arcangle=80]{->}{z}{A} \ncarc[arcangle=80]{->}{w}{B}
+\end{equation}
+Note that $\varphi$ points to $DA$, both $y$ and $z$ point to $FGxAB$,
+and $x$ points to $DA$. Rather than resorting to having to draw
+arrows we can convey this information by subscripting each
+variable with a PM stack. We annotate each variable
+with a suffix $s$ of the PM stack, such that the pointer points to
+$\head s$. Thus, for the above example we would have:
+\begin{equation}
+\nonumber \stackl x_{p_{\varphi}}y_{p_y}z_{p_z}, FGx_{p_x}AB, DA, S\stackr \mbox{where}
+\end{equation}
+\begin{eqnarray}
+\nonumber p_{\varphi} & = & \stackl DA, S \stackr \\
+\nonumber p_y & = & \stackl FGx_{p_x}AB, DA, S \stackr \\
+\nonumber p_z & = & \stackl FGx_{p_x}AB, DA, S \stackr \\
+\nonumber p_x & = & \stackl DA, S \stackr
+\end{eqnarray}
+Recall from Lemma~\ref{lem:pmgroups} that if $s_0s_1 \cdots s_n$
+is an item of a PM stack, and if $x, x'$ are variables occurring
+in $s_i$ for some $i$, then the pointer of $x$ is the same as the
+pointer of $x'$. Hence, to avoid having to subscript \emph{every}
+single variable with a PM stack, we adopt following convention:
+For $p,q$ pointer stacks and $s, t \in \mathcal{T}(N \cup V) \cup
+\{e\}$, we have:
+\begin{itemize}
+\item $(st)_p = (s_p)(t_p)$ for $(st)$ an application \item
+$(s_p)_q = s_p$ for all $s$ \item $F_p = F$ for $F$ a non-terminal
+\item $e_p = e$
+\end{itemize}
+Thus, adopting the above convention, our earlier example could be
+rewritten as:
+\begin{equation}
+\nonumber \stackl (\varphi_{p_{\varphi}}yz)_{p_z}, (FGxAB)_{p_x}, DA, S
+\stackr \mbox{ where } p_{\varphi},p_z,p_x \mbox{ are as before}
+\end{equation}
+Note the $yz$.
+
+%Let us consider a more concrete example, using the grammar for
+%Urzyczyn's language. It is easy to see that below is reachable
+%pointer machine stack.
+%\begin{equation}
+%\nonumber \stackl (D\varphi_p x_p) y_q x_q,D(D\varphi_p
+%x_p)z_p(Fy_p)(Fy_p),DG\epsilon\epsilon\epsilon, S \stackr
+%\end{equation}
+%where
+%\begin{eqnarray}
+%\nonumber q & = & \stackl D(D\varphi_p x_p)z_p(Fy_p)(Fy_p),DG\epsilon\epsilon\epsilon, S \stackr \\
+%\nonumber p & = & \stackl DG\epsilon\epsilon\epsilon, S \stackr
+%\end{eqnarray}
+%However, with using our convention, we can express this more
+%succinctly:
+%\begin{equation}
+%\nonumber \stackl ((D\varphi x)_p y x)_q,(D(D\varphi
+%x)z(Fy)(Fy))_p,DG\epsilon\epsilon\epsilon, S \stackr
+%\end{equation}
+%with $q$ and $p$ as before.
+
+\subsubsection*{An example}
+
+\begin{example} We give an example computation of the (non-compacting) pointer
+machine for the grammar in \ref{ex:ex1}.
+\begin{eqnarray}
+\nonumber & & \stackl S \stackr  \\
+\nonumber & \larr{\epsilon} & \stackl DGAB, S \stackr  \\
+\nonumber & \larr{h_1} & \stackl (D(D\varphi x) y (\varphi y))_{p_1}, DGAB, S \stackr \\
+\nonumber & \larr{h_3} & \stackl (\varphi x)_{p_2},(D(D\varphi x) y (\varphi y))_{p_1}, DGAB, S \stackr \\
+\nonumber & \larr{\epsilon} & \stackl (D \varphi x)_{p_1} B,(D(D\varphi x) y (\varphi y))_{p_1}, DGAB, S \stackr \\
+\nonumber & \larr{h_2} & \stackl (H(Fy)x)_{p_3},(D \varphi x)_{p_1} B,(D(D\varphi x) y (\varphi y))_{p_1}, DGAB, S \stackr \\
+\nonumber & \larr{\epsilon} & \stackl (\varphi x)_{p_4},(H(Fy)x)_{p_3},(D \varphi x)_{p_1} B,(D(D\varphi x) y (\varphi y))_{p_1}, DGAB, S \stackr \\
+\nonumber & \larr{\epsilon} & \stackl (Fy)_{p_3} x_{p_4},(H(Fy)x)_{p_3},(D \varphi x)_{p_1} B,(D(D\varphi x) y (\varphi y))_{p_1}, DGAB, S \stackr \\
+\nonumber & \larr{f_1} & \stackl x_{p_5},(Fy)_{p_3} x_{p_4},(H(Fy)x)_{p_3},(D \varphi x)_{p_1} B,(D(D\varphi x) y (\varphi y))_{p_1}, DGAB, S \stackr \\
+\nonumber & \larr{\epsilon} & \stackl y_{p_3},(Fy)_{p_3} x_{p_4},(H(Fy)x)_{p_3},(D \varphi x)_{p_1} B,(D(D\varphi x) y (\varphi y))_{p_1}, DGAB, S \stackr \\
+\nonumber & \larr{\epsilon} & \stackl B,(Fy)_{p_3} x_{p_4},(H(Fy)x)_{p_3},(D \varphi x)_{p_1} B,(D(D\varphi x) y (\varphi y))_{p_1}, DGAB, S \stackr \\
+\nonumber & \larr{b} & \stackl e,B,(Fy)_{p_3} x_{p_4},(H(Fy)x)_{p_3},(D \varphi x)_{p_1} B,(D(D\varphi x) y (\varphi y))_{p_1}, DGAB, S \stackr
+\end{eqnarray}
+where
+\begin{eqnarray}
+\nonumber p_1 & = & \stackl DGAB, S \stackr \\
+\nonumber p_2 & = & \stackl D(D\varphi x) y (\varphi y))_{p_1}, DGAB, S \stackr \\
+\nonumber p_3 & = & \stackl (D \varphi x)_{p_1} B,(D(D\varphi x) y (\varphi y))_{p_1}, DGAB, S \stackr \\
+\nonumber p_4 & = & \stackl H(Fy)x)_{p_3},(D \varphi x)_{p_1} B,(D(D\varphi x) y (\varphi y))_{p_1}, DGAB, S \stackr \\
+\nonumber p_5 & = & \stackl (Fy)_{p_3} x_{p_4},(H(Fy)x)_{p_3},(D \varphi x)_{p_1} B,(D(D\varphi x) y (\varphi y))_{p_1}, DGAB, S \stackr
+\end{eqnarray}
+Note that the pointer machine accepts the word $h_1h_3h_2f_1b$. We
+now demonstrate how the compacting version of the pointer machine
+is more economical. In particular, the computation proceeds as
+above, up to the point:
+\begin{eqnarray}
+\nonumber & \larr{f_1} & \stackl x_{p_5},(Fy)_{p_3}
+x_{p_4},(H(Fy)x)_{p_3},(D \varphi x)_{p_1} B,(D(D\varphi x) y
+(\varphi y))_{p_1}, DGAB, S \stackr
+\end{eqnarray}
+we then proceed as follows:
+\begin{eqnarray}
+\nonumber & \larr{\epsilon} & \stackl y_{p_3},(D \varphi x)_{p_1} B,(D(D\varphi x) y (\varphi y))_{p_1}, DGAB, S \stackr \\
+\nonumber & \larr{\epsilon} & \stackl B,(D(D\varphi x) y (\varphi y))_{p_1}, DGAB, S \stackr \\
+\nonumber & \larr{b} & \stackl e, B, (D(D\varphi x) y (\varphi
+y))_{p_1}, DGAB, S \stackr
+\end{eqnarray}
+where $p_1, \cdots, p_5$ are as before.
+\end{example}
+
+\subsection{Higher-order pushdown automata}
+%\subsection{Higher-order pushdown automata and the Maslov Hierarchy}
+
+Before we can define a higher-order pushdown automaton, we need to
+define a \textbfit{level-$n$ store} or simply \emph{$n$-store}.
+Fix a finite set $\Gamma$ of \emph{store symbols}, including a
+distinguished bottom-of-store symbol $\bot$. A \emph{1-store} is a
+finite non-empty sequence $\mkstore{a_1, \cdots, a_m}$ of
+$\Gamma$-symbols such that $a_i = \bot$ iff $i = m$. For $n \geq
+1$, an \emph{$(n+1)$-store} is a non-empty sequence of $n$-stores.
+Inductively we define the \emph{empty $(n+1)$-store} $\bot_{n+1}$
+to be $\mkstore{\bot_n}$ where we set $\bot_0 = \bot$. Recall the
+following standard operations on $1$-stores: for $a \in ({\Gamma}
+\setminus \makeset{\bot})$
+\[\begin{array}{rll}
+\nonumber \push_1(a) \, \mkstore{a_1,\cdots,a_m} & = & \mkstore{a,a_1,\cdots,a_m}\\
+\nonumber \pop_1 \, \mkstore{a_1, a_2, \cdots, a_m} & = & \mkstore{a_2,\cdots,a_m}\\
+%\nonumber top_1 ([a_1, a_2, \cdots, a_m]) & = & a_1
+\end{array}\]
+\renewcommand\arraystretch{1.3}
+For $n \geq 2$, the following set $Op_n$ of \emph{level-$n$
+operations} are defined over $n$-stores:
+\[\left\{\begin{array}{rll}
+\push_n \, \mkstore{s_1, \cdots, s_l} & = & \mkstore{s_1, s_1, \cdots, s_l}\\
+\push_k \, \mkstore{s_1, \cdots, s_l} & = & \mkstore{\push_k \, s_1,
+s_2, \cdots, s_l}, \quad 2 \leq k < n\\
+\push_1 (a) \, \mkstore{s_1, \cdots, s_l} & = & \mkstore{\push_1 (a) \, s_1, s_2, \cdots, s_l}\\
+\pop_n \, \mkstore{s_1, \cdots, s_l} & = & \mkstore{s_2, \cdots, s_l}\\
+\pop_k \, \mkstore{s_1, \cdots, s_l} & = & \mkstore{\pop_k \, s_1,
+s_2, \cdots, s_l}, \quad 1 \leq k < n\\
+\id \, \mkstore{s_1, \cdots, s_l} & = & \mkstore{s_1, \cdots, s_l}\\
+\end{array}\right.\]
+In addition we define
+\[\begin{array}{rll}
+\mytop_n \, \mkstore{s_1, \cdots, s_l} & = & s_1\\
+\mytop_k \, \mkstore{s_1, \cdots, s_l} & = & \mytop_k \, s_1, \quad 1
+\leq k < n\\
+\end{array}\]
+Note that $\pop_{k} \, s$ is undefined if $\mytop_k \, s =
+\bot_{k-1}$, for $k \geq 1$.
+
+\medskip
+
+A \textbfit{level-$n$ pushdown automaton} (or $n$PDA for short) is a
+6-tuple $\anglebra{Q, \Sigma, \Gamma, \delta, q_0, F}$ where:
+\begin{enumerate}
+\item[(i)] $Q$ is a finite set of states, $q_0 \in Q$ is the start
+state, and $F \subseteq Q$ is a set of accepting states
+\item[(ii)] $\Sigma$ the finite input alphabet \item[(iii)]
+$\Gamma$ the finite store alphabet (which is assumed to contain
+$\bot$) \item[(iv)] $\delta \; \subseteq \; Q \times (\Sigma \cup
+\makeset{\epsilon}) \times \Gamma \times Q \times Op_n$ the
+transition relation.
+\end{enumerate}
+A \textbfit{configuration}\footnote{This is sometimes called
+\emph{total configuration} in the literature.} of an $n$PDA is given
+by a triple $(q, w, s)$ where $q$ is the current state, $w$ is the
+remaining input, and $s$ is the is an $n$-store over $\Gamma$.
+
+Given a configuration $(q, aw, s)$ (where $a \in \Sigma$ or $a =
+\epsilon$, and $w \in \Sigma^*$) where $\mytop_1(s) = Z$, we
+define the following relation ${\rightarrow}$:
+\begin{equation}
+\nonumber (q, aw, s) \rightarrow (p,w,s')
+\end{equation}
+if $(q,a,Z,p,\theta) \in \delta$ and $s' = \theta(s)$.
+Intuitively, this says that if we are in state $q$ reading input
+symbol $a$ and the topmost store symbol is $Z$, then we may change
+the state to $p$, consume $a$, and perform the operation $\theta$
+to the current $n$-store. The transitive closure of $\rightarrow$
+is denoted by $\rightarrow^+$, whereas the reflexive and
+transitive closure is denoted by $\rightarrow^*$. We say that the
+input $w$ is \textbfit{accepted} by the above $n$PDA if $(q_0, w,
+\bot_n) \rightarrow^* (q_f, \epsilon, s)$ for some pushdown store
+$s$ and some $q_f \in F$.
+
+\begin{remark}\rm We define $0$PDAs to be finite automata. Note that $1$PDAs
+are just the standard pushdown automata. For an example of a $2$PDA we
+refer the reader to the following section.
+\end{remark}
+
+The above defined $n$PDA can be thought of as being
+non-deterministic. However, we say that an $n$PDA is
+\textbfit{deterministic} if the following hold:
+\begin{enumerate}
+\item[(i)] If $\delta(q,a,Z) \not = \emptyset$ for some $a \in \Sigma$ then
+$\delta(q,\epsilon, Z) = \emptyset$
+\item[(ii)] $|\delta(q,a,Z)| \leq 1$
+for all $a \in \Sigma \cup \{\epsilon\}$, $q \in Q$ and $Z \in
+\Gamma$.
+\end{enumerate}
+
+\begin{remark}
+In \cite{dMO} it is shown that a language $L$ is generated by a
+level-$n$ safe deterministic grammar if and only if it is accepted
+by a level-$n$ deterministic pushdown automaton. This is an easy
+result to show -- but has not appeared previously in the literature.
+\end{remark}

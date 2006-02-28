@@ -61,6 +61,22 @@ Hyland and Ong \cite{hylandong_pcf} and Nickau. There are all based
 on game semantics.
 
 
+\section{Games}
+
+definition of arena, view, positions
+justified sequence.
+
+Game construction: tensor product, implication.
+
+strategy
+
+composition of strategy
+
+category of games.
+
+
+product of games
+
 \section{Game semantics of PCF}
 \subsection{The language PCF}
 PCF is a simply-type $\lambda$-calculus with the following
@@ -94,19 +110,160 @@ $$ (const) \rule{}{\Gamma \vdash n :\texttt{exp}}
 \qquad (pred) \rule{\Gamma \vdash M:\texttt{exp} }{\Gamma \vdash \texttt{pred}\ M:\texttt{exp}}$$
 
 $$
-(cond) \rule{\Gamma \vdash M : exp \qquad N_1 : exp \qquad N_2 : exp }{\texttt{cond}\ M\ N_1\ N_2}
+(cond) \rule{\Gamma \vdash M : exp \qquad \Gamma \vdash N_1 : exp \qquad \Gamma \vdash N_2 : exp }{\Gamma \vdash \texttt{cond}\ M\ N_1\ N_2}
 \qquad  (rec) \rule{\Gamma \vdash M : A\rightarrow A }{ \Gamma \vdash Y_A M : A}$$
 
 \caption{Formation rules for PCF terms}
 \label{tab:pcf_formrules}
 \end{table}
 
+\subsection{Operational semantics}
+
+We give the big-step operational semantics of PCF. The notation $M \eval V$ means
+that the closed term $M$ evaluates to the canonical form $V$. The canonical forms are given by the following
+grammar:
+$$V ::= n\ |\ \lambda x. M$$
+In other word, a canonical form is either a number or a function.
+
+The operational semantics is given for closed terms therefore the context $\Gamma$ is not present in
+the evaluation rules.
+
+The full operational semantics is given in table \ref{tab:bigstep_pcf}.
+
+\begin{table}[htbp]
+$$\rule{}{V \eval V} \quad \mbox{ provided that $V$ is in canonical form.} $$
+
+$$ \rule{M \eval \lambda x. M' \quad M'\subst{x}{N}}{M N \eval V}$$
+
+$$\rule{M \eval n}{\texttt{succ}\ M \eval n+1}
+\qquad \rule{M \eval n+1}{\texttt{pred}\ M \eval n}
+\qquad \rule{M \eval 0}{\texttt{pred}\ M \eval 0}$$
+
+$$\rule{M \eval 0 \quad N_1 \eval V}{\texttt{cond}\ M N_1 N_2  \eval V}
+\qquad
+ \rule{M \eval n+1 \quad N_2 \eval V}{\texttt{cond}\ M N_1 N_2  \eval V}$$
+
+$$\rule{M (\mathrm{Y} M) \eval V }{\texttt{Y} M \eval V}$$
+\label{tab:bigstep_pcf}
+\caption{Big-step operational semantics of PCF}
+\end{table}
+
 
 
 \section{Game semantics of IA}
-\subsection{The language IA}
+\label{sec:ia}
+
+\subsection{The syntax of IA}
 IA is an extension of PCF introduced by J.C. Reynold in
-\cite{Reynolds81}.
+\cite{Reynolds81}. It adds imperative features such as local variables and sequential composition.
+
+The description of the language that we give here follows the one of \cite{abramsky:game-semantics}.
+
+On top of \texttt{exp}, PCF has the following two new types:
+ \texttt{com} for commands and \texttt{var} for variables.
+
+There is a constant \texttt{skip} of type \texttt{com} which corresponds to the command that do
+nothing. Commands can be composed using the sequential composition operator \texttt{seq}.
+Local variable are declared using the \texttt{new} operator, variable content is written
+using \texttt{assign} and retrieved using \texttt{deref}.
+
+The new formations rules are given in table \ref{tab:ia_formrules}.
+
+\begin{table}[htbp]
+$$ \rule{\Gamma \vdash M : \texttt{com} \quad \Gamma \vdash N :A}
+    {\Gamma \vdash \texttt{seq}_A \ M\ N\ : A} \quad A \in \{ \texttt{com}, \texttt{exp}\}$$
+
+$$ \rule{\Gamma \vdash M : \texttt{var} \quad \Gamma \vdash N : \texttt{exp}}
+    {\Gamma \vdash \texttt{assign}\ M\ N\ : \texttt{com}}
+\qquad
+ \rule{\Gamma \vdash M : \texttt{var}}
+    {\Gamma \vdash \texttt{deref}\ M\ : \texttt{exp}}$$
+
+$$ \rule{\Gamma, x : \texttt{var} \vdash M : A}
+    {\Gamma \vdash \texttt{new } x \texttt{ in } M} \quad A \in \{ \texttt{com}, \texttt{exp}\}$$
+
+$$ \rule{\Gamma \vdash M_1 : \texttt{exp} \rightarrow \texttt{com} \quad \Gamma \vdash M_2 : \texttt{exp}}
+    {\Gamma \vdash \texttt{mkvar } M_1\ M_2\ : \texttt{var}}$$
+
+\caption{Formation rules for IA terms}
+\label{tab:ia_formrules}
+\end{table}
+
+If $\vdash M : A$ (i.e. $M$ can be formed with an empty context), we say that $M$ is a close term.
+
+\subsection{Operational semantics}
+
+In IA the semantics is given in a slightly different form from PCF.
+In PCF, the evaluation rules were given for closed terms only. Suppose that we
+proceed the same way for IA and consider the evaluation rule for the $\texttt{new}$ construct:
+the conclusion is $\texttt{new } x:=0 \texttt{ in } M$ and the premise
+is an evaluation for a certain term constructed from $M$, more precisely the term $M$
+where \emph{some} occurrences of $x$ are replaced by the value $0$.
+Because of the presence of the \texttt{assign} operator, we cannot simply replace all
+the occurrences of $x$ in $M$ (the required substitution is  more complicated
+than the substitution used for beta-reduction).
+
+
+Therefore, instead of giving the semantics for closed term we consider terms
+whose free variables are all of type \texttt{var}. These free variables are ``closed'' by mean of
+stores. A store is a function mapping free variables of type \texttt{var} to natural numbers.
+Suppose $\Gamma$ is a context containing only variable of type \texttt{var}, then we say that
+$\Gamma$ is a \texttt{var}-context. A store whose domain $\Gamma$ is called a $\Gamma$-store.
+
+The notation $s\ |\ x \mapsto n$ refers to the store that maps $x$ to $n$
+and otherwise maps variables according to the store $s$.
+
+
+The canonical forms for IA are given by the grammar:
+$$ V ::= n\ |\ \lambda x. M\ |\ x\ |\  \texttt{mkvar} M N$$
+
+where $n \in \nat$ and $x:var$.
+
+
+A program is now defined by a term together with a $\Gamma$-store such that $\Gamma \vdash M : A$.
+The evaluation semantics is expressed by the judgment form
+$$s,M \eval s', V$$
+where $s$ and $s'$ are $\Gamma$-stores,
+$\Gamma \vdash M : A$ and $\Gamma \vdash V : A$ where $V$ is in canonical form.
+
+The operational semantics for IA is given by the rule of PCF (table \ref{tab:bigstep_pcf})
+together with the rules of table \ref{tab:bigstep_ia} where the following abbreviation is used:
+$$ \rule{M_1 \eval V_1 \quad M_2 \eval V_2}{M \eval V} \qquad \mbox{for} \qquad
+  \rule{s,M_1 \eval s',V_1 \quad s', M_2 \eval s'',V_2 }{s,M \eval s'',V}
+$$
+
+
+\begin{table}[htbp]
+$$\mbox{\textbf{Sequencing }}
+    \rule{M \eval \skip \quad N \eval V}{\texttt{seq } M\ N \eval V}
+$$
+
+$$\mbox{\textbf{Variables }}
+    \rule{s,N \eval s',n \quad s',M \eval s'',x}{s, \assign\ M\ N \eval (s''\ |\ x \mapsto n),\skip}
+\qquad
+    \rule{s,M \eval s',x }{s, \deref\ M \eval s',s'(x)}$$
+
+$$\mbox{\texttt{\textbf{mkvar}}}
+    \rule{N \eval n \quad M \eval \texttt{mkvar } M_1\ M_2 \quad M_1\ n \eval \skip}
+    {\assign\ M\ N \eval \skip}
+\qquad
+    \rule{N \eval \texttt{mkvar } M_1\ M_2 \quad M_2\ \eval n}
+    {\deref\ M \eval n}
+$$
+
+$$\mbox{\textbf{Block}}
+    \rule{(s\ |\ x \mapsto 0),M \eval (s'\ |\ x \mapsto n),V }
+    {s, \texttt{new } x \texttt{ in } M \eval s',V}
+$$
+
+\label{tab:bigstep_ia}
+\caption{Big-step operational semantics of IA}
+\end{table}
+
+\subsection{Game semantics}
+
+
+
 
 \subsection{Remark}
 
@@ -179,9 +336,6 @@ where each triangle represents one of the two possible sub arena.
 
 \end{proof}
 
-
-\section{Idealized Algol}
-\label{sec:ia}
 
 \subsection{First-order Idealized Algol}
 

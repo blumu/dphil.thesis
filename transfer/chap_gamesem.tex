@@ -266,16 +266,85 @@ As we have seen in section \ref{subsec:catgames}, games and strategies
 form a cartesian closed category, therefore games can model the simply-typed $\lambda$-calculus. Let us first
 explain how this is achieved before extending the model to PCF and IA.
 
-Recall that the objects of the category $\mathcal{C}$ are the arenas, the morphisms are the strategies.
+In the category $\mathcal{C}$, the objects are the arenas and the morphisms are the strategies.
+Moreover $\mathcal{C}$ is a cartesian closed category.
 
 Given a simple type $A$, we will model it as an arena $\sem{A}$.
 A context $\Gamma = x_1 :A_1, \ldots x_n:A_n$ will be mapped to the arena
 $\sem{\Gamma} = \sem{A_1} \times \ldots \times \sem{A_n}$ and a term $\Gamma \vdash M : A$
 will be modeled by a strategy on the arena $\sem{\Gamma} \rightarrow \sem{A}$.
-Not that in case $M$ is a close term then $\sem{\Gamma} = \textbf{1}$ the terminal object of the category
-(i.e. the empty arena).
+Since $\mathcal{C}$ is cartesian closed, there is is a terminal object $\textbf{1}$ (the empty arena) that
+modeling the empty context ($\sem{\Gamma} = \textbf{1}$).
 
 
+The base type \texttt{exp} is interpreted by the following flat arena of natural numbers noted $\nat$:
+\begin{center}
+  \pstree[levelsep=6ex]
+    {\TR[name=R]{q}}
+    { \TR{1} \TR{2} \TR{\ldots}
+    }
+\end{center}
+In this arena, there is only one question: the initial O-question, P can then answer it by playing a natural number $i \in \nat$.
+There are only two kinds strategy on this arena:
+\begin{itemize}
+\item the empty strategy where P never answer the initial question. This corresponds to a non terminating computation;
+\item the strategies where P answers by playing a number $n$. This models the constants of the language.
+\end{itemize}
+
+Given the interpretation of base types, we define the interpretation of $A\rightarrow B$ by induction:
+$$\sem{A \rightarrow B} = \sem{A} \Rightarrow \sem{B}$$
+
+where the operator $\Rightarrow$ denotes the arena construction $!A \multimap B$ which exist because $\mathcal{C}$ is cartesian closed.
+
+Graphically if we represent the arena $A$ and $B$ by two triangles, the arena for $A \rightarrow B$ would be represented by:
+\begin{center}
+\psset{xunit=.5pt,yunit=.5pt,runit=.5pt}
+\begin{pspicture}(150,80)
+\rput[tr](150,80){ \pnode(27,40){a} \pstribox{A} }
+\rput[bl](0,0){ \pnode(27,40){b} \pstribox{B} }
+\ncline{->}{a}{b}
+\end{pspicture}
+\end{center}
+
+
+Variables are interpreted by projection:
+$$\sem{\Gamma : A_1, \ldots, x_n:A_n} = \pi_i : \sem{A_i} \times \ldots \times \sem{A_i} \times \ldots \sem{A_n} \rightarrow \sem{A_i}$$
+
+The abstraction $\Gamma \vdash \lambda x :A.M : A \rightarrow B$ is modeled by a strategy on the arena
+$\sem{\Gamma} \rightarrow (\sem{A}\Rightarrow\sem{B})$. This strategy is obtain by using the currying operator of the
+cartesian closed category:
+$$\sem{\Gamma \vdash \lambda x :A.M : A \rightarrow B} = \Lambda( \sem{\Gamma, x :A \vdash M : B})$$
+
+The application $\Gamma \vdash M N$ is modeled using the evaluation map $ev_{A,B} : (A\Rightarrow B)\times A \rightarrow B$:
+
+$$\sem{\Gamma \vdash M N} = \langle \sem{\Gamma \vdash M, \Gamma \vdash N} \rangle; ev_{A,B}$$
+
+
+We now show how to model the PCF constructs in the game semantics setting.
+In the following, the sub-arena of a game are tagged in order to distinguish identical arenas that are present in different components of the game.
+Moves are also tagged in the exponent in order to identify the sub-arena in which moves are played. We will omit the pointers in the play
+when they are not essential for the understanding of the model (moreover we will see later on that under certain assumptions
+up to order 2, pointers can be recovered uniquely).
+
+The successor arithmetic operator is modeled by the following strategy on the arena $\nat^1 \Rightarrow \nat^0$:
+$$\sem{\texttt{succ}} = \{q^0 \cdot q^1 \cdot n^1 \cdot (n+1)^0\ |\ n \in \nat \}$$
+
+The predecessor arithmetic operator is denoted by the strategy
+$$\sem{\texttt{pred}} = \{q^0 \cdot q^1 \cdot n^1 \cdot (n-1)^0\ |\ n >0 \} \union \{ q^0 \cdot q^1 \cdot 0^1 \cdot 0^0 \} $$
+
+Then given a term $\Gamma \vdash \texttt{succ} M : \texttt{exp}$ we have:
+$$\sem{\Gamma \vdash \texttt{succ } M : \texttt{exp}} = \sem{\Gamma \vdash M} ; \sem{\texttt{succ}} $$
+$$\sem{\Gamma \vdash \texttt{pred } M : \texttt{exp}} = \sem{\Gamma \vdash M} ; \sem{\texttt{pred}} $$
+
+
+The conditional operator is denoted by the following strategy on the arena $\nat^3 \times \nat^2 \times \nat ^1 \Rightarrow \nat^0$:
+$$\sem{\texttt{cond}} =
+    \{ q^0 \cdot q^3 \cdot 0 \cdot q^2 \cdot n^1 \cdot n^0
+
+  (n-1)^0\ |\ n >0 \} \union \{ q^0 \cdot q^1 \cdot 0^1 \cdot 0^0 \} $$
+
+cond
+Y
 
 
 
@@ -334,7 +403,6 @@ below:
 \end{center}
 
 The entire arena $A$ is
-\newcommand{\SubTree}[2][]{\Tr[ref=t]{\pstribox[#1]{#2}}}
 \begin{center}
 \
   \pstree[levelsep=6ex]

@@ -72,13 +72,25 @@ strategy
 
 composition of strategy
 
+
+\subsection{Remark}
+
+\begin{enumerate}
+\item
+Well-bracketing condition is a condition on P-answers only, it does
+not constraint O-answers (see \cite{abramsky:game-semantics}).
+
+\end{enumerate}
+
+
+
 \subsection{Category of games}
 \label{subsec:catgames}
 
 product of games
 
-\section{Game semantics of PCF}
-\subsection{The language PCF}
+\section{PCF}
+\subsection{The syntax of the language}
 PCF is a simply-type $\lambda$-calculus with the following
 additions: integer constants  (of ground type), first-order
 arithmetic operators, if-then-else branching, and the recursion
@@ -150,7 +162,7 @@ $$\rule{M (\mathrm{Y} M) \eval V }{\texttt{Y} M \eval V}$$
 
 
 
-\section{Game semantics of IA}
+\section{Idealized Algol (IA)}
 \label{sec:ia}
 
 \subsection{The syntax of IA}
@@ -266,6 +278,8 @@ As we have seen in section \ref{subsec:catgames}, games and strategies
 form a cartesian closed category, therefore games can model the simply-typed $\lambda$-calculus. Let us first
 explain how this is achieved before extending the model to PCF and IA.
 
+\subsubsection{Simply typed $\lambda$-calculus}
+
 In the category $\mathcal{C}$, the objects are the arenas and the morphisms are the strategies.
 Moreover $\mathcal{C}$ is a cartesian closed category.
 
@@ -320,6 +334,8 @@ The application $\Gamma \vdash M N$ is modeled using the evaluation map $ev_{A,B
 $$\sem{\Gamma \vdash M N} = \langle \sem{\Gamma \vdash M, \Gamma \vdash N} \rangle; ev_{A,B}$$
 
 
+\subsubsection{PCF}
+
 We now show how to model the PCF constructs in the game semantics setting.
 In the following, the sub-arena of a game are tagged in order to distinguish identical arenas that are present in different components of the game.
 Moves are also tagged in the exponent in order to identify the sub-arena in which moves are played. We will omit the pointers in the play
@@ -332,30 +348,108 @@ $$\sem{\texttt{succ}} = \{q^0 \cdot q^1 \cdot n^1 \cdot (n+1)^0\ |\ n \in \nat \
 The predecessor arithmetic operator is denoted by the strategy
 $$\sem{\texttt{pred}} = \{q^0 \cdot q^1 \cdot n^1 \cdot (n-1)^0\ |\ n >0 \} \union \{ q^0 \cdot q^1 \cdot 0^1 \cdot 0^0 \} $$
 
-Then given a term $\Gamma \vdash \texttt{succ} M : \texttt{exp}$ we have:
+Then given a term $\Gamma \vdash \texttt{succ} M : \texttt{exp}$ we define:
 $$\sem{\Gamma \vdash \texttt{succ } M : \texttt{exp}} = \sem{\Gamma \vdash M} ; \sem{\texttt{succ}} $$
 $$\sem{\Gamma \vdash \texttt{pred } M : \texttt{exp}} = \sem{\Gamma \vdash M} ; \sem{\texttt{pred}} $$
 
 
 The conditional operator is denoted by the following strategy on the arena $\nat^3 \times \nat^2 \times \nat ^1 \Rightarrow \nat^0$:
 $$\sem{\texttt{cond}} =
-    \{ q^0 \cdot q^3 \cdot 0 \cdot q^2 \cdot n^1 \cdot n^0
-
-  (n-1)^0\ |\ n >0 \} \union \{ q^0 \cdot q^1 \cdot 0^1 \cdot 0^0 \} $$
-
-cond
-Y
+    \{ q^0 \cdot q^3 \cdot 0 \cdot q^2 \cdot n^2 \cdot n^0 \ | \ n \in \nat \}
+    \union
+    \{ q^0 \cdot q^3 \cdot m \cdot q^2 \cdot n^2 \cdot n^0 \ | \ m >0, n \in \nat \}
+    $$
 
 
+Given a term $\Gamma \vdash \texttt{cond} M\ N_1\ N_2$ we define:
+$$\sem{\Gamma \vdash \texttt{cond} M\ N_1\ N_2} =
+\langle \sem{\Gamma \vdash M}, \sem{\Gamma \vdash N_1}, \sem{\Gamma \vdash N_2} \rangle ; \sem{\texttt{cond}}$$
 
-\subsection{Remark}
 
-\begin{enumerate}
-\item
-Well-bracketing condition is a condition on P-answers only, it does
-not constraint O-answers (see \cite{abramsky:game-semantics}).
+The interpreation of the \texttt{Y} combinator is a bit more complicated.
 
-\end{enumerate}
+Consider the term $\Gamma \vdash M : A \rightarrow A$, its semantics $f$ is a strategy on $\sem{\Gamma} \times \sem{A} \rightarrow \sem{A}$.
+We define the chain $g_n$ of strategies on the arena $\sem{\Gamma} \rightarrow \sem{A}$ as follow:
+\begin{eqnarray*}
+g_0 &=& \perp \\
+g_{n+1} &=&  F(g_n) = \langle id_{\sem{\Gamma}}, g_n\rangle ; f
+\end{eqnarray*}
+
+where $\perp$ denotes the empty strategy $\{ \epsilon \}$.
+
+It is easy to see that indeed the $g_n$ forms a chain.
+We define $\sem{\texttt{Y } M}$ to be the least upper bound of the chain $g_n$
+(i.e. the  least fixed point of $F$). Its existence is guaranteed by the fact that
+the category of games is cpo-enriched.
+
+\subsubsection{IA}
+
+It is easy to check that all the strategies given until now are well-bracketed and innocent.
+From now on, we will only require well-bracketing and we will introduce strategies that are
+not innocent. This is a necessity if we want to give a model of memory cells that correspond
+to variables. The intuition behind this fact is that a cell needs to remember what was the last value written in it
+in order to be able to return it when it is read, and this can only be done by looking at the whole history of moves,
+not only those present in the P-view.
+
+
+
+
+
+\subsection{Full-abstraction}
+In this section we recall the standard full abstraction result proved in  \cite{abramsky94full}
+and \cite{hylandong_pcf}.
+
+A context noted $C[-]$ is a term containing a hole denoted by $-$. If $C[-]$ is a context then $C[A]$ denotes the term obtained
+after replacing the hole by the term $A$.
+
+\begin{dfn}[Observational preorder]
+Let $\vdash M : A$ and $\vdash N : A$ be two closed terms. We define the relation $\sqsubseteq$ as follow:
+
+
+$M \sqsubseteq N$ if and only if for all context $C[-]$ such that $C[M]$ and $C[M]$ are well-formed terms if
+$C[M] \eval$ then $C[N] \eval$.
+\end{dfn}
+
+
+\begin{lem}[Soundness for PCF terms] Let $M$ be a PCF term.
+If $M \eval V$ then $\sem{M} = \sem{V}$.
+\end{lem}
+
+\begin{lem}[Soundness for IA terms] Let $\Gamma \vdash M : A$ be an IA term and a $\Gamma$ store $s$.
+If $s,M \eval s',V$ then the plays of $\sem{s,M} : I \multimap A \otimes !\Gamma$ which begin
+with a move of $A$ are identical to those of $\sem{s',V}$.
+\end{lem}
+
+
+\begin{lem}[Computational adequacy for PCF terms]
+All PCF terms are computable. (i.e. $\sem{M} \neq \perp$ implies $M \eval$)
+\end{lem}
+
+\begin{lem}[Computational adequacy for IA terms]
+All IA terms are computable. (i.e. $\sem{M} \neq \perp$ implies $M \eval$)
+\end{lem}
+
+
+The following result follows from soundness and computational adequacy of the model.
+\begin{prop}[Inequational soundness]
+\label{prop:ineqsoundness}
+Let $M$ and $N$ be two closed terms then
+$$\sem{M} \subseteq \sem{N} \implies  M \sqsubseteq N $$
+\end{prop}
+
+\begin{prop}[Definability]
+\label{prop:definability}
+Let $\sigma$ be a compact well-bracketed on a game $A$ denoting a IA type. Then there is
+an IA-term $M$ such that $\sem{M} = \sigma$.
+\end{prop}
+
+The final standard result of game semantics can then be proved using proposition \ref{prop:ineqsoundness} and \ref{prop:definability}:
+\begin{thm}[Full abstraction]
+Let $M$ and $N$ be two closed IA-terms.
+$$\sem{M} \precsim_b \sem{N} \ \iff \ M \sqsubseteq N$$
+\end{thm}
+
+where $\precsim_b$ denotes the intrinsic preorder of the category $\mathcal{C}_b$.
 
 
 \subsection{Second order}
@@ -371,8 +465,8 @@ the pointers of the sequence $s$ can be reconstructed uniquely.
 
 
 \begin{proof}
-The only base type here is \typexp. The interpretation of it is the
-flat game of natural numbers $\natbf$. The arena is:
+The only base type here is \typexp. It is interpreted by the
+following flat game of natural numbers $\natbf$:
 \begin{center}
   \pstree[levelsep=6ex]
     {\TR[name=R]{q}}
@@ -419,16 +513,14 @@ where each triangle represents one of the two possible sub arena.
 \end{proof}
 
 
-\subsection{First-order Idealized Algol}
+\subsection{First-order and second-order Idealized Algol}
 
-Dan R. Ghica and Guy McCusker
-
- regular language Semantics for first order
+The strategies of second-order IA can be represented by an extended regular language
+(Dan R. Ghica and Guy McCusker).
 
 \subsection{Call-by-Value first-order Idealized Algol}
 
-Call-by-value Programming Language, Ghica
-
+Game semantics for call-by-value programming Language.
 
 \section{Data-abstraction refinement}
 

@@ -63,31 +63,129 @@ on game semantics.
 
 \section{Games}
 
-definition of arena, view, positions
-justified sequence.
+\label{sec:catgames}
 
-Game construction: tensor product, implication.
+We introduce here the notion of game that will be used in the following section to give a model of the programming languages
+PCF and Idealized Algol. The definitions are taken from \cite{abramsky:game-semantics, hylandong_pcf, abramsky94full}.
 
-strategy
+\subsection{Basic definition}
+
+The games we are interested in are two-players games. The players are named O for Opponent and P for Proponent.
+
+The game played by O and P is constraint by something called \emph{arena}. The arena defines the possible moves of the game.
+By analogy with board games, the arena represents the board and the rules that tell how players can make their moves
+on the board \footnote{In fact there is an analogy more appropriate than board games which illustrates
+well the notion of game that we are exposing here. There are dialog games in which one person (O) interviews another person (P),
+P trying to answer the initial O-question by possibly asking O some precisions about its initial question.}.
+
+
+More formally, the arena can be seen as a forest of trees whose nodes are possible questions and leaves are possible answers.
+The arena is partitioned into two kinds of moves: the moves that can be played by P and the ones that can be played by O.
+A move is either a question to the other player or an answer to a question previously asked by the other player.
+
+Each move of the game must be justified by another move that has already been played by the other player. This justification relation
+is induced by the edges of the forest arena. An answer is always justified by the question that it answers, a question
+is always justified by another question.
+
+\begin{dfn}[Arena]
+An arena is a structure $\langle M, \lambda, \vdash \rangle$ where:
+\begin{itemize}
+\item $M$ is the set of possible moves;
+\item $(M,\vdash)$ is a forest of trees;
+
+\item $\lambda : M \rightarrow \{ O, P\} \times \{Q, A\}$ is a labeling functions indicating whether a given move
+    is a question or an answer and whether it can be played by O or by P.
+
+    $\lambda = [\lambda^{OP},\lambda^{QA}]$ where $\lambda^{OP} : M \rightarrow  \{ O, P\}$
+    and $\lambda^{QA} : M \rightarrow  \{ Q, A\}$.
+
+    \begin{itemize}
+    \item If $\lambda^{OP} (m) = O$, we call $m$ and O-move otherwise $m$ is a P-move.
+    $\lambda^{QA} (m) = Q$ indicates that $m$ is a question otherwise $m$ is an answer.
+
+    \item For any leaf $l$ of the tree $(M,\vdash)$, $\lambda^{QA} (l) = A$ and for any node
+    $n \in (M,\vdash)$, $\lambda^{QA} (n) = Q$.
+    \end{itemize}
+
+\item The forest of tree $(M,\vdash)$ respect the following condition:
+    \begin{itemize}
+    \item[(e1)] The roots are O-moves: for any root $r$ of $(M,\vdash)$, $\lambda^{OP} (r) = O$.
+    \item[(e2)] Answers are enabled by questions: $m \vdash n  \zand \lambda^{QA}(n) = A \imp \lambda^{QA}(m) = Q$.
+    % Or more succinctly, if we note $\dashv$ the relation $\vdash^-1$: $\lambda^{QA} \left( \dashv( (\lambda^{QA})^{-1}(\{A\}) ) \right) = \{ O \}$
+    \item[(e3)] A player move must be justified by a move played by the other player:
+         $m\vdash n \imp \lambda^{OP}(m) \neq \lambda^{OP}(n)$.
+    \end{itemize}
+\end{itemize}
+\end{dfn}
+
+For commodity we write the set $\{O,P\} \times \{Q,A\}$ as $\{OQ,OA,PQ,PA\}$.
+$\overline{\lambda}$ denotes the labeling function $\lambda$ with the question and answer swapped. For instance:
+$$\overline{\lambda(m)} = OQ \iff \lambda(m) = PQ$$
+
+The roots of the forest of tree $(M,\vdash)$ are the \emph{initial moves}.
+
+
+Once the arena has been defined, the bases of the game are set and the players have something to play with.
+We now need to describe the state of the game, for that purpose
+we introduced \emph{justified sequences of moves}. Sequence of moves are used to record the history of all the moves that have been
+played.
+
+\begin{dfn}[Justified sequence of moves]
+A justified sequence is a sequence of moves $s$ together with an associated sequence of pointers. Any
+move $m$ in the sequence that is not initial has as pointer that points to a previous move $n$ that justifies it (i.e. $n \vdash m$).
+\end{dfn}
+
+
+\begin{dfn}[View]
+Given a justified sequence of moves $s$. We define the proponent view (P-view) noted $\pview{s}$ by induction:
+\begin{align*}
+\pview{\epsilon} &= \epsilon \\
+\pview{s \cdot m} &= \pview{s} \cdot \ m && \mbox{ if $m$ is a P-move} \\
+\pview{s \cdot m} &= m && \mbox{ if $m$ is initial (O-move) } \\
+\pview{ s \cdot \rnode{m}{m} \cdot t \cdot \rnode{n}{n} \bkptra{60}{n}{m} } &=
+ \pview{s} \cdot \rnode{mm}{m} \cdot \rnode{nn}{n} \bkptra{80}{nn}{mm} && \mbox{ if $m$ is a non initial O-move }
+\end{align*}
+The O-view $\oview{s}$ is defined similarly:
+\begin{align*}
+\oview{\epsilon} &= \epsilon \\
+\oview{s \cdot m} &= \oview{s} \cdot \ m && \mbox{ if $m$ is a O-move} \\
+\oview{ s \cdot \rnode{m}{m} \cdot t \cdot \rnode{n}{n} \bkptra{60}{n}{m} } &=
+ \pview{s} \cdot \rnode{mm}{m} \cdot \rnode{nn}{n} \bkptra{80}{nn}{mm} && \mbox{ if $m$ is a P-move }
+\end{align*}
+
+
+\end{dfn}
+
+\begin{dfn}[Legal justified sequence]
+dfg
+\end{dfn}
+
+\begin{dfn}[Game]
+positions
+\end{dfn}
+
+\subsection{Game construction}
+tensor product, implication, product
+
+\subsection{Strategy}
+
+definition strategy
 
 composition of strategy
 
-
-\subsection{Remark}
-
-\begin{enumerate}
-\item
+Strategy constraints:
+\begin{description}
+\item[well-bracketing]
 Well-bracketing condition is a condition on P-answers only, it does
 not constraint O-answers (see \cite{abramsky:game-semantics}).
 
-\end{enumerate}
+\end{description}
 
 
+\subsection{Categorical interpretation of games}
 
-\subsection{Category of games}
-\label{subsec:catgames}
+categories $\mathcal{C}$, $\mathcal{C}_i$, $\mathcal{C}_b$, $\mathcal{C}_{ib}$
 
-product of games
 
 \section{PCF}
 \subsection{The syntax of the language}
@@ -102,8 +200,8 @@ $$ T ::= \texttt{exp}\ |\ T \rightarrow T$$
 The following grammar gives the structure of terms:
 \begin{eqnarray*}
  M ::= x\ |\ \lambda x :A . M \ |\ M M \ |\ \\
-\ |\ n \ |\ \texttt{succ} M \ |\  \texttt{pred} M \\
-\ |\ \texttt{cond} M M M \ |\ Y_A M
+\ |\ n \ |\ \texttt{succ } M \ |\  \texttt{pred } M \\
+\ |\ \texttt{cond } M M M \ |\ \texttt{Y}_A\ M
 \end{eqnarray*}
 
 where $x$ ranges over a set of countably many variables and $n$
@@ -113,17 +211,17 @@ Terms are generated according to the formation rules given in table
 \ref{tab:pcf_formrules} where the judgement is of the form $ \Gamma  \vdash M : A$.
 
 \begin{table}[htbp]
-$$ (var) \rule{}{x_1:A_1, x_2:A_2, \ldots x_n : A_n  \vdash x_i : A_i}\ i \in 1..n$$
-$$ (app) \rule{\Gamma \vdash M : A\rightarrow B \qquad \Gamma \vdash N:A}{\Gamma \vdash M\ N : B}
-\qquad (abs) \rule{\Gamma, x:A \vdash M : B}{\Gamma \vdash \lambda x :A . M : A\rightarrow B}$$
+$$ (var) \rulef{}{x_1:A_1, x_2:A_2, \ldots x_n : A_n  \vdash x_i : A_i}\ i \in 1..n$$
+$$ (app) \rulef{\Gamma \vdash M : A\rightarrow B \qquad \Gamma \vdash N:A}{\Gamma \vdash M\ N : B}
+\qquad (abs) \rulef{\Gamma, x:A \vdash M : B}{\Gamma \vdash \lambda x :A . M : A\rightarrow B}$$
 
-$$ (const) \rule{}{\Gamma \vdash n :\texttt{exp}}
-\qquad (succ) \rule{\Gamma \vdash M:\texttt{exp} }{\Gamma \vdash \texttt{succ}\ M:\texttt{exp}}
-\qquad (pred) \rule{\Gamma \vdash M:\texttt{exp} }{\Gamma \vdash \texttt{pred}\ M:\texttt{exp}}$$
+$$ (const) \rulef{}{\Gamma \vdash n :\texttt{exp}}
+\qquad (succ) \rulef{\Gamma \vdash M:\texttt{exp} }{\Gamma \vdash \texttt{succ}\ M:\texttt{exp}}
+\qquad (pred) \rulef{\Gamma \vdash M:\texttt{exp} }{\Gamma \vdash \texttt{pred}\ M:\texttt{exp}}$$
 
 $$
-(cond) \rule{\Gamma \vdash M : exp \qquad \Gamma \vdash N_1 : exp \qquad \Gamma \vdash N_2 : exp }{\Gamma \vdash \texttt{cond}\ M\ N_1\ N_2}
-\qquad  (rec) \rule{\Gamma \vdash M : A\rightarrow A }{ \Gamma \vdash Y_A M : A}$$
+(cond) \rulef{\Gamma \vdash M : exp \qquad \Gamma \vdash N_1 : exp \qquad \Gamma \vdash N_2 : exp }{\Gamma \vdash \texttt{cond}\ M\ N_1\ N_2}
+\qquad  (rec) \rulef{\Gamma \vdash M : A\rightarrow A }{ \Gamma \vdash Y_A M : A}$$
 
 \caption{Formation rules for PCF terms}
 \label{tab:pcf_formrules}
@@ -143,19 +241,19 @@ the evaluation rules.
 The full operational semantics is given in table \ref{tab:bigstep_pcf}.
 
 \begin{table}[htbp]
-$$\rule{}{V \eval V} \quad \mbox{ provided that $V$ is in canonical form.} $$
+$$\rulef{}{V \eval V} \quad \mbox{ provided that $V$ is in canonical form.} $$
 
-$$ \rule{M \eval \lambda x. M' \quad M'\subst{x}{N}}{M N \eval V}$$
+$$ \rulef{M \eval \lambda x. M' \quad M'\subst{x}{N}}{M N \eval V}$$
 
-$$\rule{M \eval n}{\texttt{succ}\ M \eval n+1}
-\qquad \rule{M \eval n+1}{\texttt{pred}\ M \eval n}
-\qquad \rule{M \eval 0}{\texttt{pred}\ M \eval 0}$$
+$$\rulef{M \eval n}{\texttt{succ}\ M \eval n+1}
+\qquad \rulef{M \eval n+1}{\texttt{pred}\ M \eval n}
+\qquad \rulef{M \eval 0}{\texttt{pred}\ M \eval 0}$$
 
-$$\rule{M \eval 0 \quad N_1 \eval V}{\texttt{cond}\ M N_1 N_2  \eval V}
+$$\rulef{M \eval 0 \quad N_1 \eval V}{\texttt{cond}\ M N_1 N_2  \eval V}
 \qquad
- \rule{M \eval n+1 \quad N_2 \eval V}{\texttt{cond}\ M N_1 N_2  \eval V}$$
+ \rulef{M \eval n+1 \quad N_2 \eval V}{\texttt{cond}\ M N_1 N_2  \eval V}$$
 
-$$\rule{M (\mathrm{Y} M) \eval V }{\texttt{Y} M \eval V}$$
+$$\rulef{M (\mathrm{Y} M) \eval V }{\texttt{Y} M \eval V}$$
 \label{tab:bigstep_pcf}
 \caption{Big-step operational semantics of PCF}
 \end{table}
@@ -182,19 +280,19 @@ using \texttt{assign} and retrieved using \texttt{deref}.
 The new formations rules are given in table \ref{tab:ia_formrules}.
 
 \begin{table}[htbp]
-$$ \rule{\Gamma \vdash M : \texttt{com} \quad \Gamma \vdash N :A}
+$$ \rulef{\Gamma \vdash M : \texttt{com} \quad \Gamma \vdash N :A}
     {\Gamma \vdash \texttt{seq}_A \ M\ N\ : A} \quad A \in \{ \texttt{com}, \texttt{exp}\}$$
 
-$$ \rule{\Gamma \vdash M : \texttt{var} \quad \Gamma \vdash N : \texttt{exp}}
+$$ \rulef{\Gamma \vdash M : \texttt{var} \quad \Gamma \vdash N : \texttt{exp}}
     {\Gamma \vdash \texttt{assign}\ M\ N\ : \texttt{com}}
 \qquad
- \rule{\Gamma \vdash M : \texttt{var}}
+ \rulef{\Gamma \vdash M : \texttt{var}}
     {\Gamma \vdash \texttt{deref}\ M\ : \texttt{exp}}$$
 
-$$ \rule{\Gamma, x : \texttt{var} \vdash M : A}
+$$ \rulef{\Gamma, x : \texttt{var} \vdash M : A}
     {\Gamma \vdash \texttt{new } x \texttt{ in } M} \quad A \in \{ \texttt{com}, \texttt{exp}\}$$
 
-$$ \rule{\Gamma \vdash M_1 : \texttt{exp} \rightarrow \texttt{com} \quad \Gamma \vdash M_2 : \texttt{exp}}
+$$ \rulef{\Gamma \vdash M_1 : \texttt{exp} \rightarrow \texttt{com} \quad \Gamma \vdash M_2 : \texttt{exp}}
     {\Gamma \vdash \texttt{mkvar } M_1\ M_2\ : \texttt{var}}$$
 
 \caption{Formation rules for IA terms}
@@ -240,31 +338,31 @@ $\Gamma \vdash M : A$ and $\Gamma \vdash V : A$ where $V$ is in canonical form.
 
 The operational semantics for IA is given by the rule of PCF (table \ref{tab:bigstep_pcf})
 together with the rules of table \ref{tab:bigstep_ia} where the following abbreviation is used:
-$$ \rule{M_1 \eval V_1 \quad M_2 \eval V_2}{M \eval V} \qquad \mbox{for} \qquad
-  \rule{s,M_1 \eval s',V_1 \quad s', M_2 \eval s'',V_2 }{s,M \eval s'',V}
+$$ \rulef{M_1 \eval V_1 \quad M_2 \eval V_2}{M \eval V} \qquad \mbox{for} \qquad
+  \rulef{s,M_1 \eval s',V_1 \quad s', M_2 \eval s'',V_2 }{s,M \eval s'',V}
 $$
 
 
 \begin{table}[htbp]
 $$\mbox{\textbf{Sequencing }}
-    \rule{M \eval \skip \quad N \eval V}{\texttt{seq } M\ N \eval V}
+    \rulef{M \eval \iaskip \quad N \eval V}{\texttt{seq } M\ N \eval V}
 $$
 
 $$\mbox{\textbf{Variables }}
-    \rule{s,N \eval s',n \quad s',M \eval s'',x}{s, \assign\ M\ N \eval (s''\ |\ x \mapsto n),\skip}
+    \rulef{s,N \eval s',n \quad s',M \eval s'',x}{s, \assign\ M\ N \eval (s''\ |\ x \mapsto n),\iaskip}
 \qquad
-    \rule{s,M \eval s',x }{s, \deref\ M \eval s',s'(x)}$$
+    \rulef{s,M \eval s',x }{s, \deref\ M \eval s',s'(x)}$$
 
 $$\mbox{\texttt{\textbf{mkvar}}}
-    \rule{N \eval n \quad M \eval \texttt{mkvar } M_1\ M_2 \quad M_1\ n \eval \skip}
-    {\assign\ M\ N \eval \skip}
+    \rulef{N \eval n \quad M \eval \texttt{mkvar } M_1\ M_2 \quad M_1\ n \eval \iaskip}
+    {\assign\ M\ N \eval \iaskip}
 \qquad
-    \rule{N \eval \texttt{mkvar } M_1\ M_2 \quad M_2\ \eval n}
+    \rulef{N \eval \texttt{mkvar } M_1\ M_2 \quad M_2\ \eval n}
     {\deref\ M \eval n}
 $$
 
 $$\mbox{\textbf{Block}}
-    \rule{(s\ |\ x \mapsto 0),M \eval (s'\ |\ x \mapsto n),V }
+    \rulef{(s\ |\ x \mapsto 0),M \eval (s'\ |\ x \mapsto n),V }
     {s, \texttt{new } x \texttt{ in } M \eval s',V}
 $$
 
@@ -274,14 +372,17 @@ $$
 
 \subsection{Game semantics}
 
-As we have seen in section \ref{subsec:catgames}, games and strategies
+As we have seen in section \ref{sec:catgames}, games and strategies
 form a cartesian closed category, therefore games can model the simply-typed $\lambda$-calculus. Let us first
 explain how this is achieved before extending the model to PCF and IA.
 
 \subsubsection{Simply typed $\lambda$-calculus}
 
-In the category $\mathcal{C}$, the objects are the arenas and the morphisms are the strategies.
-Moreover $\mathcal{C}$ is a cartesian closed category.
+In the cartesian closed category $\mathcal{C}$, the objects are the arenas and the morphisms are the strategies.
+
+In the games that we describe here, the Opponent represents the environment while
+the Proponent plays according to a strategy imposed by the program itself.
+
 
 Given a simple type $A$, we will model it as an arena $\sem{A}$.
 A context $\Gamma = x_1 :A_1, \ldots x_n:A_n$ will be mapped to the arena
@@ -366,7 +467,7 @@ $$\sem{\Gamma \vdash \texttt{cond} M\ N_1\ N_2} =
 \langle \sem{\Gamma \vdash M}, \sem{\Gamma \vdash N_1}, \sem{\Gamma \vdash N_2} \rangle ; \sem{\texttt{cond}}$$
 
 
-The interpreation of the \texttt{Y} combinator is a bit more complicated.
+The interpretation of the \texttt{Y} combinator is a bit more complicated.
 
 Consider the term $\Gamma \vdash M : A \rightarrow A$, its semantics $f$ is a strategy on $\sem{\Gamma} \times \sem{A} \rightarrow \sem{A}$.
 We define the chain $g_n$ of strategies on the arena $\sem{\Gamma} \rightarrow \sem{A}$ as follow:

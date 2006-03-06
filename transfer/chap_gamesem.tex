@@ -74,9 +74,10 @@ The games we are interested in are two-players games. The players are named O fo
 
 The game played by O and P is constraint by something called \emph{arena}. The arena defines the possible moves of the game.
 By analogy with board games, the arena represents the board and the rules that tell how players can make their moves
-on the board \footnote{In fact there is an analogy more appropriate than board games which illustrates
-well the notion of game that we are exposing here. There are dialog games in which one person (O) interviews another person (P),
-P trying to answer the initial O-question by possibly asking O some precisions about its initial question.}.
+on the board\footnote{In fact there is an analogy more appropriate than board games which illustrates
+well the notion of game that we are exposing here: dialog games.
+In these games one person (O) interviews another person (P) while
+P tries to answer the initial O-question by possibly asking O some precisions about its initial question.}.
 
 
 More formally, the arena can be seen as a forest of trees whose nodes are possible questions and leaves are possible answers.
@@ -84,7 +85,7 @@ The arena is partitioned into two kinds of moves: the moves that can be played b
 A move is either a question to the other player or an answer to a question previously asked by the other player.
 
 Each move of the game must be justified by another move that has already been played by the other player. This justification relation
-is induced by the edges of the forest arena. An answer is always justified by the question that it answers, a question
+is induced by the edges of the forest arena. Moreover, an answer must always be justified by the question that it answers and a question
 is always justified by another question.
 
 \begin{dfn}[Arena]
@@ -136,6 +137,10 @@ move $m$ in the sequence that is not initial has as pointer that points to a pre
 \end{dfn}
 
 
+A justified sequence has two particular subsequences which will be of particular interest later on when we
+introduce strategies. These subsequences are called the P-view and the O-view of the sequence.
+The idea is that a view describes the local context of the game. Here is the formal definition:
+
 \begin{dfn}[View]
 Given a justified sequence of moves $s$. We define the proponent view (P-view) noted $\pview{s}$ by induction:
 \begin{align*}
@@ -152,29 +157,82 @@ The O-view $\oview{s}$ is defined similarly:
 \oview{ s \cdot \rnode{m}{m} \cdot t \cdot \rnode{n}{n} \bkptra{60}{n}{m} } &=
  \pview{s} \cdot \rnode{mm}{m} \cdot \rnode{nn}{n} \bkptra{80}{nn}{mm} && \mbox{ if $m$ is a P-move }
 \end{align*}
-
-
 \end{dfn}
 
-\begin{dfn}[Legal justified sequence]
-dfg
+In fact not all justified sequences will be of interest for the games that we will use.
+We call \emph{legal position} any justified sequence
+verifying two additional conditions: alternation and visibility.
+
+\begin{dfn}[Legal position]
+A legal position is a justified sequence of move $s$ respecting the following constraint:
+\begin{itemize}
+\item Alternation: For any subsequence $m \cdot n$ of $s$, $\lambda^{OP}(m) \neq \lambda^{OP}(n)$.
+\item Visibility: For any subsequence $t m$ of $s$, if $m$ is a P-move then $m$ points to a move in $\pview{s}$
+and if $m$ is a O-move then $m$ points to a move in $\oview{s}$.
+\end{itemize}
+
+The set of legal position of an arena $A$ is noted $L_A$.
 \end{dfn}
+
+We say that a move $n$ is hereditarily justified by a move $m$ if there is a sequence of move
+$m_1, \ldots, m_q$ such that:
+$$ m \vdash m_1 \vdash m_2 \vdash \ldots m_q \vdash n$$
+
+Suppose that $n$ is an occurrence of a move in the sequence $s$ then we note
+$s \upharpoonright n$ the subsequence of $s$ containing all the moves hereditarily justified by $n$.
+Similarly, $s \upharpoonright I$ denotes the
+subsequence of $s$ containing all the moves hereditarily justified by the moves in $I$.
 
 \begin{dfn}[Game]
-positions
+A game is a structure $\langle M, \lambda, \vdash, P \rangle$ such that
+\begin{itemize}
+\item $ \langle M, \lambda, \vdash \rangle$ is an arena.
+\item $P$, called the set of valid positions, is
+    \begin{itemize}
+    \item a non-empty prefix closed subset of the set of legal position
+    \item closed by hereditary filtering: if $I$ is the set of initial moves of $s$ then
+        $$ s \in P \imp s\upharpoonright I \in P$$
+    \end{itemize}
+\end{itemize}
 \end{dfn}
 
 \subsection{Game construction}
 tensor product, implication, product
 
 \subsection{Strategy}
+During a game, a player may have several choices for his next move.
+To decide which moves to make, the player refers to the state of the game.
+This state is given by the position of the game, in other words
+the history of all the moves already played.
 
-definition strategy
+A strategy is therefore based on the history of the game.
 
-composition of strategy
+\begin{dfn}[Strategy]
+A strategy for player P on a given game $\langle M, \lambda, \vdash, P \rangle$ is a
+non-empty set of even-length positions from $P$ such that:
+\begin{enumerate}
+\item $sab \in \sigma \imp s \in \sigma$
+\item $sab, sac \in \sigma \imp b = c$
+\end{enumerate}
+\end{dfn}
+
+The idea is that the presence of the even-length sequence $s a b$ in $\sigma$ tells the player
+P that whenever the game is in position $s a$ it must play the move $b$.
+The second condition in the definition requires that this choice of move is deterministic
+(i.e. there is a function $f$ from the set of odd length position to the set of moves $M$
+ such that $f(s a) =b$). The first condition ensures that the strategy $\sigma$ consider only
+position that the strategy itself could have led to.
+
+
+Composition of strategy
 
 Strategy constraints:
 \begin{description}
+\item[innocence]
+However the whole history
+some A valuable source of information is
+However
+
 \item[well-bracketing]
 Well-bracketing condition is a condition on P-answers only, it does
 not constraint O-answers (see \cite{abramsky:game-semantics}).

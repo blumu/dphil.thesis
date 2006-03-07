@@ -1,11 +1,7 @@
 
-First note that the well-bracketing condition allows us to recover
-the pointers for all the P answer moves (simply make the answers point
-to the last pending question with the same tag).
-
 For any justified sequence of moves $u$, we write $?(u)$ for the subsequence of $u$ consisting of the questions in the sequence $u$ that are still pending at the end of the sequence.
 
-Let $L$ be the following language $L = \{ q'_i q_i\ | \ i \in I_1 \}$.
+Let $L$ be the following language $L = \{\ p^i q^i\ | \ i \in I_1 \}$.
 We consider the following cases:
 
 \begin{center}
@@ -13,16 +9,22 @@ We consider the following cases:
 Case & $\lambda_{OP}(m)$ & $?(u) \in$ & condition \\ \hline
 0 & O & $\{ \epsilon \}$ \\
 A & P & $q$ \\
-B & O & $q \cdot L^* \cdot q'_i$     & $i \in I_1$ \\
-C & P & $q \cdot L^* \cdot q'_i q_i$ & $i \in I_1$ \\
-D & O & $q \cdot L^* \cdot q_i$      & $i \in I_0$ \\
+B & O & $q \cdot L^* \cdot p^i$     & $i \in I_1$ \\
+C & P & $q \cdot L^* \cdot p^i q^i$ & $i \in I_1$ \\
+D & O & $q \cdot L^* \cdot q^i$      & $i \in I_0$ \\
 \end{tabular}
 \end{center}
 
 We use the notation $\hat{s}$ to denote a legal and well-bracketed \emph{justified} sequence of moves and
 $s$ to denote the same sequence of moves with pointers removed.
 
-We prove by induction on the sequence of moves $u$ that $u$ corresponds to either
+Note that the well-bracketing condition already tells us how to uniquely recover
+the pointers for P answer moves: a P-answers points
+to the last pending question having the same tag. However for O answers, we will see that the visibility condition
+already ensures the unique recoverability of the pointer and that the well-bracketing condition is not needed.
+
+
+We prove by induction on the sequence of moves $u$ that $?(u)$ corresponds to either
 case 0, A, B, C or D and that the pointers in $u$ can be recovered uniquely.
 
 \textbf{Base cases:}
@@ -39,7 +41,7 @@ The induction hypothesis tells us
 that the pointers of $u$ can be recovered (and therefore the P-view or O-view at that point can be
 computed) and that $u$ corresponds to one of the cases 0,A,B,C or D.
 
-We proceed by case analysis depending on the case $u$ corresponds to:
+We proceed by case analysis on $u$:
 
 \begin{description}
 
@@ -53,67 +55,73 @@ does not contain any P-question. Hence the move $m$ cannot be justified and is n
 \item[case A] $?(u) = q$ and the last move $m$ is played by P.
     There are several cases:
     \begin{itemize}
-    \item $m = a \in \natbf$ is an answer to the initial question
-    $q$, then $m$ points to $q$:
+    \item $m$ is an answer $a_k$ (to the initial question
+    $q$) for some $k$, then $m$ points to $q$:
 
     $\hat{s} = \justseq{ q & \ldots & m \pointto{ll}}$
 
     and $?(s) = \epsilon$ therefore $s$ correspond to the case 0 (complete play).
 
-    \item $m = q_i$ where $q_i$ is an order 0 question ($i \in I_0$).
-    Then $q_i$ points to the initial question $q$ and $s$ falls into category D.
+    \item $m = q^i$ where $q^i$ is an order 0 question ($i \in I_0$).
+    Then $q^i$ points to the initial question $q$ and $s$ falls into category D.
 
-    \item $m = q'_i$, a first order question, then $q'_i$ points to $q$,
+    \item $m = p^i$, a first order question, then $p^i$ points to $q$,
 
-    $?(s)= q q'_i$ and it is O's turn after $s$ therefore $s$ falls into category B.
+    $?(s)= q p^i$ and it is O's turn after $s$ therefore $s$ falls into category B.
 
     \end{itemize}
 
 
-\item[case B] $?(u) \in q \cdot L^* \cdot q'_i$ where $i \in I_1$ and O plays the move $m$.
+\item[case B] $?(u) \in q \cdot L^* \cdot p^i$ where $i \in I_1$ and O plays the move $m$.
 
 We now analyse the different possible O-moves:
 \begin{itemize}
-\item Suppose that O gives the (tagged) answer $a'_j$ for some $j \in I_1$ then
+\item Suppose that O gives the (tagged) answer $b^j$ for some $j \in I_1$ then
 the visibility condition constraints it to point to a question in the O-view at that point.
 
-We remark that the last move in $\hat{u}$ must be $q'_i$.
-Indeed, suppose that there is a move $x \in M_A$ such that $\hat{u} = \justseq{q & \ldots & q'_i\ x \pointto{ll}}$
-then by visibility, the O-move $x$ should points to a move in the O-view a that point. The O-view is $q q'_i$, therefore $x$ can only points to
-$q'_i$. But then, $q'_i$ is not a pending question in $s$ which is a contradiction.
+We remark that the last move in $\hat{u}$ must be $p^i$.
+Indeed, suppose that there is a move $x \in M_A$ such that $\hat{u} = \justseq{q & \ldots & p^i\ x \pointto{ll}}$
+then by visibility, the O-move $x$ should points to a move in the O-view a that point. The O-view is $q p^i$, therefore $x$ can only points to
+$p^i$. But then, $p^i$ is not a pending question in $s$ which is a contradiction.
 
 
-Therefore $\oview{\hat{u}} = \oview{ \justseq{ q & \ldots & q'_i \pointto{ll}} } = q q'_i$.
+Therefore $\oview{\hat{u}} = \oview{ \justseq{ q & \ldots & p^i \pointto{ll}} } = q p^i$.
 
-Hence $a'_j$ can only point to $q'_i$ (and therefore $i=j$).
+Hence $b^j$ can only point to $p^i$ (and therefore $i=j$).
 
-We then have $?(s) = ?(u \cdot a'_i) \in  q \cdot L^*$ which is covered by case A and C.
+We then have $?(s) = ?(u \cdot b^i) \in  q \cdot L^*$ which is covered by case A and C.
 
-\item The only other possible O-move is $q_i$ which, again by the visibility condition, points necessarily
-to the previous move $q'_i$.
-We then have $?(s) = ?(u \cdot q_i) \in   q \cdot L^* \cdot q'_i q_i$. This falls into category C.
+\item The only other possible O-move is $q^i$ which, again by the visibility condition, points necessarily
+to the previous move $p^i$.
+We then have $?(s) = ?(u \cdot q^i) \in   q \cdot L^* \cdot p^i q^i$. This falls into category C.
 
 \end{itemize}
 
-\item[case C] $?(u) \in q \cdot L^* \cdot q'_i q_i$ where $i \in I_1$ and the move $m$ is played by $P$.
+\item[case C] $?(u) \in q \cdot L^* \cdot p^i q^i$ where $i \in I_1$ and the move $m$ is played by $P$.
 
-Suppose $m$ is an answer, then the well-bracketing condition imposes to answer to $q_i$ first.
-The move $m$ is therefore an integer $a_i$ pointing to $q_i$.
-We then have $?(s) = ?(u \cdot a_i) \in  q \cdot L^* \cdot q'_i$. This correspond to case B.
+Suppose $m$ is an answer, then the well-bracketing condition imposes to answer to $q^i$ first.
+The move $m$ is therefore an integer $a^i$ pointing to $q^i$.
+We then have $?(s) = ?(u \cdot a^i) \in  q \cdot L^* \cdot p^i$. This correspond to case B.
 
 
 Suppose $m$ is a question then there are two cases:
 \begin{itemize}
-\item $m = q_j$ with $j \in I_0$, the pointer goes to the initial question $q$ and $s$ falls into category D.
-\item $m = q'_j$ with $j \in I_1$, the pointer goes to the initial question $q$ and $s$ falls into category B.
+\item $m = q^j$ with $j \in I_0$, the pointer goes to the initial question $q$ and $s$ falls into category D.
+\item $m = p^j$ with $j \in I_1$, the pointer goes to the initial question $q$ and $s$ falls into category B.
 \end{itemize}
 
-\item[case D] $?(u) \in q \cdot L^* \cdot q_i$ where $i \in I_0$ and the move $m$ is played by $O$.
+\item[case D] $?(u) \in q \cdot L^* \cdot q^i$ where $i \in I_0$ and the move $m$ is played by $O$.
 
     The same argument as in case B holds. However there is now another possible move:
-    the answer $m = a_i \in \natbf$.  This moves can only points to
-    $q_i$ (this is the only pending question tagged by $i \in I_0$).
+    the answer $m = a^i_k$ for some $k$.  This moves can only points to
+    $q^i$ (this is the only pending question tagged by $i \in I_0$).
 
-    Then $?(\hat{s}) = ?(\hat{u}\cdot a_i) = ?(\justseq{ q & \ldots & q_i \pointto{ll} & \ldots & a_i \pointto{ll}}) \in q \cdot L^* $ therefore $s$ falls either into category A or C.
+    Then $?(\hat{s}) = ?(\hat{u}\cdot a^i_k) = ?(\justseq{ q & \ldots & q^i \pointto{ll} & \ldots & a^i_k \pointto{ll}}) \in q \cdot L^* $ therefore $s$ falls either into category A or C.
 
 \end{description}
+
+This completes the induction.
+
+How to generalize the proof to arenas that have multiple roots (forest arenas)? Well in fact there is no
+ambiguity since all the moves are implicitly tagged according to the arena that they belong to. Therefore in the induction, it suffices
+to ignore the moves that belong to another tree (as if they were part of a different game played in parallel).

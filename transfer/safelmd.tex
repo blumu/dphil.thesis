@@ -151,9 +151,10 @@ The traditional notion of substitution on which the $\lambda$-calculus is based 
 \begin{eqnarray*}
 x \subst{t}{x} &=& t\\
  y\subst{t}{x} &=& y \quad \mbox{for } x \not \neq y,\\
-(M_1 M_2) \subst{t}{y} &=& (M_1 \subst{t}{y}) (M_2 \subst{t}{y})\\
-(\lambda x . M) \subst{t}{y} &=& \lambda z . M \subst{z}{x}
-\subst{t}{y} \mbox{where $z$ is a fresh variable}
+(M_1 M_2) \subst{t}{x} &=& (M_1 \subst{t}{x}) (M_2 \subst{t}{x})\\
+(\lambda x . M) \subst{t}{x} &=& \lambda x . M\\
+(\lambda y . M) \subst{t}{x} &=& \lambda z . M \subst{z}{y}
+\subst{t}{x} \mbox{where $z$ is a fresh variable and $x\not = y$}
 \end{eqnarray*}
 \end{dfn}
 
@@ -162,6 +163,7 @@ Indeed, we remark that for terms that satisfy the property \ref{lem:safe_basic_p
 when performing substitution. In particular, this is true for safe $\lambda$-terms.
 
 \begin{lem}[No variable clash]
+\label{lem:noclash}
 Suppose that $M$ and $N$ are simply typed $\lambda$-terms verifying the property
 that every free variables occurring in $M$ and $N$ has an order at least $\ord{M}$ and $\ord{N}$ respectively. Then
 there is no clash of variable name when performing the substitution:
@@ -190,36 +192,60 @@ We therefore reach a contradiction.
 \end{proof}
 
 
-Hence, under the assumption \ref{lem:safe_basic_prop}(ii), we can therefore simplify
-the definition of the substitution and replace
+Hence, under the assumption \ref{lem:safe_basic_prop}(ii), we can simplify
+the definition of the substitution and replace the following equation
 $$(\lambda x . M) \subst{t}{y} = \lambda z . M \subst{z}{x}
 \subst{t}{y} \mbox{where $z$ is a fresh variable}$$
 by
 $$(\lambda x . M) \subst{t}{y} = \lambda x . M \subst{t}{y}$$
 
 
+Unfortunately, this notion of substitution is still not adequate for the purpose of the
+simply type lambda calculus as we defined it. The problem is that performing a single
+$\beta$-reduction on a safe term will not necessarily give another safe term.
 
+Indeed, although the homogeneity (property (i) in lemma \ref{lem:safe_basic_prop}) is preserved,
+after substitution and (therefore after a $\beta$-reduction), the property (ii) of lemma
+\ref{lem:safe_basic_prop} is not preserved!.
 
-We remark that homogeneity is preserved by substitution and (therefore by single $\beta$-reduction).
-However property \ref{lem:safe_basic_prop}(ii) is not preserved by a single $\beta$-reduction.
+To fix this problem, we need to perform several consecutive substitutions until we get a term
+that verifies the the property (ii) of lemma \ref{lem:safe_basic_prop}. We therefore introduce
+a new kind of substitution called ``simultaneous substitution'' that
+performs several substitution at the same time.
 
-To fix this problem, we introduce the notion of simultaneous substitution:
+Note that in general, implementing simultaneous substitution would
+require to introduce new variables and to perform variable renaming. However in the current setting, thanks
+to lemma \ref{lem:noclash}, there is no need to rename variable. The notion of substitution that we need is therefore
+the capture permitting simultaneous substitution defined by:
+$$M\subst{N_1 \ldots N_n}{x_1 \ldots x_n} = M \subst{N_1}{x_1} \subst{N_2}{x_2} \ldots \subst{N_n}{x_n} $$
+where $M[N/x]$ denotes the single capture permitting substitution.
 
+Equivalently it can be defined as follow:
 
+In fact, we can equivalently define the simultaneous substitution by induction
+without relying on the definition of the standard substitution:
 
-% provided
-%that the substitution is performed \emph{simultaneously} on all free
-%variables of the same order.
+\begin{dfn}[Capture permitting simultaneous substitution]
+ We use the notation
+$\subst{\overline{N}}{\overline{x}}$ for $\subst{N_1 \ldots N_n}{x_1
+\ldots x_n}$:
+\begin{eqnarray*}
+ x_i \subst{\overline{N}}{\overline{x}} &=& N_i\\
+ y \subst{\overline{N}}{\overline{x}} &=& y \quad \mbox{where } x \not \neq y_i \mbox{ for all } i,\\
+(M_1 M_2) \subst{\overline{N}}{\overline{x}} &=& (M_1 \subst{\overline{N}}{\overline{x}}) (M_2 \subst{\overline{N}}{\overline{x}})\\
+(\lambda x_i . M) \subst{\overline{N}}{\overline{x}} &=& \lambda x_i . M
+\subst{N_1 \ldots N_{i-1} N_{i+1}\ldots N_n}{x_1 \ldots x_{i-1} x_{i+1}\ldots x_n} \\
+(\lambda y . M) \subst{\overline{N}}{\overline{x}} &=& \lambda y . M \subst{\overline{N}}{\overline{x}} \mbox{where $y \not = x_i$ for all $i$}
+\end{eqnarray*}
+\end{dfn}
 
-%The requirement that the substitution is performed simultaneously is
-%quite strong: implementing simultaneously substitution requires to
-%have access to an unbound number of fresh variables. Therefore in
-%safe lambda calculus the fact that there is no variable capture
-%during substitution does not really lead to a complete economy of
-%variable names.
-%
-Hence under the assumptionin such setting,
+Important remark: consider a safe multi-redex $(\lambda \overline{x} . M ) \overline{N}$ where the $N_i$ are safe, then
+we can reduced it to $M\subst{\overline{N}}{\overline{x}}$. This reduction is safe and will produce
+a safe term provided that $M$ is also a safe term.
 
+%trnaslation in the homogeneous case:
+%  provided that the substitution is performed \emph{simultaneously} on all free
+%  variables of the same order.
 %First we note that if the substitution is not simultaneous ($M
 %\subst{N_1}{x_1}\ldots \subst{N_n}{x_n}$), then a variable capture
 %arises if some $N_i$ has a free occurrence of a variable $x_j$ with
@@ -227,34 +253,13 @@ Hence under the assumptionin such setting,
 %substitutions simultaneously as follow: $M \subst{N_1, \ldots
 %N_n}{x_1, \ldots x_n}$.
 
-
-
-
-We will prove The first interesting property that we will prove for the safe
-$\lambda$-calculus is that when performing substitution on safe
-$\lambda$ term, there is no need to rename bound variables.
-
-We
-
-Substitution for simply typed lambda term is defined as follow:
-Simultaneous substitution is defined as follow:
-
-$$M\subst{N_1 \ldots N_n}{x_1 \ldots x_n} = M \subst{z_2}{x_2} \ldots \subst{z_n}{x_n} \subst{N_1}{x_1} \subst{N_2}{z_2} \ldots \subst{N_n}{z_n} $$
-where $z_2 \ldots z_n$ are fresh variables.
-
-
 In presence of constant symbols, (this is the case in the safe
 lambda calculus), we add the following definition:
-$$f \subst{t}{x} = f \quad \mbox{ where $f \in \Sigma$ is a first-order constant}$$
+$$f \subst{\overline{N}}{\overline{x}} = f \quad \mbox{ where $f \in \Sigma$ is a first-order constant}$$
 
 
 
 
-
-
-In fact, we can define the simultaneous substitution inductively
-without relying on the definition of the standard substitution. Here
-is the definition specialized to the safe lambda calculus case:
 
 \begin{dfn}[Simultaneous substitution in the safe-lambda calculus]
 \label{dnf:safe_simsubst}
@@ -318,9 +323,7 @@ calculus and we get that $\lambda \overline{z} . T
 \end{proof}
 
 
-\subsection{Simultaneous substitution does not involve renaming}
-
-
+%\subsection{Simultaneous substitution does not involve renaming}
 
 %\begin{lem}[No variable clash lemma]
 %In the safe $\lambda$-calculus, there is no clash of variable name

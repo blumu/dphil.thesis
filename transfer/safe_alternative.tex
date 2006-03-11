@@ -1,4 +1,4 @@
-\section{Safe $\lambda$-calculus - Another presentation}
+\section{Homogeneous safe $\lambda$-calculus}
 \label{sec:safe_alt}
 
 We recall the definition of the safe $\lambda$-calculus given in
@@ -88,6 +88,8 @@ valid judgment then
 \end{lem}
 
 
+
+
 \begin{dfn}[Simultaneous substitution for safe terms]
 \label{dnf:safe_simsubst}
  We use the notation
@@ -150,3 +152,166 @@ $$ ord(y_k) \geq ord(N_i) = ord(x_i)$$
 
 Hence we reach a contradiction.
 \end{proof}
+
+
+\subsection{Rules - second version}
+
+
+In this section, we will refine the formation rules
+given in the previous section.
+
+We say that $\Gamma \vdash M : A$ verifies $P_i$ if all the
+variables in $\Gamma$ have orders at least $\ord{A}+i$.
+
+We introduce the notation $\Gamma \vdash^{i} M : A$ for $i \in
+\zset$ to mean that $\Gamma \vdash M : A$ and $\Gamma \vdash M : A$
+satisfies $P_i$.
+
+
+The following lemma says that if $\Gamma \vdash M : A$ then variable in the context $\Gamma$ with order
+strictly smaller than $M$ do not occur freely in $M$ and therefore the context can be restricted.
+
+\begin{lem}[Context restriction]
+\label{lem:restriction}
+
+Suppose that $\Gamma \vdash M : A$ satisfies $P_i$ with $i\leq0$, then we have
+$\Gamma' \vdash^{0} M : A$ where $$\Gamma' = \{ z \in \Gamma \ |
+\ \ord{z} \geq \ord{M} \} = \Gamma \setminus \{ z \in \Gamma \ | \ \ord{M} + i \leq \ord{z} < \ord{M} \}$$
+\end{lem}
+\begin{proof}
+By induction, the only non trivial cases are (app) and (app+):
+\begin{itemize}
+\item (app)
+
+    \[ {{\seq{\Gamma}{M : (\overline{B_1} \, | \, \cdots \, | \, \overline{B_m} \, | \, o)} \qquad
+    \seq{\Gamma}{N_1 : B_{11}} \quad \cdots \quad \seq{\Gamma}{N_{l} :
+    B_{1l}} \qquad l = |\overline{B_1}| } \over{ \seq{\Gamma}{M N_1
+    \cdots N_{l_1} : (\overline{B_2} \, | \, \cdots \, | \,
+    \overline{B_m} \, | \, o)}}} (\mbox{app})\]
+
+    If the conclusion verifies $P_i$ then, for all $z \in \Gamma$:
+    \begin{eqnarray*}
+    \ord{z} \geq 1 + \ord{\overline{B_2}} + i
+    &=& 1 + \ord{\overline{B_1}} + \ord{\overline{B_2}} - \ord{\overline{B_1}} + i \\
+    &=& \ord{M} + (\ord{\overline{B_2}} - \ord{\overline{B_1}} + i)
+    \end{eqnarray*}
+    Therefore the first premise satisfies $P_j$ where $j={\ord{\overline{B_2}} - \ord{\overline{B_1}} + i}$
+
+    and $j< 0$ because of the homogeneity of the type. Hence by the induction hypothesis,
+    there is a context $$\Gamma' = \{ z \in \Gamma \ |
+    \ \ord{z} \geq \ord{M} \} = \Gamma \setminus \{ z \in \Gamma \ | \ \ord{M} + j \leq \ord{z} < \ord{M} \}$$
+    such that $\Gamma' \vdash^{0} M : (\overline{B_1} \, | \, \cdots \, | \, \overline{B_m} \, | \, o)$.
+
+
+    Similarly:
+    \begin{eqnarray*}
+    \ord{z} \geq 1 + \ord{\overline{B_2}} + i
+    &=& \ord{\overline{B_1}} + (1+\ord{\overline{B_2}} - \ord{\overline{B_1}} + i) \\
+    &=& \ord{\overline{B_1}} + j+1
+    \end{eqnarray*}
+
+    where $j+1\leq 0$, hence by the induction hypothesis for $k : 1..l$ there is a
+    context $$\Gamma'' = \{ z \in \Gamma \ |
+    \ \ord{z} \geq \ord{N_k} \} = \Gamma \setminus \{ z \in \Gamma \ | \ \ord{M} + j+1 \leq \ord{z} < \ord{M} \}$$
+    such that $\Gamma'' \vdash N_k : B_{1k}$ verifies $P_0$.
+
+    But since $\Gamma' = \Gamma'' \union \{ z \in \Gamma \ | \ \ord{M} + j = \ord{z}\}$, we have for $k : 1..l$:
+
+    $\Gamma' \vdash N_k : B_{1k}$ satisfies $P_{-1}$.
+
+
+    We can now apply the (App) rule and get
+    $$\Gamma' \vdash M N_1 \ldots N_l : (\overline{B_2} \, | \, \cdots \, | \,
+    \overline{B_m} \, | \, o)$$
+    where for all $z\in \Gamma'$:
+    \begin{eqnarray*}
+    \ord{z} \geq 1 + \ord{\overline{B_1}}
+    &>& 1 + \ord{\overline{B_2}} = \ord{M N_1 \ldots N_l}
+    \end{eqnarray*}
+
+\item (app+) The first premise has the same order has the
+conclusion of the rule therefore the first premise verifies
+$P_{i}$. The other premises verify $P_{i+1}$. Again using the induction hypothesis
+and by applying the rule (App+) we get the result wanted.
+\end{itemize}
+
+\end{proof}
+
+
+The following lemma is a direct consequence of the context restriction lemma:
+\begin{lem}
+%\label{}
+If $\Gamma \vdash^{0} M : T$ then there is valid proof tree
+showing that $\Gamma \vdash M : T$ such that all the judgments
+of the proof tree verify $P_0$ or $P_{-1}$.
+\end{lem}
+
+
+\begin{proof}
+Suppose that $\Gamma \vdash M : T$ such that it satisfies $P_{-1}$.
+
+We show that there is a proof tree for
+$\Gamma \vdash M : T$ where all the nodes of the tree verify $P_0$
+or $P_{-1}$ by case analysis on the last rule used to prove $\Gamma \vdash M : T$ .
+
+\begin{itemize}
+\item (wk) If $\Delta \vdash M : T$ verifies $P_{-1}$ then in particular $\Gamma
+\vdash M : T$ verifies $P_{-1}$ for any $\Gamma \subset \Delta$.
+
+\item (perm) trivial
+
+\item ($\Sigma$) the context is empty therefore the sequent verifies $P_{-1}$.
+
+\item (var) the context contains only the variable itself : verifies $P_0$.
+
+\item (abs) the second premise of the rule guarantees that the first
+premise verifies $P_{-1}$.
+
+\item (app+) The first premise has the same order has the
+conclusion of the rule therefore the first premise verifies
+$P_{-1}$. The other premises have an order strictly smaller that the
+order of the conclusion of the rule therefore they verify $P_0$
+
+\item (app) Using lemma \ref{lem:restriction} and then applying the rule (app).
+
+\end{itemize}
+\end{proof}
+
+We are interested by the sequents that verify $P_0$. For that purpose, we now refine the previous system of rules
+of the safe lambda calculus such that it only generates sequents that are either satisfying $P_0$ or
+that can be used to produce term that satisfy $P_0$.
+
+Thanks to the previous lemma, we know that it is useless to produce sequents that do not satisfy
+$P_0$ or $P_{-1}$. We will therefore use the notation $\vdash^0$ and $\vdash^{-1}$ instead of $\vdash$ to precise
+whether a given sequent satisfies $P_0$ or $P_{-1}$.
+
+The first refinement consist in constraining the weakening rule so that
+it only permits the addition of variable with an order big enough:
+$$ \mathbf{(wk^{0})} \quad  \rulef{\Gamma \vdash^{0} M : A}{\Gamma , x : B \vdash^{0} M : A} \quad \ord{B} \geq \ord{A} $$
+$$ \mathbf{(wk^{-1})} \quad  \rulef{\Gamma \vdash^{-1} M : A}{\Gamma , x : B \vdash^{-1} M : A} \quad \ord{B} \geq \ord{A} -1$$
+
+There is also an additional rules expressing the fact that $P_0$ implies $P_{-1}$:
+
+$$ \mathbf{(seq)} \quad \rulef{\Gamma \vdash^{0} M : A}{\Gamma \vdash^{-1} M : A} $$
+
+In the rules \textbf{(perm)}, \textbf{(const)} and \textbf{(var)}, only the tagging of the sequent changes:
+
+$$ \mathbf{(var)} \quad  \rulef{}{x : A\vdash^{0} x : A} $$
+
+\[  (\mbox{\textbf{perm}}) {
+      { \Gamma \vdash^s M:B \qquad \sigma(\Gamma)  } \hbox{ homogeneous}
+    \over
+      { \sigma(\Gamma) \vdash^s M : B }
+    }
+\]
+
+
+\[ \textbf{(const)}
+    { \over { \vdash^0 b : o^r \rightarrow o}} \quad b : o^r \rightarrow o \in \Sigma
+    \]
+
+
+
+
+
+%%%

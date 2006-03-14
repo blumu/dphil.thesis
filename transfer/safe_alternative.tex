@@ -4,7 +4,7 @@
 We recall the definition of the safe $\lambda$-calculus given in
 \cite{Ong2005}.
 
-\subsection{ Rules}
+\subsection{Rules}
 
 These rules are a corrected version of
 \cite{DBLP:conf/fossacs/AehligMO05}
@@ -29,56 +29,55 @@ A_{1r}, \cdots}{M : B}$. \emph{Valid typing judgements} of the
 system are defined by induction over the following rules, where
 $\Delta$ is a given homogeneously-typed alphabet:
 
-\[ {    { \seq{\Sigma}{M:B} \qquad {\Sigma \subset \Delta} }
+\[ (\mbox{\textbf{wk}})
+{    { \seq{\Sigma}{M:B} \qquad {\Sigma \subset \Delta} }
     \over
         { \seq{\Delta }{M : B}}
    }
-   (\mbox{wk})
-\]
-
-\[  {
+\qquad
+    (\mbox{\textbf{perm}})
+  {
       { \seq{\Gamma}{M:B} \qquad \sigma(\Gamma) \hbox{ homogeneous} }
     \over
       { \seq{\sigma(\Gamma)}{M : B} }
     }
-    (\mbox{perm})
 \]
 
 
-\[{ {b : o^r \rightarrow o \in \Sigma } \over {\seq{}{b : o^r \rightarrow o}}}  (\Sigma\mbox{-const})  \]
-
-\[{ \over
+\[ (\mathbf{\Sigma}\mbox{\textbf{-const}})    {   {b : o^r \rightarrow o \in \Sigma } \over {\seq{}{b : o^r \rightarrow o}}}
+\qquad
+ (\mbox{\textbf{var}}) { \over
 {\seq{\overline{x_{ij}} : \overline{A_{ij}}\, }{x_{ij} :
-A_{ij}}}}(\mbox{var})\]
+A_{ij}}}}\]
 
-\[
+\[ (\mbox{$\mathbf{\lambda}$\textbf{-abs}})
 { {\seq{\overline{x_1} : \overline{A_1}\, | \, \cdots\, | \,
 \overline{x_{n+1}} : \overline{A_{n+1}}}{M : B}} \qquad
-\ord{\overline{A_{n+1}}} \geq \ord{B} \over {\seq{\overline{x_1} :
+\ord{\overline{A_{n+1}}} \geq \ord{B} -1 \over {\seq{\overline{x_1} :
 \overline{A_1}\, | \, \cdots\, | \, \overline{x_{n}} :
 \overline{A_{n}}}{\lterm{\overline{x_{n+1}} : \overline{A_{n+1}}}{M}
-: (\overline{A_{n+1}} \, | \, B)}} } (\mbox{$\lambda$-abs})\]
+: (\overline{A_{n+1}} \, | \, B)}} } \]
 
-\[ {{\seq{\Gamma}{M : (\overline{B_1} \, | \, \cdots \, | \, \overline{B_m} \, | \, o)} \qquad
+\[ (\mbox{\textbf{app}}) {{\seq{\Gamma}{M : (\overline{B_1} \, | \, \cdots \, | \, \overline{B_m} \, | \, o)} \qquad
 \seq{\Gamma}{N_1 : B_{11}} \quad \cdots \quad \seq{\Gamma}{N_{l} :
 B_{1l}} \qquad l = |\overline{B_1}| } \over{ \seq{\Gamma}{M N_1
 \cdots N_{l_1} : (\overline{B_2} \, | \, \cdots \, | \,
-\overline{B_m} \, | \, o)}}} (\mbox{app})\]
+\overline{B_m} \, | \, o)}}} \]
 
 
-\[ {{\seq{\Gamma}{M : (\overline{B_1} \, | \, \cdots \, | \, \overline{B_m} \, | \, o)} \qquad
+\[ (\mbox{\textbf{app+}}) {{\seq{\Gamma}{M : (\overline{B_1} \, | \, \cdots \, | \, \overline{B_m} \, | \, o)} \qquad
 \seq{\Gamma}{N_1 : B_{11}} \quad \cdots \quad \seq{\Gamma}{N_{l} :
 B_{1l}} \qquad l < |\overline{B_1}| } \over{ \seq{\Gamma}{M N_1
-\cdots N_{l_1} : (\overline{B_2} \, | \, \cdots \, | \,
-\overline{B_m} \, | \, o)}}} (\mbox{app+})\]
+\cdots N_{l_1} : (\overline{B} \, | \, \cdots \, | \,
+\overline{B_m} \, | \, o)}}} \]
 
 where $\overline{B_1} = B_{11}, \ldots, B_{1l},\overline{B}$ with
-the condition that every variable in $\Sigma$ has an order greater
+the condition that every variable in $\Gamma$ has an order greater
 than $\ord{\overline{B_1}}$.
 
 
 \begin{lem}[Basic properties]
-\label{lem:safe_basic_prop} Suppose $\Gamma \vdash_s M : B$ is a
+\label{lem:safe_basic_prop} Suppose $\Gamma \vdash M : B$ is a
 valid judgment then
 
 \begin{itemize}
@@ -87,91 +86,113 @@ valid judgment then
 \end{itemize}
 \end{lem}
 
+We now define a special kind of substitution that performs simultaneous substitution and
+that permits variable capture (i.e. no renaming occurs in the abstraction case).
 
-
-
-\begin{dfn}[Simultaneous substitution for safe terms]
+\begin{dfn}[Capture permitting simultaneous substitution (for homogeneous safe terms)]
 \label{dnf:safe_simsubst}
- We use the notation
-$\subst{\overline{N}}{\overline{x}}$ for $\subst{N_1 \ldots N_n}{x_1
-\ldots x_n}$:
+ We use the notation $\subst{\overline{N}}{\overline{x}}$ for $\subst{N_1 \ldots N_n}{x_1 \ldots x_n}$ and
+$\overline{y}:\overline{A}$ for $y_1:A_1, \ldots, y_p:A_p$.
+A safe term must have one of the forms occurring on the left-hand side of the following equations, where
+the terms $M$, $N_1, \ldots N_l$ are safe terms:
 \begin{eqnarray*}
+c \subst{\overline{N}}{\overline{x}} &=& c \quad \mbox{ where $c$ is a $\Sigma$-constant}\\
 x_i \subst{\overline{N}}{\overline{x}} &=& N_i\\
  y \subst{\overline{N}}{\overline{x}} &=& y \quad \mbox{ if } y \not \neq x_i \mbox{ for all } i,\\
 (M N_1 \ldots N_l) \subst{\overline{N}}{\overline{x}} &=& (M \subst{\overline{N}}{\overline{x}}) (N_1 \subst{\overline{N}}{\overline{x}}) \ldots  (N_l \subst{\overline{N}}{\overline{x}})\\
-(\lambda x_i . M) \subst{\overline{N}}{\overline{x}} &=& \lambda x_i
-. M
-\subst{N_1 \ldots N_{i-1} N_{i+1}\ldots N_n}{x_1 \ldots x_{i-1} x_{i+1}\ldots x_n} \\
-(\lambda \overline{y} : \overline{A}. T)
-\subst{\overline{N}}{\overline{x}} &=& \lambda \overline{z} . T
-\subst{\overline{z}}{\overline{y}}
-\subst{\overline{N}}{\overline{x}} \\
-&& \mbox{where $T$ is a safe
-term and $\overline{z} = z_1, \ldots z_p$ are all fresh variables}\\
+(\lambda \overline{y} : \overline{A}. M)
+\subst{\overline{N}}{\overline{x}} &=& \lambda \overline{y} . M
+\subst{\overline{N} \upharpoonright I}{\overline{x} \upharpoonright I} \\
+&& \mbox{where } I  = \{ i \in 1..n \ | \ x_i \not \in \overline{y} \}
 \end{eqnarray*}
+
+where $ \upharpoonright$ is the index filtering operator: if $s$ is a sequence and $I$ a set of indices then
+$s \upharpoonright I$ is the subsequence of $s$ obtained by removing from $s$ all the elements
+at a position that is not in $I$.
 \end{dfn}
 
- Remark: On safe terms, simultaneous substitution can be achieved inductively by only performing
- simultaneous substitution on smaller sub-terms that are safe.
+We now prove that in the homogeneous safe $\lambda$-calculus, variable capture never occurs. Therefore
+the capture permitting substitution that we use is equivalent to the traditional substitution (where an unbound number of
+variable names are required to avoid capture).
 
-We now prove that the ``no variable clash lemma'' also hold with
-this new definition of the homogeneous safe $\lambda$-calculus.
-
-\begin{lem}[No variable clash lemma]
-In the safe $\lambda$-calculus, there is no clash of variable name
-when performing substitution:
+\begin{lem}[No variable capture lemma]
+In the safe $\lambda$-calculus, there is no capture of variable
+when performing the following capture permitting simultaneous substitution on safe terms $M$, $N_1, \ldots N_n$:
 \[ \qquad M[N_1 / x_1 , \cdots, N_n / x_n] \]
  provided the substitution is performed simultaneously on
 \emph{all} free variables of the same order in $M$
 i.e.~$\makeset{x_1, \cdots, x_n}$ is the set variables of the same
-order as $x_1$ that occur free in $M$.
+order as $x_1$ occurring freely in $M$.
 \end{lem}
 
 \begin{proof}
-First we note that if the substitutions were consecutive ($M
-\subst{N_1}{x_1}\ldots \subst{N_n}{x_n}$) instead of being
-simultaneous then a variable capture would arise if some $N_i$ has a
-free occurrence of a variable $x_j$ with $j>i$. However this capture
-does not happen when performing the substitutions simultaneously as
-follow: $M \subst{N_1, \ldots N_n}{x_1, \ldots x_n}$.
+We prove the result by induction. The variable, constant and application cases are trivial.
+For the abstraction case, suppose $M = \lambda \overline{y} : \overline{A}. P$. The capture permitting
+simultaneous substitution gives:
+$$M \subst{\overline{N}}{\overline{x}} = \lambda \overline{y} . P
+\subst{\overline{N} \upharpoonright I}{\overline{x} \upharpoonright I}$$
 
-Suppose that a variable capture occurs in the term $M$: $M$ has a
-subterm $\lambda y_1 \ldots y_p. T$ such that some $x_i$ appears
-freely in $T$ and some $y_k$ appears freely in $N_i$. Because of the
-previous remark,
- we can assume that the subterm $\lambda y_1 \ldots y_p . T$ is safe.
+The variables $\overline{x}$ all occurs freely in $M$ therefore
+the variable in $\overline{x}$ cannot be abstracted under the $\lambda \overline{y}$. Hence $I = \emptyset$
+and:
+$$M \subst{\overline{N}}{\overline{x}} = \lambda \overline{y} . P
+\subst{\overline{N}}{\overline{x}}$$
 
-Since $x_i$ appears freely in the safe term $\lambda y_1 \ldots y_p
-. T$, by Lemma \ref{lem:safe_basic_prop} (ii) we get:
-$$ ord(x_i) \geq ord(\lambda y_1 \ldots y_p . T) \geq 1+ ord(y_k) > ord(y_k)$$
+The free variable of $P$ that have the same order as $x_1$ are exactly the variables in $\overline{x}$ therefore by applying the
+induction hypothesis we know that there is no variable capture in $P
+\subst{\overline{N}}{\overline{x}}$.
 
-Since $y_k$ appears freely in the safe term $N_i$, Lemma
-\ref{lem:safe_basic_prop} (ii) gives:
+Hence the only possible case of variable capture that can occur is when a variable $y_j$ for some $j \in 1..p$ occurs freely
+in $N_i$. By lemma \ref{lem:safe_basic_prop} (ii) we get:
+$$ ord(y_j) \geq ord(N_i) = ord(x_i)$$
 
-$$ ord(y_k) \geq ord(N_i) = ord(x_i)$$
+Moreover, since $x_i$ occurs freely in the safe term $\lambda \overline{y}. P$, again by lemma \ref{lem:safe_basic_prop} (ii)
+we get:
+$$ ord(x_i) \geq ord(\lambda y_1 \ldots y_p . T) \geq 1+ ord(y_j) > ord(y_j)$$
 
 Hence we reach a contradiction.
+
+%First we note that if we perform the substitutions consecutively ($M
+%\subst{N_1}{x_1}\ldots \subst{N_n}{x_n}$) instead of
+%simultaneously, then a variable capture may arise if for some $i$ and $j>i$, $x_j$ occurs freely
+%in $N_i$. This problem does not arise when performing the substitutions simultaneously as
+%follow: $M \subst{N_1, \ldots N_n}{x_1, \ldots x_n}$.
+
+%Remark: We observe from this definition, that simultaneous substitution on safe terms is achieved
+%inductively by performing simultaneous substitution only on smaller sub-terms that are safe.
+
+%Suppose that a variable capture occurs in the term $M$: $M$ has a
+%subterm $\lambda y_1 \ldots y_p. T$ such that some $x_i$ appears
+%freely in $T$ and some $y_k$ appears freely in $N_i$. Because of the
+%previous remark,
+% we can assume that the subterm $\lambda y_1 \ldots y_p . T$ is safe.
+
 \end{proof}
+
+
+\todobox{Prove that safety is preserved by
+capture-permitting simultaneous substitution provided the substitution is performed simultaneously on
+\emph{all} free variables of the same order in $M$.
+}
+
+\todobox{Prove that any redex occurring in a safe term can be reduced using the capture-permitting simultaneous substitution
+(in particular for redex formed with the (app+) rule)}
 
 
 \subsection{Rules - second version}
 
 
 In this section, we will refine the formation rules
-given in the previous section.
-
-We say that $\Gamma \vdash M : A$ verifies $P_i$ if all the
-variables in $\Gamma$ have orders at least $\ord{A}+i$.
-
-We introduce the notation $\Gamma \vdash^{i} M : A$ for $i \in
+given in the previous section. We say that $\Gamma \vdash M : A$ verifies $P_i$ if all the
+variables in $\Gamma$ have orders at least $\ord{A}+i$ and we introduce the notation $\Gamma \vdash^{i} M : A$ for $i \in
 \zset$ to mean that $\Gamma \vdash M : A$ and $\Gamma \vdash M : A$
 satisfies $P_i$.
 
 
 The following lemma says that if $\Gamma \vdash M : A$ then variable in the context $\Gamma$ with order
-strictly smaller than $M$ do not occur freely in $M$ and therefore the context can be restricted.
+strictly smaller than $M$ do not occur freely in $M$ and therefore the context can be restricted to a smaller number of variables.
 
-\begin{lem}[Context restriction]
+\begin{lem}[Context reduction]
 \label{lem:restriction}
 
 Suppose that $\Gamma \vdash M : A$ satisfies $P_i$ with $i\leq0$, then we have
@@ -229,18 +250,17 @@ By induction, the only non trivial cases are (app) and (app+):
     &>& 1 + \ord{\overline{B_2}} = \ord{M N_1 \ldots N_l}
     \end{eqnarray*}
 
-\item (app+) The first premise has the same order has the
+\item (app+) The side-condition of the rule (app+) ensures that all but the first premise verify $P_0$.
+The first premise has the same order has the
 conclusion of the rule therefore the first premise verifies
-$P_{i}$. The other premises verify $P_{i+1}$. Again using the induction hypothesis
-and by applying the rule (App+) we get the result wanted.
+$P_{i}$. We can therefore conclude by using the induction hypothesis and applying the rule (app+).
 \end{itemize}
-
 \end{proof}
 
 
 The following lemma is a direct consequence of the context restriction lemma:
 \begin{lem}
-%\label{}
+\label{lem:prooftree01only}
 If $\Gamma \vdash^{0} M : T$ then there is valid proof tree
 showing that $\Gamma \vdash M : T$ such that all the judgments
 of the proof tree verify $P_0$ or $P_{-1}$.
@@ -269,19 +289,22 @@ premise verifies $P_{-1}$.
 
 \item (app+) The first premise has the same order has the
 conclusion of the rule therefore the first premise verifies
-$P_{-1}$. The other premises have an order strictly smaller that the
-order of the conclusion of the rule therefore they verify $P_0$
+$P_{-1}$. The side-condition of the rule (app+) ensures that the other premises verify $P_0$.
 
 \item (app) Using lemma \ref{lem:restriction} and then applying the rule (app).
 
 \end{itemize}
 \end{proof}
 
-We are interested by the sequents that verify $P_0$. For that purpose, we now refine the previous system of rules
-of the safe lambda calculus such that it only generates sequents that are either satisfying $P_0$ or
-that can be used to produce term that satisfy $P_0$.
+\subsubsection{Refining the rules of the homogeneous safe $\lambda$-calculus}
 
-Thanks to the previous lemma, we know that it is useless to produce sequents that do not satisfy
+Using the observations that we have just made, we will now refine the rules
+of the safe $\lambda$-calculus with homogeneous type. We would like to obtain a system
+of rules generating sequents that verify $P_0$. Those sequents correspond to the ``safe'' terms.
+
+The system of rules must be able to generate intermediate sequents that are then used to produce term
+satisfying $P_0$. Because of the lemma \ref{lem:prooftree01only}, we know that the only necessary intermediate sequents
+are those that either satisfy $P_0$ or $P_{-1}$. In other word, it is useless to produce sequents that do not satisfy
 $P_0$ or $P_{-1}$. We will therefore use the notation $\vdash^0$ and $\vdash^{-1}$ instead of $\vdash$ to precise
 whether a given sequent satisfies $P_0$ or $P_{-1}$.
 
@@ -294,24 +317,129 @@ There is also an additional rules expressing the fact that $P_0$ implies $P_{-1}
 
 $$ \mathbf{(seq)} \quad \rulef{\Gamma \vdash^{0} M : A}{\Gamma \vdash^{-1} M : A} $$
 
-In the rules \textbf{(perm)}, \textbf{(const)} and \textbf{(var)}, only the tagging of the sequent changes:
 
-$$ \mathbf{(var)} \quad  \rulef{}{x : A\vdash^{0} x : A} $$
+Because of the context reduction lemma, any sequent verifying $P_1$ can be obtained
+by applying the weakening rule ($\mathbf{wk^{-1}}$) or the rule (\textbf{seq}) on a sequent
+verifying $P_0$. Therefore, with the exception these two rules, we can safely force all the rules to
+have a conclusion sequent verifying $P_0$:
+\begin{itemize}
+\item  For the rules \textbf{(perm)}, \textbf{(const)} and \textbf{(var)}, only the tagging of the sequent changes:
 
-\[  (\mbox{\textbf{perm}}) {
-      { \Gamma \vdash^s M:B \qquad \sigma(\Gamma)  } \hbox{ homogeneous}
+$$ \mathbf{(var)} \quad  \rulef{}{x : A\vdash^{0} x : A}
+\qquad
+  (\mbox{\textbf{perm}}) {
+      { \Gamma \vdash^0 M:B \qquad \sigma(\Gamma)  } \hbox{ homogeneous}
     \over
-      { \sigma(\Gamma) \vdash^s M : B }
+      { \sigma(\Gamma) \vdash^0 M : B }
     }
-\]
-
+$$
 
 \[ \textbf{(const)}
     { \over { \vdash^0 b : o^r \rightarrow o}} \quad b : o^r \rightarrow o \in \Sigma
     \]
 
+\item  The previous definition of the abstraction rule has a side condition
+expressing the fact that the premise verifies $P_0$ or $P_{-1}$. Since this is always true for sequents
+generated by our new system of rules, we can drop the side condition:
+$$ \mathbf{(abs)} \quad  \rulef{\Gamma, \overline{x} : \overline{A} \vdash^{-1} M : B}
+                                   {\Gamma  \vdash^{0} \lambda \overline{x} : \overline{A} . M : (\overline{A},B)}$$
 
 
+\item The application rule \textbf{(app)} has the following form:
+\[ (\mbox{\textbf{app}})
+    {
+        { \Gamma \vdash^{-1} M : (\overline{A} \, | B)
+        \qquad
+        \Gamma \vdash^? N_1 : A_1 \quad \cdots \quad \Gamma \vdash^? N_{l} : A_l \qquad l = |\overline{A}|
+        }
+    \over{
+        \Gamma \vdash^0 M N_1 \cdots N_{l_1} : B
+       }
+    }
+\]
+
+Suppose that the sequent in the first premise verifies $P_{-1}$, then by Lemma \label{lem:safe_basic_prop}(ii)
+we have:
+$$\forall z \in \Gamma : \ord{z} \geq 1 + \ord{\overline{A}} -1 = \ord{\overline{A}} = \ord{\overline{N}}$$
+Hence, all the sequents of the premises but the first one verify $P_0$. The rule (app) is therefore given by:
+\[ (\mbox{\textbf{app}})
+    {
+        { \Gamma \vdash^{-1} M : (\overline{A} \, | B)
+        \qquad
+        \Gamma \vdash^0 N_1 : A_1 \quad \cdots \quad \Gamma \vdash^0 N_{l} : A_l \qquad l = |\overline{A}|
+        }
+    \over{
+        \Gamma \vdash^0 M N_1 \cdots N_{l_1} : B
+       }
+    }
+\]
+
+\item For the application rule \textbf{(app+)}, the type of the sequent in the first premise has the same order
+as the type of the conclusion premises, therefore since the conclusion verifies $P_0$, the first premise also verifies $P_0$.
+The side condition exactly translates the fact that that all the other sequents in the premise verify $P_0$. Hence the rule becomes:
+\[ (\mbox{\textbf{app+}}) {
+    {
+        \Gamma \vdash M : (\overline{B_1} \, | \, \cdots \, | \, \overline{B_m} \, | \, o) \qquad
+        \Gamma \vdash^0 N_1 : B_{11} \quad \cdots \quad \Gamma \vdash^0 N_{l} : B_{1l} \qquad l < |\overline{B_1}|
+    }
+    \over{
+        \Gamma \vdash^0 M N_1 \cdots N_{l_1} : (\overline{B} \, | \, \cdots \, | \, \overline{B_m} \, | \, o)
+    }
+} \]
+where $\overline{B_1} = B_{11}, \ldots, B_{1l},\overline{B}$.
+This rule can be equivalently stated as:
+$$ \rulef{\Gamma \vdash^0 M : A\rightarrow B
+                                        \qquad \Gamma \vdash^{0} N : A
+                                   }
+                                   {\Gamma  \vdash^{0} M N : B}$$
+\end{itemize}
+
+The full set of rules is given in table \ref{tab:homosafelmd_rules_refined}
+
+\begin{table}[htbp]
+$$  (\mbox{\textbf{perm}}) {
+      { \Gamma \vdash^0 M:B \qquad \sigma(\Gamma)  } \hbox{ homogeneous}
+    \over
+      { \sigma(\Gamma) \vdash^0 M : B }
+    }
+\qquad
+\mathbf{(seq)} \quad \rulef{\Gamma \vdash^{0} M : A}{\Gamma \vdash^{-1} M : A}
+$$
+
+$$
+ \textbf{(const)}
+    { \over { \vdash^0 b : o^r \rightarrow o}} \quad b : o^r \rightarrow o \in \Sigma
+\qquad
+ \mathbf{(var)} \quad  \rulef{}{x : A\vdash^{0} x : A} $$
+
+$$ \mathbf{(wk^{0})} \quad  \rulef{\Gamma \vdash^{0} M : A}{\Gamma , x : B \vdash^{0} M : A} \quad \ord{B} \geq \ord{A} $$
+
+$$ \mathbf{(wk^{-1})} \quad  \rulef{\Gamma \vdash^{-1} M : A}{\Gamma , x : B \vdash^{-1} M : A} \quad \ord{B} \geq \ord{A} -1$$
 
 
+$$ (\mbox{\textbf{app}})
+    \rulef
+        {   \Gamma \vdash^{-1} M : (\overline{A} \, | B)
+            \qquad
+            \Gamma \vdash^0 N_1 : A_1 \quad \cdots \quad \Gamma \vdash^0 N_{l} : A_l \qquad l = |\overline{A}|
+        }
+        {
+            \Gamma \vdash^0 M N_1 \cdots N_{l_1} : B
+        }
+$$
+
+$$ \mathbf{(app^+)} \quad  \rulef{\Gamma \vdash^0 M : A\rightarrow B
+                                        \qquad \Gamma \vdash^{0} N : A,
+                                   }
+                                   {\Gamma  \vdash^{0} M N : B}$$
+
+$$ \mathbf{(abs)} \quad  \rulef{\Gamma| \overline{x} : \overline{A} \vdash^{-1} M : B}
+                                   {\Gamma  \vdash^{0} \lambda \overline{x} : \overline{A} . M : (\overline{A}|B)}$$
+
+
+where $\Gamma| \overline{x} : \overline{A}$ means that the lowest type-partition of the context is
+$\overline{x} : \overline{A}$.
+\caption{Rules of the homogeneous safe lambda calculus}
+\label{tab:homosafelmd_rules_refined}
+\end{table}
 %%%

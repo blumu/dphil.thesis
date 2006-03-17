@@ -47,7 +47,7 @@ $\Delta$ is a given homogeneously-typed alphabet:
 \[ (\mathbf{\Sigma}\mbox{\textbf{-const}})    {   {b : o^r \rightarrow o \in \Sigma } \over {\seq{}{b : o^r \rightarrow o}}}
 \qquad
  (\mbox{\textbf{var}}) { \over
-{\seq{\overline{x_{ij}} : \overline{A_{ij}}\, }{x_{ij} :
+{\seq{x_{ij} : A_{ij}\, }{x_{ij} :
 A_{ij}}}}\]
 
 \[ (\mbox{$\mathbf{\lambda}$\textbf{-abs}})
@@ -58,21 +58,21 @@ A_{ij}}}}\]
 \overline{A_{n}}}{\lterm{\overline{x_{n+1}} : \overline{A_{n+1}}}{M}
 : (\overline{A_{n+1}} \, | \, B)}} } \]
 
-\[ (\mbox{\textbf{app}}) {{\seq{\Gamma}{M : (\overline{B_1} \, | \, \cdots \, | \, \overline{B_m} \, | \, o)} \qquad
+\[ (\mathbf{app}) {{\seq{\Gamma}{M : (\overline{B_1} \, | \, \cdots \, | \, \overline{B_m} \, | \, o)} \qquad
 \seq{\Gamma}{N_1 : B_{11}} \quad \cdots \quad \seq{\Gamma}{N_{l} :
 B_{1l}} \qquad l = |\overline{B_1}| } \over{ \seq{\Gamma}{M N_1
-\cdots N_{l_1} : (\overline{B_2} \, | \, \cdots \, | \,
+\cdots N_{l} : (\overline{B_2} \, | \, \cdots \, | \,
 \overline{B_m} \, | \, o)}}} \]
 
 
-\[ (\mbox{\textbf{app+}}) {{\seq{\Gamma}{M : (\overline{B_1} \, | \, \cdots \, | \, \overline{B_m} \, | \, o)} \qquad
+\[ (\mathbf{app^+}) {{\seq{\Gamma}{M : (\overline{B_1} \, | \, \cdots \, | \, \overline{B_m} \, | \, o)} \qquad
 \seq{\Gamma}{N_1 : B_{11}} \quad \cdots \quad \seq{\Gamma}{N_{l} :
 B_{1l}} \qquad l < |\overline{B_1}| } \over{ \seq{\Gamma}{M N_1
-\cdots N_{l_1} : (\overline{B} \, | \, \cdots \, | \,
+\cdots N_{l} : (\overline{B} \, | \, \cdots \, | \,
 \overline{B_m} \, | \, o)}}} \]
 
 where $\overline{B_1} = B_{11}, \ldots, B_{1l},\overline{B}$ with
-the condition that every variable in $\Gamma$ has an order greater
+the condition that every variable in $\Gamma$ has an order strictly greater
 than $\ord{\overline{B_1}}$.
 
 
@@ -82,9 +82,15 @@ valid judgment then
 
 \begin{itemize}
 \item[(i)] $B$ is homogeneous
-\item[(ii)] Every free variables of $M$ has order at least $ord(M)$
+\item[(ii)] Every free variables of $M$ has order at least $\ord{M}$
 \end{itemize}
 \end{lem}
+
+The following corollary is a consequence of the second point in the previous lemma:
+\begin{property}
+If $\Gamma \vdash M : B$ then $fv(M) \vdash M : B$ where $fv(M) \subseteq \Gamma$ denotes the context which variables are
+are exactly the free variables of $M$.
+\end{property}
 
 We now define a special kind of substitution that performs simultaneous substitution and
 that permits variable capture (i.e. no renaming occurs in the abstraction case).
@@ -117,8 +123,9 @@ variable names are required to avoid capture).
 
 \begin{lem}[No variable capture lemma]
 In the safe $\lambda$-calculus, there is no capture of variable
-when performing the following capture permitting simultaneous substitution on safe terms $M$, $N_1, \ldots N_n$:
-\[ \qquad M[N_1 / x_1 , \cdots, N_n / x_n] \]
+when performing the following capture permitting simultaneous substitution on safe terms
+$\Gamma,\overline{x} \vdash M$, $\Gamma \vdash  N_1, \ldots \Gamma \vdash  N_n$:
+$$ M[N_1 / x_1 , \cdots, N_n / x_n] $$
  provided the substitution is performed simultaneously on
 \emph{all} free variables of the same order in $M$
 i.e.~$\makeset{x_1, \cdots, x_n}$ is the set variables of the same
@@ -151,35 +158,228 @@ we get:
 $$ ord(x_i) \geq ord(\lambda y_1 \ldots y_p . T) \geq 1+ ord(y_j) > ord(y_j)$$
 
 Hence we reach a contradiction.
+\end{proof}
 
-%First we note that if we perform the substitutions consecutively ($M
-%\subst{N_1}{x_1}\ldots \subst{N_n}{x_n}$) instead of
-%simultaneously, then a variable capture may arise if for some $i$ and $j>i$, $x_j$ occurs freely
-%in $N_i$. This problem does not arise when performing the substitutions simultaneously as
-%follow: $M \subst{N_1, \ldots N_n}{x_1, \ldots x_n}$.
+\begin{lem}[Capture-permitting simultaneous substitution preserves safety]
+\label{lem:subst_preserve_safety}
 
-%Remark: We observe from this definition, that simultaneous substitution on safe terms is achieved
-%inductively by performing simultaneous substitution only on smaller sub-terms that are safe.
+The capture permitting simultaneous substitution of the safe terms
+$\Gamma, \overline{x} \vdash N_1$, \ldots, $\Gamma, \overline{x} \vdash N_n$ for
+the variables $\overline{x}$ in the safe term $\Gamma, \overline{x} \vdash M$ is safe:
+$$ \Gamma \vdash M[N_1 / x_1 , \cdots, N_n / x_n] $$
+provided that the substitution is performed simultaneously on
+\emph{all} free variables of the same order in $M$.
+\end{lem}
+\begin{proof}
+An easy proof by an induction similar to the proof of the previous lemma.
+\end{proof}
 
-%Suppose that a variable capture occurs in the term $M$: $M$ has a
-%subterm $\lambda y_1 \ldots y_p. T$ such that some $x_i$ appears
-%freely in $T$ and some $y_k$ appears freely in $N_i$. Because of the
-%previous remark,
-% we can assume that the subterm $\lambda y_1 \ldots y_p . T$ is safe.
+\subsection{Safe $\beta$-reduction}
 
+We now introduce the notion of safe $\beta$-redex and show how such redex can be reduced using the
+capture-permitting simultaneous substitution. We will then show that
+for safe terms, safe $\beta$-reduction reduce to safe terms.
+
+
+In the simply-typed lambda calculus a redex is a term of the form $(\lambda x . M) N$.
+We generalize this notion to the safe lambda calculus. We call multi-redex a term of the form
+$(\lambda x_1 \ldots x_n . M) N_1 \ldots N_l$.
+
+
+A say that a multi-redex is safe if it respects the formation rules of the safe $\lambda$-calculus. More precisely,
+the multi-redex $(\lambda x_1 \ldots x_n . M) N_1 \ldots N_l$ is a safe redex if the variable $x_1,\ldots,x_n$
+are abstracted altogether at once using the abstraction rule and if the terms $N_1 \ldots N_l$ are applied to the
+term $\lambda x_1 \ldots x_n . M$ at once using either the application rule $\mathbf{(app^+)}$ or $\mathbf{(app)}$.
+
+Note that there exist safe terms of the form $(\lambda x_1 \ldots x_n . M) N_1 \ldots N_l$
+such that $l>n$. For instance the following term:
+$$ (\lambda f g . ((\lambda h i . i) a) ) (\lambda x.x) (\lambda x.x) (\lambda x.x)$$
+where is $a$ constant, $x : o$ and $f,g,h,i,a:o \rightarrow o$ can be formed using the \textbf{(app)} rule as follow:
+$$ \rulef{
+    \emptyset \vdash (\lambda f g . ((\lambda h i . i) a) )
+        \quad \emptyset \vdash (\lambda x.x)
+        \quad \emptyset \vdash (\lambda x.x)
+        \quad \emptyset \vdash (\lambda x.x)
+    }
+    {
+       \emptyset \vdash (\lambda f g . ((\lambda h i . i) a) ) (\lambda x.x) (\lambda x.x) (\lambda x.x)
+    } \textbf{(app)}
+$$
+
+
+The formal definition follows:
+
+\begin{dfn}[Safe redex]
+A safe redex is a term having one of the following two forms:
+
+\begin{itemize}
+    \item $(\lambda \overline{x} . M) N_1 \ldots N_l$ formed with the \textbf{(app)} rule such that
+        \begin{itemize}
+        \item the variable $\overline{x}=x_1\ldots x_n$ are abstracted altogether by one occurrence of the rule \textbf{(abs)} in the proof tree.
+                Consequently:
+                $$\ord{M} \leq \ord{\overline{x}} = \ord{x_1} = \ldots = \ord{x_n}$$
+
+        \item The terms $(\lambda \overline{x} . M)$, $N_1$, $N_l$ are applied together at once using the rule \textbf{(app)}:
+        $$   \rulef{
+                    \Sigma \vdash \lambda \overline{x} . M : (\overline{B_1}|\ldots|\overline{B_m}|o)
+                    \quad
+                    \Sigma \vdash N_1         \quad \ldots \quad \Sigma \vdash N_l
+                    \quad l = |\overline{B_1}|
+            }
+            {
+            \Sigma \vdash (\lambda \overline{x} . L) N_1 \ldots N_l
+            } (\mathbf{app})
+        $$
+
+        \item $n \leq l$. This is because the variables $x_1, \ldots, x_n$ all belong to the lowest partition $\overline{B_1}$ hence $n\leq |\overline{B_1}| = l$.
+
+        \end{itemize}
+
+\item $(\lambda \overline{x} . M) N_1 \ldots N_l$ formed with the $\mathbf{(app^+)}$ rule such that:
+
+        \begin{itemize}
+        \item the variable $\overline{x}=x_1\ldots x_n$ are abstracted altogether by one occurrence of the rule \textbf{(abs)} in the proof tree.
+                Consequently  $\ord{M} \leq \ord{\overline{x}} = \ord{x_1} = \ldots = \ord{x_n}$
+
+        \item The terms $(\lambda \overline{x} . M)$, $N_1$, $N_l$ are applied together at once using the rule $\mathbf{(app^+)}$:
+        $$   \rulef{
+                    \Sigma \vdash \lambda \overline{x} . M : (\overline{B_1}|\ldots|\overline{B_m}|o)
+                    \quad
+                    \Sigma \vdash N_1         \quad \ldots \quad \Sigma \vdash N_l
+                    \quad l < |\overline{B_1}|
+            }
+            {
+            \Sigma \vdash (\lambda \overline{x} . L) N_1 \ldots N_l
+            } (\mathbf{app^+})
+        $$
+
+      \item $n \leq |\overline{B_1}|$ (we do not necessarily have $n = |\overline{B_1}|$).
+
+        \end{itemize}
+
+\end{itemize}
+\end{dfn}
+
+
+\begin{dfn}[Safe reduction $\beta_s$] \
+For concision the following abbreviations are used $\overline{x} = x_1 \ldots
+x_n$, $\overline{N} = N_1 \ldots N_l$, and when $n\geq l$, $\overline{x_l} = x_1 \ldots
+x_l$, $\overline{x_r} = x_{l+1} \ldots x_n$.
+\begin{itemize}
+\item The relation $\beta_s$ is defined on the set of safe redex as follow:
+\begin{eqnarray*}
+\beta_s &=&
+\{  \ (\lambda \overline{x} : \overline{A} . T) N_1 \ldots N_l \mapsto \lambda \overline{x_r}. T\subst{\overline{N}}{\overline{x_l}}  \\
+&& \mbox{ where $(\lambda \overline{x} : \overline{A} . T) N_1 \ldots N_l$ is a safe redex such that $n> l$}
+\} \\
+&\union&
+\{ \ (\lambda \overline{x} : \overline{A} . T) N_1 \ldots N_l \mapsto T\subst{\overline{N}}{\overline{x}} N_{n+1} \ldots N_l  \\
+&& \mbox{ where $(\lambda \overline{x} : \overline{A} . T) N_1 \ldots N_l$ is a safe redex such that $n\leq l$}
+\}
+\end{eqnarray*}
+where the notation $\subst{\overline{N}}{\overline{x}}$ denotes the capture-permitting simultaneous substitution.
+
+\item
+The safe $\beta$-reduction noted $\betasred$ is the closure
+of the relation $\beta_s$ by compatibility with the formation rules
+of the safe $\lambda$-calculus.
+\end{itemize}
+\end{dfn}
+
+We remark that $\betasred \subset \betaredtr$, i.e. the safe
+$\beta$-reduction relation is included in the transitive closure of
+the $\beta$-reduction relation. Safe $\beta$-reduction is a certain
+kind of multi-steps $\beta$-reduction.
+
+\begin{property} In the simply typed $\lambda$-calculus setting:
+\begin{enumerate}
+\item $\betasred$ is strongly normalizing.
+\item $\beta_s$ has the unique normal form property.
+\item $\beta_s$ has the Church-Rosser property.
+\end{enumerate}
+\end{property}
+
+\begin{proof}
+1. This is because $\betasred \subset \betaredtr$ and $\betared$ is strongly normalizing (in the simply typed lambda calculus).
+2. A term has a safe redex iff it has a $\beta$-redex therefore
+the set of $\beta_s$ normal form is equal to the set of $\beta_s$
+normal form. Hence, the unicity of $\beta$ normal form implies the
+unicity of $\beta_s$ normal form.
+3. is a consequence of 1 and 2.
 \end{proof}
 
 
-\todobox{Prove that safety is preserved by
-capture-permitting simultaneous substitution provided the substitution is performed simultaneously on
-\emph{all} free variables of the same order in $M$.
-}
+We now prove that reducing a safe redex $(\lambda \overline{x} . M) N_1 \ldots N_l$ produces a safe term.
 
-\todobox{Prove that any redex occurring in a safe term can be reduced using the capture-permitting simultaneous substitution
-(in particular for redex formed with the (app+) rule)}
+\begin{lem}[The safe reduction $\beta_s$ preserves safety]
+$M$ safe and $M \betasred N$ implies $N$ safe.
+\end{lem}
+
+\begin{proof}
+It suffices to show that the relation $\beta_s$ preserves safety.
+Consider the safe-redex $(s\mapsto t) \in \beta_s$ where $ s \equiv (\lambda x_1 \ldots x_n . M) N_1 \ldots N_l $ .
+We proceed by case analysis on the the last rule used to form the redex.
+\begin{itemize}
+\item Suppose the last rules used is $\mathbf{(app)}$, then necessarily $n\leq l$ and the reduction is:
+$$(\lambda x_1 \ldots x_n . M) N_1 \ldots N_l \qquad \mapsto  \qquad t \equiv M[N_1 / x_1 , \cdots, N_n / x_n]\ N_{n+1} \ldots N_l$$
+where $ord(M) \leq ord(x_1) = \ldots = ord(x_n)$.
+
+The first premise of the rule $\mathbf{(app)}$ tells us that $M$ is safe,
+therefore since substitution preserves safety (lemma
+\ref{lem:subst_preserve_safety}), using the application rule we obtain that $t$ is safe.
+
+\item Suppose the last rules used is $\mathbf{(app^+)}$ and $n> l$ then the reduction is
+$$ (\lambda \overline{x_l} : \overline{A_l} \
+\overline{x_r}: \overline{A_r} . T) \overline{N_l} \qquad \mapsto
+\qquad t \equiv \lambda \overline{x_r}: \overline{A_r} .
+T\subst{\overline{x_l}}{\overline{N_l}}
+$$
+where $ord(T) \leq ord(x_1) = \ldots = ord(x_n)$
 
 
-\subsection{Rules - second version}
+\todobox{TO FINISH: Unfortunately, we cannot use directly lemma \ref{lem:subst_preserve_safety} because the substitution on $T$
+is performed on the variables $x_1, \ldots x_l$ and not on all the free variables of order $\ord{x_1}$.}
+
+%However, since the variable $x_1, \ldots x_n$ are abstracted together at once, we have:
+%$$\Gamma \vdash \lambda \overline{x} . T : (\overline{B_1}|\ldots|\overline{B_m}|o)$$
+%where $\overline{x}$ constitutes the lowest partition of the context $\Gamma, \overline{x}$. i.e.
+%$\forall z \in \Gamma : \ord{z} \geq \ord{\overline{x}}$.
+%
+%Therefore for all $j \in (l+1)\ldots n$, we can derive using the rules \textbf{(var)} and \textbf{(wk)} the sequent
+%  $\Gamma \vdash x_j$.
+%
+
+%We now perform a capture permitting substitution of the safe terms
+%$\Gamma \vdash N_1$, \ldots, $\Gamma \vdash N_l$, $\Gamma \vdash x_{l+1}$, \ldots, $\Gamma \vdash x_n$ for the variables
+%$x_1 \ldots x_n$ in the safe term $\Gamma \vdash T$, and we obtain by lemma \ref{lem:subst_preserve_safety}:
+%$$\Gamma \vdash T [N_1/x_1 \ldots N_l/x_l \ x_{l+1}/x_{l+1} \ldots x_n/x_n] = T[N_1/x_1 \ldots N_l/x_l]$$
+
+%Finally, by applying the rule $\mathbf{(abs)}$ we prove the safety of $t$.
+
+
+
+
+
+
+\item Suppose the last rules used is $\mathbf{(app^+)}$ and $n\leq l$ then the reduction is
+$$(\lambda x_1 \ldots x_n . M) N_1 \ldots N_l \qquad \mapsto \qquad t \equiv M[N_1 / x_1 , \cdots, N_n / x_n]\ N_{n+1} \ldots N_l$$
+where $ord(M) \leq ord(x_1) = \ldots = ord(x_n)$. The treatment of this case is identical to case $\mathbf{(app)}$.
+
+\item Rule $\textbf{(wk)}$ $\textbf{(seq)}$: these cases lead back to the previous cases.
+\end{itemize}
+\end{proof}
+
+
+
+\begin{rem}
+\label{rem:betasred_notpreserv_unsafety} $\betasred$ preserves
+safety but \emph{does not} preserves un-safety: given two terms of
+the same type $S$ safe and $U$ unsafe, the term $(\lambda x y . y) U S$ is also unsafe
+but it $\beta_s$-reduces to $S$ which is safe.
+\end{rem}
+
+
+\subsection{An alternative system of rules}
 
 
 In this section, we will refine the formation rules
@@ -200,15 +400,17 @@ $\Gamma' \vdash^{0} M : A$ where $$\Gamma' = \{ z \in \Gamma \ |
 \ \ord{z} \geq \ord{M} \} = \Gamma \setminus \{ z \in \Gamma \ | \ \ord{M} + i \leq \ord{z} < \ord{M} \}$$
 \end{lem}
 \begin{proof}
-By induction, the only non trivial cases are (app) and (app+):
+By induction, the only non trivial cases are $\mathbf{(app)}$ and $\mathbf{(app^+)}$:
 \begin{itemize}
-\item (app)
+\item Case of the rule $\mathbf{(app)}$:
 
-    \[ {{\seq{\Gamma}{M : (\overline{B_1} \, | \, \cdots \, | \, \overline{B_m} \, | \, o)} \qquad
+    \[ (\mathbf{app})
+    {{\seq{\Gamma}{M : (\overline{B_1} \, | \, \cdots \, | \, \overline{B_m} \, | \, o)} \qquad
     \seq{\Gamma}{N_1 : B_{11}} \quad \cdots \quad \seq{\Gamma}{N_{l} :
     B_{1l}} \qquad l = |\overline{B_1}| } \over{ \seq{\Gamma}{M N_1
-    \cdots N_{l_1} : (\overline{B_2} \, | \, \cdots \, | \,
-    \overline{B_m} \, | \, o)}}} (\mbox{app})\]
+    \cdots N_{l} : (\overline{B_2} \, | \, \cdots \, | \,
+    \overline{B_m} \, | \, o)}}}
+    \]
 
     If the conclusion verifies $P_i$ then, for all $z \in \Gamma$:
     \begin{eqnarray*}
@@ -250,10 +452,10 @@ By induction, the only non trivial cases are (app) and (app+):
     &>& 1 + \ord{\overline{B_2}} = \ord{M N_1 \ldots N_l}
     \end{eqnarray*}
 
-\item (app+) The side-condition of the rule (app+) ensures that all but the first premise verify $P_0$.
+\item $\mathbf{(app^+)}$  The side-condition of the rule $\mathbf{(app^+)}$ ensures that all but the first premise verify $P_0$.
 The first premise has the same order has the
 conclusion of the rule therefore the first premise verifies
-$P_{i}$. We can therefore conclude by using the induction hypothesis and applying the rule (app+).
+$P_{i}$. We can therefore conclude by using the induction hypothesis and applying the rule $\mathbf{(app^+)}$.
 \end{itemize}
 \end{proof}
 
@@ -275,23 +477,23 @@ $\Gamma \vdash M : T$ where all the nodes of the tree verify $P_0$
 or $P_{-1}$ by case analysis on the last rule used to prove $\Gamma \vdash M : T$ .
 
 \begin{itemize}
-\item (wk) If $\Delta \vdash M : T$ verifies $P_{-1}$ then in particular $\Gamma
+\item $\mathbf{(wk)}$ If $\Delta \vdash M : T$ verifies $P_{-1}$ then in particular $\Gamma
 \vdash M : T$ verifies $P_{-1}$ for any $\Gamma \subset \Delta$.
 
-\item (perm) trivial
+\item $\mathbf{(perm)}$ trivial
 
-\item ($\Sigma$) the context is empty therefore the sequent verifies $P_{-1}$.
+\item ($\mathbf{\Sigma}$-\textbf{const}) the context is empty therefore the sequent verifies $P_{-1}$.
 
-\item (var) the context contains only the variable itself : verifies $P_0$.
+\item $\mathbf{(var)}$ the context contains only the variable itself : verifies $P_0$.
 
-\item (abs) the second premise of the rule guarantees that the first
+\item $\mathbf{(abs)}$ the second premise of the rule guarantees that the first
 premise verifies $P_{-1}$.
 
-\item (app+) The first premise has the same order has the
+\item $\mathbf{(app^+)}$ The first premise has the same order has the
 conclusion of the rule therefore the first premise verifies
-$P_{-1}$. The side-condition of the rule (app+) ensures that the other premises verify $P_0$.
+$P_{-1}$. The side-condition of the rule $\mathbf{(app^+)}$ ensures that the other premises verify $P_0$.
 
-\item (app) Using lemma \ref{lem:restriction} and then applying the rule (app).
+\item $\mathbf{(app)}$ Using lemma \ref{lem:restriction} and then applying the rule $\mathbf{(app)}$.
 
 \end{itemize}
 \end{proof}
@@ -353,7 +555,7 @@ $$ \mathbf{(abs)} \quad  \rulef{\Gamma, \overline{x} : \overline{A} \vdash^{-1} 
         \Gamma \vdash^? N_1 : A_1 \quad \cdots \quad \Gamma \vdash^? N_{l} : A_l \qquad l = |\overline{A}|
         }
     \over{
-        \Gamma \vdash^0 M N_1 \cdots N_{l_1} : B
+        \Gamma \vdash^0 M N_1 \cdots N_{l} : B
        }
     }
 \]
@@ -369,21 +571,22 @@ Hence, all the sequents of the premises but the first one verify $P_0$. The rule
         \Gamma \vdash^0 N_1 : A_1 \quad \cdots \quad \Gamma \vdash^0 N_{l} : A_l \qquad l = |\overline{A}|
         }
     \over{
-        \Gamma \vdash^0 M N_1 \cdots N_{l_1} : B
+        \Gamma \vdash^0 M N_1 \cdots N_{l} : B
        }
     }
 \]
 
-\item For the application rule \textbf{(app+)}, the type of the sequent in the first premise has the same order
+\item For the application rule $\mathbf{(app^+)}$, the type of the sequent in the first premise has the same order
 as the type of the conclusion premises, therefore since the conclusion verifies $P_0$, the first premise also verifies $P_0$.
-The side condition exactly translates the fact that that all the other sequents in the premise verify $P_0$. Hence the rule becomes:
-\[ (\mbox{\textbf{app+}}) {
+The side-condition implies that that all the other sequents in the premise verify $P_0$. Moreover the fact
+that the first premise verifies $P_0$ ensure that the side-condition holds. Hence the rule becomes:
+\[ \mathbf{(app^+)} {
     {
         \Gamma \vdash M : (\overline{B_1} \, | \, \cdots \, | \, \overline{B_m} \, | \, o) \qquad
         \Gamma \vdash^0 N_1 : B_{11} \quad \cdots \quad \Gamma \vdash^0 N_{l} : B_{1l} \qquad l < |\overline{B_1}|
     }
     \over{
-        \Gamma \vdash^0 M N_1 \cdots N_{l_1} : (\overline{B} \, | \, \cdots \, | \, \overline{B_m} \, | \, o)
+        \Gamma \vdash^0 M N_1 \cdots N_{l} : (\overline{B} \, | \, \cdots \, | \, \overline{B_m} \, | \, o)
     }
 } \]
 where $\overline{B_1} = B_{11}, \ldots, B_{1l},\overline{B}$.
@@ -424,12 +627,12 @@ $$ (\mbox{\textbf{app}})
             \Gamma \vdash^0 N_1 : A_1 \quad \cdots \quad \Gamma \vdash^0 N_{l} : A_l \qquad l = |\overline{A}|
         }
         {
-            \Gamma \vdash^0 M N_1 \cdots N_{l_1} : B
+            \Gamma \vdash^0 M N_1 \cdots N_{l} : B
         }
 $$
 
 $$ \mathbf{(app^+)} \quad  \rulef{\Gamma \vdash^0 M : A\rightarrow B
-                                        \qquad \Gamma \vdash^{0} N : A,
+                                        \qquad \Gamma \vdash^{0} N : A
                                    }
                                    {\Gamma  \vdash^{0} M N : B}$$
 

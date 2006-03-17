@@ -1,5 +1,5 @@
 
-\section{Particular case of homogeneously-safe lambda terms}
+\subsection{Particular case of homogeneously-safe lambda terms}
 
 We look at a particular sub-class of lambda terms. The types of
 these terms respect a property call homogeneity as defined in
@@ -24,7 +24,17 @@ homogeneous type.
 
 We say that a term is homogeneously-safe if its type is homogeneous
 and there is a proof tree showing its safety where all the sequents
-of the proof tree are of homogenous type!
+of the proof tree are of homogenous type.
+
+\begin{lem}[Context reduction]
+\label{lem:context_reduction} If $\Gamma \vdash^i M : A$ then there
+is a context $\Gamma' \subseteq \Gamma$ such that $\Gamma' \vdash^0
+M : A$.
+\end{lem}
+\begin{proof}
+An easy induction.
+\end{proof}
+
 
 \begin{lem}
 \label{lem:homog_judg_zero_minusone} If a term is homogeneously-safe
@@ -36,115 +46,104 @@ only judgments of the form $\Gamma \vdash^{k} M : T$ with $k\in
 \begin{proof}
 Assume that $\Gamma \vdash^{0} S : T_S$ with $T_S$ homogeneous.
 
+We prove the result by induction on the size of the proof tree and
+by case analysis on the last rule used to obtain $\Gamma \vdash^{0}
+S : T_S$.
 
-Because of remark \ref{rem:rulesineg} we just need to show that
-there is a proof tree where there is no sequent of the form $\Gamma
-\vdash^{k} M$ with $k<-1$.
-
-Suppose that the proof tree of $\Gamma \vdash^{0} S : T_S$ contains
-$\Gamma \vdash^{-k} M : T$ for $k>0$ and $T$ a homogeneous type.
-
-The term $M$ is unsafe but we hope that eventually we will form a
-safe term with it. Since $M$ is unsafe, its order must be strictly
-greater than $1$: we assume that $T = \overline{A} | B$. The
-homogeneity of $\overline{A} | B$ implies $ord(M) = 1 +
-ord(\overline{A})$.
-
-We observe that the only two possible ways to make a safe term is to
-use the rule $\mathbf{(app^i)}$ or $\mathbf{(abs^i)}$ for some $i$
-(they are the only rules which can decrease $k$):
-
+We give the details for the application and abstraction rule:
 \begin{itemize}
-\item
- Suppose that we want to form a homogeneously-safe term by abstracting a variable. Respecting type homogeneity
- requires $ord(x) \geq ord(A)$.
+\item Rule $\mathbf{(abs^i)}$ for some $i$:
+$$ \mathbf{(abs^i)} \quad  \rulef{\Gamma, \overline{x} : \overline{A} \vdash^i M : B}
+                                   {\Gamma  \vdash^{0} \lambda \overline{x} : \overline{A} . M : (\overline{A},B)} \qquad
+                                   \forall y \in \Gamma : \ord{y} \geq \ord{\overline{A},B}$$
 
-Then it is easy to see that the sequent $\Gamma \vdash^{-k} M : A
-\rightarrow B$ was too strong and that we could have derived the
-sequent $\Gamma \vdash^0 M : A \rightarrow B$ instead!
+Type homogeneity requires that $\ord{\overline{x}} = \ord{A} \geq
+\ord{B}$. Therefore the premise of the rule can be replaced by
+$\Gamma, \overline{x} : \overline{A} \vdash^0 M : B$.
 
-\item
-Suppose that we want to form a safe term by applying another term
-safe term $\Gamma \vdash^0 N : A$ to $\Gamma \vdash^{-k} M : A
-\rightarrow B$ (that way the unsafe term $M$ does not appear at an
-operand position).
+The induction hypothesis permits to conclude.
 
-Using the application rules once may not be enough to get a safe
-term, it may be necessary to perform several consecutive
-applications until the order of the term becomes low enough. We now
-consider the very last such application, the one that turns the non
-safe term into a safe one. This consideration allows us to assume
-that in the type $A \rightarrow B$, $A$ is the last type of its
-partition, i.e. $\ord{A} \geq \ord{B}$ and $\ord{M} = 1 + \ord{A}$.
+\item Rule $\mathbf{(app)}$:
+$$ \mathbf{(app)} \quad  \rulef{\Gamma \vdash^{-1} M : (A,\ldots,A_l,B)
+                                        \qquad \Gamma \vdash^{0} N_1 : A_1
+                                        \quad \ldots \quad \Gamma \vdash^{0} N_l : A_l  }
+                                   {\Gamma  \vdash^0 M N_1 \ldots N_l : B}
+                                    \qquad
+                                   \forall y \in \Gamma : \ord{y} \geq \ord{B}$$
 
-We observe that in the rule $(app^{-i})$, the environments  of the
-two premises ($\Gamma$) are the same. The second premise is $\Gamma
-\vdash^{0} N : A$ therefore by lemma
-\ref{lem:nonhomosafe_basic_prop} we have:
+For the first premise of the rule, we apply lemma
+\ref{lem:context_reduction}: there is a context $\Gamma'$ such that
+$\Gamma' \subseteq \Gamma$ and:
+$$ \Gamma' \vdash^{0} M : (A,\ldots,A_l,B) $$
+Now by the induction hypothesis we know that there is a proof tree
+showing $\Gamma' \vdash^{0} M : (A,\ldots,A_l,B)$ with judgement of
+the form $\Sigma \vdash^{k} P : T$ with $k\in \{-1,0\}$.
 
-\begin{equation}
-\forall x \in \Gamma : \ord{x} \geq \ord{N} = \ord{A} = \ord{M} - 1
-\end{equation}
+By applying the weakening rule, we lift this result to $\Gamma
+\vdash^{0} M : (A,\ldots,A_l,B)$.
 
-Again the sequent $\Gamma \vdash^{-k} M : A \rightarrow B$ was too
-strong and we could have derived the sequent $\Gamma \vdash^{-1} M :
-A \rightarrow B$ instead!
+For all the other premises we can directly apply the induction
+hypothesis.
 
+We conclude using the rule $\textbf{(app)}$.
 \end{itemize}
 \end{proof}
 
-From this lemma we can derive rules for the homogeneously-safe
-lambda calculus.
+This lemma permits us to derive rules specialized for the
+homogeneously-safe lambda calculus.
 
-\subsection{The application rule}
-
-We are now about to derive the application rules specialized for the
-case of homogeneous types. We recall the rule $\mathbf{(app^i)}$:
-$$ \mathbf{(app^i)} \quad  \rulef{\Gamma \vdash^i M : A\rightarrow B
-                                        \qquad \Gamma \vdash^{0} N : A}
-                                   {\Gamma  \vdash^{u} M N : B}
+\subsubsection{The application rule} We are now about to derive the
+application rules specialized for the case of homogeneous types. We
+recall the rule $\mathbf{(app)}$:
+$$ \mathbf{(app)} \quad  \rulef{\Gamma \vdash^{-1} M : (A,\ldots,A_l,B)
+                                        \qquad \Gamma \vdash^{0} N_1 : A_1
+                                        \quad \ldots \quad \Gamma \vdash^{0} N_l : A_l  }
+                                   {\Gamma  \vdash^0 M N_1 \ldots N_l : B}
                                     \qquad
-                                   u = \min(i+\max\left(0, 1 + \ord{A} - \ord{B}\right),0) \quad i \in \{ -1, 0 \} $$
+                                   \forall y \in \Gamma : \ord{y} \geq \ord{B}$$
 
-Type homogeneity implies that $\ord{A} \geq \ord{B} - 1$.
+Type homogeneity implies that $\ord{A_1} \geq \ldots \geq \ord{A_l}
+\geq \ord{B} - 1$.
+
+We can make the assumption that $\ord{A_1} = \ldots = \ord{A_l}$ (if it is not the case,
+we can replace the application rule by several consecutive application rules
+respecting this condition).
+
 
 \begin{itemize}
-\item Suppose that $\ord{A} \geq \ord{B}$ then the condition $i \in \{-1, 0\}$ implies $u=0$ and we obtain the following rule:
-$$ \mathbf{(app_1^i)} \quad  \rulef{\Gamma \vdash^i M : A\rightarrow B
-                                        \qquad \Gamma \vdash^{0} N : A }
-                                   {\Gamma  \vdash^{0} M N : B}
-                                    \qquad \ord{A} \geq \ord{B} ,\quad i \in \{ -1, 0 \} $$
+\item Suppose that $A_1, \ldots A_l$ forms a type partition, then we
+have $\ord{A_l} \geq \ord{B}$, the side-condition disappears and
+the rule becomes:
+$$ \mathbf{(app_1)} \quad  \rulef{\Gamma \vdash^{-1} M : \overline{A} | B
+                                        \qquad \Gamma \vdash^{0} N_1 :
+                                        A_1
+                                        \quad \ldots \quad \Gamma \vdash^{0} N_l :
+                                        A_l
+                                        }
+                                   {\Gamma  \vdash^{0} M N_1 \ldots N_l : B}
+$$
 
-\item Suppose that $\ord{A} = \ord{B} - 1$ then
-$ u = \min(i,0) = i$  (since $i \in \{-1,0\}$).
- We obtain the following rule:
-$$ \mathbf{(app_2^i)} \quad  \rulef{\Gamma \vdash^i M : A\rightarrow B
-                                        \qquad \Gamma \vdash^{0} N : A,
+where $\overline{A} = A_1, \ldots A_l$
+
+\item  Suppose that $A_1, \ldots A_l$ do not form a type partition, then we
+have $\ord{A_l} = \ord{B} - 1$. The side-condition becomes
+$\forall y \in \Gamma : \ord{y} \geq 1 +\ord{A_l} = \ord{\overline{A}|B}$. Therefore the side-condition
+can be omitted provided that we replace the $-1$ exponent in the first premise by a $0$:
+$$ \mathbf{(app_2)} \quad  \rulef{\Gamma \vdash^0 M : (A,\ldots,A_l,B)
+                                        \qquad \Gamma \vdash^{0} N_1 : A_1
+                                        \quad \ldots
+                                        \quad \Gamma \vdash^{0} N_l : A_l
                                    }
-                                   {\Gamma  \vdash^i M N : B}
-                                    \qquad \ord{A} = \ord{B} - 1, \quad i \in \{ -1, 0 \} $$
-\end{itemize}
+                                   {\Gamma  \vdash^0 M N_1 \ldots N_l : B}
+$$
 
-In fact $\mathbf{(app_1^0)}$ is redundant since we can derive it
-from $\mathbf{(app_1^{-1})}$ and $\mathbf{(seq^0_1)}$. The rules
-$\mathbf{(app_1^i)}$ and $\mathbf{(app_2^i)}$ can be restated as
-follow:
-$$ \mathbf{(app^0)} \quad  \rulef{\Gamma \vdash^0 M : A\rightarrow B
+Equivalently we could replace this rule by the following one:
+$$ \mathbf{(app_2')} \quad  \rulef{\Gamma \vdash^0 M : A\rightarrow B
                                         \qquad \Gamma \vdash^{0} N : A }
                                 {\Gamma  \vdash^{0} M N : B}$$
+\end{itemize}
 
-$$ \mathbf{(app^{-1})} \quad  \rulef{\Gamma \vdash^{-1} M : A\rightarrow B
-                                        \qquad \Gamma \vdash^0 N : A}
-                                   {\Gamma  \vdash^0 M N : B}
-                                    \qquad \ord{A} \geq \ord{B}$$
-
-$$ \mathbf{(app'^{-1})} \quad  \rulef{\Gamma \vdash^{-1} M : A\rightarrow B
-                                        \qquad \Gamma \vdash^0 N : A}
-                                   {\Gamma  \vdash^{-1} M N : B}
-                                    \qquad \ord{A} = \ord{B} - 1$$
-
-
-\subsection{The abstraction rule}
+\subsubsection{The abstraction rule}
 
 Let us derive the abstraction rule specialized for the case of
 homogeneous types. We recall the rule $\mathbf{(abs)}$:
@@ -180,46 +179,50 @@ $$ \mathbf{(abs^i)} \quad  \rulef{\Gamma| \overline{x} : \overline{A} \vdash^{-1
                                    {\Gamma  \vdash^{0} \lambda \overline{x} : \overline{A} . M : (\overline{A}|B)}$$
 
 
-\subsection{The entire set of rules}
+\subsubsection{The rules of the homogeneous safe $\lambda$-calculus}
 
-Table \ref{tab:homosafelmd_rules} gives the entire set of rules.
-
+Table \ref{tab:homosafelmd_rules} recapitulates the entire set of rules:
 
 \begin{table}[htbp]
-$$ \mathbf{(seq)} \quad \rulef{\Gamma \vdash^{0} M : A}{\Gamma \vdash^{-1} M : A}
-\qquad  \mathbf{(var)} \quad  \rulef{}{x : A\vdash^{0} x : A} $$
+$$  (\mbox{\textbf{perm}}) {
+      { \Gamma \vdash^0 M:B \qquad \sigma(\Gamma)  } \hbox{ homogeneous}
+    \over
+      { \sigma(\Gamma) \vdash^0 M : B }
+    }
+\qquad
+\mathbf{(seq)} \quad \rulef{\Gamma \vdash^{0} M : A}{\Gamma \vdash^{-1} M : A}
+$$
+
+$$
+ \textbf{(const)}
+    { \over { \vdash^0 b : o^r \rightarrow o}} \quad b : o^r \rightarrow o \in \Sigma
+\qquad
+ \mathbf{(var)} \quad  \rulef{}{x : A\vdash^{0} x : A} $$
 
 $$ \mathbf{(wk^{0})} \quad  \rulef{\Gamma \vdash^{0} M : A}{\Gamma , x : B \vdash^{0} M : A} \quad \ord{B} \geq \ord{A} $$
 
 $$ \mathbf{(wk^{-1})} \quad  \rulef{\Gamma \vdash^{-1} M : A}{\Gamma , x : B \vdash^{-1} M : A} \quad \ord{B} \geq \ord{A} -1$$
 
+$$ \mathbf{(app)} \quad  \rulef{\Gamma \vdash^{-1} M : \overline{A} | B
+                                        \qquad \Gamma \vdash^{0} N_1 : A_1
+                                        \quad \ldots \quad \Gamma \vdash^{0} N_l : A_l
+                                        \qquad l = |\overline{A}|
+                                        }
+                                   {\Gamma  \vdash^{0} M N_1 \ldots N_l : B}
+$$
 
-$$ \mathbf{(app^{-1})} \quad  \rulef{\Gamma \vdash^{-1} M : A\rightarrow B
-                                        \qquad \Gamma \vdash^0 N : A
-                                  }
-                                   {\Gamma  \vdash^0 M N : B}
-                                    \qquad \ord{A} \geq \ord{B}$$
-
-$$ \mathbf{(app'^{-1})} \quad  \rulef{\Gamma \vdash^{-1} M : A\rightarrow B
-                                        \qquad \Gamma \vdash^0 N : A
-                                   }
-                                   {\Gamma  \vdash^{-1} M N : B}
-                                    \qquad \ord{A} = \ord{B} - 1$$
 
 $$ \mathbf{(app^0)} \quad  \rulef{\Gamma \vdash^0 M : A\rightarrow B
                                         \qquad \Gamma \vdash^{0} N : A
                                    }
                                    {\Gamma  \vdash^{0} M N : B}$$
 
-$$ \mathbf{(abs^i)} \quad  \rulef{\Gamma| \overline{x} : \overline{A} \vdash^{-1} M : B}
+$$ \mathbf{(abs)} \quad  \rulef{\Gamma| \overline{x} : \overline{A} \vdash^{-1} M : B}
                                    {\Gamma  \vdash^{0} \lambda \overline{x} : \overline{A} . M : (\overline{A}|B)}$$
 \caption{Rules of the homogeneous safe lambda calculus}
 \label{tab:homosafelmd_rules}
 \end{table}
 
 
-If we rename the sequents $\vdash^{0}$ and $\vdash^{-1}$ into
-$\vdash^+$ and $\vdash^{-}$ respectively we observe that the rules
-are similar to the ones given in \cite{Ong2005} except that the rule
-$\mathbf{(app'^{-1})}$ and $\mathbf{(app^{-1})}$ are combined into
-one single rule in \cite{Ong2005}.
+We observe that these rules correspond exactly to the rules given in the previous section
+in table \ref{tab:homosafelmd_rules_refined}.

@@ -10,20 +10,21 @@ We will call safe terms the simply typed lambda terms that are typable within th
 
  We use a set of sequents of the form $\Gamma \vdash^{i} M :
 A$ where the meaning is ``variables in $\Gamma$ have orders at least
-$\ord{A}+i$'' where $i \in \zset$. The following set of rules are
-defined for $i \in \zset$:
+$\ord{A}+i$'' where $i \in \nat$. The following set of rules are
+defined for $i \in \nat$:
 
-$$ \mathbf{(seq^i_\delta)} \quad \rulef{\Gamma \vdash^{i} M : A}{\Gamma \vdash^{i-\delta} M : A} \quad i \in \zset, \delta > 0  $$
+$$ \mathbf{(seq^i_\delta)} \quad \rulef{\Gamma \vdash^{i} M : A}{\Gamma \vdash^{i-\delta} M : A} \quad i \in \nat, \delta > 0  $$
 
 $$ \mathbf{(var)} \quad  \rulef{}{x : A\vdash^{0} x : A} $$
 
 $$ \mathbf{(wk^i)} \quad  \rulef{\Gamma \vdash^i M : A}{\Gamma , x : B \vdash^i M : A} \quad \ord{B} \geq \ord{A} + i $$
 
-$$ \mathbf{(app^i)} \quad  \rulef{\Gamma \vdash^i M : A\rightarrow B
-                                        \qquad \Gamma \vdash^{0} N : A}
-                                   {\Gamma  \vdash^{i+\delta} M N : B}
+$$ \mathbf{(app)} \quad  \rulef{\Gamma \vdash^{-1} M : (A,\ldots,A_l,B)
+                                        \qquad \Gamma \vdash^{0} N_1 : A_1
+                                        \quad \ldots \quad \Gamma \vdash^{0} N_l : A_l  }
+                                   {\Gamma  \vdash^0 M N_1 \ldots N_l : B}
                                     \qquad
-                                   \delta = \max\left(0, 1 + \ord{A} - \ord{B}\right)$$
+                                   \forall y \in \Gamma : \ord{y} \geq \ord{B}$$
 
 $$ \mathbf{(abs^i)} \quad  \rulef{\Gamma, \overline{x} : \overline{A} \vdash^{i} M : B}
                                    {\Gamma  \vdash^{0} \lambda \overline{x} : \overline{A} . M : (\overline{A},B)} \qquad
@@ -33,36 +34,23 @@ $$ \mathbf{(abs^i)} \quad  \rulef{\Gamma, \overline{x} : \overline{A} \vdash^{i}
 Note that:
 \begin{itemize}
 \item $(\overline{A},B)$ denotes the type $(A_1,A_2, \ldots, A_n, B)$;
-\item all the types appearing in the rule are not required to be homogeneous. For instance in the rule $\mathbf{(app^i)}$, the type $A \rightarrow B$ is not necessarily
-homogeneous;
-\item the environment $\Gamma, \overline{x}$ is not stratified. In particular, variables in $\overline{x}$ do not necessarily have the same order. Also
-there may be variable in $\Gamma$ of order smaller than $\ord{x}$
-for some variable $x$ in $\overline{x}$.
+\item all the types appearing in the rule are not required to be homogeneous. For instance in the rule $\mathbf{(app)}$,
+for the type $(A,\ldots,A_l,B)$, we do not necessary have $\ord{A_l} \geq \ord{B}$;
+\item the environment $\Gamma, \overline{x}:\overline{A}$ is not stratified. In particular, variables in $\overline{x}$ do not necessarily have the same order.
+
+\item In the abstraction rule, the side-condition imposes that at least all the variable of the lowest order
+in the context are abstracted. However other variables can also be abstracted together with the lowest order variables.
+Moreover there is not constraint on the order on which the variables are abstracted
+(contrary to what happens in the homogeneous case).
 \item The sequents $\Gamma \vdash^0 M$ are the \emph{safe terms} that we want to generate.
 Other terms are only used as intermediate sequents in a proof tree.
 \end{itemize}
 
+\begin{exmp}
+Suppose $x:o$, $f:o\rightarrow o$ and $\varphi:(o\rightarrow o)\rightarrow o$ then the
+term $$\vdash^0 \lambda x f \varphi . \varphi : o \rightarrow (o\rightarrow o) \rightarrow ((o\rightarrow o)\rightarrow o) \rightarrow (o\rightarrow o)\rightarrow o$$ is valid although its type is not homogeneous
+\end{exmp}
 
-\begin{rem}
-\label{rem:rulesineg}
-
-This set of rules is equivalent (in term of safe terms that can be
-generated) to the same set of rules where $i$ is restricted to be a
-negative integer and where the rule $\mathbf{(app^i)}$ becomes:
-$$ \mathbf{(app^i)} \quad  \rulef{\Gamma \vdash^i M : A\rightarrow B
-                                        \qquad \Gamma \vdash^{0} N : A}
-                                   {\Gamma  \vdash^{\min(i+\delta,0)} M N : B}
-                                    \qquad
-                                   \delta = \max\left(0, 1 + \ord{A} - \ord{B}\right) \quad i \leq 0 $$
-
-With this new set of rules, the sequents of the form $\Gamma
-\vdash^{k} M$ with $k>0$ cannot be derived anymore, however, the set
-of safe terms that can built remain the same. Indeed, suppose that
-we derive $\Gamma \vdash^0 M$ using the sequent $\Gamma \vdash^k N$
-with $k>0$ somewhere in the proof. Then an easy induction shows that
-the sequent $\Gamma \vdash^0 N$ can as well be derived (using
-the rule $(seq^i_\delta)$ for $i\leq 0$).
-\end{rem}
 
 \begin{lem}[Basic properties]
 \label{lem:nonhomosafe_basic_prop} Suppose $\Gamma \vdash^0 M : B$
@@ -72,11 +60,7 @@ least $ord(M)$.
 \begin{proof}
 An easy induction on the proof tree shows that if $\Gamma \vdash^{i}
 M : A$ then the variables in $\Gamma$ have orders at least
-$\ord{A}+i$. The induction step for the application is: suppose
-$\Gamma  \vdash^{i+\delta} M N : B$ where $\Gamma \vdash^i M :
-A\rightarrow B$. Then by induction we have $\forall y \in \Gamma :
-\ord{y} \geq \ord{A\rightarrow B} + i = \max(1+\ord{A}, \ord{B})+i =
-\delta + \ord{B} + i$.
+$\ord{A}+i$.
 \end{proof}
 
 \subsection{Substitution in the safe lambda calculus}
@@ -140,7 +124,7 @@ $$ \rulef{
     {\vdots} r_2
     }
     { \Sigma \vdash^u \lambda \overline{x} . L } r_l
-    \qquad \mbox{where } r_j \in \{ \mathbf{(seq^i_\delta)},\ \mathbf{(wk^i)}\ |\ i \in \zset, \delta > 0 \},
+    \qquad \mbox{where } r_j \in \{ \mathbf{(seq^i_\delta)},\ \mathbf{(wk^i)}\ |\ i \in \nat, \delta > 0 \},
             \quad j\in 1..l.
 $$
 
@@ -164,13 +148,13 @@ $$(\lambda x . M) \subst{t}{y} = \lambda x . M \subst{t}{y}$$
 
 
 Unfortunately, this notion of substitution is still not adequate for the purpose of the
-safe simply type lambda calculus. The problem is that performing a single
+safe simply-typed lambda calculus. The problem is that performing a single
 $\beta$-reduction on a safe term will not necessarily produce another safe term.
 
 To fix this problem, we need to be able to reduce several consecutive
-$\beta$-redex at the same time until we obtain a safe term. In other words, we need a mean of performing
+$\beta$-redex at the same time until we obtain a safe term. Consequently, we need a mean of performing
 several substitutions at the same time.
-To achieve this, we introduce the \emph{simultaneous substitution}. It is
+To achieve this, we introduce the \emph{simultaneous substitution},
  a generalization of the standard substitution given in definition \ref{dfn:subst}.
 
 \begin{dfn}[Simultaneous substitution]
@@ -216,284 +200,125 @@ c \subst{\overline{N}}{\overline{x}} &=& c \quad \mbox{where $c$ is a $\Sigma$-c
 The symbol $\mathbf{(\star)}$ identifies the equation that changed compared to the previous definition.
 \end{dfn}
 
-\begin{prop}
-$$ \Gamma,\overline{x} \vdash^i M : A
+\begin{lem}
+$$ \Gamma,\overline{x} : \overline{A}\vdash^i M : T
 \quad \mbox{and} \quad \Gamma \vdash^0 N_k : B_k \mbox{, } k \in 1..n
 \qquad \mbox{ implies } \qquad
-\Gamma \vdash^i M[\overline{N}/\overline{x}]$$
-\end{prop}
+\Gamma \vdash^i M[\overline{N}/\overline{x}] : T$$
+\end{lem}
 
 \begin{proof}
-Suppose that $\Gamma,\overline{x} \vdash^i M : A$ and  $\Gamma \vdash^0 N_k : B_k$ for $k \in 1..n$.
+Suppose that $\Gamma,\overline{x}: \overline{A} \vdash^i M :T$ and  $\Gamma \vdash^0 N_k : B_k$ for $k \in 1..n$.
 
 We prove $\Gamma \vdash^i M[\overline{N}/\overline{x}]$ by induction on the size of the proof
-tree of $\Gamma,\overline{x} \vdash^i M : A$ and by case analysis on the last rule used.
+tree of $\Gamma,\overline{x}:\overline{A} \vdash^i M : T$ and by case analysis on the last rule used.
 We just give the detail for the abstraction case. Suppose that the property is verified for terms whose proof tree is
-smaller than $M$. Suppose $\Gamma,\overline{x} \vdash^0 \lambda \overline{y} : \overline{C}. T : (\overline{C}|D)$ where
-$\Gamma, \overline{y}:\overline{C},\overline{x} \vdash^i T : D$, then
-by the induction hypothesis $\Gamma, \overline{y}:\overline{C} \vdash^i T\subst{\overline{N}}{\overline{x}} : D$.
-We can then apply the rule $\mathbf{(abs^i)}$ and we get
-$\Gamma \vdash^0 \lambda \overline{y}:\overline{C} . T \subst{\overline{N}}{\overline{x}}$.
+smaller than $M$. Suppose $\Gamma,\overline{x}:\overline{A} \vdash^0 \lambda \overline{y} : \overline{C}. P : (\overline{C}|D)$ where
+$\Gamma, \overline{x}:\overline{A}, \overline{y}:\overline{C} \vdash^i P : D$, then
+by the induction hypothesis $\Gamma, \overline{y}:\overline{C} \vdash^i P\subst{\overline{N}}{\overline{x}} : D$.
+Applying the rule $\mathbf{(abs^i)}$ gives
+$\Gamma \vdash^0 \lambda \overline{y}:\overline{C} . P \subst{\overline{N}}{\overline{x}}$. Then the rule
+$\mathbf{(seq^i_\delta)}$ gives the result wanted.
 \end{proof}
 
-
-\begin{cor}[Simultaneous substitution preserves safety]
-\label{cor:subst_preserve_safety}
-If $M$ is safe and $N_k$ is safe for $k \in 1..n$ then  $M[\overline{N}/\overline{x}]$ is safe
-\end{cor}
-
-\begin{cor}
-Consider a safe multi-redex $(\lambda \overline{x} . M ) \overline{N}$ where the $N_i$ are safe, then
-we can reduced it to $M\subst{\overline{N}}{\overline{x}}$. This reduction produces
-a safe term \textbf{provided that $M$ is also a safe term}.
-\end{cor}
-
-
-It is important to note that not all multi-$\beta$-reduction conserve safety. Only the reductions that
-peal off enough $\lambda$-abstraction will reach a safe term and therefore preserve safety.\\
-
-
-\subsection{Simultaneous $\beta$ reduction}
-
-We now define a notion of beta reduction that realizes simultaneous
-substitution. Consider a simply-typed term $P$. A simultaneous
-$\beta$-redex is a $P$ sub-term of the kind
-
-$$R_1 \equiv (\lambda x_1 x_2 \ldots x_n . M) N_1 N_2 \ldots N_n$$
-
-Reduction is only performed if the simultaneous $\beta$-redex
-encompasses as many lambda abstraction of the same order as
-possible. Such a redex (which cannot be extended to take into
-account one more lambda abstraction of the same order) is called a
-$\beta_s$-redex.
-
-
-Example: consider a term $P$ with a subterm $((\lambda x_1 x_2
-\ldots x_n . M) N_1 N_2 \ldots N_n) N_{n+1}$. Suppose that $M$ is
-the abstraction $M \equiv \lambda x_{n+1} . U$ where $ord(x_{n+1}) =
-x_1$. Then the redex $R_1$ will not be considered since it can be
-enlarged as the redex $(\lambda x_1 x_2 \ldots x_n x_{n+1}. M) N_1
-N_2 \ldots N_n N_{n+1}$. Now suppose instead that the term is formed
-in such a way that there is no $N_{n+1}$ applied on the right of
-$R_1$ then the redex $R_1$ will be considered (whether or not $M$ is
-an abstraction).
-
-We now give the formal definitions:
-
-The following abbreviations are used $\overline{x} = x_1 \ldots
-x_n$, $\overline{N} = N_1 \ldots N_n$, $\overline{x_l} = x_1 \ldots
-x_l$, $\overline{x_r} = x_{l+1} \ldots x_n$, $\overline{N_l} = N_1
-\ldots N_l$ and $\lambda \overline{x} : \overline{A} . T = \lambda
-x_1^{A_1} \ldots x_1^{A_n} . T$.
-
-\begin{dfn}[$\beta_s$-redex]
-A safe simply typed lambda term is a redex if it has one of the
-following forms:
+In the simply-typed lambda calculus a redex is a term of the form $(\lambda x . M) N$.
+We generalize this definition to the safe lambda calculus:
+\begin{dfn}[Safe redex]
+We call safe redex a term of the form $(\lambda \overline{x} . M) N_1 \ldots N_l$
+such that:
 \begin{itemize}
-\item $(\lambda \overline{x} : \overline{A} . T) \overline{N}$
-\quad with $|\overline{x}| = |\overline{N}| = n$, $ord(T) \leq
-ord(\overline{x}) = ord(x_1) = \ldots = ord(x_n)$.
+\item $ \Gamma \vdash^0 (\lambda \overline{x} . M) N_1 \ldots N_l $
+\item the variable $\overline{x}=x_1\ldots x_n$ are abstracted altogether by one occurrence of the rule \textbf{(abs)} in the proof tree.
+\item The terms $(\lambda \overline{x} . M)$, $N_1$, $N_l$ are applied together at once using the \textbf{(app)} rule :
+$$   \rulef{
+            \Sigma \vdash^{-1} \lambda \overline{x} . M
+            \quad
+            \Sigma \vdash^0 N_1         \quad \ldots \quad \Sigma \vdash^0 N_l
+    }
+    {
+       \Sigma \vdash^0 (\lambda \overline{x} . L) N_1 \ldots N_l
+    } (\mathbf{app})
+$$
+Consequently each $N_i$ is safe.
 
-\item $(\lambda \overline{x_l} : \overline{A_l} \ \overline{x_r}: \overline{A_r} . T) \overline{N_l}$
-\quad with $|\overline{x_l}| = |\overline{N_l}| = l$, $ord(T) \leq
-ord(\overline{x}) = ord(x_1) = \ldots = ord(x_n)$.
-\end{itemize}
-
-These two cases correspond respectively to the formation rules (App)
-and (App+) of the safe lambda calculus.
-
-\end{dfn}
-
-\begin{dfn}[Simultaneous $\beta$-reduction] \
-\begin{itemize}
-\item The relation $\beta_s$ is defined on the set of $\beta_s$-redex.
-\begin{eqnarray*}
-\beta_s &=&
- \{  \left( (\lambda \overline{x} : \overline{A} . T) \overline{N}, T\subst{\overline{x}}{\overline{N}} \right) \\
-&& \mbox{ where }
-     |\overline{x}| = |\overline{N}| = n \mbox{ and } ord(T) \leq ord(\overline{x}) = ord(x_1) = \ldots = ord(x_n)
-\} \\
- && \union \quad \\
-&& \{
-    \left( (\lambda \overline{x_l} : \overline{A_l} \  \overline{x_r}: \overline{A_r} . T) \overline{N_l}, \lambda \overline{x_r}: \overline{A_r} . T\subst{\overline{x_l}}{\overline{N_l}} \right) \\
-&& \mbox{ where }
- |\overline{x}| = |\overline{N}| = n \mbox{ and } ord(T) \leq ord(\overline{x}) = ord(x_1) = \ldots = ord(x_n)
-\}
-\end{eqnarray*}
-
-Note that in the second case, the substitution is done under the
-$\lambda \overline{x_r}$. The side condition of the formation rule
-(App+) guarantees that there will not be any variable capture.
-
-\item
-The simultaneous $\beta$-reduction noted $\betasred$ is the closure
-of the relation $\beta_s$ by compatibility with the formation rules
-of the safe $\lambda$-calculus.
+\item $l\leq n$
 \end{itemize}
 \end{dfn}
 
-Note that $\beta_s$-redex are the only redex that can be reduced by
-$\betasred$.
+Note that the condition $l\leq n$ in the definition is not too restrictive because if $l>n$ then
+the application rule is too wide and can in fact be replaced by an application of exactly
+$n$ terms followed by another application for the remaining terms $N_{n+1}, \ldots, N_l$.
 
+A safe redex $(\lambda \overline{x} . M) N_1 \ldots N_l$ can be reduced simultaneously to
+$\lambda x_l \ldots x_n . M \subst{N_1 \ldots N_l}{x_1 \ldots x_l}$
 
-
-
-\subsection{Some properties of $\beta_s$ reduction}
-
-We remark that $\betasred \subset \betaredtr$ (i.e. the simultaneous
-$\beta$-reduction relation) is included in the transitive closure of
-the $\beta$-reduction relation. More precisely, if $M \betasred N$
-then $M \betaredtr N$. Simultaneous $\beta$-reduction is a certain
-kind of multi-steps $\beta$-reduction.
-
-\begin{lem} In the simply typed $\lambda$-calculus setting:
-\begin{enumerate}
-\item $\betasred$ is strongly normalizing.
-\item $\beta_s$ has the unique normal form property.
-\item $\beta_s$ has the Church-Rosser property.
-\end{enumerate}
-\end{lem}
-
-\begin{proof}
-\begin{enumerate}
-
-%Proof of weak normalization:
-%We know that $\betared$ is strongly normalizing: any reduction
-%strategy leads to a normal form. In particular any strategy that
-%performs consecutive $\beta$-redex of the same order consecutively
-%will lead to a normal form. Since any such $\beta$ reduction
-%strategy is also a $\beta_s$ reduction strategy, we can conclude
-%that $\betasred$ is weakly normalizing.
-
-\item This is because $\betasred \subset \betaredtr$ and $\betared$ is strongly normalizing (in the simply typed lambda calculus).
-
-\item
-A term has a $\beta_s$-redex iff it has a $\beta$-redex therefore
-the set of $\beta_s$ normal form is equal to the set of $\beta_s$
-normal form. Hence, the unicity of $\beta$ normal form implies the
-unicity of $\beta_s$ normal form.
-
-\item is a consequence of (i) and (ii).
-\end{enumerate}
-\end{proof}
-
-
-%%
-%%\begin{dfn}[Safe sub-terms]
-%%Given a safe term $\Gamma \vdash_s M : A$, we define the set
-%%$Safesub(M)$ of safe sub-terms of a $M$:
-%%
-%%\def\longtype#1#2{(\overline{{#1}_1} \, | \, \cdots \, | \, \overline{{#1}_{#2}} \, | \, o)}
-%%
-%%\begin{eqnarray*}
-%%Safesub(b) &=& b  \qquad \mbox{ ($b \in \Sigma$ a first order constant)} \\
-%%Safesub(x) &=& x \qquad \mbox{ ($x$ a variable) } \\
-%%Safesub(M N_1 \ldots N_l) &=& \{M N_1 \ldots N_l \} \union Safesub(M) \union \Union_{i=1..l} Safesub(N_i) \\
-%%&&\mbox{ where $M : \longtype{B}{n}$ and $ord(N_1) = \ldots =
-%%ord(N_l) = ord(\overline{B})$}.\\
-%%Safesub(\lambda x_1 \ldots x_n . N) &=& \{ \lambda x_1 \ldots x_n . N \} \union Safesub(R) \\
-%%&&\mbox{ where $ord(x_1) = \ldots = ord(x_n)$ and $ord(x_1) \geq ord(N)$}\\
-%%&&\mbox{ and $R = N$ if $x_1 \in fv(M)$ and $R = \lambda x_2 \ldots x_n . N$ otherwise.}\\
-%%\end{eqnarray*}
-%%
-%%\end{dfn}
-%%
-%%It is easy to check that $Safesub(M)$ is indeed the set of all safe
-%%sub-terms of $M$.
-
-
+Using the previous lemma, we will now prove that this reduction produces a safe term:
 
 \begin{lem}
-$\beta_s$-reduction preserves safety. (i.e. $M$ safe term and $M
-\beta_s N$ implies $N$ safe)
+\label{lem:safereduction}
+A safe redex reduces to a safe term.
 \end{lem}
 
-
 \begin{proof}
-Simultaneous substitution preserves safety (property
-\ref{cor:subst_preserve_safety}), therefore we just need to prove
-that the relation $\beta_s$ preserves safety and the result will
-follow:
-
- Suppose $s\ \beta_s\ t$ then $s$ is a $\beta_s$-redex. There are two kinds of them
- depending on which rule has been used last to form the redex.
-
-\begin{itemize}
-\item Suppose the last rules used is (App), then the redex is
-$$s \equiv (\lambda x_1 \ldots x_n . M) N_1 \ldots N_n \qquad \betasred \qquad M[N_1 / x_1 , \cdots, N_n / x_n] \equiv t$$
-where $ord(M) \leq ord(x_1) = \ldots = ord(x_n)$
-
-The first premise of the rule (App) tells us that $M$ is safe,
-therefore since substitution preserves safety, (property
-\ref{prop:subst_preserve_safety}), $t$ is safe.
-
-\item Suppose the last rules used is (App+), then the redex is
-
- $$
-s \equiv  (\lambda \overline{x_l} : \overline{A_l} \
-\overline{x_r}: \overline{A_r} . T) \overline{N_l} \qquad \betasred
-\qquad \lambda \overline{x_r}: \overline{A_r} .
-T\subst{\overline{x_l}}{\overline{N_l}} \equiv  t
+We note $\overline{A}$ for $A_1, \ldots , A_n$. A safe redex in the safe $\lambda$-calculus
+must have a proof tree of the following form:
 $$
-where $ord(T) \leq ord(x_1) = \ldots = ord(x_n)$
+   \rulef{
+        \rulef{
+            \rulef{
+                \rulef{
+                    \rulef
+                        { \rulef
+                            {\vdots}
+                            {\Sigma',\overline{x}:\overline{A}\vdash^i L:C  }
+                        }
+                        {\Sigma' \vdash^0 \lambda \overline{x} . L : \overline{A}|C} \mathbf{(abs^i)}
+                }
+                {\vdots} r_1
+            }
+            {\vdots} r_2
+            }
+            { \Sigma \vdash^{-1} \lambda \overline{x} . L : A_1, \ldots , A_l|B} r_q
+            \quad
+            \Sigma \vdash^0 N_1 : A_1
+            \quad \ldots \quad \Sigma \vdash^0 N_l : A_l
+    }
+    {
+       \Sigma \vdash^0 (\lambda \overline{x} . L) N_1 \ldots N_l : B
+    } (\mathbf{app})
+$$
+with the following conditions:
+\begin{enumerate}
+\item for $j\in 1..q$, $r_j \in \{ \mathbf{(seq^0_{1})}, \mathbf{(wk^0)}, \mathbf{(wk^{-1})} \}$ therefore
+$\Sigma = \Sigma' \union \Delta$ where $\Delta$ contains the variables introduced
+by the rules $r_1 \ldots r_q$.
 
-$T\subst{\overline{x_l}}{\overline{N_l}}$ is safe for the same
-reason as in the first case. We can then apply the rule (Abs) and
-that prove the safety of $t$.
-\end{itemize}
+\item $A_1, \ldots , A_l|B = A_1, \ldots , A_n|C$ and $l\leq n$. Therefore
+$\ord{B} \geq \ord{C}$.
+\item The side condition of the rule \textbf{(abs)} gives: $\forall z \in \Sigma : \ord{z} \geq \ord{B}$
+\end{enumerate}
+
+We use the notation $\overline{x}'$ and $\overline{x}''$ for $x_1 \ldots x_l$ and
+$x_{l+1} \ldots x_n$ respectively.
+
+The conditions 2 and 3 ensure that $\forall z \in \Delta : \ord{z} \geq \ord{C}$ therefore
+we can use the weakening rule to introduce all the variable of $\Delta$ in the context of the
+sequent $\Sigma',\overline{x}:\overline{A}\vdash^i L:C$:
+
+$$\rulef{\rulef{ \Sigma',\overline{x}:\overline{A}\vdash^i L:C  }
+        {\vdots} (wk^i_0)}
+        {\Sigma,\overline{x}:\overline{A}\vdash^i L:C} (wk^i_0)
+$$
+
+By lemma \ref{lem:safereduction} we obtain:
+$$ \Sigma, \overline{x}'':\overline{A}'' \vdash^i L\subst{N_1 \ldots N_l}{\overline{x}'}$$
+Finally using the abstraction rule:
+$$ \Sigma \vdash^0 \lambda \overline{x}'':\overline{A}'' . L\subst{N_1 \ldots N_l}{\overline{x}'}$$
 \end{proof}
 
 
 
-\begin{rem}
-\label{rem:betasred_notpreserv_unsafety} While $\betasred$ preserves
-safety it does not however preserves un-safety: given two terms of
-the same type, one safe $\Gamma \vdash_s S : A$ and the other unsafe
-$\Gamma \vdash U : A$, the term $(\lambda x y . y) U S$ is unsafe
-but it $\beta_s$-reduces to $S$ which is safe.
-\end{rem}
 
-\subsection{Pointer-less strategies}
-\label{subsec:ptrless_strat}
-
-Up to order 2, the semantics of PCF terms is entirely defined by
-pointer-less strategies. In other words, the pointers can be
-uniquely reconstructed from any non justified sequence of moves
-satisfying the visibility and well-bracketing condition.
-
-At level 3 however, pointers cannot be omitted. There is an example
-in \cite{abramsky:game-semantics} to illustrate this. Consider the
-following two terms of type $((\nat \typar \nat) \typar \nat) \typar
-\nat$:
-
-$$M_1 = \lambda f . f (\lambda x . f (\lambda y .y ))$$
-$$M_2 = \lambda f . f (\lambda x . f (\lambda y .x ))$$
-
-We assign tags to the types in order to identify in which arena the
-questions are asked: $((\nat^1 \typar \nat^2) \typar \nat^3) \typar
-\nat^4$. Consider now the following pointer-less sequence of moves
-$s = q^4 q^3 q^2 q^3 q^2 q^1$. It is possible to retrieve the
-pointers of the first five moves but there is an ambiguity for the
-last move: does it point to the first or second occurrence of $q^3$
-in the sequence $s$?
-
-Note that the visibility condition does not eliminate the ambiguity,
-since the two occurrences of $q^3$ both appear in the P-view at that
-point (after recovering the pointers of $s$ up to the second last
-move we get $s = \justseq{ q^4 & q^3 \pointto{l} & q^2 \pointto{l} &
-q^3 \pointto{ll} & q^2 \pointto{l} & q^1 }$ , therefore the P-view
-of $s$ is $s$ itself.)
-
-In fact these two different possibilities correspond to two
-different strategies. Suppose that the link goes to the first
-occurrence of $q^3$ then it means that the proponent is requesting
-the value of the variable $x$ bound in the subterm $\lambda x . f (
-\lambda y. ... )$. If P needs to know the value of $x$, this is
-because P is in fact following the strategy of the subterm $\lambda
-y . x$. And the entire play is part of the strategy $\sem{M_2}$.
-
-Similarly, if the link points to the second occurrence of $q^3$ then
-the play belongs to the strategy $\sem{M_1}$.
 
 \subsection{Game semantics of safe $\lambda$ terms}
 
@@ -523,7 +348,7 @@ Is there any unsafe term whose game semantics is a strategy where
 pointers can be recovered?
 
 The answer is yes: take the term $T_i = (\lambda x y . y) M_i S$
-where $i =1..2$ and $\Gamma \vdash_s S : A$. $T_1$ and $T_2$ both
+where $i =1..2$ and $\Gamma \vdash  S : A$. $T_1$ and $T_2$ both
 $\beta$-reduce to the safe term $S$, therefore
 $\sem{T_1}=\sem{T_2}=\sem{S}$. But $T_1$ is safe whereas $T_2$ is
 unsafe. Since it is possible to recover the pointer from the game

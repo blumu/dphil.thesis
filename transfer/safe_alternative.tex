@@ -123,39 +123,40 @@ variable names are required to avoid capture).
 
 \begin{lem}[No variable capture lemma]
 In the safe $\lambda$-calculus, there is no capture of variable
-when performing the following capture permitting simultaneous substitution on safe terms
-$\Gamma,\overline{x} \vdash M$, $\Gamma \vdash  N_1, \ldots \Gamma \vdash  N_n$:
+when performing the following capture permitting simultaneous substitution:
 $$ M[N_1 / x_1 , \cdots, N_n / x_n] $$
- provided the substitution is performed simultaneously on
-\emph{all} free variables of the same order in $M$
-i.e.~$\makeset{x_1, \cdots, x_n}$ is the set variables of the same
-order as $x_1$ occurring freely in $M$.
+where $\Gamma,\overline{x} \vdash M$, $\Gamma \vdash  N_1, \ldots \Gamma \vdash  N_n$.
+
+% provided the substitution is performed simultaneously on
+%\emph{all} free variables of the same order in $M$
+%i.e.~$\makeset{x_1, \cdots, x_n}$ is the set variables of the same
+%order as $x_1$ occurring freely in $M$.
 \end{lem}
 
 \begin{proof}
 We prove the result by induction. The variable, constant and application cases are trivial.
-For the abstraction case, suppose $M = \lambda \overline{y} : \overline{A}. P$. The capture permitting
+For the abstraction case, suppose $M = \lambda \overline{y} : \overline{A}. P$ where $\overline{y} = y_1 \ldots y_p$. The capture permitting
 simultaneous substitution gives:
 $$M \subst{\overline{N}}{\overline{x}} = \lambda \overline{y} . P
 \subst{\overline{N} \upharpoonright I}{\overline{x} \upharpoonright I}$$
 
-The variables $\overline{x}$ all occurs freely in $M$ therefore
-the variable in $\overline{x}$ cannot be abstracted under the $\lambda \overline{y}$. Hence $I = \emptyset$
-and:
-$$M \subst{\overline{N}}{\overline{x}} = \lambda \overline{y} . P
-\subst{\overline{N}}{\overline{x}}$$
+%The variables $\overline{x}$ all occurs freely in $M$ therefore
+%the variable in $\overline{x}$ cannot be abstracted under the $\lambda \overline{y}$. Hence $I = \emptyset$
+%and:
+%$$M \subst{\overline{N}}{\overline{x}} = \lambda \overline{y} . P
+%\subst{\overline{N}}{\overline{x}}$$
+%By the induction hypothesis there is no variable capture in $P\subst{\overline{N}}{\overline{x}}$.
 
-The free variable of $P$ that have the same order as $x_1$ are exactly the variables in $\overline{x}$ therefore by applying the
-induction hypothesis we know that there is no variable capture in $P
-\subst{\overline{N}}{\overline{x}}$.
+By the induction hypothesis there is no variable capture in $P
+\subst{\overline{N} \upharpoonright I}{\overline{x} \upharpoonright I}$.
 
-Hence the only possible case of variable capture that can occur is when a variable $y_j$ for some $j \in 1..p$ occurs freely
-in $N_i$. By lemma \ref{lem:safe_basic_prop} (ii) we get:
-$$ ord(y_j) \geq ord(N_i) = ord(x_i)$$
+Hence the only possible case of variable capture is when for some $i \in I$ and $j \in 1..p$ the variable $y_j$ occurs freely
+in $N_i$ and $x_i$ occurs freely in $P$. In that case, lemma \ref{lem:safe_basic_prop} (ii) gives:
+$$ \ord{y_j} \geq \ord{N_i} = \ord{x_i}$$
 
-Moreover, since $x_i$ occurs freely in the safe term $\lambda \overline{y}. P$, again by lemma \ref{lem:safe_basic_prop} (ii)
-we get:
-$$ ord(x_i) \geq ord(\lambda y_1 \ldots y_p . T) \geq 1+ ord(y_j) > ord(y_j)$$
+Moreover since $x_i$ occurs freely in $P$ and $i\in I$, $x_i$ must occur freely also in the safe term $\lambda \overline{y}. P$
+and lemma \ref{lem:safe_basic_prop} (ii) gives:
+$$ \ord{x_i} \geq \ord{\lambda y_1 \ldots y_p . T} \geq 1+ \ord{y_j} > \ord{y_j}$$
 
 Hence we reach a contradiction.
 \end{proof}
@@ -167,8 +168,6 @@ The capture permitting simultaneous substitution of the safe terms
 $\Gamma, \overline{x} \vdash N_1$, \ldots, $\Gamma, \overline{x} \vdash N_n$ for
 the variables $\overline{x}$ in the safe term $\Gamma, \overline{x} \vdash M$ is safe:
 $$ \Gamma \vdash M[N_1 / x_1 , \cdots, N_n / x_n] $$
-provided that the substitution is performed simultaneously on
-\emph{all} free variables of the same order in $M$.
 \end{lem}
 \begin{proof}
 An easy proof by an induction similar to the proof of the previous lemma.
@@ -336,30 +335,8 @@ T\subst{\overline{x_l}}{\overline{N_l}}
 $$
 where $ord(T) \leq ord(x_1) = \ldots = ord(x_n)$
 
-
-\todobox{TO FINISH: Unfortunately, we cannot use directly lemma \ref{lem:subst_preserve_safety} because the substitution on $T$
-is performed on the variables $x_1, \ldots x_l$ and not on all the free variables of order $\ord{x_1}$.}
-
-%However, since the variable $x_1, \ldots x_n$ are abstracted together at once, we have:
-%$$\Gamma \vdash \lambda \overline{x} . T : (\overline{B_1}|\ldots|\overline{B_m}|o)$$
-%where $\overline{x}$ constitutes the lowest partition of the context $\Gamma, \overline{x}$. i.e.
-%$\forall z \in \Gamma : \ord{z} \geq \ord{\overline{x}}$.
-%
-%Therefore for all $j \in (l+1)\ldots n$, we can derive using the rules \textbf{(var)} and \textbf{(wk)} the sequent
-%  $\Gamma \vdash x_j$.
-%
-
-%We now perform a capture permitting substitution of the safe terms
-%$\Gamma \vdash N_1$, \ldots, $\Gamma \vdash N_l$, $\Gamma \vdash x_{l+1}$, \ldots, $\Gamma \vdash x_n$ for the variables
-%$x_1 \ldots x_n$ in the safe term $\Gamma \vdash T$, and we obtain by lemma \ref{lem:subst_preserve_safety}:
-%$$\Gamma \vdash T [N_1/x_1 \ldots N_l/x_l \ x_{l+1}/x_{l+1} \ldots x_n/x_n] = T[N_1/x_1 \ldots N_l/x_l]$$
-
-%Finally, by applying the rule $\mathbf{(abs)}$ we prove the safety of $t$.
-
-
-
-
-
+By lemma \ref{lem:subst_preserve_safety}, $T\subst{\overline{x_l}}{\overline{N_l}}$ is a safe term.
+Using the rule $\mathbf{(abs)}$ we derive that $t$ is safe.
 
 \item Suppose the last rules used is $\mathbf{(app^+)}$ and $n\leq l$ then the reduction is
 $$(\lambda x_1 \ldots x_n . M) N_1 \ldots N_l \qquad \mapsto \qquad t \equiv M[N_1 / x_1 , \cdots, N_n / x_n]\ N_{n+1} \ldots N_l$$
@@ -368,7 +345,6 @@ where $ord(M) \leq ord(x_1) = \ldots = ord(x_n)$. The treatment of this case is 
 \item Rule $\textbf{(wk)}$ $\textbf{(seq)}$: these cases lead back to the previous cases.
 \end{itemize}
 \end{proof}
-
 
 
 \begin{rem}

@@ -1,3 +1,354 @@
+\section{Non homogeneous safe $\lambda$-calculus}
+
+In section \ref{sec:safe_alt}, we have presented a safe lambda
+calculus in the setting of homogeneous types. In this section, we
+give a general notion of safety for the simply typed
+$\lambda$-calculus. The rules we give here do not assume homogeneity
+of the types.
+
+We will call safe terms the simply typed lambda terms that are
+typable within the following system of formation rules:
+
+\subsection{Rules}
+
+ We use a set of sequents of the form $\Gamma \vdash^{i} M :
+A$ where the meaning is ``variables in $\Gamma$ have orders at least
+$\ord{A}+i$'' where $i \in \nat$. The following set of rules are
+defined for $i \in \nat$:
+
+$$ \rulename{seq} \quad \rulef{\Gamma \vdash^0 M : A}{\Gamma \vdash^{-1} M : A} $$
+
+$$ \rulename{var} \quad  \rulef{}{x : A\vdash^{0} x : A} $$
+
+$$ \rulename{wk^i} \quad  \rulef{\Gamma \vdash^i M : A}{\Gamma , x : B \vdash^i M : A} \quad \ord{B} \geq \ord{A} + i $$
+
+$$ \rulename{app} \quad  \rulef{\Gamma \vdash^{-1} M : (A,\ldots,A_l,B)
+                                        \qquad \Gamma \vdash^{0} N_1 : A_1
+                                        \quad \ldots \quad \Gamma \vdash^{0} N_l : A_l  }
+                                   {\Gamma  \vdash^0 M N_1 \ldots N_l : B}
+                                    \qquad
+                                   \forall y \in \Gamma : \ord{y} \geq \ord{B}$$
+
+$$ \rulename{abs^i} \quad  \rulef{\Gamma, \overline{x} : \overline{A} \vdash^{i} M : B}
+                                   {\Gamma  \vdash^{0} \lambda \overline{x} : \overline{A} . M : (\overline{A},B)} \qquad
+                                   \forall y \in \Gamma : \ord{y} \geq \ord{\overline{A},B}$$
+
+
+Note that:
+\begin{itemize}
+\item $(\overline{A},B)$ denotes the type $(A_1,A_2, \ldots, A_n, B)$;
+\item all the types appearing in the rule are not required to be homogeneous. For instance
+for the type $(A,\ldots,A_l,B)$ in the rule $\rulename{app}$ we do
+not necessary have $\ord{A_l} \geq \ord{B}$;
+\item the environment $\Gamma, \overline{x}:\overline{A}$ is not stratified. In particular, variables in $\overline{x}$ do not necessarily have the same order;
+
+\item In the abstraction rule, the side-condition imposes that at least all the variable of the lowest order
+in the context are abstracted. However other variables can also be
+abstracted together with the lowest order variables. Moreover there
+is not constraint on the order on which the variables are abstracted
+(contrary to what happens in the homogeneous case);
+\item The sequents $\Gamma \vdash^0 M$ are the \emph{safe terms} that we want to generate.
+Other terms are only used as intermediate sequents in a proof tree.
+\end{itemize}
+
+\begin{exmp}
+Suppose $x:o$, $f:o\rightarrow o$ and $\varphi:(o\rightarrow
+o)\rightarrow o$ then the term $$\vdash^0 \lambda x f \varphi .
+\varphi : o \rightarrow (o\rightarrow o) \rightarrow ((o\rightarrow
+o)\rightarrow o) \rightarrow (o\rightarrow o)\rightarrow o$$ is
+valid although its type is not homogeneous
+\end{exmp}
+
+
+\begin{lem}[Basic properties]
+\label{lem:nonhomosafe_basic_prop} Suppose $\Gamma \vdash^0 M : B$
+is a valid judgment then every variable in $\Gamma$ has order at
+least $ord(M)$.
+\end{lem}
+\begin{proof}
+An easy induction on the proof tree shows that if $\Gamma \vdash^{i}
+M : A$ then the variables in $\Gamma$ have orders at least
+$\ord{A}+i$.
+\end{proof}
+
+\subsection{Substitution in the safe lambda calculus}
+
+The traditional notion of substitution, on which the
+$\lambda$-calculus is based on, is the following one:
+\begin{dfn}[Substitution]
+\label{dfn:subst}
+\begin{eqnarray*}
+c \subst{t}{x} &=& c \quad \mbox{where $c$ is a $\Sigma$-constant}\\
+x \subst{t}{x} &=& t\\
+ y\subst{t}{x} &=& y \quad \mbox{for } x \not \neq y,\\
+(M_1 M_2) \subst{t}{x} &=& (M_1 \subst{t}{x}) (M_2 \subst{t}{x})\\
+(\lambda x . M) \subst{t}{x} &=& \lambda x . M\\
+(\lambda y . M) \subst{t}{x} &=& \lambda z . M \subst{z}{y}
+\subst{t}{x} \mbox{where $z$ is a fresh variable and $x\not = y$}
+\end{eqnarray*}
+\end{dfn}
+
+In the setting of the safe lambda calculus, the notion of
+substitution can be simplified. Indeed, we remark that for safe
+$\lambda$-terms there is no need to rename variables when performing
+substitution:
+
+\begin{lem}[No variable capture lemma]
+\label{lem:noclash} There is no variable capture when performing
+substitution on a safe term.
+\end{lem}
+\begin{proof}
+Suppose that a capture occurs during the substitution $M[N/\varphi]$
+where $M$ and $N$ are safe. Then the following conditions must hold:
+\begin{enumerate}
+\item $\varphi:A, \Gamma \vdash^0 M$,
+\item $\Gamma' \vdash^0 N$,
+\item there is a subterm $\lambda \overline{x} . L$ in $M$ (where the abstraction is taken as wide as possible) such that:
+\item $\varphi \in fv(\lambda \overline{x} . L)$ (and therefore $\varphi \in fv(L)$),
+\item $x \in fv(N)$ for some $x \in \overline{x}$.
+\end{enumerate}
+
+By lemma \ref{lem:nonhomosafe_basic_prop} and (v) we have:
+
+\begin{equation}
+\ord{x} \geq \ord{N} = \ord{\varphi} \label{eq:xigeqphi}
+\end{equation}
+
+The abstraction $\lambda \overline{x} . L$ (taken as large as
+possible) is a subterm of $M$, therefore there is a node $\Sigma
+\vdash^u \lambda \overline{x} . L$  for some $u$ in the proof tree
+of $\varphi:A, \Gamma \vdash^0 M$.
+
+There are only three kinds of rules that can produce an abstraction:
+$\rulename{abs^i}$, $\rulename{seq}$ and $\rulename{wk^i}$. The only
+one that can introduce the abstraction is $\rulename{abs^i}$.
+Therefore the proof tree has the following form:
+
+$$ \rulef{
+    \rulef{
+        \rulef{
+            \rulef  {\ldots}
+                   {\Sigma' \vdash^0 \lambda \overline{x} . L} \rulename{abs^i}
+        }
+        {\ldots} r_1
+    }
+    {\vdots} r_2
+    }
+    { \Sigma \vdash^u \lambda \overline{x} . L } r_l
+    \qquad \mbox{where } r_j \in \{ \rulename{seq},\ \rulename{wk^i}\ |\ i \in \nat \},
+            \quad j\in 1..l.
+$$
+
+
+Since $\varphi \in fv (L)$ we must have $\varphi \in \Sigma'$ and
+since $\Sigma' \vdash^0 \lambda \overline{x} . L$, by lemma
+\ref{lem:nonhomosafe_basic_prop} we have:
+
+$$\ord{\varphi} \geq \ord{\lambda \overline{x} . L} \geq \max(1+ \ord{x}, \ord{L}) > \ord{x}$$
+
+which contradicts equation (\ref{eq:xigeqphi}).
+\end{proof}
+
+Hence, in the safe lambda calculus setting, we can omit to to rename
+variable when performing substitution. The equation
+$$(\lambda x . M) \subst{t}{y} = \lambda z . M \subst{z}{x}
+\subst{t}{y} \mbox{where $z$ is a fresh variable}$$ becomes
+$$(\lambda x . M) \subst{t}{y} = \lambda x . M \subst{t}{y}$$
+
+
+
+Unfortunately, this notion of substitution is still not adequate for
+the purpose of the safe simply-typed lambda calculus. The problem is
+that performing a single $\beta$-reduction on a safe term will not
+necessarily produce another safe term.
+
+To fix this problem, we need to be able to reduce several
+consecutive $\beta$-redex at the same time until we obtain a safe
+term. Consequently, we need a mean of performing several
+substitutions at the same time. To achieve this, we introduce the
+\emph{simultaneous substitution},
+ a generalization of the standard substitution given in definition \ref{dfn:subst}.
+
+\begin{dfn}[Simultaneous substitution]
+\label{dnf:simsubst}
+ We use the notation
+$\subst{\overline{N}}{\overline{x}}$ for $\subst{N_1 \ldots N_n}{x_1
+\ldots x_n}$:
+\begin{eqnarray*}
+c \subst{\overline{N}}{\overline{x}} &=& c \quad \mbox{where $c$ is a $\Sigma$-constant}\\
+x_i \subst{\overline{N}}{\overline{x}} &=& N_i\\
+ y \subst{\overline{N}}{\overline{x}} &=& y \quad \mbox{ if } y \not \neq x_i \mbox{ for all } i,\\
+(M N) \subst{\overline{N}}{\overline{x}} &=& (M \subst{\overline{N}}{\overline{x}}) (N \subst{\overline{N}}{\overline{x}}) \\
+(\lambda x_i . M) \subst{\overline{N}}{\overline{x}} &=& \lambda x_i
+. M
+\subst{N_1 \ldots N_{i-1} N_{i+1}\ldots N_n}{x_1 \ldots x_{i-1} x_{i+1}\ldots x_n} \\
+(\lambda y . M)
+\subst{\overline{N}}{\overline{x}} &=& \lambda z . M \subst{z}{y} \subst{\overline{N}}{\overline{x}} \\
+&& \mbox{where $z$ is a fresh variables and } y \neq x_i \mbox{ for
+all } i
+\end{eqnarray*}
+\end{dfn}
+
+In general, variable captures should be avoided, this explains why
+the definition of simultaneous substitution uses auxiliary fresh
+variables. However in the current setting, lemma \ref{lem:noclash}
+can clearly be transposed to the simultaneous substitution therefore
+there is no need to rename variable.
+
+The notion of substitution that we need is therefore the
+\emph{capture permitting simultaneous substitution} defined as
+follow:
+
+\begin{dfn}[Capture permitting simultaneous substitution]
+ We use the notation
+$\subst{\overline{N}}{\overline{x}}$ for $\subst{N_1 \ldots N_n}{x_1
+\ldots x_n}$:
+\begin{eqnarray*}
+c \subst{\overline{N}}{\overline{x}} &=& c \quad \mbox{where $c$ is a $\Sigma$-constant}\\
+ x_i \subst{\overline{N}}{\overline{x}} &=& N_i\\
+ y \subst{\overline{N}}{\overline{x}} &=& y \quad \mbox{where } x \not \neq y_i \mbox{ for all } i,\\
+(M_1 M_2) \subst{\overline{N}}{\overline{x}} &=& (M_1 \subst{\overline{N}}{\overline{x}}) (M_2 \subst{\overline{N}}{\overline{x}})\\
+(\lambda x_i . M) \subst{\overline{N}}{\overline{x}} &=& \lambda x_i
+. M
+\subst{N_1 \ldots N_{i-1} N_{i+1}\ldots N_n}{x_1 \ldots x_{i-1} x_{i+1}\ldots x_n} \\
+(\lambda y . M) \subst{\overline{N}}{\overline{x}} &=& \lambda y . M
+\subst{\overline{N}}{\overline{x}} \mbox{where $y \not = x_i$ for
+all $i$} \qquad \mathbf{(\star)}
+\end{eqnarray*}
+The symbol $\mathbf{(\star)}$ identifies the equation that changed
+compared to the previous definition.
+\end{dfn}
+
+\begin{lem}
+$$ \Gamma,\overline{x} : \overline{A}\vdash^i M : T
+\quad \mbox{and} \quad \Gamma \vdash^0 N_k : B_k \mbox{, } k \in
+1..n \qquad \mbox{ implies } \qquad \Gamma \vdash^i
+M[\overline{N}/\overline{x}] : T$$
+\end{lem}
+
+\begin{proof}
+Suppose that $\Gamma,\overline{x}: \overline{A} \vdash^i M :T$ and
+$\Gamma \vdash^0 N_k : B_k$ for $k \in 1..n$.
+
+We prove $\Gamma \vdash^i M[\overline{N}/\overline{x}]$ by induction
+on the size of the proof tree of $\Gamma,\overline{x}:\overline{A}
+\vdash^i M : T$ and by case analysis on the last rule used. We just
+give the detail for the abstraction case. Suppose that the property
+is verified for terms whose proof tree is smaller than $M$. Suppose
+$\Gamma,\overline{x}:\overline{A} \vdash^0 \lambda \overline{y} :
+\overline{C}. P : (\overline{C}|D)$ where $\Gamma,
+\overline{x}:\overline{A}, \overline{y}:\overline{C} \vdash^i P :
+D$, then by the induction hypothesis $\Gamma,
+\overline{y}:\overline{C} \vdash^i
+P\subst{\overline{N}}{\overline{x}} : D$. Applying the rule
+$\rulename{abs^i}$ gives $\Gamma \vdash^0 \lambda
+\overline{y}:\overline{C} . P \subst{\overline{N}}{\overline{x}}$.
+\end{proof}
+
+In the simply-typed lambda calculus a redex is a term of the form
+$(\lambda x . M) N$. We generalize this definition to the safe
+lambda calculus:
+\begin{dfn}[Safe redex]
+We call safe redex a term of the form $(\lambda \overline{x} . M)
+N_1 \ldots N_l$ such that:
+\begin{itemize}
+\item $ \Gamma \vdash^0 (\lambda \overline{x} . M) N_1 \ldots N_l $
+\item the variable $\overline{x}=x_1\ldots x_n$ are abstracted altogether by one occurrence of the rule $\rulename{abs}$ in the proof tree.
+\item The terms $(\lambda \overline{x} . M)$, $N_1$, $N_l$ are applied together at once using the $\rulename{app}$ rule :
+$$   \rulef{
+            \Sigma \vdash^{-1} \lambda \overline{x} . M
+            \quad
+            \Sigma \vdash^0 N_1         \quad \ldots \quad \Sigma \vdash^0 N_l
+    }
+    {
+       \Sigma \vdash^0 (\lambda \overline{x} . L) N_1 \ldots N_l
+    } (\mathbf{app})
+$$
+Consequently each $N_i$ is safe.
+
+\item $l\leq n$
+\end{itemize}
+\end{dfn}
+
+Note that the condition $l\leq n$ in the definition is not too
+restrictive because if $l>n$ then the application rule is too wide
+and can in fact be replaced by an application of exactly $n$ terms
+followed by another application for the remaining terms $N_{n+1},
+\ldots, N_l$.
+
+A safe redex $(\lambda \overline{x} . M) N_1 \ldots N_l$ can be
+reduced simultaneously to $\lambda x_l \ldots x_n . M \subst{N_1
+\ldots N_l}{x_1 \ldots x_l}$
+
+Using the previous lemma, we will now prove that this reduction
+produces a safe term:
+
+\begin{lem}
+\label{lem:safereduction} A safe redex reduces to a safe term.
+\end{lem}
+
+\begin{proof}
+We note $\overline{A}$ for $A_1, \ldots , A_n$, $\overline{x}'$ for
+$x_1 \ldots x_l$ and $\overline{x}''$ for $x_{l+1} \ldots x_n$.
+
+A safe-redex has a proof tree of the following form:
+$$
+   \rulef{
+        \rulef{
+            \rulef{
+                \rulef{
+                    \rulef
+                        { \rulef
+                            {\vdots}
+                            {\Sigma',\overline{x}:\overline{A}\vdash^i L:C  }
+                        }
+                        {\Sigma' \vdash^0 \lambda \overline{x} . L : \overline{A}|C} \rulename{abs^i}
+                }
+                {\vdots} r_1
+            }
+            {\vdots} r_2
+            }
+            { \Sigma \vdash^{-1} \lambda \overline{x} . L : A_1, \ldots , A_l|B} r_q
+            \quad
+            \Sigma \vdash^0 N_1 : A_1
+            \quad \ldots \quad \Sigma \vdash^0 N_l : A_l
+    }
+    {
+       \Sigma \vdash^0 (\lambda \overline{x} . L) N_1 \ldots N_l : B
+    } (\mathbf{app})
+$$
+with the following conditions:
+\begin{enumerate}
+\item for $j\in 1..q$, $r_j \in \{ \rulename{seq}, \rulename{wk^0}, \rulename{wk^{-1}} \}$ therefore
+$\Sigma = \Sigma' \union \Delta$ where $\Delta$ contains the
+variables introduced by the rules $r_1 \ldots r_q$.
+
+\item $A_1, \ldots , A_l|B = A_1, \ldots , A_n|C$ and $l\leq n$. Therefore
+$\ord{B} \geq \ord{C}$.
+\item The side condition of the rule $\rulename{abs}$ gives: $\forall z \in \Sigma : \ord{z} \geq \ord{B}$
+\end{enumerate}
+
+
+The conditions 2 and 3 ensure that $\forall z \in \Delta : \ord{z}
+\geq \ord{C}$ therefore we can use the weakening rule to introduce
+all the variable of $\Delta$ in the context of the sequent
+$\Sigma',\overline{x}:\overline{A}\vdash^i L:C$:
+
+$$\rulef{\rulef{ \Sigma',\overline{x}:\overline{A}\vdash^i L:C  }
+        {\vdots} (wk^i_0)}
+        {\Sigma,\overline{x}:\overline{A}\vdash^i L:C} (wk^i_0)
+$$
+
+By lemma \ref{lem:safereduction} we obtain:
+$$ \Sigma, \overline{x}'':\overline{A}'' \vdash^i L\subst{N_1 \ldots N_l}{\overline{x}'}$$
+Finally using the abstraction rule:
+$$ \Sigma \vdash^0 \lambda \overline{x}'':\overline{A}'' . L\subst{N_1 \ldots N_l}{\overline{x}'}$$
+\end{proof}
+
+
+
+
+
 
 \subsection{Particular case of homogeneously-safe lambda terms}
 
@@ -44,16 +395,16 @@ only judgments of the form $\Gamma \vdash^{k} M : T$ with $k\in
 \end{lem}
 
 \begin{proof}
-Assume that $\Gamma \vdash^{0} S : T_S$ with $T_S$ homogeneous.
+Assume that $\Gamma \vdash^{0} S : T_S$ with $T_S$ homogeneous. We
+prove the result by induction on the size of the proof tree and by
+case analysis on the last rule used to obtain $\Gamma \vdash^{0} S :
+T_S$.
 
-We prove the result by induction on the size of the proof tree and
-by case analysis on the last rule used to obtain $\Gamma \vdash^{0}
-S : T_S$.
-
-We give the details for the application and abstraction rule:
+We give the details of the proof for the application and abstraction
+case:
 \begin{itemize}
-\item Rule $\mathbf{(abs^i)}$ for some $i$:
-$$ \mathbf{(abs^i)} \quad  \rulef{\Gamma, \overline{x} : \overline{A} \vdash^i M : B}
+\item Rule $\rulename{abs^i}$ for some $i$:
+$$ \rulename{abs^i} \quad  \rulef{\Gamma, \overline{x} : \overline{A} \vdash^i M : B}
                                    {\Gamma  \vdash^{0} \lambda \overline{x} : \overline{A} . M : (\overline{A},B)} \qquad
                                    \forall y \in \Gamma : \ord{y} \geq \ord{\overline{A},B}$$
 
@@ -63,15 +414,15 @@ $\Gamma, \overline{x} : \overline{A} \vdash^0 M : B$.
 
 The induction hypothesis permits to conclude.
 
-\item Rule $\mathbf{(app)}$:
-$$ \mathbf{(app)} \quad  \rulef{\Gamma \vdash^{-1} M : (A,\ldots,A_l,B)
+\item Rule $\rulename{app}$:
+$$ \rulename{app} \quad  \rulef{\Gamma \vdash^{-1} M : (A,\ldots,A_l,B)
                                         \qquad \Gamma \vdash^{0} N_1 : A_1
                                         \quad \ldots \quad \Gamma \vdash^{0} N_l : A_l  }
                                    {\Gamma  \vdash^0 M N_1 \ldots N_l : B}
                                     \qquad
                                    \forall y \in \Gamma : \ord{y} \geq \ord{B}$$
 
-For the first premise of the rule, we apply lemma
+For the first premise of the rule we apply lemma
 \ref{lem:context_reduction}: there is a context $\Gamma'$ such that
 $\Gamma' \subseteq \Gamma$ and:
 $$ \Gamma' \vdash^{0} M : (A,\ldots,A_l,B) $$
@@ -85,21 +436,21 @@ By applying the weakening rule, we lift this result to $\Gamma
 For all the other premises we can directly apply the induction
 hypothesis.
 
-We conclude using the rule $\textbf{(app)}$.
+We conclude using the rule $\rulename{app}$.
 \end{itemize}
 \end{proof}
 
 This lemma permits us to derive rules specialized for the
 homogeneously-safe lambda calculus.
 
-\subsubsection{The application rule} We are now about to derive the
+\subsubsection{The application rule} Let us derive the
 application rules specialized for the case of homogeneous types. We
-recall the rule $\mathbf{(app)}$:
-$$ \mathbf{(app)} \quad  \rulef{\Gamma \vdash^{-1} M : (A,\ldots,A_l,B)
+recall the rule $\rulename{app}$:
+$$ \rulename{app} \  \rulef{\Gamma \vdash^{-1} M : (A,\ldots,A_l,B)
                                         \qquad \Gamma \vdash^{0} N_1 : A_1
                                         \quad \ldots \quad \Gamma \vdash^{0} N_l : A_l  }
                                    {\Gamma  \vdash^0 M N_1 \ldots N_l : B}
-                                    \qquad
+                                    \quad
                                    \forall y \in \Gamma : \ord{y} \geq \ord{B}$$
 
 Type homogeneity implies that $\ord{A_1} \geq \ldots \geq \ord{A_l}
@@ -114,7 +465,7 @@ respecting this condition).
 \item Suppose that $A_1, \ldots A_l$ forms a type partition, then we
 have $\ord{A_l} \geq \ord{B}$, the side-condition disappears and
 the rule becomes:
-$$ \mathbf{(app_1)} \quad  \rulef{\Gamma \vdash^{-1} M : \overline{A} | B
+$$ \rulename{app_1} \quad  \rulef{\Gamma \vdash^{-1} M : \overline{A} | B
                                         \qquad \Gamma \vdash^{0} N_1 :
                                         A_1
                                         \quad \ldots \quad \Gamma \vdash^{0} N_l :
@@ -129,7 +480,7 @@ where $\overline{A} = A_1, \ldots A_l$
 have $\ord{A_l} = \ord{B} - 1$. The side-condition becomes
 $\forall y \in \Gamma : \ord{y} \geq 1 +\ord{A_l} = \ord{\overline{A}|B}$. Therefore the side-condition
 can be omitted provided that we replace the $-1$ exponent in the first premise by a $0$:
-$$ \mathbf{(app_2)} \quad  \rulef{\Gamma \vdash^0 M : (A,\ldots,A_l,B)
+$$ \rulename{app_2} \quad  \rulef{\Gamma \vdash^0 M : (A,\ldots,A_l,B)
                                         \qquad \Gamma \vdash^{0} N_1 : A_1
                                         \quad \ldots
                                         \quad \Gamma \vdash^{0} N_l : A_l
@@ -137,8 +488,8 @@ $$ \mathbf{(app_2)} \quad  \rulef{\Gamma \vdash^0 M : (A,\ldots,A_l,B)
                                    {\Gamma  \vdash^0 M N_1 \ldots N_l : B}
 $$
 
-Equivalently we could replace this rule by the following one:
-$$ \mathbf{(app_2')} \quad  \rulef{\Gamma \vdash^0 M : A\rightarrow B
+Equivalently we can replace this rule by the following one:
+$$ \rulename{app_2'} \quad  \rulef{\Gamma \vdash^0 M : A\rightarrow B
                                         \qquad \Gamma \vdash^{0} N : A }
                                 {\Gamma  \vdash^{0} M N : B}$$
 \end{itemize}
@@ -146,15 +497,16 @@ $$ \mathbf{(app_2')} \quad  \rulef{\Gamma \vdash^0 M : A\rightarrow B
 \subsubsection{The abstraction rule}
 
 Let us derive the abstraction rule specialized for the case of
-homogeneous types. We recall the rule $\mathbf{(abs)}$:
-$$ \mathbf{(abs^i)} \quad  \rulef{\Gamma, \overline{x} : \overline{A} \vdash^{i} M : B}
+homogeneous types. We recall the rule $\rulename{abs}$:
+$$ \rulename{abs^i} \quad  \rulef{\Gamma, \overline{x} : \overline{A} \vdash^{i} M : B}
                                    {\Gamma  \vdash^{0} \lambda \overline{x} : \overline{A} . M : (\overline{A},B)} \qquad
                                    \forall y \in \Gamma : \ord{y} \geq \ord{\overline{A},B}$$
 
-We now partitionned the context $\Gamma$ according to the order of
-the variables. The partition are written in decreasing order of type
-order. The notation $\Gamma | \overline{x}:\overline{A}$ means that
-$\overline{x}:\overline{A}$ is the lowest partition of the context.
+The context $\Gamma$ is now partitionned according to the order of
+the variables. The partitions are written in decreasing order of
+type order. The notation $\Gamma | \overline{x}:\overline{A}$ means
+that $\overline{x}:\overline{A}$ is the lowest partition of the
+context.
 
 We also use the notation $(\overline{A}|B)$ to denote the
 homogeneous type $(A_1, A_2, \ldots A_n, B)$ where $\ord{A_1} =
@@ -175,7 +527,7 @@ used repeatedely if further partitions need to be abstracted. We
 obtained the following rule where the side-condition has
 disappeared:
 
-$$ \mathbf{(abs^i)} \quad  \rulef{\Gamma| \overline{x} : \overline{A} \vdash^{-1} M : B}
+$$ \rulename{abs^i} \quad  \rulef{\Gamma| \overline{x} : \overline{A} \vdash^{-1} M : B}
                                    {\Gamma  \vdash^{0} \lambda \overline{x} : \overline{A} . M : (\overline{A}|B)}$$
 
 
@@ -184,26 +536,26 @@ $$ \mathbf{(abs^i)} \quad  \rulef{\Gamma| \overline{x} : \overline{A} \vdash^{-1
 Table \ref{tab:homosafelmd_rules} recapitulates the entire set of rules:
 
 \begin{table}[htbp]
-$$  (\mbox{\textbf{perm}}) {
+$$  \rulename{perm} {
       { \Gamma \vdash^0 M:B \qquad \sigma(\Gamma)  } \hbox{ homogeneous}
     \over
       { \sigma(\Gamma) \vdash^0 M : B }
     }
-\qquad
-\mathbf{(seq)} \quad \rulef{\Gamma \vdash^{0} M : A}{\Gamma \vdash^{-1} M : A}
+\qquad \rulename{seq} \quad \rulef{\Gamma \vdash^{0} M : A}{\Gamma
+\vdash^{-1} M : A}
 $$
 
 $$
- \textbf{(const)}
+ \rulename{const}
     { \over { \vdash^0 b : o^r \rightarrow o}} \quad b : o^r \rightarrow o \in \Sigma
 \qquad
- \mathbf{(var)} \quad  \rulef{}{x : A\vdash^{0} x : A} $$
+ \rulename{var} \quad  \rulef{}{x : A\vdash^{0} x : A} $$
 
-$$ \mathbf{(wk^{0})} \quad  \rulef{\Gamma \vdash^{0} M : A}{\Gamma , x : B \vdash^{0} M : A} \quad \ord{B} \geq \ord{A} $$
+$$ \rulename{wk^{0}} \quad  \rulef{\Gamma \vdash^{0} M : A}{\Gamma , x : B \vdash^{0} M : A} \quad \ord{B} \geq \ord{A} $$
 
-$$ \mathbf{(wk^{-1})} \quad  \rulef{\Gamma \vdash^{-1} M : A}{\Gamma , x : B \vdash^{-1} M : A} \quad \ord{B} \geq \ord{A} -1$$
+$$ \rulename{wk^{-1}} \quad  \rulef{\Gamma \vdash^{-1} M : A}{\Gamma , x : B \vdash^{-1} M : A} \quad \ord{B} \geq \ord{A} -1$$
 
-$$ \mathbf{(app)} \quad  \rulef{\Gamma \vdash^{-1} M : \overline{A} | B
+$$ \rulename{app} \quad  \rulef{\Gamma \vdash^{-1} M : \overline{A} | B
                                         \qquad \Gamma \vdash^{0} N_1 : A_1
                                         \quad \ldots \quad \Gamma \vdash^{0} N_l : A_l
                                         \qquad l = |\overline{A}|
@@ -212,12 +564,12 @@ $$ \mathbf{(app)} \quad  \rulef{\Gamma \vdash^{-1} M : \overline{A} | B
 $$
 
 
-$$ \mathbf{(app^0)} \quad  \rulef{\Gamma \vdash^0 M : A\rightarrow B
+$$ \rulename{app^0} \quad  \rulef{\Gamma \vdash^0 M : A\rightarrow B
                                         \qquad \Gamma \vdash^{0} N : A
                                    }
                                    {\Gamma  \vdash^{0} M N : B}$$
 
-$$ \mathbf{(abs)} \quad  \rulef{\Gamma| \overline{x} : \overline{A} \vdash^{-1} M : B}
+$$ \rulename{abs} \quad  \rulef{\Gamma| \overline{x} : \overline{A} \vdash^{-1} M : B}
                                    {\Gamma  \vdash^{0} \lambda \overline{x} : \overline{A} . M : (\overline{A}|B)}$$
 \caption{Rules of the homogeneous safe lambda calculus}
 \label{tab:homosafelmd_rules}

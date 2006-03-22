@@ -1,4 +1,6 @@
-\section{Non homogeneous safe $\lambda$-calculus}
+\clearpage
+
+\section{Non homogeneous safe $\lambda$-calculus - VERSION B}
 
 In section \ref{sec:safe_alt}, we have presented a safe lambda
 calculus in the setting of homogeneous types. In this section, we
@@ -16,11 +18,10 @@ A$ where the meaning is ``variables in $\Gamma$ have orders at least
 $\ord{A}+i$'' where $i \leq 0$. The following set of rules are
 defined for $i \in \nat$:
 
-$$ \rulename{seq} \quad \rulef{\Gamma \vdash^0 M : A}{\Gamma \vdash^{-1} M : A} $$
-
 $$ \rulename{var} \quad  \rulef{}{x : A\vdash^{0} x : A} $$
 
-$$ \rulename{wk^i} \quad  \rulef{\Gamma \vdash^i M : A}{\Gamma , x : B \vdash^i M : A} \quad \ord{B} \geq \ord{A} + i $$
+$$ \rulename{seq} \quad \rulef{\Gamma \vdash^0 M : A}{\Gamma \vdash^{-1} M : A}
+\qquad  \rulename{wk^i} \quad  \rulef{\Gamma \vdash^i M : A}{\Gamma , x : B \vdash^i M : A} \quad \ord{B} \geq \ord{A} + i $$
 
 $$ \rulename{app} \quad  \rulef{\Gamma \vdash^{-1} M : (A,\ldots,A_l,B)
                                         \qquad \Gamma \vdash^{0} N_1 : A_1
@@ -38,10 +39,8 @@ Note that:
 \begin{itemize}
 \item $(\overline{A},B)$ denotes the type $(A_1,A_2, \ldots, A_n, B)$;
 \item all the types appearing in the rule are not required to be homogeneous. For instance
-for the type $(A,\ldots,A_l,B)$ in the rule $\rulename{app}$ we do
-not necessary have $\ord{A_l} \geq \ord{B}$;
+for the type $(A,\ldots,A_l,B)$ in the rule $\rulename{app}$ it is not necessary that $\ord{A_l} \geq \ord{B}$;
 \item the environment $\Gamma, \overline{x}:\overline{A}$ is not stratified. In particular, variables in $\overline{x}$ do not necessarily have the same order;
-
 \item In the abstraction rule, the side-condition imposes that at least all the variable of the lowest order
 in the context are abstracted. However other variables can also be
 abstracted together with the lowest order variables. Moreover there
@@ -66,14 +65,16 @@ valid although its type is not homogeneous
 
 
 \begin{lem}[Basic properties]
-\label{lem:nonhomosafe_basic_prop} Suppose $\Gamma \vdash^0 M : B$
+\label{lem:nonhomosafe_basic_prop} Suppose $\Gamma \vdash^i M : B$
 is a valid judgment then every variable in $\Gamma$ has order at
-least $ord(M)$.
+least $ord(M)+i$.
 \end{lem}
 \begin{proof}
-An easy induction on the proof tree shows that if $\Gamma \vdash^{i}
-M : A$ then the variables in $\Gamma$ have orders at least
-$\ord{A}+i$.
+An easy induction. The step case for the application is: suppose
+$\Gamma \vdash^{i+\delta} M N : B$ where $\Gamma \vdash^i M :
+A\rightarrow B$. Then by induction we have $\forall y \in \Gamma :
+\ord{y} \geq \ord{A\rightarrow B} + i = \max(1+\ord{A}, \ord{B})+i =
+\delta + \ord{B} + i \geq \min(i+\delta,0) + \ord{B}$.
 \end{proof}
 
 \subsection{Substitution in the safe lambda calculus}
@@ -250,6 +251,7 @@ $\rulename{abs^i}$ gives $\Gamma \vdash^0 \lambda
 \overline{y}:\overline{C} . P \subst{\overline{N}}{\overline{x}}$.
 \end{proof}
 
+\subsection{Safe-redex}
 In the simply-typed lambda calculus a redex is a term of the form
 $(\lambda x . M) N$. We generalize this definition to the safe
 lambda calculus:
@@ -281,12 +283,18 @@ and can in fact be replaced by an application of exactly $n$ terms
 followed by another application for the remaining terms $N_{n+1},
 \ldots, N_l$.
 
-A safe redex $(\lambda \overline{x} . M) N_1 \ldots N_l$ can be
-reduced simultaneously to $\lambda x_l \ldots x_n . M \subst{N_1
-\ldots N_l}{x_1 \ldots x_l}$
 
-Using the previous lemma, we will now prove that this reduction
-produces a safe term:
+\todobox{Define the safe reduction:
+Consider the safe-redex $(\lambda \overline{x} . M) N_1 \ldots N_l$, it reduces
+to $\lambda x_l \ldots x_n . M \subst{N_1 \ldots N_l}{x_1 \ldots x_l}$. The relation $\beta_s$ is defined
+on safe-redex: $(s\mapsto t) \in \beta_s$ iff $s \equiv (\lambda \overline{x} . M) N_1 \ldots N_l$ is a safe redex and
+$t \equiv \lambda x_l \ldots x_n . M \subst{N_1 \ldots N_l}{x_1 \ldots x_l}$
+}
+
+\todobox{Show that $\betasred \subseteq \betared^*$.}
+
+Using the previous lemma, we will now prove that safe-reduction
+produces safe terms.
 
 \begin{lem}
 \label{lem:safereduction} A safe redex reduces to a safe term.
@@ -377,20 +385,6 @@ follow:
 $$ \rulef{{\Gamma' \not\vdash^{-1} \lambda f x. x} \qquad \Gamma' \not\vdash^0 g \qquad \Gamma' \vdash^0 y}
     {\Gamma' \vdash^0 (\lambda f x. x) g y } \rulename{app}$$
 
-\subsubsection{Example 2 - Damien Sereni SCT counter-example}
-In \cite{serenistypesct05}, the following counter-example is given to show that not all simply-typed terms are size-change terminating (see
-\cite{jones01} for a definition of size-change termination):
-
-$$ E =  (\lambda a . a (\lambda b . a (\lambda c d .d))) (\lambda e . e (\lambda f .f))$$
-where:
-\begin{eqnarray*}
-a &:& ((\tau \typear \tau) \typear \mu \typear \mu) \typear \mu \typear \mu \\
-b &:& \tau \typear \tau \\
-c &:& \tau \typear \tau \\
-d &:& \mu \\
-e &:& (\tau \typear \tau) \typear \mu \typear \mu \\
-f &:& \tau
-\end{eqnarray*}
 
 \subsection{Particular case of homogeneously-safe lambda terms}
 

@@ -92,7 +92,7 @@ are exactly the free variables of $M$.
 \end{property}
 
 We now define a special kind of substitution that performs simultaneous substitution and
-that permits variable capture (i.e. no renaming occurs in the abstraction case).
+that permits variable capture (i.e. does not rename variables when the substitution is performed on an abstraction).
 
 \begin{dfn}[Capture permitting simultaneous substitution (for homogeneous safe terms)]
 \label{dnf:safe_simsubst}
@@ -284,10 +284,49 @@ of the safe $\lambda$-calculus.
 \end{itemize}
 \end{dfn}
 
-We remark that $\betasred \subset \betaredtr$, i.e. the safe
-$\beta$-reduction relation is included in the transitive closure of
-the $\beta$-reduction relation. Safe $\beta$-reduction is a certain
-kind of multi-steps $\beta$-reduction.
+
+
+We observe that safe $\beta$-reduction is a certain kind of multi-steps $\beta$-reduction.
+\begin{property}
+$\betasred \subset \betaredtr$, i.e. the safe
+$\beta$-reduction relation is included in the transitive closure of the $\beta$-reduction relation.
+\end{property}
+\begin{proof}
+Suppose that $(M\mapsto N) \in \beta_s$. We show that $M \betared^* N$.
+\begin{itemize}
+\item Suppose that the safe-redex is
+$M \equiv (\lambda \overline{x} : \overline{A} . T) N_1 \ldots N_l$ such that $n\leq l$ then:
+\begin{eqnarray*}
+ M &=_\alpha& (\lambda z_1 \ldots z_n .T [z_1,\ldots z_n /x_1,\ldots x_n] ) \ N_1  N_2 \ldots N_l
+            \qquad \mbox{where the $z_i$ are fresh variables}  \\
+     &\betared& (\lambda z_2 \ldots z_n .T [z_1,\ldots z_n /x_1,\ldots x_n] \subst{N_1}{z_1} ) \ N_2 \ldots N_l
+            \qquad \mbox{ the $z_i$ do not occur freely in $N_1$ }\\
+%%    &=_\alpha& (\lambda z_2 \ldots z_n .T [z_2,\ldots z_n /x_2,\ldots x_n] \subst{N_1}{x_1})\  N_2 \ldots N_l  \qquad \mbox{where the $z_i$ are fresh variables}  \\
+    &\betared& \ldots \\
+    &\betared& (T [z_1,\ldots z_n /x_1,\ldots x_n] \subst{N_1}{z_1}  \ldots \subst{N_n}{z_n})\  N_{n+1} \ldots N_l \\
+    &\betared& (T [N_1\ldots N_l/x_1,\ldots x_l])\ N_{n+1} \ldots N_l
+\end{eqnarray*}
+And since $T$ is safe, the substitution $T [N_1\ldots N_l/x_1,\ldots x_l]$ in the last equation
+can be performed using the capture-permitting substitution. Hence $M \betared^* N$.
+
+\item Suppose that $M \equiv (\lambda \overline{x} : \overline{A} . T) N_1 \ldots N_l$ such that $n> l$, then necessarily
+the redex must be formed using the $\rulename{app^+}$ rule. The side-condition of this rules
+says that the free variables of the terms $N_1, \ldots N_l$ have all order strictly greater than $\ord{\overline{x}}$,
+hence the $x_i$ do not occur freely in $N_1, \ldots N_l$. Therefore:
+\begin{eqnarray*}
+ M &=& (\lambda x_1 \ldots x_n .T) \ N_1  N_2 \ldots N_l  \\
+     &\betared& (\lambda x_2 \ldots x_n .T \subst{N_1}{x_1} ) \ N_2 \ldots N_l
+            \quad \mbox{(for $i \in 2..n$, $x_i$ does not occur freely in $N_1$)}\\
+    &\betared& \ldots \\
+    &\betared& \lambda x_{l+1} \ldots x_n . T \subst{N_1}{x_1}  \ldots \subst{N_l}{x_l}
+        \quad \mbox{(for $i \in (l+1)..n$,  $x_i$ does not occur freely in $N_l$)}\\
+    &\betared& \lambda x_{l+1} \ldots x_n . T [N_1\ldots, N_l /  \ x_1,\ldots, x_l]
+        \quad \mbox{(the $x_i$ do not occur freely in $N_1, \ldots N_l$)}
+\end{eqnarray*}
+And since $T$ is safe, the substitution $T [N_1\ldots N_l/x_1,\ldots x_l]$ in the last equation
+can be performed using the capture-permitting substitution. Hence $M \betared^* N$.
+\end{itemize}
+\end{proof}
 
 \begin{property} In the simply typed $\lambda$-calculus setting:
 \begin{enumerate}
@@ -307,7 +346,7 @@ unicity of $\beta_s$ normal form.
 \end{proof}
 
 
-We now prove that reducing a safe redex $(\lambda \overline{x} . M) N_1 \ldots N_l$ produces a safe term.
+We now prove that a safe redex $(\lambda \overline{x} . M) N_1 \ldots N_l$ reduces to a safe term.
 
 \begin{lem}[The safe reduction $\beta_s$ preserves safety]
 $M$ safe and $M \betasred N$ implies $N$ safe.
@@ -427,10 +466,9 @@ By induction, the only non trivial cases are $\rulename{app}$ and $\rulename{app
     &>& 1 + \ord{\overline{B_2}} = \ord{M N_1 \ldots N_l}
     \end{eqnarray*}
 
-\item $\rulename{app^+}$  The side-condition of the rule $\rulename{app^+}$ ensures that all but the first premise verify $P_0$.
-The first premise has the same order has the
-conclusion of the rule therefore the first premise verifies
-$P_{i}$. We can therefore conclude by using the induction hypothesis and applying the rule $\rulename{app^+}$.
+\item $\rulename{app^+}$  The side-condition of the rule $\rulename{app^+}$ ensures that all the premises
+ verify $P_0$. The conclusion of the rule has the same order as the first premise
+ therefore the conclusion verifies $P_0$.
 \end{itemize}
 \end{proof}
 

@@ -1,0 +1,160 @@
+\def\aux#1{\lceil #1\rceil}
+\def\nf#1{\eta_{\sf nf}(#1)}
+
+\section{Game semantics of safe $\lambda$-terms}
+
+We would like to find out whether the safety condition defined in
+\cite{Ong2005} leads to a pointer economy in the corresponding game
+semantics.
+
+The example of section \ref{subsec:ptrless_strat} is a good example
+to start with. We observe that for this particular example and in
+the safe $\lambda$-calculus setting, the ambiguity that led us to
+the addition of pointers to strategies disappear. More precisely,
+$M_1$ is a safe term whereas $M_2$ is not. Indeed, there is a free
+occurrence of the variable $x$ of type $o$ in the subterm $f
+(\lambda y . x)$ which is not abstracted together with $y$ of type
+$o$.
+
+
+\begin{enumerate}
+\item
+Is it the case that in general, the pointers from the semantics of
+safe $\lambda$-terms can be reconstructed uniquely from the moves of
+the play?
+
+
+\item
+Is there any unsafe term whose game semantics is a strategy where
+pointers can be recovered?
+
+The answer is yes: take the term $T_i = (\lambda x y . y) M_i S$
+where $i =1..2$ and $\Gamma \vdash_s S : A$. $T_1$ and $T_2$ both
+$\beta$-reduce to the safe term $S$, therefore
+$\sem{T_1}=\sem{T_2}=\sem{S}$. But $T_1$ is safe whereas $T_2$ is
+unsafe. Since it is possible to recover the pointer from the game
+semantics of $S$, it is as well possible to recover the pointer from
+the semantics of $T_2$ which is unsafe.
+
+\item
+Is there any unsafe $\beta$-normal form whose game semantics is a
+strategy where pointers can be recovered?
+
+
+\end{enumerate}
+
+
+
+
+
+
+\subsection{$\eta$-long normal form}
+
+The $\eta$-expansion of $M: A\typear B$ is defined to be the term $\lambda x . M x : A\typear B$ where $x:A$ is a fresh variable.
+It is easy to check that if $M$ is safe then $\lambda x . M x$ is also safe.
+
+Consider the term $M : (A_1,\ldots,A_n,o)$, it can be expanded in several steps into
+$\lambda \varphi_1 \ldots \varphi_l . M \varphi_1 \ldots \varphi_l$
+where the $\varphi_i:A_i$ are fresh variables.
+
+The $\eta$-normal form of a term is obtained by hereditarily $\eta$-expanding every sub-term occurring
+at an operand position:
+
+\begin{dfn}[$\eta$-normal form]
+A term is either an abstraction or it can be written uniquely as $s_0 s_1 \ldots s_m$ where $s_0$ is a variable, a constant
+or an abstraction and $m\geq0$.
+
+The $\eta$-normal form of a term $M$ is denoted $\aux{M}$ and is defined as follow:
+\begin{eqnarray*}
+\aux{x s_1 \ldots s_m : (A_1,\ldots,A_n,o)} &=& \lambda \overline{\varphi} . x \aux{s_1} \aux{s_2} \ldots \aux{s_m} \aux{\varphi_1} \ldots \aux{\varphi_n} \\
+&& \mbox{where } m \geq 0 \\
+\aux{x s_1 \ldots s_m : o} &=& \lambda . x \aux{s_1} \aux{s_2} \ldots \aux{s_m} \\
+&& \mbox{where } m \geq 0 \\
+\aux{(\lambda x . s_0) s_1 \ldots s_m } &=& (\lambda x . \aux{s_0}) \aux{s_1} \aux{s_2} \ldots \aux{s_m}
+\end{eqnarray*}
+where $x$ is either a variable or a constant.
+\end{dfn}
+
+The $\eta$-long normal form appeared in \citep{DBLP:journals/tcs/JensenP76}
+under the name \emph{long reduced form}
+and in \citep{DBLP:journals/tcs/Huet75}
+under the name \emph{$\eta$-normal form}. It was then investigated in \citep{huet76}
+under the name \emph{extensional form}.
+
+
+
+Terms in $\eta$-long normal form can be represented by a tree. The nodes
+of the tree are of three kinds: abstraction node noted $\lambda \overline{x}$,
+application node noted $@$ or operator-application nodes noted $x @$ where the operator $x$
+ is either a variable or a constant.
+
+The tree is defined formally by induction on the structure of the term in $\eta$-long normal form.
+A term in $\eta$-long normal form is necessarily an abstraction.
+\begin{itemize}
+\item the tree for $\lambda . x$ where $x$ is a variable or a constant is:
+$$ \sem{\lambda . x} =
+  \pstree[levelsep=6ex]
+    { \TR{\lambda } }
+    { \TR{x}
+    }$$
+\item the tree for $\lambda x_1 \ldots x_n. M$ where $M$ is not an abstraction is:
+$$ \sem{\lambda x_1 \ldots x_n . M} =
+  \pstree[levelsep=6ex]
+    { \TR{\lambda x_1 \ldots x_n} }
+    { \SubTree{\sem{M}}
+    }
+$$
+\item the tree for $x s_1 \ldots s_n$ where $x$ is a variable or a constant is:
+$$ \sem{x s_1 \ldots s_n} =
+  \pstree[levelsep=6ex]
+    { \TR{x @} }
+    { \SubTree{\sem{s_1}} \SubTree[linestyle=none]{\ldots} \SubTree{\sem{s_n}}
+    }
+$$
+\item the tree for $(\lambda x.s_0) s_1 \ldots s_n$ is:
+$$ \sem{(\lambda x.s_0) s_1 \ldots s_n} =
+  \pstree[levelsep=6ex]
+    { \TR{@} }
+    {
+    \SubTree{\sem{\lambda x.s_0}}    \SubTree{\sem{s_1}} \SubTree[linestyle=none]{\ldots} \SubTree{\sem{s_n}}
+    }
+$$
+\end{itemize}
+
+
+
+
+
+
+\subsection{Pointers in the game semantics of safe terms are recoverable}
+
+\todomargin{rework this paragraph!}
+
+We claim that the pointers in the game semantics of a safe term are
+uniquely recoverable.
+
+\todobox{Need to prove that safety is preserved by $\eta$-expansion.}
+
+Consider a term $M$ safe, we can assume that $M$ is in $\eta$ normal
+form.
+
+The term can be represented by a computation tree: nodes at even
+depth (starting at level 0) correspond to $\lambda$ and nodes at odd
+length corresponds to either application $@$, variable $x$ or
+variable followed by an application $f@$. A $\lambda$ node
+represented consecutive abstraction of variables.
+
+There justification pointers going upward from variable occurrences
+to their bindings.
+
+In the game semantics of the term $M$, the pointers for O and P
+answers can be recovered by using the well-bracketing condition.
+
+For O-question, the justification pointer always points to its
+parent node in the computation tree.
+
+For P-question, suppose P ask for the value of variable $x$. Then
+there may be several choices for the destination of the pointer but
+we claim that in the case of safe terms, it should point to the
+closest parent node (in the path from the root to P-question) whose
+order is greater than the order of $x$.

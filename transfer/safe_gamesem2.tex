@@ -1,47 +1,40 @@
+\def\cmptre#1{\tau(#1)}
 \def\aux#1{\lceil #1\rceil}
 \def\nf#1{\eta_{\sf nf}(#1)}
 
 \section{Game semantics of safe $\lambda$-terms}
 
-We would like to find out whether the safety condition defined in
-\cite{Ong2005} leads to a pointer economy in the corresponding game
-semantics.
+In this section we will prove that the safety condition
+of section \ref{sec:safe_alt} leads to a pointer economy in the game
+semantics: for safe $\lambda$-terms the pointers from the game semantics can be reconstructed uniquely from the moves of
+the play.
 
-The example of section \ref{subsec:ptrless_strat} is a good example
-to start with. We observe that for this particular example and in
-the safe $\lambda$-calculus setting, the ambiguity that led us to
-the addition of pointers to strategies disappear. More precisely,
-$M_1$ is a safe term whereas $M_2$ is not. Indeed, there is a free
-occurrence of the variable $x$ of type $o$ in the subterm $f
-(\lambda y . x)$ which is not abstracted together with $y$ of type
-$o$.
-
-
-\begin{enumerate}
-\item
-Is it the case that in general, the pointers from the semantics of
-safe $\lambda$-terms can be reconstructed uniquely from the moves of
-the play?
+The example of section \ref{subsec:ptrless_strat} gives the intuition.
+Remember that in order to distinguish the terms $M_1$ and $M_2$,
+we introduced pointers in strategies. In the safe $\lambda$-calculus
+this ambiguity disappears because $M_2$ is not a safe term. Indeed, in the
+sub-term $f (\lambda y . x)$, the free variable $x$
+has the same order as $y$ but $x$ is not abstracted together
+with $y$.
 
 
-\item
-Is there any unsafe term whose game semantics is a strategy where
-pointers can be recovered?
-
-The answer is yes: take the term $T_i = (\lambda x y . y) M_i S$
-where $i =1..2$ and $\Gamma \vdash_s S : A$. $T_1$ and $T_2$ both
-$\beta$-reduce to the safe term $S$, therefore
-$\sem{T_1}=\sem{T_2}=\sem{S}$. But $T_1$ is safe whereas $T_2$ is
-unsafe. Since it is possible to recover the pointer from the game
-semantics of $S$, it is as well possible to recover the pointer from
-the semantics of $T_2$ which is unsafe.
-
-\item
-Is there any unsafe $\beta$-normal form whose game semantics is a
-strategy where pointers can be recovered?
-
-
-\end{enumerate}
+%\begin{enumerate}
+%\item
+%Is there any unsafe term whose game semantics is a strategy where
+%pointers can be recovered?
+%
+%The answer is yes: take the term $T_i = (\lambda x y . y) M_i S$
+%where $i =1..2$ and $\Gamma \vdash_s S : A$. $T_1$ and $T_2$ both
+%$\beta$-reduce to the safe term $S$, therefore
+%$\sem{T_1}=\sem{T_2}=\sem{S}$. But $T_1$ is safe whereas $T_2$ is
+%unsafe. Since it is possible to recover the pointer from the game
+%semantics of $S$, it is as well possible to recover the pointer from
+%the semantics of $T_2$ which is unsafe.
+%
+%\item
+%Is there any unsafe $\beta$-normal form whose game semantics is a
+%strategy where pointers can be recovered?
+%\end{enumerate}
 
 
 
@@ -83,61 +76,77 @@ under the name \emph{extensional form}.
 
 
 
-Terms in $\eta$-long normal form can be represented by a tree. The nodes
-of the tree are of three kinds: abstraction node noted $\lambda \overline{x}$,
-application node noted $@$ or operator-application nodes noted $x @$ where the operator $x$
- is either a variable or a constant.
+Terms in $\eta$-long normal form can be represented by a tree
+defined formally by induction on the structure of the term in $\eta$-long normal form as follow:
 
-The tree is defined formally by induction on the structure of the term in $\eta$-long normal form.
-A term in $\eta$-long normal form is necessarily an abstraction.
+\begin{dfn}[Computation tree]
+We note $\cmptre{s}$ the tree associated to the term $s$.
+In the following, $x$ is either a variable or a constant.
 \begin{itemize}
-\item the tree for $\lambda . x$ where $x$ is a variable or a constant is:
-$$ \sem{\lambda . x} =
-  \pstree[levelsep=6ex]
-    { \TR{\lambda } }
-    { \TR{x}
-    }$$
 \item the tree for $\lambda x_1 \ldots x_n. M$ where $M$ is not an abstraction is:
-$$ \sem{\lambda x_1 \ldots x_n . M} =
-  \pstree[levelsep=6ex]
+$$ \cmptre{\lambda x_1 \ldots x_n . M} =
+  \pstree[levelsep=4ex]
     { \TR{\lambda x_1 \ldots x_n} }
-    { \SubTree{\sem{M}}
+    { \SubTree{\cmptre{M}}
     }
 $$
-\item the tree for $x s_1 \ldots s_n$ where $x$ is a variable or a constant is:
-$$ \sem{x s_1 \ldots s_n} =
-  \pstree[levelsep=6ex]
+
+
+\item the tree for $x s_1 \ldots s_n$ is:
+$$ \cmptre{ x s_1 \ldots s_n} =
+  \pstree[levelsep=4ex]
     { \TR{x @} }
-    { \SubTree{\sem{s_1}} \SubTree[linestyle=none]{\ldots} \SubTree{\sem{s_n}}
+    { \SubTree{\cmptre{s_1}} \SubTree[linestyle=none]{\ldots} \SubTree{\cmptre{s_n}}
     }
 $$
+
+\item the tree for $x$ is the single leaf $x$.
+
 \item the tree for $(\lambda x.s_0) s_1 \ldots s_n$ is:
-$$ \sem{(\lambda x.s_0) s_1 \ldots s_n} =
-  \pstree[levelsep=6ex]
+$$ \cmptre{(\lambda x.s_0) s_1 \ldots s_n} =
+  \pstree[levelsep=4ex]
     { \TR{@} }
     {
-    \SubTree{\sem{\lambda x.s_0}}    \SubTree{\sem{s_1}} \SubTree[linestyle=none]{\ldots} \SubTree{\sem{s_n}}
+    \SubTree{\cmptre{\lambda x.s_0}}    \SubTree{\cmptre{s_1}} \SubTree[linestyle=none]{\ldots} \SubTree{\cmptre{s_n}}
     }
 $$
 \end{itemize}
+\end{dfn}
+
+Example: if $x$ is a variable or a constant then
+$ \cmptre{\lambda . x} =
+  \pstree[levelsep=3ex]
+    { \TR{\lambda } }
+    { \TR{x}
+    }$
+
+The nodes of the tree are of three kinds: abstraction node noted $\lambda \overline{x}$,
+application node noted $@$ or operator-application nodes noted $x @$ where the operator $x$
+is either a variable or a constant.
+The leaves of the tree are variables or constants.
 
 
+It is easy to check nodes or leaves at even level are abstraction node
+and the odd level nodes are either application nodes, operator-application nodes, variable
+or constant (the root of the tree being at level $0$).
 
 
+There is a nice interpretation of this tree in the game semantics setting: the $\lambda$ nodes
+correspond to player O questions, the $x @$ nodes, the variable and constant leaves
+correspond to player P questions.
 
+\todomargin{to finish}
 
 \subsection{Pointers in the game semantics of safe terms are recoverable}
-
-\todomargin{rework this paragraph!}
 
 We claim that the pointers in the game semantics of a safe term are
 uniquely recoverable.
 
-\todobox{Need to prove that safety is preserved by $\eta$-expansion.}
+Let $M$ be a safe term, we consider its $\eta$-long normal form $\aux{M}$.
+$\aux{M}$ is safe because safety is preserved by $\eta$-expansion.
 
-Consider a term $M$ safe, we can assume that $M$ is in $\eta$ normal
-form.
 
+\todomargin{rework this paragraph!}
 The term can be represented by a computation tree: nodes at even
 depth (starting at level 0) correspond to $\lambda$ and nodes at odd
 length corresponds to either application $@$, variable $x$ or

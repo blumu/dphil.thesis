@@ -137,12 +137,6 @@ $\kappa(n)$ that is represented by the sub-tree of $\tau(s)$ rooted
 at $n$. In particular if $r$ is the root of the tree $\tau(s)$ then
 $\kappa(s) = \aux{s}$.
 
-We introduced pointer in the computation tree: a node $n$ labeled
-with the variable $x$ points to a lambda node $m$ labeled $\lambda
-\overline{\varphi}$ if and only if the variable $x$ is bound in
-$\kappa(m)$ by the abstraction $\lambda \overline{\varphi}$. In that
-case we say that the node $n$ is bound by $m$. Additionally we make
-lambda nodes point to their parent node.
 
 
 Consider the computation tree $\tau(s)$ of a term $s$ in $\eta$-long normal form. Then:
@@ -173,89 +167,186 @@ tree being at level $0$).
                 {\TR{\lambda \overline{\xi_1}} \ldots \TR{\lambda \overline{\xi_p}}}
             }
         $
-    we have $\ord{\kappa(n)}=0$
+    we have $\ord{\kappa(@^{[n]})}=0$
 
 \end{itemize}
 
+\subsubsection{Pointers and justified sequence of nodes}
+We introduce pointer in the computation tree: a node $n$ labeled
+with the variable $x$ points to a lambda node $m$ labeled $\lambda
+\overline{\varphi}$ if and only if the variable $x$ is bound in
+$\kappa(m)$ by the abstraction $\lambda \overline{\varphi}$. In that
+case we say that the node $n$ is bound by $m$. Additionally a lambda node points to its parent node.
+
+We call \emph{justified sequence of nodes} any sequence of nodes of the computation tree together
+with links as defined above.
+
 \subsection{Correspondence with game semantics}
 
-By observing side-by-side the computation tree and the type arena of a term in $\eta$-normal form we
-realize that it is possible to map each questions move of the arena to a node in the computation tree.
-This mapping is defined as follow:
-\todo{Define map from arena to comput tree.}
+By observing side-by-side the computation tree and the type arena of a term in $\eta$-normal form it becomes clear that
+we can map each question move of the arena to a set of nodes in the computation tree.
 
 
 \begin{exmp}
-Consider the following term in $\eta$-long normal form
-$\lambda f z . (\lambda g x . f x) (\lambda y. y) (\lambda .z)$ of type $(o \typear o) \typear o \typear o$.
-The computation tree and the arena for the type $(o \typear o) \typear o \typear o$ are represented below:
+Consider the following term $M \equiv \lambda f z . (\lambda g x . f (f x)) (\lambda y. y) z$ of type $(o \typear o) \typear o \typear o$.
+Its $\eta$-long normal form is $\lambda f z . (\lambda g x . f (f x)) (\lambda y. y) (\lambda .z)$.
+The computation tree is:
 
-\def\pstr{\pstree[levelsep=4ex]}
 $$
-\pstr
-            { \TR{\lambda f z} }
-            { \pstr
-                {\TR{@}}
-                {
-                    \pstr
-                        {\TR{\lambda g x}}
-                        { \pstr{\TR{f@}}{\pstr{\TR{\lambda}}{\TR{x}}}
-                        }
-                    \pstr{\TR{\lambda y}}{\TR{y}}
-                    \pstr{\TR{\lambda}}{\TR{z}}
-                }
-            }
-            \qquad
-  \pstr
-    { \TR{q^1} }
+\tree{\lambda f z}
+{ \tree{@}
     {
-      \pstr{\TR{q^3}}
-               {  \pstr{\TR{q^4}}{\TR{a^4_1} \TR{\ldots}} \TR{a^3_1} \TR{\ldots} }
-      \pstr
-        { \TR{q^2} }
-        { \TR{a^2_1} \TR{a^2_2}\TR{\ldots} }
-      \TR{a_1} \TR{a_2}\TR{\ldots}
+        \tree{\lambda g x}
+            { \tree{f@}{   \tree{\lambda}{ \tree{f@}{  \tree{\lambda}{\TR{x}}} }  }
+            }
+        \tree{\lambda y}{\TR{y}}
+        \tree{\lambda}{\TR{z}}
     }
+}
+$$
+
+The arena for the type $(o \typear o) \typear o \typear o$ is:
+$$\tree{q^1}
+{
+    \tree{q^3}
+        {  \tree{q^4}
+                {\TR{a^4_1} \TR{\ldots}}
+            \TR{a^3_1} \TR{\ldots} }
+    \tree{q^2}
+    { \TR{a^2_1} \TR{a^2_2}\TR{\ldots} }
+    \TR{a_1} \TR{a_2}\TR{\ldots}
+}
 $$
 
 \newlength{\yNull}
 \def\bow{\quad\psarc{->}(0,\yNull){1.5ex}{90}{270}}
 
-%\psset{arrows=->,arcangle=30,arrowsize=4pt 2,labelsep=2pt,linewidth=0.6mm}
+We now omit the answers moves when we represent the arena.
+The arena is represented on the right and the computation tree on the left.
 
-
+The dashed line defines a relation $\varphi$ from the set of question moves to nodes in the computation tree.
+$\varphi$ maps each question to one or more nodes in the computation tree:
 $$
-\pstr
-            { \TR{\Rnode{root}\lambda f z} }
-            { \pstr
-                {\TR{@}}
-                {
-                    \pstr
-                        {\TR{\lambda g x}}
-                        { \pstr{\TR{\Rnode{f}f@}}{\pstr{\TR{\Rnode{lmd}\lambda}}{\TR{x}}}
-                        }
-                    \pstr{\TR{\lambda y}}{\TR{y}}
-                    \pstr{\TR{\lambda}}{\TR{\Rnode{z}z}}
+\tree{ \Rnode{root} {\lambda f z}^{[1]} }
+     {  \tree{@^{[2]}}
+        {   \tree{\lambda g x ^{[3]}}
+                { \tree{\Rnode{f}{f@^{[6]}}}{  \tree{\Rnode{lmd}\lambda^{[7]}}{ \tree{\Rnode{f2}{f@^{[8]}}} {\tree{\Rnode{lmd2}\lambda^{[9]}}{\TR{x^{[10]}}}}}  }
                 }
-            }
+            \tree{\lambda y ^{[4]}}{\TR{y}}
+            \tree{\lambda ^{[5]}}{\TR{\Rnode{z}z}}
+        }
+    }
 \hspace{3cm}
-\def\pstr{\pstree[levelsep=12ex]}
-  \pstr
-    { \TR{\Rnode{q1}q^1} }
+  \tree[levelsep=12ex]{ \Rnode{q1}q^1 }
     {   \pstree[levelsep=4ex]{\TR{\Rnode{q3}q^3}}{\TR{\Rnode{q4}q^4}}
         \TR{\Rnode{q2}q^2}
     }
-\psset{nodesep=1pt,arrows=->,arcangle=20,arrowsize=2pt 1,linestyle=dashed,linewidth=0.3pt}
-\ncline{->}{root}{q1}
-\ncarc{->}{f}{q3}
-\ncarc{->}{z}{q2}
-\ncline{->}{lmd}{q4}
+\psset{nodesep=1pt,arrows=->,arcangle=-20,arrowsize=2pt 1,linestyle=dashed,linewidth=0.3pt}
+\ncline{<-}{root}{q1} \aput*{:U}{\varphi}
+\ncarc{->}{q2}{z}
+\ncline{->}{q3}{f}
+\ncline{->}{q4}{lmd}
+\ncline{->}{q3}{f2}
+\ncline{->}{q4}{lmd2}
 $$
+
+Consider the justified sequence of moves $s \in \sem{M}$:
+\vspace{0.5cm}
+ $$s =
+\rnode{q1}{q}^1\
+\rnode{q3}{q}^3\
+\rnode{q4}{q}^4\
+\rnode{q3b}{q}^3\
+\rnode{q4b}{q}^4\
+\rnode{q2}{q}^2
+\bkptrc{q3}{q1}
+\bkptrc[ncurv=0.5]{q3b}{q1}
+\bkptrc{q4}{q3}
+\bkptrc{q4b}{q3b}
+\bkptrc[ncurv=0.5]{q2}{q1}
+\in \sem{M}$$
+
+There is a corresponding justified sequence of nodes in the computation tree:
+\vspace{0.5cm}
+$$t =
+\rnode{q1}{\lambda f z} \cdot
+\rnode{q3}{f@}^{[6]} \cdot
+\rnode{q4}{\lambda^{[7]}} \cdot
+\rnode{q3b}{f@}^{[8]} \cdot
+\rnode{q4b}{\lambda^{[9]}} \cdot
+\rnode{q2}{z}
+\bkptra[ncurv=1]{60}{q3}{q1}
+\bkptra[ncurv=1]{60}{q4}{q3}
+\bkptra[ncurv=0.4]{75}{q3b}{q1}
+\bkptra[ncurv=0.8]{70}{q4b}{q3b}
+\bkptra[ncurv=0.4]{80}{q2}{q1}$$
+such that $t_i = \varphi(s_i)$ for all $i < |s|$.
+
+We see on this example that the game semantics and the computation tree are somehow related to each other.
 \end{exmp}
 
-There is a nice interpretation of this tree in the game semantics setting: the $\lambda$ nodes
-correspond to player O questions, the $x @$ nodes, the variable and constant leaves
-correspond to player P questions.
+Let us now define precisely the relationship between game semantics and computation tree.
+
+First we define the map $\varphi$ that associate a set of nodes in the computation tree to any
+question-move of the game semantics of the term.
+
+\begin{dfn}[Question move-nodes relationship]
+Let $\Gamma \vdash M : A$ be a term in $\eta$-long normal form.
+Suppose $(M,\vdash)$ is the arena $\sem{A}$ where $M$ is the set of moves and $\vdash$ is the enabling relation.
+We note $(N,E)$ the computation tree $\tau(M)$ where $N$ is the set of nodes and leaves of the tree and $E$ is the parent-child relation.
+
+We define a map $\varphi$
+
+\end{dfn}
+
+Procedure to compute $\varphi$:
+We give an algorithm to compute $\varphi^{-1} : N \rightarrow \mathcal{T}$ from which $\varphi$ can then be obtained.
+
+Consider a term $\Gamma \vdash M : A$.
+\begin{itemize}
+\item[step 1] $\varphi^{-1} \leftarrow \emptyset$
+\item[step 2]
+
+Suppose that $A = o$ then the term is of ground type therefore the game for $M$ is played on the flat arena
+with only one question $q$. The root $r$ of the computation tree is labelled with $\lambda$.\\
+\textbf{Return} $\varphi^{-1} = \{ r \mapsto q \}$.
+
+Suppose that $\ord{A} > 0$ then the computation tree and the arena have the following form:
+$$ \tree[levelsep=6ex]{ \lambda \overline{\xi}_n  ^{[-1]}}
+     {
+        \tree[levelsep=6ex]{@^{[0]}}
+        {   \TR{\lambda^{[1]}} \TR{\ldots} \TR{\lambda^{[n]}}
+        }
+    }
+\hspace{3cm}
+  \tree{ \Rnode{q1}q^0 }
+    {
+        \tree{q^1}{\TR{} \TR{\ldots} }
+        \tree{q^2}{\TR{} \TR{\ldots} }
+        \TR{\ldots}
+        \tree{q^n}{\TR{} \TR{\ldots} }
+    }
+\psset{nodesep=1pt,arrows=->,arcangle=-20,arrowsize=2pt 1,linestyle=dashed,linewidth=0.3pt}
+\ncline{<-}{root}{q1}
+\ncarc{->}{q2}{z}
+\ncline{->}{q3}{f}
+\ncline{->}{q4}{lmd}
+\ncline{->}{q3}{f2}
+\ncline{->}{q4}{lmd2}
+$$
+
+such that $\Gamma, \overline{\xi}_n \vdash \kappa(@^{[0]}) : o$.
+
+$\varphi^{-1} \leftarrow \{ \lambda \overline{\xi}_n  ^{[-1]} \mapsto q^0 \}
+ \union \{ n \mapsto q^i |\ n \mbox{ is a node labelled by $\xi_i$ for some $i \in 1..n$} \}$
+
+\end{itemize}
+
+
+
+This relation from question moves to tree nodes is such that player O questions are associated to $\lambda$-nodes
+and player P questions are associated to nodes of type $x @$ or $x$ where $x$ is variable or a constant.
+
 
 \todomargin{to finish}
 

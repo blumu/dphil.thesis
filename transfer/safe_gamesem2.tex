@@ -75,9 +75,8 @@ under the name \emph{$\eta$-normal form}. It was then investigated in \citep{hue
 under the name \emph{extensional form}.
 
 
-
-Terms in $\eta$-long normal form can be represented by a tree
-defined formally by induction on the structure of the term in $\eta$-long normal form as follow:
+A term can be represented by a tree defined formally by induction on the structure
+of its $\eta$-long normal form as follow:
 
 \begin{dfn}[Computation tree]
 The computation tree associated to the term $s$ is noted
@@ -122,11 +121,13 @@ $ \cmptre{\lambda . x} =
     { \TR{x}
     }$
 
-The nodes of the tree are of three kinds: lambda node labeled
- $\lambda \overline{x}$, application node labeled $@$ or
-operator-application nodes labeled $x @$ where the operator $x$ is
-either a variable or a constant. The leaves of the tree are
-variables or constants.
+The nodes (and leaves) of the tree are of three kinds:
+\begin{itemize}
+\item $\lambda$-node labeled $\lambda \overline{x}$. A $\lambda$-node represents several consecutive abstractions of variables.
+\item application node labeled $@$
+\item operator-application nodes labeled $x @$ where the operator $x$ is
+either a variable or a constant.
+\end{itemize}
 
 A sub-tree of the computation tree represents a $\lambda$-term. We
 define the map $\kappa : N \rightarrow \mathcal{T}$ where $N$
@@ -141,10 +142,9 @@ $\kappa(s) = \aux{s}$.
 
 Consider the computation tree $\tau(s)$ of a term $s$ in $\eta$-long normal form. Then:
 \begin{itemize}
-\item It is easy to check nodes or leaves at even level are abstraction
-node and the odd level nodes are either application nodes,
-operator-application nodes, variable or constant (the root of the
-tree being at level $0$).
+\item One can check that nodes at even level are abstraction
+node and nodes at odd level are either application nodes,
+operator-application nodes, variable or constant nodes (the root level being numbered $0$).
 
 \item Suppose that a variable $x$ occurs in $s$. The corresponding node in the tree has of one of the two following forms:
     \begin{itemize}
@@ -172,20 +172,23 @@ tree being at level $0$).
 \end{itemize}
 
 \subsubsection{Pointers and justified sequence of nodes}
+
 We introduce pointer in the computation tree: a node $n$ labeled
 with the variable $x$ points to a lambda node $m$ labeled $\lambda
 \overline{\varphi}$ if and only if the variable $x$ is bound in
 $\kappa(m)$ by the abstraction $\lambda \overline{\varphi}$. In that
 case we say that the node $n$ is bound by $m$. Additionally a lambda node points to its parent node.
 
-We call \emph{justified sequence of nodes} any sequence of nodes of the computation tree together
+To sum up a justification pointer goes upward from a variable occurrence to its bindings or from an abstraction node to its parent node.
+
+
+We call \emph{traversal} or \emph{justified sequence of nodes} any sequence of nodes of the computation tree together
 with links as defined above.
 
 \subsection{Correspondence with game semantics}
 
-By observing side-by-side the computation tree and the type arena of a term in $\eta$-normal form it becomes clear that
-we can map each question move of the arena to a set of nodes in the computation tree.
-
+By representing side-by-side the computation tree and the type arena of a term in $\eta$-normal form we observe
+that for each question move of the arena there are corresponding nodes in the computation tree.
 
 \begin{exmp}
 Consider the following term $M \equiv \lambda f z . (\lambda g x . f (f x)) (\lambda y. y) z$ of type $(o \typear o) \typear o \typear o$.
@@ -290,87 +293,245 @@ Let us now define precisely the relationship between game semantics and computat
 First we define the map $\varphi$ that associate a set of nodes in the computation tree to any
 question-move of the game semantics of the term.
 
-\begin{dfn}[Question move-nodes relationship]
+\begin{dfn}[Relation between question-moves and nodes]
 Let $\Gamma \vdash M : A$ be a term in $\eta$-long normal form.
 Suppose $(M,\vdash)$ is the arena $\sem{A}$ where $M$ is the set of moves and $\vdash$ is the enabling relation.
+$M^Q \subseteq M$ denotes the set of question moves.
 We note $(N,E)$ the computation tree $\tau(M)$ where $N$ is the set of nodes and leaves of the tree and $E$ is the parent-child relation.
 
-We define a map $\varphi$
 
+We give an algorithm to compute the partial function $\varphi^{-1} : N \rightarrow M^Q$.
+The total function $\varphi : M^Q \rightarrow \mathcal{P}(N)$ can then be obtained from
+$\varphi^{-1}$.
+
+We define $\varphi^{-1} = f(0,q^0)$ where the index $0$ denotes
+the root of the computation tree, $q^0$ is the root of the arena
+(in the game semantics of simply-typed lambda calculus the arenas involved
+are always trees (single root)) and $f$ is defined below.
+
+The procedure $f$ takes two parameters: $n$ is the index number of a
+$\lambda$-node in the computation tree and $q$ is a question move of the arena
+of $\Gamma \vdash M : A$ such that $q$ and $\kappa(n)$ have the same type.
+
+Similarly we define the procedure $g$ that
+takes two parameters: $n$ is the index number of a
+$x@$-labelled node or a $x$-labelled node in the computation tree and $q$ is a question move
+of the arena of $\Gamma \vdash M : A$ such that $q$ and $x$ have the same type.
+\\
+
+\noindent
+\begin{description}
+\item[\textbf{Procedure} $f(nd,q)$]
+    where $nd$ is a $\lambda$-node.
+
+    \begin{itemize}
+    \item If $\ord{\kappa(nd)} = 0$ then the term is of ground type therefore
+    the game for $M$ is played on the flat arena
+    with only one question $q$. Moreover the node $nd$ of the computation tree is labelled with $\lambda$.\\
+    \textbf{return} $\{ nd \mapsto q \}$.
+
+    \item $\ord{\kappa(nd)} > 0$. The computation tree and the arena
+    have the following form:
+    $$ \tree[levelsep=6ex]{ \Rnode{r}\lambda \overline{\xi}_n  ^{[nd]}}
+        {
+            \tree[levelsep=6ex]{x@^{[nd+1]}}
+            {   \TR{\lambda^{[\ldots]}} \TR{\ldots} \TR{\lambda^{[\ldots]}}
+            }
+        }
+    \hspace{3cm}
+    \tree{ \Rnode{q0}q }
+        {
+            \tree[linestyle=dotted]{q^1}{\TR{} \TR{} }
+            \tree[linestyle=dotted]{q^2}{\TR{} \TR{} }
+            \TR{\ldots}
+            \tree[linestyle=dotted]{q^n}{\TR{} \TR{} }
+        }
+    \psset{nodesep=1pt,arrows=->,arcangle=-20,arrowsize=2pt 1,linestyle=dashed,linewidth=0.3pt}
+    \ncline{->}{r}{q0}
+    \ncarc{->}{q2}{z}
+    \ncline{->}{q3}{f}
+    \ncline{->}{q4}{lmd}
+    \ncline{->}{q3}{f2}
+    \ncline{->}{q4}{lmd2}
+    $$
+
+    such that $\Gamma, \overline{\xi}_n \vdash \kappa(x@^{[nd+1]}) : o$.
+
+    For each of the abstracted variable $\xi_i$ there is a corresponding question move $q_i$ of the same order
+    in the arena.  Each free occurrence of the variable $\xi_i$ is mapped to the move $q_i$
+    by the procedure $g$.
+
+    $$\mathbf{return} \ \{ nd \mapsto q \}
+    \union
+    \Union_{\stackrel{i=1..n}{\xi_i^{[k]} \in Desc(nd)}} g ( k, q_i)
+    \quad \union \quad
+    \Union_{\stackrel{i=1..n}{@\xi_i^{[k]} \in Desc(nd)}} g ( k, q_i)
+    $$
+    where $Desc(nd)$ is the set of descendants of  node $nd$
+    (the set of node $m$ such that there is a path from node $nd$ to node $m$ in the computation
+    tree).
+
+    \end{itemize}
+
+\item[\textbf{Procedure} $g(nd,q)$]\  \\
+The procedure is not defined on $\lambda$-nodes or $@$ nodes.
+This is ok since for all the calls $g(nd,q)$ in $f$ are such that $nd$ denotes a $@x$-node or a $x$-node.
+
+\begin{itemize}
+\item[case 1] Suppose that $nd$ is labelled with $x$ then we must have $x:0$. \textbf{return}
+$\{ nd \mapsto q \}$.
+
+\item[case 2] If $nd$ is labelled with $x@$ then $x:(A_1|\ldots|A_m|o)$.
+The computation tree and the arena  have the following form:
+
+    $$\tree[levelsep=6ex]{\Rnode{r}{x@^{[nd]}}}
+        {   \tree{\TR{\lambda^{[k_1]}}}{\vdots} \TR{\ldots}
+        \tree{\TR{\lambda^{[k_m]}}}{\vdots}
+        }
+    \hspace{3cm}
+    \tree{ \Rnode{q0}q }
+        {
+            \tree[linestyle=dotted]{\Rnode{q1}{q^1}}{\TR{} \TR{} }
+            \tree[linestyle=dotted]{\Rnode{q2}{q^2}}{\TR{} \TR{} }
+            \TR{\ldots}
+            \tree[linestyle=dotted]{\Rnode{qm}{q^m}}{\TR{} \TR{} }
+        }
+    \psset{nodesep=1pt,arrows=->,arcangle=-20,arrowsize=2pt 1,linestyle=dashed,linewidth=0.3pt}
+    \ncline{->}{r}{q0}
+    \ncarc{->}{q2}{z}
+    \ncline{->}{q3}{f}
+    \ncline{->}{q4}{lmd}
+    \ncline{->}{q3}{f2}
+    \ncline{->}{q4}{lmd2}
+    $$
+
+    such that $\Gamma, \overline{\xi}_n \vdash \kappa(x@^{[nd]}) : o$.
+
+    For each of the children node of $nd$
+    there is a corresponding question move $q_i$ of the same type
+    in the arena.
+    $$\mathbf{return} \ \{ nd \mapsto q \} \union
+    \Union_{i=1..m} f ( k_i, q_i)
+    $$
+\end{itemize}
+\end{description}
 \end{dfn}
 
-Procedure to compute $\varphi$:
-We give an algorithm to compute $\varphi^{-1} : N \rightarrow \mathcal{T}$ from which $\varphi$ can then be obtained.
-
-Consider a term $\Gamma \vdash M : A$.
-\begin{itemize}
-\item[step 1] $\varphi^{-1} \leftarrow \emptyset$
-\item[step 2]
-
-Suppose that $A = o$ then the term is of ground type therefore the game for $M$ is played on the flat arena
-with only one question $q$. The root $r$ of the computation tree is labelled with $\lambda$.\\
-\textbf{Return} $\varphi^{-1} = \{ r \mapsto q \}$.
-
-Suppose that $\ord{A} > 0$ then the computation tree and the arena have the following form:
-$$ \tree[levelsep=6ex]{ \lambda \overline{\xi}_n  ^{[-1]}}
-     {
-        \tree[levelsep=6ex]{@^{[0]}}
-        {   \TR{\lambda^{[1]}} \TR{\ldots} \TR{\lambda^{[n]}}
-        }
-    }
-\hspace{3cm}
-  \tree{ \Rnode{q1}q^0 }
-    {
-        \tree{q^1}{\TR{} \TR{\ldots} }
-        \tree{q^2}{\TR{} \TR{\ldots} }
-        \TR{\ldots}
-        \tree{q^n}{\TR{} \TR{\ldots} }
-    }
-\psset{nodesep=1pt,arrows=->,arcangle=-20,arrowsize=2pt 1,linestyle=dashed,linewidth=0.3pt}
-\ncline{<-}{root}{q1}
-\ncarc{->}{q2}{z}
-\ncline{->}{q3}{f}
-\ncline{->}{q4}{lmd}
-\ncline{->}{q3}{f2}
-\ncline{->}{q4}{lmd2}
-$$
-
-such that $\Gamma, \overline{\xi}_n \vdash \kappa(@^{[0]}) : o$.
-
-$\varphi^{-1} \leftarrow \{ \lambda \overline{\xi}_n  ^{[-1]} \mapsto q^0 \}
- \union \{ n \mapsto q^i |\ n \mbox{ is a node labelled by $\xi_i$ for some $i \in 1..n$} \}$
-
-\end{itemize}
-
-
-
-This relation from question moves to tree nodes is such that player O questions are associated to $\lambda$-nodes
+We remark that the function $\varphi : M^Q \rightarrow N$ is such that player O questions are associated to $\lambda$-nodes
 and player P questions are associated to nodes of type $x @$ or $x$ where $x$ is variable or a constant.
 
+
+Notation: Suppose $s$ is a justified sequence of moves then we note $\tilde{s}$
+the subsequence of $s$ consisting of question moves only:
+\begin{eqnarray*}
+\tilde{} &: L_A &\longrightarrow (M^Q)^* \\
+& s &\longmapsto \tilde{s} = s \upharpoonright M^Q
+\end{eqnarray*}
+where $M^Q$ denotes the set of question moves.
+$\tilde{s}$ is also a justified sequence of move (there is no dangling pointer since questions moves points to other question moves).
+
+
+\begin{prop}[Justified sequence of moves -- traversal in the computation tree]
+Let $s$ be a justified sequence of moves such that $s \in \sem{\Gamma \vdash M:A}$ then
+there is a traversal $t = n_0 n_1 \ldots$ such that $\tilde{s} = \varphi^{-1} (t)$ (i.e. $\tilde{s} = \varphi^{-1}(n_0)\ \varphi^{-1}(n_1) \ldots$)
+\end{prop}
+\begin{proof}
+By induction on the structure of $M$ in $\eta$-long normal form.
+Let $\Gamma = \{y_1, : B_1, \ldots , y_r : B_r \}$ and $s$ be as justified sequence of moves in $\sem{\Gamma \vdash M}$.
+
+\begin{itemize}
+  \item Suppose that $\ord{M} = 0$ then the arena is of the following form (only question moves are represented):
+    $$ \tree{ q }
+        {   \tree[linestyle=dotted]{q^1}{\TR{} \TR{} }
+            \tree[linestyle=dotted]{q^2}{\TR{} \TR{} }
+            \TR{\ldots}
+            \tree[linestyle=dotted]{q^r}{\TR{} \TR{} }
+        }$$
+        \begin{itemize}
+        \item Suppose that $\Gamma \vdash \lambda. y_i : o$. Then $\sem{M} = \pi_i$ and the only question move that can occur
+                in $s \in \pi_i$ is $q$. Take $t = \tilde{s}[\lambda/q]$. It is clear that $\varphi^{-1}(t) = \tilde{s}$.
+
+        \item $\Gamma \vdash h_0 h_1 \ldots h_p : o$ where $\Gamma \vdash h_0 : (A_1,\ldots,A_p,o)$ and $\Gamma \vdash h_1 : A_1, \ldots, \Gamma \vdash h_p:A_p$.
+        Then $$
+            \sem{\Gamma \vdash h_0 h_1 \ldots h_p : o} = \overbrace{\langle \sem{\Gamma \vdash h_0}, \ldots, \sem{\Gamma \vdash h_p} \rangle}^\sigma ; ev_{A_1,\ldots,A_p,o}
+            $$
+        with $\sigma : A \longrightarrow B$ , $ev_{A_1,\ldots,A_p,o} : B \longrightarrow C$ where
+        \begin{eqnarray*}
+         A &=& \sem{\Gamma} \\
+         B &=& \sem{(A_1,\ldots,A_p,o)} \times H_1 \times \ldots \times H_p \\
+         C &=& \sem{o} \\
+         H_j &=& \sem{A_j} \mbox{ for }j \in 1..p
+        \end{eqnarray*}
+
+        Consequently $s = u \upharpoonright A, C$ for some $u \in \sigma \parallel ev_{A_1,\ldots,A_p,o}$. More precisely:
+        \begin{eqnarray*}
+          u &\in& int(A,B,C) \\
+          w = u \upharpoonright A,B & \in& \sigma \\
+          u \upharpoonright B,C & \in & ev
+        \end{eqnarray*}
+
+        $w \in \sigma$ implies that for some $j \in 1..p$:
+        \begin{eqnarray}
+          z = w \upharpoonright A, H_j &\in& \sem{h_j}  \label{eq:a} \\
+          \mbox{ and for every } k\neq j &:& w \upharpoonright H_k = \epsilon \label{eq:b}
+        \end{eqnarray}
+
+        Equation \ref{eq:a} allows us to use the induction hypothesis on the term $h_j$:
+        there is a traversal $t$ of the tree $\tau(h_j)$ such that $\varphi^{-1}(t) = \tilde{z}$.
+
+
+
+        It suffices to take $t'' = (t[\lambda / \cdot]) \upharpoonright A,C$ where
+        the filtering operator $\upharpoonright$ is defined on traversal as follow:
+        $t\upharpoonright A$ is the subsequence of the traversal $t$ constituted of the nodes $n$ of $t$ verifying
+        $\varphi^{-1}(n) \in A$.
+
+        \textbf{Example}: for clarity the pointers are not specified in the following justified sequences.
+
+        $$
+        \xymatrix @=1pt{
+          & \tilde{u} &=& m_0 & m_1 & m_2 & m_3 & m_4 & m_5 & m_6 & m_7 & m_8 & \ldots \\
+          & &\in& A & B & C & A & B & C & A & B & C & \ldots \\
+          \tilde{u} \upharpoonright A, C =& \tilde{s} &=& m_0 & \cdot & m_2 & m_3 & \cdot & m_5 & m_6 & \cdot & m_8 & \ldots \\
+          \tilde{u} \upharpoonright A, B =& \tilde{w} &=& m_0 & m_1 & \cdot & m_3 & m_4 & \cdot & m_6 & m_7 & \cdot & \ldots \\
+          (\ast)\ \tilde{w} \upharpoonright A, H_j = & \tilde{z}  &=& m_0 & m_1 & \cdot & m_3 & m_4 & \cdot & m_6 & m_7 & \cdot & \ldots  \\ \\ \\
+          HI \imp \exists t | \varphi^{-1}(t) = \tilde{z}: & t &=& N_0 \ar[uuu]^{\varphi^{-1}} & N_1 & \cdot & N_3 \ar[uuu] & N_4\ar[uuu] & \cdot & N_6\ar[uuu] & N_7\ar[uuu] & \cdot & \ldots \\
+          t[\lambda/\cdot] =& t' &=& N_0 & N_1 & \lambda & N_3 & N_4 & \lambda & N_6 & N_7 & \lambda & \ldots \\
+          t'\upharpoonright A,C =& t'' &=& N_0 & \cdot & \lambda & N_3 & \cdot & \lambda & N_6 & \cdot & \lambda & \ldots \\
+          }
+        $$
+        It is easy to check that $\varphi^{-1}(t'') = \tilde{s}$
+
+
+
+        ($\ast$) $z = w \upharpoonright A, H_j$ therefore $\tilde{z} = \tilde{w} \upharpoonright A, H_j$. Moreover
+        since for $k\neq h : w \upharpoonright H_k = \epsilon$ the moves of the sequence
+        $\tilde{z}$ belonging to the arena $B$ are in fact moves of the arena $H_j$. And consequently,
+        moves of the sequence $\tilde{s}$ belonging to the arena $B$ are in fact moves of the arena $H_j$.
+
+        \end{itemize}
+
+    \item Suppose that $\ord{M} > 0$ then $M = \lambda \overline{\xi} . N : \overline{A}|B$ and :
+    $$ \sem{\Gamma : M} = \Lambda( \sem{\Gamma,\overline{\xi} \vdash N: B} )$$
+\end{itemize}
+
+\end{proof}
 
 \todomargin{to finish}
 
 \subsection{Pointers in the game semantics of safe terms are recoverable}
 
-We claim that the pointers in the game semantics of a safe term are
+\begin{prop}
+The pointers in the game semantics of safe terms are
 uniquely recoverable.
+\end{prop}
 
+\begin{proof}
 Let $M$ be a safe term, we consider its $\eta$-long normal form $\aux{M}$.
 $\aux{M}$ is also safe because safety is preserved by $\eta$-expansion.
 
-
-\todomargin{rework this paragraph!}
-The term can be represented by a computation tree: nodes at even
-depth (starting at level 0) correspond to $\lambda$ and nodes at odd
-length corresponds to either application $@$, variable $x$ or
-variable followed by an application $f@$. A $\lambda$ node
-represented consecutive abstraction of variables.
-
-There are justification pointers going upward from variable
-occurrences to their bindings.
-
-In the game semantics of the term $M$, the pointers for O and P
-answers can be recovered by using the well-bracketing condition.
+We consider a justified sequence of move $s \in \sem{M}$.
+First, the pointers for O and P answers can all be recovered by using the well-bracketing condition.
 
 For O-question, the justification pointer always points to its
 parent node in the computation tree.
@@ -380,3 +541,5 @@ there may be several choices for the destination of the pointer but
 we claim that in the case of safe terms, it should point to the
 closest parent node (in the path from the root to P-question) whose
 order is greater than the order of $x$.
+\todomargin{to finish}
+\end{proof}

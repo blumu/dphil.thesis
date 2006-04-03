@@ -164,7 +164,7 @@ operator-application nodes, variable or constant nodes (the root level being num
             { \TR{\lambda \overline{\varphi}} }
             { \pstree[levelsep=3ex]
                 {\TR{@^{[n]}}}
-                {\TR{\lambda \overline{\xi_1}} \ldots \TR{\lambda \overline{\xi_p}}}
+                {\TR{\lambda \overline{\xi_1}} \TR{\ldots} \TR{\lambda \overline{\xi_p}}}
             }
         $
     we have $\ord{\kappa(@^{[n]})}=0$
@@ -290,13 +290,14 @@ We see on this example that the game semantics and the computation tree are some
 
 Let us now define precisely the relationship between game semantics and computation tree.
 
-First we define the map $\varphi$ that associate a set of nodes in the computation tree to any
-question-move of the game semantics of the term.
+First we define the relation $\varphi$ that maps question-moves to
+set of nodes in the computation tree.
 
 \begin{dfn}[Relation between question-moves and nodes]
+\label{def:phi_procedure}
 Let $\Gamma \vdash M : A$ be a term in $\eta$-long normal form.
 Suppose $(M,\vdash)$ is the arena $\sem{A}$ where $M$ is the set of moves and $\vdash$ is the enabling relation.
-$M^Q \subseteq M$ denotes the set of question moves.
+$M^Q \subseteq M$ denotes the set of question-moves.
 We note $(N,E)$ the computation tree $\tau(M)$ where $N$ is the set of nodes and leaves of the tree and $E$ is the parent-child relation.
 
 
@@ -306,8 +307,8 @@ $\varphi^{-1}$.
 
 We define $\varphi^{-1} = f(0,q^0)$ where the index $0$ denotes
 the root of the computation tree, $q^0$ is the root of the arena
-(in the game semantics of simply-typed lambda calculus the arenas involved
-are always trees (single root)) and $f$ is defined below.
+(in the game semantics of simply-typed lambda calculus the arenas have
+a single root) and $f$ is defined below.
 
 The procedure $f$ takes two parameters: $n$ is the index number of a
 $\lambda$-node in the computation tree and $q$ is a question move of the arena
@@ -368,14 +369,14 @@ of the arena of $\Gamma \vdash M : A$ such that $q$ and $x$ have the same type.
     \Union_{\stackrel{i=1..n}{@\xi_i^{[k]} \in Desc(nd)}} g ( k, q_i)
     $$
     where $Desc(nd)$ is the set of descendants of  node $nd$
-    (the set of node $m$ such that there is a path from node $nd$ to node $m$ in the computation
+    (nodes $m$ such that there is a path from node $nd$ to node $m$ in the computation
     tree).
 
     \end{itemize}
 
 \item[\textbf{Procedure} $g(nd,q)$]\  \\
 The procedure is not defined on $\lambda$-nodes or $@$ nodes.
-This is ok since for all the calls $g(nd,q)$ in $f$ are such that $nd$ denotes a $@x$-node or a $x$-node.
+This is ok since all the calls to $g$ in $f$ are of the type $g(nd,q)$ where $nd$ denotes a $@x$-node or a $x$-node.
 
 \begin{itemize}
 \item[case 1] Suppose that $nd$ is labelled with $x$ then we must have $x:0$. \textbf{return}
@@ -417,23 +418,25 @@ The computation tree and the arena  have the following form:
 \end{description}
 \end{dfn}
 
-We remark that the function $\varphi : M^Q \rightarrow N$ is such that player O questions are associated to $\lambda$-nodes
-and player P questions are associated to nodes of type $x @$ or $x$ where $x$ is variable or a constant.
+One can check that the inverse of $\varphi^{-1}$ is indeed a total function : $\varphi : M^Q \rightarrow N$.
+Moreover $\varphi$ is such that player O questions are associated to $\lambda$-nodes
+and player P questions are associated to $x @$-nodes or $x$-nodes.
 
 
 Notation: Suppose $s$ is a justified sequence of moves then we note $\tilde{s}$
-the subsequence of $s$ consisting of question moves only:
+the subsequence of $s$ consisting of question-moves only:
 \begin{eqnarray*}
 \tilde{} &: L_A &\longrightarrow (M^Q)^* \\
 & s &\longmapsto \tilde{s} = s \upharpoonright M^Q
 \end{eqnarray*}
-where $M^Q$ denotes the set of question moves.
-$\tilde{s}$ is also a justified sequence of move (there is no dangling pointer since questions moves points to other question moves).
-
+where $M^Q$ denotes the set of question-moves.
+$\tilde{s}$ is also a justified sequence of move (there is no dangling pointer since questions-moves points to other question-moves).
+If $s = u\upharpoonright A,B$ then clearly $\tilde{s} = \tilde{u} \upharpoonright A,B$.
 
 \begin{prop}[Justified sequence of moves -- traversal in the computation tree]
+\label{prop:cor_trav_seq}
 Let $s$ be a justified sequence of moves such that $s \in \sem{\Gamma \vdash M:A}$ then
-there is a traversal $t = n_0 n_1 \ldots$ such that $\tilde{s} = \varphi^{-1} (t)$ (i.e. $\tilde{s} = \varphi^{-1}(n_0)\ \varphi^{-1}(n_1) \ldots$)
+there is a traversal $t = n_0 n_1 \ldots$ of $\tau(M)$ such that $\tilde{s} = \varphi^{-1} (t)$ (i.e. $\tilde{s} = \varphi^{-1}(n_0)\ \varphi^{-1}(n_1) \ldots$)
 \end{prop}
 \begin{proof}
 By induction on the structure of $M$ in $\eta$-long normal form.
@@ -448,8 +451,9 @@ Let $\Gamma = \{y_1, : B_1, \ldots , y_r : B_r \}$ and $s$ be as justified seque
             \tree[linestyle=dotted]{q^r}{\TR{} \TR{} }
         }$$
         \begin{itemize}
-        \item Suppose that $\Gamma \vdash \lambda. y_i : o$. Then $\sem{M} = \pi_i$ and the only question move that can occur
-                in $s \in \pi_i$ is $q$. Take $t = \tilde{s}[\lambda/q]$. It is clear that $\varphi^{-1}(t) = \tilde{s}$.
+        \item Suppose that $M = \lambda. y_i : o$. Then $\sem{M} = \pi_i$ and the only question move that can occur
+                in $s \in \pi_i$ is $q$. Take $t = \tilde{s}[\lambda/q]$ where $\lambda$ denotes the root of the tree $\tau(M)$.
+                Then it is clear that $\varphi^{-1}(t) = \tilde{s}$.
 
         \item $\Gamma \vdash h_0 h_1 \ldots h_p : o$ where $\Gamma \vdash h_0 : (A_1,\ldots,A_p,o)$ and $\Gamma \vdash h_1 : A_1, \ldots, \Gamma \vdash h_p:A_p$.
         Then $$
@@ -463,51 +467,110 @@ Let $\Gamma = \{y_1, : B_1, \ldots , y_r : B_r \}$ and $s$ be as justified seque
          H_j &=& \sem{A_j} \mbox{ for }j \in 1..p
         \end{eqnarray*}
 
-        Consequently $s = u \upharpoonright A, C$ for some $u \in \sigma \parallel ev_{A_1,\ldots,A_p,o}$. More precisely:
+        Consequently:
+        \begin{equation}
+            s = u \upharpoonright A, C \label{eq:def_s}
+        \end{equation}
+        for some $u \in \sigma \parallel ev_{A_1,\ldots,A_p,o}$, more precisely for some $u$ such that:
         \begin{eqnarray*}
           u &\in& int(A,B,C) \\
           w = u \upharpoonright A,B & \in& \sigma \\
-          u \upharpoonright B,C & \in & ev
+          u \upharpoonright B,C & \in & ev_{A_1,\ldots,A_p,o}
         \end{eqnarray*}
 
         $w \in \sigma$ implies that for some $j \in 1..p$:
         \begin{eqnarray}
-          z = w \upharpoonright A, H_j &\in& \sem{h_j}  \label{eq:a} \\
+          z = w \upharpoonright A, H_j &\in& \sem{h_j}  \label{eq:def_z} \\
           \mbox{ and for every } k\neq j &:& w \upharpoonright H_k = \epsilon \label{eq:b}
         \end{eqnarray}
 
         Equation \ref{eq:a} allows us to use the induction hypothesis on the term $h_j$:
-        there is a traversal $t$ of the tree $\tau(h_j)$ such that $\varphi^{-1}(t) = \tilde{z}$.
+        there is a traversal $t$ of the tree $\tau(h_j)$ such that $\varphi^{-1}_{h_j}(t) = \tilde{z}$
+        where $\varphi^{-1}_{h_j}$ denotes the function obtained from the procedure
+        given in definition \ref{def:phi_procedure} applied on the term $h_j$.
+
+        Let $q_C$ denotes the only question of the arena $C = \sem{o}$.
+
+        We introduce a new operator $\upharpoonright^C$. This operator works similarly
+        to the filtering operator $\upharpoonright$ except that it does not filter
+        elements that belong to $C$.
+        Hence for any justified sequence of moves $s \in int(A,B,C)$
+        we have $s  = s \upharpoonright^C A,B$.
+        and for arena $A$, $H_j$ we have $s\upharpoonright A, H_j =
+        (s\upharpoonright^C A, H_j) \upharpoonright A, H_j $.
+
+        We define the following justified sequence of moves:
+        \begin{eqnarray}
+            w^\ast &=& \tilde{u} \upharpoonright^C A,B \ =\  \tilde{u} \label{eq:def_wstar} \\
+            z^\ast &=& \tilde{w} \upharpoonright^C A, H_j \label{eq:def_zstar}
+        \end{eqnarray}
+
+        Since $z = w \upharpoonright A, H_j$ we have
+        $\tilde{z} = \tilde{w} \upharpoonright A, H_j = (\tilde{w} \upharpoonright^C A,H_j) \upharpoonright A, H_j
+        = z^\ast \upharpoonright A, H_j$. Similarly $w^\ast \upharpoonright A,B =\tilde{w}$.
 
 
+        Moreover for $k\neq h : w \upharpoonright H_k = \epsilon$, said differently
+        moves in $w$ hereditarily justified by moves in $B$ are in fact all
+        hereditarily justified by moves in $H_j$.  Hence:
+        \begin{equation}
+         z^\ast \quad=\quad \tilde{w} \upharpoonright^C A, H_j \quad = \quad \tilde{w} \upharpoonright^C A, B  \quad = \quad  \tilde{w}
+        \end{equation}
 
-        It suffices to take $t'' = (t[\lambda / \cdot]) \upharpoonright A,C$ where
-        the filtering operator $\upharpoonright$ is defined on traversal as follow:
-        $t\upharpoonright A$ is the subsequence of the traversal $t$ constituted of the nodes $n$ of $t$ verifying
-        $\varphi^{-1}(n) \in A$.
 
-        \textbf{Example}: for clarity the pointers are not specified in the following justified sequences.
+        We know that there is a traversal $t$ of $\tau(h_j)$ such that
+        $\varphi^{-1}_{h_j}(t) = \tilde{z}$.
 
+        The domain of $\varphi^{-1}_{h_j}$ is a subset of $N_{h_j}$, the set of nodes of $\tau(h_j)$, therefore it does not contain
+        the root of $\tau(M)$ noted $\lambda$. The domain of the function $\varphi^{-1}_{M}$ is a subset of $N$,
+        the set of nodes  of $\tau(M)$.
+
+        The function $\varphi^{-1}$ has been defined by an inductive procedure
+        guaranteeing that $\varphi^{-1}_{h_j}$ and $\varphi^{-1}_{M}$
+        agree on the intersection of their respective domain, hence we have
+        \begin{equation}
+        \varphi^{-1}_{M}(t) = \tilde{z}. \label{eq:def_t}
+        \end{equation}
+        with $\varphi^{-1}_{M}(\lambda) = q_C$.
+
+        From $t$ we can construct the justified sequence $t^\ast$ of as follow:
+        we insert the node $\lambda$ at the same positions as where the move $q_C$ appears in $z^\ast$.
+
+        We then clearly have:
+        \begin{equation}
+        \varphi^{-1}_{M}(t^\ast) = z^\ast. \label{eq:def_tstar}
+        \end{equation}
+
+
+        The filtering operator $\upharpoonright$ is defined on node traversals as follow:
+        $t\upharpoonright A,C$ is the subsequence of the traversal $t$ constituted of the nodes $n$
+        verifying $\varphi^{-1}_M(n) \in A,C$.
+
+
+        We remove from $t^\ast$ all the elements at positions $i$ such that $\tilde{u}_i \in B$.
+        We obtain a justified sequence of nodes $t' = t^\ast \upharpoonright A,C$
+        verifying
+            $$\varphi^{-1}_{M}(t^\ast) = \tilde{s}$$
+
+
+        \textbf{Example}: Let us illustrate the steps of the demonstration on a short example.
+         For clarity the pointers are not specified in the following justified sequences.
         $$
-        \xymatrix @=1pt{
+        \xymatrix @=3pt{
           & \tilde{u} &=& m_0 & m_1 & m_2 & m_3 & m_4 & m_5 & m_6 & m_7 & m_8 & \ldots \\
-          & &\in& A & B & C & A & B & C & A & B & C & \ldots \\
-          \tilde{u} \upharpoonright A, C =& \tilde{s} &=& m_0 & \cdot & m_2 & m_3 & \cdot & m_5 & m_6 & \cdot & m_8 & \ldots \\
-          \tilde{u} \upharpoonright A, B =& \tilde{w} &=& m_0 & m_1 & \cdot & m_3 & m_4 & \cdot & m_6 & m_7 & \cdot & \ldots \\
-          (\ast)\ \tilde{w} \upharpoonright A, H_j = & \tilde{z}  &=& m_0 & m_1 & \cdot & m_3 & m_4 & \cdot & m_6 & m_7 & \cdot & \ldots  \\ \\ \\
-          HI \imp \exists t | \varphi^{-1}(t) = \tilde{z}: & t &=& N_0 \ar[uuu]^{\varphi^{-1}} & N_1 & \cdot & N_3 \ar[uuu] & N_4\ar[uuu] & \cdot & N_6\ar[uuu] & N_7\ar[uuu] & \cdot & \ldots \\
-          t[\lambda/\cdot] =& t' &=& N_0 & N_1 & \lambda & N_3 & N_4 & \lambda & N_6 & N_7 & \lambda & \ldots \\
-          t'\upharpoonright A,C =& t'' &=& N_0 & \cdot & \lambda & N_3 & \cdot & \lambda & N_6 & \cdot & \lambda & \ldots \\
+          & &\in& A & B & C & A & A & C & B & B & C & \ldots \\
+          \mbox{ (equation \ref{eq:def_s})} & \tilde{s} &=& m_0 & & m_2 & m_3 & m_4 & m_5 &  & & m_8 & \ldots \\
+          \mbox{ (equation \ref{eq:def_wstar})} & w^\ast &=& m_0 & m_1 & q_C & m_3 & m_4 & q_C & m_6 & m_7 & q_C & \ldots \\
+          \mbox{ (equation \ref{eq:def_z})} & \tilde{z}  &=& m_0 & m_1 &  & m_3 & m_4 &  & m_6 & m_7 &  & \ldots  \\ \\ \\
+          \mbox{ (equation \ref{eq:def_t})} & t &=& N_0 \ar[uuu]^{\varphi^{-1}_{h_j}} & N_1\ar[uuu] &  & N_3 \ar[uuu] & N_4\ar[uuu] & & N_6\ar[uuu] & N_7\ar[uuu] &  & \ldots \\ \\
+          \mbox{ (equation \ref{eq:def_zstar})} & z^\ast  &=& m_0 & m_1 & q_C & m_3 & m_4 & q_C & m_6 & m_7 & q_C & \ldots  \\ \\ \\
+          \mbox{ (equation \ref{eq:def_tstar})} & t^\ast &=& N_0 \ar[uuu]^{\varphi^{-1}_{h_j}} & N_1\ar[uuu] & \lambda\ar[uuu]^{\varphi^{-1}_{M}} & N_3 \ar[uuu] & N_4\ar[uuu] & \lambda\ar[uuu] & N_6\ar[uuu] & N_7\ar[uuu] & \lambda\ar[uuu] & \ldots \\
+          t^\ast\upharpoonright A,C =& t' &=& N_0 &  & \lambda & N_3 &  & \lambda & N_6 &  & \lambda & \ldots \\
           }
         $$
-        It is easy to check that $\varphi^{-1}(t'') = \tilde{s}$
+        Note that there is only one question $q_C$ in the arena $C$ therefore $m_2 = m_5 = m_8 = q_C$.
+        It is easy to check that $\varphi^{-1}(t') = \tilde{s}$
 
-
-
-        ($\ast$) $z = w \upharpoonright A, H_j$ therefore $\tilde{z} = \tilde{w} \upharpoonright A, H_j$. Moreover
-        since for $k\neq h : w \upharpoonright H_k = \epsilon$ the moves of the sequence
-        $\tilde{z}$ belonging to the arena $B$ are in fact moves of the arena $H_j$. And consequently,
-        moves of the sequence $\tilde{s}$ belonging to the arena $B$ are in fact moves of the arena $H_j$.
 
         \end{itemize}
 
@@ -539,7 +602,10 @@ parent node in the computation tree.
 For P-question, suppose P ask for the value of variable $x$. Then
 there may be several choices for the destination of the pointer but
 we claim that in the case of safe terms, it should point to the
-closest parent node (in the path from the root to P-question) whose
-order is greater than the order of $x$.
+closest node in the path from the root to P-question whose
+order is greater than the order of $x$. The order of a lambda-node
+$\lambda \overline{\xi}$ being equal to $\max_{i=1..n} \ord{\xi_i}$ the
+
+
 \todomargin{to finish}
 \end{proof}

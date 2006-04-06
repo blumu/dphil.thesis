@@ -138,6 +138,13 @@ $\kappa(n)$ that is represented by the sub-tree of $\tau(s)$ rooted
 at $n$. In particular if $r$ is the root of the tree $\tau(s)$ then
 $\kappa(s) = \aux{s}$.
 
+\begin{dfn}[Node order]
+The order of a lambda-node $n$ labelled $\lambda \overline{\xi}$ is defined as follows:
+$$\ord{n} = \max_{i=1..n} \ord{\xi_i}$$
+The order of $n$ labelled $x$ or $x@$ is the order of the variable or constant $x$:
+$\ord{n} = \ord{x}$.
+The order of node labelled $@$ is $0$.
+\end{dfn}
 
 
 Consider the computation tree $\tau(s)$ of a term $s$ in $\eta$-long normal form. Then:
@@ -224,28 +231,67 @@ If $N$ is a set of nodes and $s$ a justified sequence of nodes then we note $s \
 subsequence of $s$ obtained after removing the nodes that are not hereditarily justified by nodes in $N$.
 This subsequence is also a justified sequence of nodes.
 
-Let $r$ be the root of the tree $\tau(M)$ then the justified sequence
-$s \upharpoonright \{ r \}$ is such that no node is labelled by a free variable in $M$.
+Let $r$ be the root of the tree $\tau(M)$ then no node in the justified sequence
+$s \upharpoonright \{ r \}$ is labelled by a free variable in $M$.
 
 
 \begin{dfn}[Equality of justified sequence]
-We note $s \jseq t$ to denotes that the two justified sequences $t$ and $s$ are the equal (same nodes and same pointers).
+We note $s \jseq t$ to denotes that the two justified sequences $t$ and $s$ are the equal
+(having same nodes and same pointers).
 \end{dfn}
 
-\todomargin{Definition traversal}
+\begin{dfn}[P-view of justified sequence of nodes]
+The P-view of a justified sequence of nodes $t$ of $\tau(M)$ noted $\pview{t}$ is defined as follows:
+\begin{eqnarray*}
+ \pview{\epsilon} &=&  \epsilon \\
+ \pview{s \cdot f }  &=&  \pview{s} \cdot f \\
+ \pview{s \cdot @ }  &=&  \pview{s} \cdot @ \\
+ \pview{s \cdot x }  &=&   \pview{s} \cdot x \\
+ \pview{s \cdot x@ }  &=&   \pview{s} \cdot x@ \\
+ \pview{s \cdot \lambda \overline{\xi} }  &=&  \lambda \overline{\xi} \qquad \mbox{if $\lambda \overline{\xi}$ is the root of } \tau(M) \\
+ \pview{\justseq[5pt]{s & m & \ldots & \lambda \overline{\xi}\pointto{ll} }}  &=& \justseq[5pt]{ \pview{s} & m & \lambda \overline{\xi}\pointto{l} }
+\end{eqnarray*}
+where $f$ ranges over $\Sigma$ and $x$ over variables.
+\end{dfn}
+
+
+\begin{dfn}[Visibility]
+\end{dfn}
+\todomargin{definition visibility}
+
+\begin{property}
+\label{proper:pview_visibility}
+The P-view of a justified sequence verifying visibility is a well-formed justified sequence verifying P-visibility.
+\end{property}
+
 \begin{dfn}[Traversal]
 \end{dfn}
+\todomargin{definition traversal}
+
+\begin{property}
+\label{proper:pviewtrav_is_path}
+(i) Traversals are justified sequence verifying P-visibility.
+(ii) The P-view of a traversal is a path from the root to some node in the computation tree.
+\end{property}
+\todomargin{proof}
 
 \begin{dfn}[Reduced-traversal]
-A \emph{reduced-traversal} is a justified sequence of nodes $r$ such that for some traversal $t$:
-$$ r = t \upharpoonright \{ r \}$$
+A \emph{reduced-traversal} is a justified sequence of nodes $s$ such that for some traversal $t$:
+$$ s = t \upharpoonright \{ r \}$$
 where $r$ denotes the root of the computation tree.
 
-We say that $r$ is the reduction of the traversal $t$.
+We say that $s$ is the reduction of the traversal $t$.
 \end{dfn}
 
 The nodes of a reduced-traversal are either lambda nodes or nodes labelled $x@$ or $x$ (no nodes of type $@$ or $f \in \Sigma$).
 This is because nodes of type $@$ or $f \in \Sigma$ in a traversal have no pointer.
+
+\begin{property}[Reduced-traversal and traversal]
+\label{proper:redtrav_trav}
+Suppose $M$ is in $\beta \eta$-long normal form (i.e. the $\eta$-long normal form of a $\beta$-normal form) then
+any reduced-traversal is a traversal.
+\end{property}
+\todomargin{proof}
 
 \subsection{Correspondence with game semantics}
 
@@ -290,9 +336,9 @@ We now omit the answers moves when we represent the arena.
 The arena is represented on the right and the computation tree on the left.
 
 The dashed line defines a relation $\varphi$ from the set of question moves to nodes in the computation tree.
-$\varphi$ maps each question to one or more nodes in the computation tree:
+$\varphi$ maps questions to zero or more nodes in the computation tree:
 $$
-\tree{ \Rnode{root} {\lambda f z}^{[1]} }
+\tree{ \Rnode{root} {\lambda f z w}^{[1]} }
      {  \tree{@^{[2]}}
         {   \tree{\lambda g x ^{[3]}}
                 { \tree{\Rnode{f}{f@^{[6]}}}{  \tree{\Rnode{lmd}\lambda^{[7]}}{ \tree{\Rnode{f2}{f@^{[8]}}} {\tree{\Rnode{lmd2}\lambda^{[9]}}{\TR{x^{[10]}}}}}  }
@@ -305,6 +351,7 @@ $$
   \tree[levelsep=12ex]{ \Rnode{q1}q^1 }
     {   \pstree[levelsep=4ex]{\TR{\Rnode{q3}q^3}}{\TR{\Rnode{q4}q^4}}
         \TR{\Rnode{q2}q^2}
+        \TR{\Rnode{q5}q^5}
     }
 \psset{nodesep=1pt,arrows=->,arcangle=-20,arrowsize=2pt 1,linestyle=dashed,linewidth=0.3pt}
 \ncline{<-}{root}{q1} \aput*{:U}{\varphi}
@@ -345,9 +392,9 @@ $$r =
 \bkptra[ncurv=0.4]{75}{q3b}{q1}
 \bkptra[ncurv=0.8]{70}{q4b}{q3b}
 \bkptra[ncurv=0.4]{80}{q2}{q1}$$
-such that $r_i = \varphi(s_i)$ for all $i < |s|$.
+such that $r_i \in \varphi(s_i)$ for all $i < |s|$.
 
-The sequence $r$ is in fact a reduced-traversal, it is the reduction of the following traversal of the tree:
+The sequence $r$ is in fact a reduced-traversal, it is the reduction of the following traversal:
 \vspace{1cm}
 $$t =
 \rnode{q1}{\lambda f z} \cdot
@@ -501,15 +548,20 @@ where the index $0$ denotes the root of the computation tree and $q^0$ is the ro
 a single root).
 \end{dfn}
 
-The function $\varphi^{-1} : N \rightarrow M^Q$ is a partial function. One can check that its inverse
-$\varphi : M^Q \rightarrow \mathcal{P}(N)$ is a total function.
-Moreover $\varphi$ is such that player O questions are associated to $\lambda$-nodes
-and player P questions are associated to $x @$-nodes or $x$-nodes.
+The function $\varphi^{-1} : N \rightarrow M^Q$ and its inverse
+$\varphi : M^Q \rightarrow \mathcal{P}(N)$ are partial function.
+Moreover $\varphi$ relates player O questions to $\lambda$-nodes
+and player P questions to $x @$-nodes or $x$-nodes where $x$ is a variable.
+
+\begin{property}[$\varphi^{-1}$ conserves order]
+\label{proper:phi_conserve_order}
+$\varphi^{-1}$ maps nodes of a given order to moves of the same order.
+\end{property}
 
 
-We extend the function $\varphi^{-1}$ from nodes to justified sequences: suppose $t$
-is a justified sequences of nodes $t = t_0 t_1 \ldots$. Then $\varphi^{-1}(t)$ is defined to
-be the following justified sequence of question-moves of the arena $\sem{A}$:
+The function $\varphi^{-1}$ is also defined on justified sequences: suppose $t$
+is a justified sequences of nodes $t = t_0 t_1 \ldots$ then $\varphi^{-1}(t)$ denotes
+the following justified sequence of question-moves of the arena $\sem{A}$:
 $$\varphi^{-1}(t) = \varphi^{-1}(t_0)\ \varphi^{-1}(t_1)\  \varphi^{-1}(t_2) \ldots$$
 where the pointers of the justified sequence of move $\varphi^{-1}(t)$ are defined to be exactly those
 of the justified sequences of nodes $t$.
@@ -526,6 +578,12 @@ $\tilde{s}$ is also a justified sequence of move (there is no dangling pointer s
 If $s = u\upharpoonright A,B$ then clearly $\tilde{s} = \tilde{u} \upharpoonright A,B$.
 \end{dfn}
 
+\begin{property} Let $s$ be a justified sequence of moves. Then
+\label{proper:tildepview}
+$$\widetilde{\pview{s}} = \pview{\tilde{s}}$$
+\end{property}
+The proof is an easy induction.
+
 
 \begin{prop}[Relation between game semantics and reduced-traversals]
 \label{prop:rel_gamesem_redtrav_closed}
@@ -533,11 +591,9 @@ Let $\emptyset \vdash M : A$ be a closed term.
 Let $r$ denotes the root of $\tau(M)$. If $s$ is a justified sequence of moves such
 that $s \in \sem{\Gamma \vdash M:A}$ then there is a reduced-traversal of nodes of $\tau(M)$
 $t = n_0 n_1 \ldots$ such that:
- $$\tilde{s} \jseq  \varphi^{-1} (t)$$
+ $$\tilde{s} \jseq  \varphi_M^{-1} (t)$$
 \end{prop}
 \begin{proof}
-%Let $\Gamma = \{y_1, : B_1, \ldots , y_r : B_r \}$ and
-
 Let us assume that $M$ is already in $\eta$-long normal form.
 Let $s$ be as justified sequence of moves in $\sem{M}$.
 
@@ -572,7 +628,7 @@ the tree $\tau(M)$ and by case analysis on the structure of the term.
     for some $u \in \sigma \parallel ev_{A_1,\ldots,A_p,o}$.
 
     Let $q_C$ denotes the only question of the arena $\sem{o}$ then $s \in \{ q_C \}^*$.
-    We construct the justified sequence $t$ by replacing the moves $q_C$ in $\tilde{s}$ by the root node
+    We construct the reduced-traversal $t$ by replacing the moves $q_C$ in $\tilde{s}$ by the root node
     $\lambda \overline{\xi}$:
     $$ t \jseq  \tilde{s} [\lambda \overline{\xi} / q_C].$$
 
@@ -604,7 +660,8 @@ the tree $\tau(M)$ and by case analysis on the structure of the term.
 
         Therefore the only question-moves that can occur in $s \in \sem{M}$ are the initial question $q$ and the question $q_x$.
         We take $t \jseq \tilde{s} [0/q, 1/q^x]$ which is a valid justified sequence of nodes since
-        node $1$ ($x$) is bound by node $0$ ($\lambda \overline{\xi}$). Clearly we have $\varphi^{-1}(t) \jseq \tilde{s}$.
+        node $1$ ($x$) is bound by node $0$ ($\lambda \overline{\xi}$) and a valid
+        reduced-traversal. Clearly we have $\varphi^{-1}(t) \jseq \tilde{s}$.
 
     \item (application-abstraction) The term $M$ is of the form $M = \lambda \overline{\xi} . x N_1 \ldots N_p$ where
     \begin{eqnarray*}
@@ -663,7 +720,7 @@ the tree $\tau(M)$ and by case analysis on the structure of the term.
     retaggs the moves. Hence the equation \ref{eq:def_z} gives $z \in \sem{N'_j}$ where $N'_j$ is a closed term. Since
     the term $N'_j$ has the same height as the term $N_j$ which is strictly smaller than the height
     of the term $M$, we can use the induction hypothesis on $N'_j$:
-    there is a justified sequence $t'$ of the tree $\tau(N'_j)$
+    there is a reduced-traversal $t'$ of the tree $\tau(N'_j)$
     such that $\varphi^{-1}_{N'_j}(t') \jseq \tilde{z}$.
 
 
@@ -760,6 +817,7 @@ the tree $\tau(M)$ and by case analysis on the structure of the term.
     verifying
         $$\varphi^{-1}_{M}(t^\dagger) \jseq \tilde{s}$$
 
+    $t^\dagger$ is also a reduced-traversal of $\tau(M)$.
 
     \textbf{Example}: Let us illustrate each step of the demonstration on a short example.
         For clarity only some relevant pointers are specified in the following justified sequences.
@@ -781,47 +839,43 @@ the tree $\tau(M)$ and by case analysis on the structure of the term.
 \end{proof}
 
 The previous proposition has an equivalent for open terms. Its proof is omitted here. It
-follows the same step as the previous proof.
-\begin{prop}[Relation between game semantics and reduced-traversals for open terms]
+follows the same step as for the case of closed terms.
+\begin{prop}[Relation between game semantics and reduced-traversals of open terms]
 \label{prop:rel_gamesem_redtrav_opened}
 Suppose $\Gamma \vdash M : A$. Let $r$ denotes the root of $\tau(M)$. If $s$ is a justified sequence of moves such
 that $s \in \sem{\Gamma \vdash M:A}$ then there is a reduced-traversal of nodes of $\tau(M)$
 $t = n_0 n_1 \ldots$ such that:
- $$\tilde{s} \upharpoonright \sem{A} \jseq  \varphi^{-1} (t \upharpoonright \{r \})$$
+ $$\tilde{s} \upharpoonright \sem{A} \jseq  \varphi^{-1}_M (t \upharpoonright \{r \})$$
 and
-$$\forall i \geq 0 . \tilde{s}_i = \varphi^{-1}(t_i) \not \in \sem{A}
+$$\forall i \geq 0 . \tilde{s}_i = \varphi^{-1}_M(t_i) \not \in \sem{A}
 \implies \left\{
         \begin{array}{ll}
             t_i = x \mbox{ or } t_i = x@, \hbox{where } x \in \Gamma \\
-            \varphi^{-1}(t \upharpoonright \{t_i\}) \jseq \tilde{s} \upharpoonright \{ \varphi^{-1}(t_i) \}
+            \varphi^{-1}_M(t \upharpoonright \{t_i\}) \jseq \tilde{s} \upharpoonright \{ \varphi^{-1}_M(t_i) \}
         \end{array}
         \right.
 $$
 \end{prop}
 
-\subsection{Pointers in the game semantics of safe terms are recoverable}
-
-\begin{dfn}[P-view of justified sequence of nodes]
-The P-view of a justified sequence of nodes $t$ of $\tau{M}$ noted $\pview{t}$ is defined as follows:
-\begin{eqnarray*}
- \pview{t \lambda \overline{\xi} }  &=&  \pview{t}\  \lambda \overline{\xi} \qquad \mbox{where $\lambda \overline{\xi}$ is the root of } \tau{M}\\
- \pview{\justseq{t & n & \ldots & \lambda \overline{\xi} }}  &=& \pview{t} n \lambda \overline{\xi}\\
-\def\justseq#1{\xymatrix @=12pt@M=0pt{ #1 }}
-\def\pointto#1{\ar@/_/[#1]}
-\def\apointto#1{\ar@/_1pc/[#1]}
- \pview{\lambda \overline{\xi}} &=&  \lambda \overline{\xi} \qquad \mbox{elsewhere}\\
-\end{eqnarray*}
-\end{dfn}
-
 \begin{property}
-The P-view of a justified sequence of nodes that does not contain any node labelled $@$ is
-subsequence of a path from the root to a node in the computation tree.
+\label{proper:phi_pview}
+Suppose $\varphi^{-1}(t) \jseq s$ where $s$ is a justified sequence of moves and
+$t$ is a justified sequence of nodes then
+\begin{itemize}
+\item (i) the P-view of $\tilde{s}$ and the P-view of $t$ are computed
+similarly: the set of indices of elements that must be removed from both sequences
+in order to obtain their P-view is the same.
+\item (ii) $\tilde{s}$ and $\tilde{t}$ have the same pointers.
+\end{itemize}
 \end{property}
+\begin{proof}
+(i) By definition of $\varphi^{-1}$, $t$ and $\varphi^{-1}(t)$ have the same pointers. Moreover,
+$\varphi^{-1}$ maps lambda nodes to O-question and non-lambda nodes to P-question. Therefore the computation of the
+P-view on the sequence of moves and the sequence of nodes follows the same steps.
+(ii) is a consequence of (i).
+\end{proof}
 
-
-
-The order of a lambda-node $\lambda \overline{\xi}$ in the computation tree is defined to be $\max_{i=1..n}
-\ord{\xi_i}$.
+\subsection{Pointers in the game semantics of safe terms are recoverable}
 
 The computation tree of safe terms verifies a property called regularity:
 \begin{property}[Computation tree of safe terms are regular]
@@ -831,7 +885,7 @@ $x$ is a variable bound in $M$ is bound by the first $\lambda$-node in the path 
 order greater or equal to $\ord{x}$.
 \end{property}
 \begin{proof}
-For a safe term the first $\lambda$-node $\lambda \overline{\xi}$ in the path to the root such that
+For safe terms, the first $\lambda$-node $\lambda \overline{\xi}$ in the path to the root such that
 $x \in \overline{\xi}$ is also the first $\lambda$-node whose order is greater or equal to $\ord{x}$.
 \end{proof}
 
@@ -843,28 +897,65 @@ uniquely recoverable.
 
 \begin{proof}
 Let $\Gamma \vdash M : A$ be an opened safe term where $\Gamma = y_1:Y_1, \ldots y_n:Y_n$.
-We assume that $M$ is in $\eta$-long normal form. It is a safe assumption
-because safety is preserved by $\eta$-expansion.
+We assume that $M$ is in $\beta \eta$-long normal form : the $\eta$-long normal form of the $\beta$-normal form.
+It is a safe assumption since safety is preserved by $\eta$-expansion and $\beta$-reduction.
 
 Consider a justified sequence of move $s \in \sem{\Gamma \vdash M}$. Firstly,
 we remark that the pointers for O and P answer moves in $s$ can all be
 recovered thanks to the well-bracketing condition.
 
+Let us prove by induction that the pointers for question moves can be recovered.
+
+Base case: if $s \in \sem{M}$ where $|s| \leq 1$ then there is no pointer to recover.
+
+Step case: suppose $s\cdot q \in \sem{M}$.
+
 Consider the closed term $M'  = \lambda \overline{y} . M$.
-Up to a retagging of the moves, the justified sequence of moves $s$ belongs to the strategy
+Up to a retagging of the moves, the justified sequence of moves $s \cdot q$ belongs to the strategy
 $\sem{\vdash \lambda \overline{y} . M} = \Lambda^n(\sem{\Gamma \vdash M})$.
-Proposition \ref{prop:rel_gamesem_redtrav_closed}tells us that
-there is a justified sequence of nodes $t$ of $\tau(M')$ such that:
-$$\phi^{-1}_{M'}(t) \jseq \tilde{s}.$$
+
+Proposition \ref{prop:rel_gamesem_redtrav_closed} tells us that
+there is a reduced-traversal $t \cdot n$ of $\tau(M')$ such that:
+$$\varphi^{-1}_{M'}(t \cdot n) \jseq \tilde{s} \cdot q.$$
+
+\begin{itemize}
+\item Suppose $q$ is a P-move.
+
+By the induction hypothesis, the pointers of $s$ have been recovered therefore we can compute the P-view $\pview{s}$.
+$q$ must point to a question in the P-view at that point therefore it point to $\widetilde{\pview{s}} = \pview{\tilde{s}}$
+(property \ref{proper:tildepview}).
 
 
+By property \ref{proper:phi_pview}, the P-view of $\tilde{s}$ and the P-view of $t$ are computed
+similarly and have the same pointers. Hence the link
+of $n$ and the link of $q$ points to the same position in
+the justified sequence $\pview{t}$ and $\pview{\tilde{s}}$ respectively.
 
-For O-question, the justification pointer always points to its
-parent node in the computation tree.
+Since $M'$ is in $\beta \eta$-long normal form, the reduced-traversal $t$ is a traversal
+(property \ref{proper:redtrav_trav}).
+By property \ref{proper:pviewtrav_is_path}, $\pview{t}$ is a path from the root to some node
+in the computation tree $\tau(M)$.
 
-Suppose $q \in s$ is a P-question then because of property \ref{proper:regularity} it should
-point to the closest node in the path from the root to P-question
-whose order is greater than the order of $x$.
+The regularity of $\tau(M)$ (property \ref{proper:regularity}) implies that $n$ points to the
+the first $\lambda$-node in the path to the root that has order greater or equal to $\ord{x}$.
+Hence $n$ points to the the first $\lambda$-node in $\pview{t}$ that
+has order greater or equal to $\ord{x}$.
 
-\todomargin{to finish}
+But $\varphi^{-1}$ maps nodes of a given order to moves of the same order (property \ref{proper:phi_conserve_order}),
+therefore $q$ also points to the first move in $\pview{\tilde{s}}$ whose
+order is greater or equal to $\ord{q}$.
+
+
+\item Suppose $q$ is a O-move.
+
+Then $q$ points to the last move in the O-view of $\tilde{s}$ having an order strictly greater than $\ord{q}$.
+
+\todomargin{not finished}
+
+%For O-question, the justification pointer always points to its
+%parent node in the computation tree.
+
+
+\end{itemize}
+
 \end{proof}

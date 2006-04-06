@@ -59,7 +59,7 @@ $s_0 s_1 \ldots s_m$ where $m\geq0$ and $s_0$ is a variable, a
 constant or an abstraction.
 
 The $\eta$-long normal form of a term $M$ is denoted $\aux{M}$ and
-is defined as follow:
+is defined as follows:
 \begin{eqnarray*}
 \aux{x s_1 \ldots s_m : (A_1,\ldots,A_n,o)} &=& \lambda \overline{\varphi} . x \aux{s_1} \aux{s_2} \ldots \aux{s_m} \aux{\varphi_1} \ldots \aux{\varphi_n} \\
 \aux{x s_1 \ldots s_m : o} &=& \lambda . x \aux{s_1} \aux{s_2} \ldots \aux{s_m} \\
@@ -76,7 +76,7 @@ under the name \emph{extensional form}.
 
 
 A term can be represented by a tree defined formally by induction on the structure
-of its $\eta$-long normal form as follow:
+of its $\eta$-long normal form as follows:
 
 \begin{dfn}[Computation tree]
 The computation tree associated to the term $s$ is noted
@@ -171,19 +171,81 @@ operator-application nodes, variable or constant nodes (the root level being num
 
 \end{itemize}
 
+
 \subsubsection{Pointers and justified sequence of nodes}
 
-We introduce pointer in the computation tree: a node $n$ labeled
-with the variable $x$ points to a lambda node $m$ labeled $\lambda
-\overline{\varphi}$ if and only if the variable $x$ is bound in
-$\kappa(m)$ by the abstraction $\lambda \overline{\varphi}$. In that
-case we say that the node $n$ is bound by $m$. Additionally a lambda node points to its parent node.
+\begin{dfn}[Binder]
+Let $n$ be a node of the computation tree labelled $x$ or $x@$.
+We say a node $n$ is bound by the node $m$ if $m$ is
+the closest node in the path from $n$ to the root of the tree such that
+$m$ is labelled $\lambda \overline{\xi}$ with $x\in \xi$.
+$m$ is called the binder of $n$
+\end{dfn}
 
-To sum up a justification pointer goes upward from a variable occurrence to its bindings or from an abstraction node to its parent node.
+\begin{dfn}[Enabling]
+The enabling relation noted $\vdash$ over the set of nodes of the computation tree is defined as follows:
+\begin{itemize}
+\item a node $n$ labeled $x$ or $x@$ is enabled by its binder node:
+\item a lambda node labelled $\lambda \overline{\xi}$ is enabled by its parent node labelled $@$ or $x@$ for some $x$:
+\end{itemize}
+If $m \vdash n$ we say that the node $n$ is enabled by $m$ or that $m$ enables $n$.
+\end{dfn}
 
 
-We call \emph{traversal} or \emph{justified sequence of nodes} any sequence of nodes of the computation tree together
-with links as defined above. 
+
+\begin{dfn}[Justified sequence of nodes]
+A \emph{justified sequence of nodes} is an alternating sequence of lambda and non lambda nodes
+from the computation tree $\tau(M)$ together with pointers.
+Each node $n$ of the sequence that is either
+a lambda-node, a $x$-node or a $x@$-node where $x$ is a variable not occurring free in $M$,
+and that is not the root of the computation tree has a pointer to a previous node $m$ in the sequence
+such that $m \vdash n$.
+
+If $n$ points to $m$ we say that $m$ justifies $n$ and we note it:
+$$\justseq{m & \ldots & n \apointto{ll}}$$
+
+Hence the pointers in a justified sequence of nodes must be of one of the following forms:
+$$\xymatrix @=12pt@M=0pt{
+\lambda \overline{\xi} & \ldots & \xi_i @ \apointto{ll} \\
+\lambda \overline{\xi}  & \ldots & \xi_i \apointto{ll} \\
+@  & \ldots & \lambda \overline{\xi} \apointto{ll} \\
+x@ & \ldots & \lambda \overline{\xi} \apointto{ll}}
+$$
+\end{dfn}
+
+Note that the previous definition has been adapted to the case of non closed terms $M$. Suppose that $M$ is opened then
+there may be free variables occurring as nodes in the computation tree. Such node occurring in a justified sequence has
+no pointer.
+
+We say that a node $n_0$ of a justified sequence is hereditarily justified by $n_p$ if there are nodes $n_1, n_2, \ldots n_{p-1}$ in
+the sequence such that for all $i\in 0..p-1$, $n_i$ points to $n_{i+1}$.
+
+If $N$ is a set of nodes and $s$ a justified sequence of nodes then we note $s \upharpoonright N$ the
+subsequence of $s$ obtained after removing the nodes that are not hereditarily justified by nodes in $N$.
+This subsequence is also a justified sequence of nodes.
+
+Let $r$ be the root of the tree $\tau(M)$ then the justified sequence
+$s \upharpoonright \{ r \}$ is such that no node is labelled by a free variable in $M$.
+
+
+\begin{dfn}[Equality of justified sequence]
+We note $s \jseq t$ to denotes that the two justified sequences $t$ and $s$ are the equal (same nodes and same pointers).
+\end{dfn}
+
+\todomargin{Definition traversal}
+\begin{dfn}[Traversal]
+\end{dfn}
+
+\begin{dfn}[Reduced-traversal]
+A \emph{reduced-traversal} is a justified sequence of nodes $r$ such that for some traversal $t$:
+$$ r = t \upharpoonright \{ r \}$$
+where $r$ denotes the root of the computation tree.
+
+We say that $r$ is the reduction of the traversal $t$.
+\end{dfn}
+
+The nodes of a reduced-traversal are either lambda nodes or nodes labelled $x@$ or $x$ (no nodes of type $@$ or $f \in \Sigma$).
+This is because nodes of type $@$ or $f \in \Sigma$ in a traversal have no pointer.
 
 \subsection{Correspondence with game semantics}
 
@@ -271,7 +333,7 @@ Consider the justified sequence of moves $s \in \sem{M}$:
 
 There is a corresponding justified sequence of nodes in the computation tree:
 \vspace{0.5cm}
-$$t =
+$$r =
 \rnode{q1}{\lambda f z} \cdot
 \rnode{q3}{f@}^{[6]} \cdot
 \rnode{q4}{\lambda^{[7]}} \cdot
@@ -283,7 +345,30 @@ $$t =
 \bkptra[ncurv=0.4]{75}{q3b}{q1}
 \bkptra[ncurv=0.8]{70}{q4b}{q3b}
 \bkptra[ncurv=0.4]{80}{q2}{q1}$$
-such that $t_i = \varphi(s_i)$ for all $i < |s|$.
+such that $r_i = \varphi(s_i)$ for all $i < |s|$.
+
+The sequence $r$ is in fact a reduced-traversal, it is the reduction of the following traversal of the tree:
+\vspace{1cm}
+$$t =
+\rnode{q1}{\lambda f z} \cdot
+\rnode{n2}{@^{[2]}} \cdot
+\rnode{n3}{\lambda g x^{[3]}} \cdot
+\rnode{q3}{f@}^{[6]} \cdot
+\rnode{q4}{\lambda^{[7]}} \cdot
+\rnode{q3b}{f@}^{[8]} \cdot
+\rnode{q4b}{\lambda^{[9]}} \cdot
+\rnode{n8}{x^{[10]}} \cdot
+\rnode{n9}{\lambda^{[5]}} \cdot
+\rnode{q2}{z}
+\bkptra[ncurv=0.6]{60}{q3}{q1}
+\bkptra[ncurv=1]{60}{q4}{q3}
+\bkptra[ncurv=0.4]{75}{q3b}{q1}
+\bkptra[ncurv=0.8]{70}{q4b}{q3b}
+\bkptra[ncurv=0.4]{80}{q2}{q1}
+\bkptra[ncurv=0.4]{60}{n3}{n2}
+\bkptra[ncurv=0.4]{60}{n8}{n3}
+\bkptra[ncurv=0.4]{60}{n9}{n2}
+$$
 
 We see on this example that the game semantics and the computation tree are somehow related to each other.
 \end{exmp}
@@ -409,7 +494,7 @@ The computation tree and the arena  have the following form:
 \end{itemize}
 \end{description}
 
-We define $\varphi^{-1}$ as follow:
+We define $\varphi^{-1}$ as follows:
 $$\varphi^{-1} = f(0,q^0)$$
 where the index $0$ denotes the root of the computation tree and $q^0$ is the root of the arena
 (in the game semantics of simply-typed lambda calculus the arenas have
@@ -422,12 +507,12 @@ Moreover $\varphi$ is such that player O questions are associated to $\lambda$-n
 and player P questions are associated to $x @$-nodes or $x$-nodes.
 
 
-Suppose $\Gamma \vdash N:A : T$ is a term.
-Let $\mathcal{T}$ denotes the set of traversal of $\tau(N)$. We extend the function $\varphi^{-1}$
-from nodes to traversals: $\varphi^{-1}$ maps the traversal $t = t_0 t_1 \ldots \in \mathcal{T}$ to the justified sequence
-of question-moves $s = s_0 s_1 \ldots$ in the arena $\sem{A}$ where:
-$$\forall i\geq0 : \varphi^{-1}(t_i) = s_i$$
-and the pointers of the justified sequence $s$ are the pointers of the traversal $t$.
+We extend the function $\varphi^{-1}$ from nodes to justified sequences: suppose $t$
+is a justified sequences of nodes $t = t_0 t_1 \ldots$. Then $\varphi^{-1}(t)$ is defined to
+be the following justified sequence of question-moves of the arena $\sem{A}$:
+$$\varphi^{-1}(t) = \varphi^{-1}(t_0)\ \varphi^{-1}(t_1)\  \varphi^{-1}(t_2) \ldots$$
+where the pointers of the justified sequence of move $\varphi^{-1}(t)$ are defined to be exactly those
+of the justified sequences of nodes $t$.
 
 \begin{dfn}[Question-move filtering]
 Suppose $s$ is a justified sequence of moves then we note $\tilde{s}$
@@ -441,225 +526,315 @@ $\tilde{s}$ is also a justified sequence of move (there is no dangling pointer s
 If $s = u\upharpoonright A,B$ then clearly $\tilde{s} = \tilde{u} \upharpoonright A,B$.
 \end{dfn}
 
-\begin{prop}[Justified sequence of moves -- traversal in the computation tree]
-\label{prop:cor_trav_seq}
-Let $s$ be a justified sequence of moves such that $s \in \sem{\Gamma \vdash M:A}$ then
-there is a traversal $t = n_0 n_1 \ldots$ of $\tau(M)$ such that $\tilde{s} \upharpoonright A = \varphi^{-1} (t)$.
-\\
-i.e. $\tilde{s} \upharpoonright A = \varphi^{-1}(n_0)\ \varphi^{-1}(n_1) \ldots$ where the pointers are the same pointers
-as the traversal $t$.
+
+\begin{prop}[Relation between game semantics and reduced-traversals]
+\label{prop:rel_gamesem_redtrav_closed}
+Let $\emptyset \vdash M : A$ be a closed term.
+Let $r$ denotes the root of $\tau(M)$. If $s$ is a justified sequence of moves such
+that $s \in \sem{\Gamma \vdash M:A}$ then there is a reduced-traversal of nodes of $\tau(M)$
+$t = n_0 n_1 \ldots$ such that:
+ $$\tilde{s} \jseq  \varphi^{-1} (t)$$
 \end{prop}
 \begin{proof}
-We assume that $M$ is in $\eta$-long normal form. We proceed by induction on the height of of
-the tree $\tau(M)$ and by case analysis on the structure of the tree.
+%Let $\Gamma = \{y_1, : B_1, \ldots , y_r : B_r \}$ and
 
-Let $\Gamma = \{y_1, : B_1, \ldots , y_r : B_r \}$ and $s$ be as justified sequence of moves in $\sem{\Gamma \vdash M}$.
+Let us assume that $M$ is already in $\eta$-long normal form.
+Let $s$ be as justified sequence of moves in $\sem{M}$.
 
-There are two possible shapes for the computation tree $\tau(M)$:
- $$ \tree[levelsep=6ex]{ \lambda \overline{\xi}^{[nd]}}
-        {
-            \tree[levelsep=6ex]{x@^{[nd+1]}}
-            {   \TR{\lambda^{[\ldots]}} \TR{\ldots} \TR{\lambda^{[\ldots]}}
-            }
-        }
-        \qquad \mbox{ or } \qquad
-\tree[levelsep=6ex]{ \lambda \overline{\xi}  ^{[nd]}}
-        {            \TR{x^{[nd+1]}}        }
-$$
-where $\overline{\xi}$ is possibly an empty list in which case the root node is just $\lambda$.
+We proceed by induction on the height of of
+the tree $\tau(M)$ and by case analysis on the structure of the term.
 
 \begin{itemize}
-  \item (abstraction--variable) Suppose that $\tau(M)$ has the following shape:
-      $$ \tree[levelsep=6ex]{ \lambda \overline{\xi}^{[0]} }{\TR{x^{[1]}}}$$
-    The arena is of the following form (only question moves are represented):
-    $$ \tree{ q }
+  \item (variable) $M = x$. This case does not happen since $M$ is a closed term.
+
+    \item (application) The term $M$ is of the form $\emptyset \vdash N_0 N_1 \ldots N_p : o$ where $N_0$ is not
+    a variable (since $M$ is closed) and:
+    \begin{eqnarray*}
+    \emptyset &\vdash& N_0 : (A_1,\ldots,A_p,o)\\
+    \emptyset &\vdash& N_i : A_i \mbox{ for } i \in 1..p
+    \end{eqnarray*}
+
+    The tree $\tau(M)$ has the following form:
+    $$ \tree[levelsep=6ex]{\lambda}
+        { \tree[levelsep=6ex]{@^{[1]}}
+            {   \TR{\tau(N_0)} \TR{\ldots} \TR{\tau(N_p)}}}
+    $$
+
+    We have:
+    $$\sem{M} = \sem{\emptyset \vdash N_0 N_1 \ldots N_p : o} = \overbrace{\langle \sem{\emptyset \vdash N_0}, \ldots, \sem{\emptyset \vdash N_p} \rangle}^\sigma ; ev_{A_1,\ldots,A_p,o}$$
+    with $\sigma : \textbf{1} \longrightarrow B$ and $ev_{A_1,\ldots,A_p,o} : B \longrightarrow \sem{o}$ where
+    $$ B = \sem{(A_1,\ldots,A_p,o)} \times \sem{A_1} \times \ldots \times \sem{A_p} $$
+
+    Since $s \in \sem{M} = \sem{\emptyset \vdash N_0 N_1 \ldots N_p : o}$ we have:
+    \begin{equation*}
+        s = u \upharpoonright \textbf{1},\sem{o} = u \upharpoonright \sem{o}
+    \end{equation*}
+    for some $u \in \sigma \parallel ev_{A_1,\ldots,A_p,o}$.
+
+    Let $q_C$ denotes the only question of the arena $\sem{o}$ then $s \in \{ q_C \}^*$.
+    We construct the justified sequence $t$ by replacing the moves $q_C$ in $\tilde{s}$ by the root node
+    $\lambda \overline{\xi}$:
+    $$ t \jseq  \tilde{s} [\lambda \overline{\xi} / q_C].$$
+
+    Since $\tilde{s} \in \{ q_C \}^*$ and $\varphi^{-1}_{M}(\lambda \overline{\xi}) = q_C$, we have:
+    $$\varphi^{-1}_{M} (t) = \varphi^{-1}_{M}( \tilde{s} [\lambda \overline{\xi} / q_C] )
+        = \tilde{s} [\lambda \overline{\xi} / q_C] [q_C / \lambda \overline{\xi}]
+        = \tilde{s}$$
+    Since all the moves in $\tilde{s}$ are initial, they do not have pointers. Hence
+    $$ \varphi^{-1}_{M} (t) \jseq \tilde{s} $$
+
+
+    \item (variable-abstraction)
+        $M = \lambda \overline{\xi} . x$.  Then $x$ must be of ground type $o$ and since $M$ is closed
+        $x = \xi_i \in \overline{\xi}$ .
+        Then $\tau(M)$ has the following shape:
+        $$ \tree[levelsep=6ex]{ \lambda \overline{\xi}^{[0]} }{\TR{x^{[1]}}}$$
+        The arena is of the following form (only question moves are represented):
+        $$ \tree{ q }
         {   \tree[linestyle=dotted]{q^1}{\TR{} \TR{} }
             \tree[linestyle=dotted]{q^2}{\TR{} \TR{} }
             \TR{\ldots}
-            \tree[linestyle=dotted]{q^r}{\TR{} \TR{} }
+            \tree[linestyle=dotted]{q^n}{\TR{} \TR{} }
             \TR{q^x}
         }$$
-    where $q^x$ denotes the root of the flat arena $\sem{o}$.
+        where $q^x$ denotes the root of the flat arena $\sem{o}$.
+        We have:
+        $$ \sem{M} = \sem{\emptyset \vdash \lambda \overline{\xi} . \xi_i} = \Lambda^n(\sem{\overline{\xi} \vdash  \xi_i}) = \Lambda^n(\pi_i)$$
+        where $\pi_i$ denotes the $i$-th projection
+
+        Therefore the only question-moves that can occur in $s \in \sem{M}$ are the initial question $q$ and the question $q_x$.
+        We take $t \jseq \tilde{s} [0/q, 1/q^x]$ which is a valid justified sequence of nodes since
+        node $1$ ($x$) is bound by node $0$ ($\lambda \overline{\xi}$). Clearly we have $\varphi^{-1}(t) \jseq \tilde{s}$.
+
+    \item (application-abstraction) The term $M$ is of the form $M = \lambda \overline{\xi} . x N_1 \ldots N_p$ where
+    \begin{eqnarray*}
+    \emptyset &\vdash& M : (X_1,\ldots,X_n,o) \\
+    \Gamma &\vdash& x N_1 \ldots N_p : o \\
+    \Gamma &\vdash& x : (A_1,\ldots,A_p,o) \\
+    \Gamma &\vdash& N_i : A_i \mbox{ for } i \in 1..p \\
+    \Gamma &=& \overline{\xi} : \overline{X}
+    \end{eqnarray*}
+
+    The tree $\tau(M)$ has the following form:
+    $$ \tree[levelsep=6ex]{\lambda \overline{\xi}^{[0]}}
+        { \tree[levelsep=6ex]{x @^{[1]}}
+            {   \TR{\tau(N_0)} \TR{\ldots} \TR{\tau(N_p)}}}
+    $$
+    where $x \in \overline{\xi}$ (since $M$ is a closed term).
+
     We have:
-    $$ \sem{M} = \sem{\Gamma \vdash \lambda \overline{\xi} . x} = \Lambda^n(\sem{\Gamma, \overline{\xi} \vdash  x})$$
+    \begin{eqnarray*}
+    \sem{ \emptyset \vdash M} &=& \Lambda^n( \sem{\Gamma \vdash x N_1 \ldots N_p : o} ) \\
+    \sem{\Gamma \vdash x N_1 \ldots N_p : o} &=& \overbrace{\langle \sem{\Gamma \vdash N_0}, \ldots, \sem{\Gamma \vdash N_p} \rangle}^\sigma ; ev_{A_1,\ldots,A_p,o}
+    \end{eqnarray*}
 
-    Therefore the only question-moves that can occur in $s \in \sem{M}$ are the initial question $q$ and the question $q_x$.
-    If $x \in \overline{\xi}$ then $q^x \in A$. We take $t = (\tilde{s}\upharpoonright A) [0/q, 1/q^x]$ which is a valid traversal since
-    node $1$ ($x$) is bound by node $0$ ($\lambda \overline{\xi}$). Clearly we have $\varphi^{-1}(t) =  \overline{\xi}$.
+    with $\sigma : A \longrightarrow B$ and $ev_{A_1,\ldots,A_p,o} : B \longrightarrow C$, the arena being defined as follows:
+    \begin{eqnarray*}
+        A &=& \sem{\Gamma} = \sem{X_1} \times \ldots \times \sem{X_n}\\
+        B &=& H_0 \times H_1 \times \ldots \times H_p \\
+        C &=& \sem{o}\\
+        H_0 &=& \sem{(A_1,\ldots,A_p,o)} \\
+        H_j &=& \sem{A_j} \mbox{ for }j \in 1..p
+    \end{eqnarray*}
 
-    If $x \not\in \overline{\xi}$ then $q^x \in \Gamma$ and the only question that occurs in $\tilde{s}\upharpoonright A$ is
-    the initial question $q$. We take $t = (\tilde{s}\upharpoonright A) [0/q]$ which is a valid traversal.
-    Again we have $\varphi^{-1}(t) =  \overline{\xi}$.
+    Since $s \in \sem{M}$ we must have $s\in \sem{\Gamma \vdash x N_1 \ldots N_p : o}$ therefore:
+    \begin{equation}
+        s = u \upharpoonright A, C \label{eq:def_s}
+    \end{equation}
+    for some $u \in \sigma \parallel ev_{A_1,\ldots,A_p,o}$, more precisely for some $u$ such that:
+    \begin{eqnarray}
+        u &\in& int(A,B,C) \nonumber \\
+        w = u \upharpoonright A,B & \in& \sigma       \label{eq:def_w}\\
+        u \upharpoonright B,C & \in & ev_{A_1,\ldots,A_p,o} \nonumber
+    \end{eqnarray}
 
-%%  \item (application)
-%%  Suppose that $\ord{M} = 0$ then the arena is of the following form (only question moves are represented):
-%%    $$ \tree{ q }
-%%        {   \tree[linestyle=dotted]{q^1}{\TR{} \TR{} }
-%%            \tree[linestyle=dotted]{q^2}{\TR{} \TR{} }
-%%            \TR{\ldots}
-%%            \tree[linestyle=dotted]{q^r}{\TR{} \TR{} }
-%%        }$$
-%%        \begin{itemize}
-%%        \item (variable) Suppose that $M = \lambda. y_i : o$. Then $\sem{M} = \pi_i$ and the only question move that can occur
-%%                in $s \in \pi_i$ is the initial question $q$ (with no pointer).
-%%                Take $t = \tilde{s}[\lambda/q]$ where $\lambda$ denotes the root of the tree $\tau(M)$.
-%%                It is then clear that $\varphi^{-1}(t) = \tilde{s}$.
-%%
+    $w \in \sigma$ implies that for some $j \in 1..p$:
+    \begin{eqnarray}
+        z = w \upharpoonright A, H_j &\in& \sem{\Gamma \vdash N_j}  \label{eq:def_z} \\
+        \mbox{ and for every } k\neq j &:& w \upharpoonright H_k = \epsilon \label{eq:b}
+    \end{eqnarray}
 
-        \item (abstraction-application) $\tau(M)$ has the following shape:
-         $$ \tree[levelsep=6ex]{ \lambda \overline{\xi}^{[0]}}
-        { \tree[levelsep=6ex,linestyle=dotted]{x@^{[1]}}
-            {   \TR{\lambda^{[\ldots]}} \TR{\lambda^{[\ldots]}} \TR{\lambda^{[\ldots]}}
-            }} $$
+    We cannot use the induction hypothesis on $\Gamma \vdash N_j : A_j$ because it is not a closed terms!
+    We therefore consider the closed term $N'_j = \lambda \overline{\xi} . N_j$:
+        $$\emptyset \vdash N'_j : (X_1, \ldots, X_n,A_j)$$
 
-        The term $M$ is of the form $\Gamma' \vdash \lambda \overline{\xi} . h_0 h_1 \ldots h_p : (X_1,\ldots, X_n,o)$ such that
-        \begin{eqnarray*}
-        \Gamma &\vdash& h_0 h_1 \ldots h_p : o \\
-        \Gamma &\vdash& h_0 : (A_1,\ldots,A_p,o)\\
-        \Gamma &\vdash& h_i : A_i \mbox{ for } i \in 1..p
-        \end{eqnarray*}
-        where $\Gamma = \Gamma' \union \overline{\xi}$.
-
-        Then $\sem{M} = \Lambda^n( \sem{\Gamma \vdash h_0 h_1 \ldots h_p : o} )$ and
-        $$
-            \sem{\Gamma \vdash h_0 h_1 \ldots h_p : o} = \overbrace{\langle \sem{\Gamma \vdash h_0}, \ldots, \sem{\Gamma \vdash h_p} \rangle}^\sigma ; ev_{A_1,\ldots,A_p,o}
-            $$
-        with $\sigma : A \longrightarrow B$ , $ev_{A_1,\ldots,A_p,o} : B \longrightarrow C$ where
-        \begin{eqnarray*}
-         A &=& \sem{\Gamma} \\
-         B &=& H_0 \times H_1 \times \ldots \times H_p \\
-         C &=& \sem{o} \\
-         H_0 &=& \sem{(A_1,\ldots,A_p,o)} \\
-         H_j &=& \sem{A_j} \mbox{ for }j \in 1..p
-        \end{eqnarray*}
-
-        Since $s \in \sem{M}$ we must have $s\in \sem{\Gamma \vdash h_0 h_1 \ldots h_p : o}$ therefore:
-        \begin{equation}
-            s = u \upharpoonright A, C \label{eq:def_s}
-        \end{equation}
-        for some $u \in \sigma \parallel ev_{A_1,\ldots,A_p,o}$, more precisely for some $u$ such that:
-        \begin{eqnarray}
-          u &\in& int(A,B,C) \nonumber \\
-          w = u \upharpoonright A,B & \in& \sigma       \label{eq:def_w}\\
-          u \upharpoonright B,C & \in & ev_{A_1,\ldots,A_p,o} \nonumber
-        \end{eqnarray}
-
-        $w \in \sigma$ implies that for some $j \in 1..p$:
-        \begin{eqnarray}
-          z = w \upharpoonright A, H_j &\in& \sem{h_j}  \label{eq:def_z} \\
-          \mbox{ and for every } k\neq j &:& w \upharpoonright H_k = \epsilon \label{eq:b}
-        \end{eqnarray}
-
-        Equation \ref{eq:def_z} allows us to use the induction hypothesis on the term $h_j$:
-        there is a traversal $t$ of the tree $\tau(h_j)$ such that $\varphi^{-1}_{h_j}(t) = \tilde{z} \upharpoonright H_j$.
-
-        Let $q_C$ denotes the only question of the arena $C = \sem{o}$.
+    We have $z \in \sem{N_j} = \Lambda^n(\sem{\Gamma \vdash N_j})$. But $\Lambda^n(\sem{\Gamma \vdash N_j})$
+    and $\sem{\Gamma \vdash N_j}$ are the same strategies up to an isomorphism that
+    retaggs the moves. Hence the equation \ref{eq:def_z} gives $z \in \sem{N'_j}$ where $N'_j$ is a closed term. Since
+    the term $N'_j$ has the same height as the term $N_j$ which is strictly smaller than the height
+    of the term $M$, we can use the induction hypothesis on $N'_j$:
+    there is a justified sequence $t'$ of the tree $\tau(N'_j)$
+    such that $\varphi^{-1}_{N'_j}(t') \jseq \tilde{z}$.
 
 
-        From equation \ref{eq:def_w} we have:
-        \begin{equation}
-         \tilde{w} = \tilde{u} \upharpoonright A,B
-         \label{eq:def_wtilde}
-        \end{equation}
-
-        From equation \ref{eq:b}, for $k\neq j : w \upharpoonright H_k = \epsilon$. Since $B =
-        H_0 \times H_1 \times \ldots \times H_p$ this implies that moves in $w$ hereditarily justified by moves in $B$ are in fact all
-        hereditarily justified by moves in $H_j$.  Hence $z = w \upharpoonright A, H_j = w \upharpoonright A, B$ and:
-        \begin{eqnarray*}
-             \tilde{z} =& \tilde{w} \upharpoonright A,B \\
-              =& (\tilde{u} \upharpoonright A,B) \upharpoonright A,B &\mbox{(by eq \ref{eq:def_wtilde})} \\
-              =& \tilde{u} \upharpoonright A,B \\
-              =& \tilde{w}  & \mbox{(by eq \ref{eq:def_wtilde})}
-        \end{eqnarray*}
 
 
-        We know that there is a traversal $t$ of $\tau(h_j)$ such that
-        $\varphi^{-1}_{h_j}(t) = \tilde{z}\upharpoonright H_j = \tilde{w}\upharpoonright H_j$.
-        Let $N$ be the set of nodes of the tree $\tau(M)$, $N_{h_j}$ the set of nodes
-        of the tree $\tau(h_j)$ and $\lambda \overline{\xi}$ the root of the tree
-        $\tau(M)$.
+    From equation \ref{eq:def_w} we have:
+    \begin{equation}
+        \tilde{w} = \tilde{u} \upharpoonright A,B
+        \label{eq:def_wtilde}
+    \end{equation}
+
+    From equation \ref{eq:b}, for $k\neq j : w \upharpoonright H_k = \epsilon$. Since $B =
+    H_0 \times H_1 \times \ldots \times H_p$ this implies that moves in $w$ hereditarily justified by moves in $B$ are in fact all
+    hereditarily justified by moves in $H_j$.  Hence $z = w \upharpoonright A, H_j = w \upharpoonright A, B$ and:
+    \begin{eqnarray*}
+            \tilde{z} =& \tilde{w} \upharpoonright A,B \\
+            =& (\tilde{u} \upharpoonright A,B) \upharpoonright A,B &\mbox{(by eq \ref{eq:def_wtilde})} \\
+            =& \tilde{u} \upharpoonright A,B \\
+            =& \tilde{w}  & \mbox{(by eq \ref{eq:def_wtilde})}
+    \end{eqnarray*}
 
 
-        The domain of $\varphi^{-1}_{h_j}$ is a subset of $N_{h_j}$  which does not contain the root of $\tau(M)$.
-        The domain of the function $\varphi^{-1}_{M}$ is a subset of $N$, a superset of the domain of
-        $\varphi^{-1}_{h_j}$ and contains $\lambda \overline{\xi}$.
-        The function $\varphi^{-1}$ has been defined by an inductive procedure
-        guaranteeing that $\varphi^{-1}_{h_j}$ and $\varphi^{-1}_{M}$
-        agree on the intersection of their respective domain.
-
-        Hence we have:
-        \begin{equation}
-        \varphi^{-1}_{M}(t) = \tilde{w} \upharpoonright H_j. \label{eq:def_t}
-        \end{equation}
-
-        We can construct from $t$ the justified sequence $t^\ast$ as follow:
-        we insert the node $\lambda \overline{\xi}$ at the positions where the move $q_C$ occurs in $\tilde{u}$.
-        Since $\varphi^{-1}_{M}(\lambda \overline{\xi}) = q_C$, we have:
-        $$\forall i \geq 0 : \varphi^{-1}_{M}(t^\ast_i) = \tilde{u_i} \upharpoonright H_j$$
-
-        Now we transfer links from $\tilde{u}$ to $t^\ast$: each move $\tilde{u}_i = q_C$ in $\tilde{u}$ has some links pointing to it.
-        We copy these links to $t^\ast$ as follow:
-        for any $k\geq 0$, $t^\ast_k$ points to $t^\ast_i = \lambda \overline{\xi}$ if and only if $\tilde{u}_k$ points to $\tilde{u}_i = q_C$.
-        Then the pointers of the traversal $t^\ast$ and the sequence of move $\tilde{u}$ agree and we obtain:
-        \begin{equation}
-        \varphi^{-1}_{M}(t^\ast_i) = \tilde{u_i} \upharpoonright H_j. \label{eq:def_tstar}
-        \end{equation}
-
-        However we have omitted to verify an important condition: is the sequence $t^\ast$ a valid traversal of $\tau(M)$?
-        To ensure that it is the case, we need to check the validity of the the pointers that we introduced in $t^\ast$.
-        Suppose $u_k$ points to $q_C$ in $\tilde{u}$ then $u_k$ belongs to the arena $A$. More precisely it is one
-        of the root $q^1 \ldots q^r$ of the arena $A$.
-\todobox{finish here}
-
-        For any traversal $t$ we define the traversal $t \upharpoonright A,C$
-        to be the subsequence of the traversal $t$ constituted of nodes $n$
-        verifying $\varphi^{-1}_M(n) \in A \union C$ together with the same
-        pointers as the justified sequence of move $\varphi^{-1}_M(t) \upharpoonright A,C$ (here the
-        operator $\upharpoonright$ denotes the filtering operator
-        defined on justified sequence of moves).
-
-        The effect of this transformation is to  remove from $t^\ast$ all the elements at positions $i$ such that $\tilde{u}_i \in B$.
-        We obtain a justified sequence of nodes $t' = t^\ast \upharpoonright A,C$
-        verifying
-            $$\varphi^{-1}_{M}(t^\ast) = \tilde{s}$$
+    Hence $\varphi^{-1}_{N'_j}(t') \jseq \tilde{w}$.
 
 
-        \textbf{Example}: Let us illustrate each step of the demonstration on a short example.
-         For clarity only relevant pointers are specified in the following justified sequences.
-        $$
-        \xymatrix @=3pt{
-          & \tilde{u} &=& q_C & m_1 & q_C & m_3 & m_4 & q_C & m_6 & m_7 & q_C & \ldots \\
-          & &\in& C & B & C & A & A & C & B & B & C & \ldots \\
-          \mbox{ (equation \ref{eq:def_s})} & \tilde{s} &=& q_C & & q_C & m_3  \ar@/_1pc/[l] & m_4 & q_C &  & & q_C & \ldots \\
-          \mbox{ (equation \ref{eq:def_w})} & \tilde{w}  &=&  & m_1 &  & m_3 & m_4 &  & m_6 & m_7 &  & \ldots  \\ \\ \\
-          \mbox{ (equation \ref{eq:def_t})} & t &=&  & n_1\ar[uuu]^{\varphi^{-1}_{h_j}} &  & n_3 \ar[uuu] & n_4\ar[uuu] & & n_6\ar[uuu] & n_7\ar[uuu] &  & \ldots \\ \\
-           & \tilde{u}  &=& q_C & m_1 & q_C & m_3 & m_4 & q_C & m_6 & m_7 & q_C & \ldots  \\ \\ \\
-          \mbox{ (equation \ref{eq:def_tstar})} & t^\ast &=& \lambda \ar@{=>}[uuu]^{\varphi^{-1}_{M}} & n_1\ar[uuu]^{\varphi^{-1}_{h_j}} & \lambda\ar@{=>}[uuu] & n_3 \ar[uuu] \ar@/_1pc/[l] & n_4\ar[uuu] & \lambda\ar@{=>}[uuu] & n_6\ar[uuu] & n_7\ar[uuu] & \lambda\ar@{=>}[uuu] & \ldots \\
-          t^\ast\upharpoonright A,C =& t' &=& \lambda &  & \lambda & n_3\ar@/_1pc/[l] & n_4 & \lambda & &  & \lambda & \ldots \\
-          }
-        $$
-        Note that there is only one question $q_C$ in the arena $C$ therefore $m_2 = m_5 = m_8 = q_C$.
-        It is easy to check that $\varphi^{-1}(t') = \tilde{s}$
+    For $i \in 1..p$, the tree $\tau(N_i)$ (left) and $\tau(N'_i)$ (right) have the following form:
+    $$ \tree[levelsep=6ex]{ \lambda \overline{y_i}^{[n_i]} }
+    { \tree[levelsep=6ex,linestyle=dotted]{}
+        {   \TR{} \TR{} \TR{} }}
+    \hspace{2cm}
+    \tree[levelsep=6ex]{ \lambda \overline{\xi}\  \overline{y_i}^{[n_i]} }
+    { \tree[levelsep=6ex,linestyle=dotted]{}
+        {   \TR{} \TR{} \TR{} }}
+    $$
+    where only the label of the root differs between the two trees.
+
+    From the justified sequence $t'$ of $\tau(N'_j)$ we construct the justified sequence $t$ of
+    $\tau(M)$ by mapping the nodes of $\tau(N'_j)$ to the corresponding node in the subtree $\tau(N_j)$
+    of $\tau(M)$. Moreover we change all the pointers going from a node $\xi_i$ or $\xi_i @$ to the root node of $\tau(N'_j)$
+    into a pointer starting from the corresponding node $\xi_i$ or $\xi_i @$ to the root of the tree $\tau(M)$.
+    $t$ is a valid justified sequence of nodes of $\tau(M)$ since the nodes labelled $\xi_i$ and $\xi_i @$
+    are bound by the root $\lambda \overline{\xi}$.
+
+    The function $\varphi^{-1} : Nodes \rightarrow M^Q$ has been defined by an inductive procedure
+    guaranteeing that $\varphi^{-1}_{N_j}$ is equal to the function $\varphi^{-1}_{M}$ restricted to
+    the set of nodes of $\tau(N_j)$. Hence we have:
+    \begin{equation}
+    \varphi^{-1}_{M}(t) \jseq \tilde{w}. \label{eq:def_t}
+    \end{equation}
+
+    Let $q_C$ denotes the only question of the arena $C = \sem{o}$.
+    We can construct from $t$ the justified sequence $t^\ast$ as follows:
+    we insert the root node $\lambda \overline{\xi}$ at the positions where the move $q_C$ occurs in $\tilde{u}$.
+    Since $\varphi^{-1}_{M}(\lambda \overline{\xi}) = q_C$, we have:
+    $$\varphi^{-1}_{M}(t^\ast) = \tilde{u}$$
+
+    Now we transfer links from $\tilde{u}$ to $t^\ast$: for each
+    move $\tilde{u}_k$ pointing to $\tilde{u}_i = q_C$ in $\tilde{u}$ for some $0 \leq i \leq k$,
+    we add a pointer in $t^\ast$ going from $t^\ast_k$ to $t^\ast_i = \lambda \overline{\xi}$.
+
+    Then the pointers of the traversal $t^\ast$ and the sequence of move $\tilde{u}$ are the same and we obtain:
+    \begin{equation}
+    \varphi^{-1}_{M}(t^\ast) \jseq \tilde{u}. \label{eq:def_tstar}
+    \end{equation}
+
+    We need to ensure that the sequence $t^\ast$ is a valid justified sequence of $\tau(M)$.
+    This requires us to check the validity of the the pointers introduced in $t^\ast$.
+    Suppose $u_k$ points to $q_C$ in $\tilde{u}$ then $u_k$ belongs to the arena $A$. More precisely it is one
+    of the root $q^1 \ldots q^n$ of the arena $A$. Therefore $u_k$ must belong to the sequence $\tilde{w}$ and
+    for some $r \geq 0$, $u_k = \phi^{-1}_{N'_j}(t'_r)$ and $t^\ast_k = t'_r$.
+
+    The arena of the term $\emptyset \vdash N'_j = \lambda \overline{\xi} . N_j$ is of the following form (only question moves are represented):
+        $$ \tree{ q }
+        {   \tree[linestyle=dotted]{q^1}{\TR{} \TR{} }
+            \tree[linestyle=dotted]{q^2}{\TR{} \TR{} }
+            \TR{\ldots}
+            \tree[linestyle=dotted]{q^n}{\TR{} \TR{} }
+        }$$
+    We observe from the definition of $\phi^{-1}_{N'_j}$ that the
+    only node that are mapped to the question  $q^1 \ldots q^n$ are labelled $\xi_i$ or $\xi_i @$ for some $i\in 1..n$.
+    Consequently $t^\ast_k = \xi_i$ and the node $t^\ast_k$ is bound by the node $\lambda \overline{\xi}$.
+    Hence the added pointer is indeed valid.\\
 
 
-%        \end{itemize}
+    For any justified sequence of nodes $t$ we define the justified sequence of nodes $t \upharpoonright A,C$
+    to be the subsequence of $t$ constituted of nodes $n$
+    verifying $\varphi^{-1}_M(n) \in A \union C$ together with the same
+    pointers as the justified sequence of move $\varphi^{-1}_M(t) \upharpoonright A,C$ (here the
+    operator $\upharpoonright$ denotes the filtering operator
+    defined on justified sequence of moves).
 
-    \item Suppose that $\ord{M} > 0$ then $M = \lambda \overline{\xi} . N : \overline{A}|o$ and :
-    $$ \sem{\Gamma \vdash M} = \Lambda( \sem{\Gamma,\overline{\xi} \vdash N: o} )$$
+    The effect of this transformation is to remove from $t^\ast$ all the elements at positions $i$ such that $\tilde{u}_i \in B$.
+    We obtain a justified sequence of nodes $t^\dagger = t^\ast \upharpoonright A,C$
+    verifying
+        $$\varphi^{-1}_{M}(t^\dagger) \jseq \tilde{s}$$
 
-    The games for the terms $ \Gamma \vdash M$ and $\Gamma,\overline{\xi} \vdash N: o$
-    are played on the same arena. Moreover the two trees $\tau(M)$ and $\tau(N)$ are
-    isomorphic. The only difference beeing that the root of
-    $\tau(M)$ is labelled $\lambda \overline{\xi}$ whereas the root
-    of $\tau(N)$ is labelled $\lambda$. Hence $\phi^{-1}_M  \simeq
-    \phi^{-1}_N$.
-    Using the induction hypothesis on $N$ permits to conclude.
 
+    \textbf{Example}: Let us illustrate each step of the demonstration on a short example.
+        For clarity only some relevant pointers are specified in the following justified sequences.
+    $$
+    \xymatrix @=3pt{
+        & \tilde{u} &=& q_C & m_1 & q_C & m_3 & m_4 & q_C & m_6 & m_7 & q_C & \ldots \\
+        & &\in& C & B & C & A & A & C & B & B & C & \ldots \\
+        \mbox{ (equation \ref{eq:def_s})} & \tilde{s} &=& q_C & & q_C & m_3  \ar@/_1pc/[l] & m_4 & q_C &  & & q_C & \ldots \\
+        \mbox{ (equation \ref{eq:def_w})} & \tilde{w}  &=&  & m_1 &  & m_3 & m_4 &  & m_6 & m_7 &  & \ldots  \\ \\ \\
+        \mbox{ (equation \ref{eq:def_t})} & t &=&  & n_1\ar[uuu]^{\varphi^{-1}_{N'_j}} &  & n_3 \ar[uuu] & n_4\ar[uuu] & & n_6\ar[uuu] & n_7\ar[uuu] &  & \ldots \\ \\
+        & \tilde{u}  &=& q_C & m_1 & q_C & m_3 & m_4 & q_C & m_6 & m_7 & q_C & \ldots  \\ \\ \\
+        \mbox{ (equation \ref{eq:def_tstar})} & t^\ast &=& \lambda \ar@{=>}[uuu]^{\varphi^{-1}_{M}} & n_1\ar[uuu]^{\varphi^{-1}_{N'_j}} & \lambda\ar@{=>}[uuu] & n_3 \ar[uuu] \ar@/_1pc/[l] & n_4\ar[uuu] & \lambda\ar@{=>}[uuu] & n_6\ar[uuu] & n_7\ar[uuu] & \lambda\ar@{=>}[uuu] & \ldots \\
+        t^\ast\upharpoonright A,C =& t^\dagger &=& \lambda &  & \lambda & n_3\ar@/_1pc/[l] & n_4 & \lambda & &  & \lambda & \ldots \\
+        }
+    $$
+    Note that there is only one question $q_C$ in the arena $C$ therefore $m_2 = m_5 = m_8 = q_C$.
+    It is easy to check that $\varphi^{-1}(t') \jseq \tilde{s}$
 \end{itemize}
-
 \end{proof}
 
+The previous proposition has an equivalent for open terms. Its proof is omitted here. It
+follows the same step as the previous proof.
+\begin{prop}[Relation between game semantics and reduced-traversals for open terms]
+\label{prop:rel_gamesem_redtrav_opened}
+Suppose $\Gamma \vdash M : A$. Let $r$ denotes the root of $\tau(M)$. If $s$ is a justified sequence of moves such
+that $s \in \sem{\Gamma \vdash M:A}$ then there is a reduced-traversal of nodes of $\tau(M)$
+$t = n_0 n_1 \ldots$ such that:
+ $$\tilde{s} \upharpoonright \sem{A} \jseq  \varphi^{-1} (t \upharpoonright \{r \})$$
+and
+$$\forall i \geq 0 . \tilde{s}_i = \varphi^{-1}(t_i) \not \in \sem{A}
+\implies \left\{
+        \begin{array}{ll}
+            t_i = x \mbox{ or } t_i = x@, \hbox{where } x \in \Gamma \\
+            \varphi^{-1}(t \upharpoonright \{t_i\}) \jseq \tilde{s} \upharpoonright \{ \varphi^{-1}(t_i) \}
+        \end{array}
+        \right.
+$$
+\end{prop}
+
 \subsection{Pointers in the game semantics of safe terms are recoverable}
+
+\begin{dfn}[P-view of justified sequence of nodes]
+The P-view of a justified sequence of nodes $t$ of $\tau{M}$ noted $\pview{t}$ is defined as follows:
+\begin{eqnarray*}
+ \pview{t \lambda \overline{\xi} }  &=&  \pview{t}\  \lambda \overline{\xi} \qquad \mbox{where $\lambda \overline{\xi}$ is the root of } \tau{M}\\
+ \pview{\justseq{t & n & \ldots & \lambda \overline{\xi} }}  &=& \pview{t} n \lambda \overline{\xi}\\
+\def\justseq#1{\xymatrix @=12pt@M=0pt{ #1 }}
+\def\pointto#1{\ar@/_/[#1]}
+\def\apointto#1{\ar@/_1pc/[#1]}
+ \pview{\lambda \overline{\xi}} &=&  \lambda \overline{\xi} \qquad \mbox{elsewhere}\\
+\end{eqnarray*}
+\end{dfn}
+
+\begin{property}
+The P-view of a justified sequence of nodes that does not contain any node labelled $@$ is
+subsequence of a path from the root to a node in the computation tree.
+\end{property}
+
+
+
+The order of a lambda-node $\lambda \overline{\xi}$ in the computation tree is defined to be $\max_{i=1..n}
+\ord{\xi_i}$.
+
+The computation tree of safe terms verifies a property called regularity:
+\begin{property}[Computation tree of safe terms are regular]
+\label{proper:regularity}
+If $M$ is a safe term then any node of the computation tree $\tau(M)$ labelled $x$ or $x@$ where
+$x$ is a variable bound in $M$ is bound by the first $\lambda$-node in the path to the root that has
+order greater or equal to $\ord{x}$.
+\end{property}
+\begin{proof}
+For a safe term the first $\lambda$-node $\lambda \overline{\xi}$ in the path to the root such that
+$x \in \overline{\xi}$ is also the first $\lambda$-node whose order is greater or equal to $\ord{x}$.
+\end{proof}
+
 
 \begin{prop}
 The pointers in the game semantics of safe terms are
@@ -667,30 +842,29 @@ uniquely recoverable.
 \end{prop}
 
 \begin{proof}
-Let $M$ be a safe term, we consider its $\eta$-long normal form $\aux{M}$.
-$\aux{M}$ is also safe because safety is preserved by $\eta$-expansion.
+Let $\Gamma \vdash M : A$ be an opened safe term where $\Gamma = y_1:Y_1, \ldots y_n:Y_n$.
+We assume that $M$ is in $\eta$-long normal form. It is a safe assumption
+because safety is preserved by $\eta$-expansion.
 
-We consider a justified sequence of move $s \in \sem{M}$.
-
-Firstly, we remark that the pointers for O and P answers can all be
+Consider a justified sequence of move $s \in \sem{\Gamma \vdash M}$. Firstly,
+we remark that the pointers for O and P answer moves in $s$ can all be
 recovered thanks to the well-bracketing condition.
 
-Proposition \ref{prop:cor_trav_seq} says that there is a traversal $t$ of $\tau(M)$ such that
-$$\phi^{-1}_{M}(t) = \tilde{s}.$$
-The traversal $t$
+Consider the closed term $M'  = \lambda \overline{y} . M$.
+Up to a retagging of the moves, the justified sequence of moves $s$ belongs to the strategy
+$\sem{\vdash \lambda \overline{y} . M} = \Lambda^n(\sem{\Gamma \vdash M})$.
+Proposition \ref{prop:rel_gamesem_redtrav_closed}tells us that
+there is a justified sequence of nodes $t$ of $\tau(M')$ such that:
+$$\phi^{-1}_{M'}(t) \jseq \tilde{s}.$$
+
 
 
 For O-question, the justification pointer always points to its
 parent node in the computation tree.
 
-For P-question there may be several choices for the destination of
-the pointer but we claim that in the case of safe terms, it should
+Suppose $q \in s$ is a P-question then because of property \ref{proper:regularity} it should
 point to the closest node in the path from the root to P-question
-whose order is greater than the order of $x$. The order of a
-lambda-node $\lambda \overline{\xi}$ being defined as $\max_{i=1..n}
-\ord{\xi_i}$.
-
-
+whose order is greater than the order of $x$.
 
 \todomargin{to finish}
 \end{proof}

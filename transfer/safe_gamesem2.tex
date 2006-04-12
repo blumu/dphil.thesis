@@ -17,7 +17,7 @@ sub-term $f (\lambda y . x)$, the free variable $x$
 has the same order as $y$ but $x$ is not abstracted together
 with $y$.
 
-
+We fix $\Sigma$, a set of constants of order at most 1.
 %\begin{enumerate}
 %\item
 %Is there any unsafe term whose game semantics is a strategy where
@@ -41,7 +41,7 @@ with $y$.
 
 
 
-\subsection{$\eta$-long normal form}
+\subsection{$\eta$-long normal form and computation tree}
 
 The $\eta$-expansion of $M: A\typear B$ is defined to be the term $\lambda x . M x : A\typear B$ where $x:A$ is a fresh variable.
 It is easy to check that if $M$ is safe then $\lambda x . M x$ is also safe.
@@ -179,23 +179,26 @@ operator-application nodes, variable or constant nodes (the root level being num
 \end{itemize}
 
 
+
 \subsubsection{Pointers and justified sequence of nodes}
 
 \begin{dfn}[Binder]
 Let $n$ be a node of the computation tree labelled $x$ or $x@$.
 We say a node $n$ is bound by the node $m$ if $m$ is
 the closest node in the path from $n$ to the root of the tree such that
-$m$ is labelled $\lambda \overline{\xi}$ with $x\in \xi$.
+$m$ is labelled $\lambda \overline{\xi}$ with $x\in \overline{\xi}$.
 $m$ is called the binder of $n$
 \end{dfn}
 
 \begin{dfn}[Enabling]
 The enabling relation noted $\vdash$ over the set of nodes of the computation tree is defined as follows:
+
+We write $m \vdash n$ and we say that the node $n$ is enabled by $m$ or that $m$ enables $n$ if and only if
 \begin{itemize}
-\item a node $n$ labeled $x$ or $x@$ is enabled by its binder node:
-\item a lambda node labelled $\lambda \overline{\xi}$ is enabled by its parent node labelled $@$ or $x@$ for some $x$:
+\item the node $n$ is labelled $x$ or $x@$ and $m$ is the binder of $n$;
+\item or $n$ is a lambda node labelled $\lambda \overline{\xi}$ and $m$ is the parent node of $n$
+        (labelled $@$ or $x@$ for some variable or $\Sigma$-constant $x$).
 \end{itemize}
-If $m \vdash n$ we say that the node $n$ is enabled by $m$ or that $m$ enables $n$.
 \end{dfn}
 
 
@@ -204,7 +207,7 @@ If $m \vdash n$ we say that the node $n$ is enabled by $m$ or that $m$ enables $
 A \emph{justified sequence of nodes} is an alternating sequence of lambda and non lambda nodes
 from the computation tree $\tau(M)$ together with pointers.
 Each node $n$ of the sequence that is either
-a lambda-node, a $x$-node or a $x@$-node where $x$ is a variable not occurring free in $M$,
+a lambda-node, a $\xi$-node or a $\xi@$-node where $\xi$ is a variable not occurring free in $M$,
 and that is not the root of the computation tree has a pointer to a previous node $m$ in the sequence
 such that $m \vdash n$.
 
@@ -216,13 +219,14 @@ $$\xymatrix @=12pt@M=0pt{
 \lambda \overline{\xi} & \ldots & \xi_i @ \apointto{ll} \\
 \lambda \overline{\xi}  & \ldots & \xi_i \apointto{ll} \\
 @  & \ldots & \lambda \overline{\xi} \apointto{ll} \\
-x@ & \ldots & \lambda \overline{\xi} \apointto{ll}}
-$$
+x@ & \ldots & \lambda \overline{\xi} \apointto{ll} \\
+f@ & \ldots & \lambda \overline{\xi} \apointto{ll}
+}$$
+where $x$ is a variable and $f$ a $\Sigma$-constant.
 \end{dfn}
 
-Note that the previous definition has been adapted to the case of non closed terms $M$. Suppose that $M$ is opened then
-there may be free variables occurring as nodes in the computation tree. Such node occurring in a justified sequence has
-no pointer.
+Note that justified sequences are also defined for non closed terms
+(a nodes occurring in a justified sequence and labelled by a variable free in $M$ has no pointer).
 
 We say that a node $n_0$ of a justified sequence is hereditarily justified by $n_p$ if there are nodes $n_1, n_2, \ldots n_{p-1}$ in
 the sequence such that for all $i\in 0..p-1$, $n_i$ points to $n_{i+1}$.
@@ -244,10 +248,10 @@ We note $s \jseq t$ to denotes that the two justified sequences $t$ and $s$ are 
 The P-view of a justified sequence of nodes $t$ of $\tau(M)$ noted $\pview{t}$ is defined as follows:
 \begin{eqnarray*}
  \pview{\epsilon} &=&  \epsilon \\
- \pview{s \cdot f }  &=&  \pview{s} \cdot f \\
+ \pview{s \cdot f@ }  &=&  \pview{s} \cdot f@ \\
  \pview{s \cdot @ }  &=&  \pview{s} \cdot @ \\
+\pview{s \cdot x@ }  &=&   \pview{s} \cdot x@ \\
  \pview{s \cdot x }  &=&   \pview{s} \cdot x \\
- \pview{s \cdot x@ }  &=&   \pview{s} \cdot x@ \\
  \pview{s \cdot \lambda \overline{\xi} }  &=&  \lambda \overline{\xi} \qquad \mbox{if $\lambda \overline{\xi}$ is the root of } \tau(M) \\
  \pview{\justseq[5pt]{s & m & \ldots & \lambda \overline{\xi}\pointto{ll} }}  &=& \justseq[5pt]{ \pview{s} & m & \lambda \overline{\xi}\pointto{l} }
 \end{eqnarray*}
@@ -264,9 +268,100 @@ where $f$ ranges over $\Sigma$ and $x$ over variables.
 The P-view of a justified sequence verifying visibility is a well-formed justified sequence verifying P-visibility.
 \end{property}
 
-\begin{dfn}[Traversal]
+
+\subsubsection{Traversal of the computation tree}
+The evaluation of term is performed by traversing the computation tree in a particular way called
+\emph{traversal}. Intuitively, a \emph{traversal} is a justified sequence of nodes of the computation tree such that each node
+of the sequence indicates which step is taken during the evaluation of the term.
+
+Formally a \emph{traversal} is defined to be the prefix of a maximal-traversal.
+A maximal-traversal is a traversal that cannot be extended by visiting another node and is defined as follows:
+\begin{dfn}[Maximal-traversal]
+A maximal-traversal always starts with the root of the tree. This marks the beginning of the computation.
+The exploration of the tree then progresses as follows:
+\begin{itemize}
+\item (Lam) After visiting a lambda-node, a maximal-traversal must visit its child node.
+
+\item (App) After a node labelled $@$, a maximal-traversal must visit the node
+corresponding to the operator of the application (the leftmost child node of $@$).
+
+\item (Sig) After a node labelled $f@$ where $f$ is a $\Sigma$-constant,
+a maximal-traversal must visit one of the children nodes of $f@$.
+
+\item (Var) After a node labelled $x$ or $x@$ where either $x$ occurs free variable in $M$
+                or $x$ is bound by the root of the tree $\tau(M)$,
+        a maximal-traversal must visit one of the children nodes.
+
+\item (Var') If the last node visited is $x_i$ (or $x_i@$) where the node $x_i$ is bound by a node $\lambda \overline{x}$
+different from the root of $\tau(M)$. Then the next node to be visited in a maximal-traversal
+corresponds to the term that would be substituted for $x_i$ if the $\beta$-redex
+in term $M$ were reduced.
+
+Then binding node $\lambda \overline{x}$ must have been visited previously in the traversal.
+Since $\lambda \overline{x}$ is not the root of the tree, there must be an application node $n$
+preceding $\lambda \overline{x}$ in the traversal.
+
+    \begin{itemize}
+    \item Suppose $n$ is the parent node of $\lambda \overline{x}$, then $n$ is an application node labelled $@$ having exactly $|\overline{x}| + 1$ children numbered
+    $m_0, m_1, \ldots m_n$:
+    $$\pstree[levelsep=8ex]{\TR{\stackrel{\vdots}{@^{[n]}}}}
+    {   \pstree[linestyle=dotted]{\TR{\lambda \overline{x}}\tvput*{0}}
+            {\TR{x_i}}
+        \tree{\lambda \overline{\eta_1}^{[m_1]}}{\vdots}\tvput*{1}
+        \TR[edge=\dedge]{}
+        \tree{\lambda \overline{\eta_i}^{[m_i]}}{\vdots}\tvput*{{\tiny i}}
+        \TR[edge=\dedge]{}
+        \tree{\lambda \overline{\eta_n}^{[m_n]}}{\vdots}\tvput*{n}
+    }
+    $$
+    The next step of the maximal-traversal is a jump to the child node $m_i$
+    (the node corresponding to the term that would be substituted for $x_i$ if the $\beta$-reduction was performed).
+    The traversal has the following form:
+    \vspace{0.2cm}
+    $$\ldots \rnode{n}{@^{[n]}} \cdot
+    \rnode{lx}{\lambda \overline{x}} \cdot \ldots \cdot
+    \rnode{x}{x_i} \cdot
+    \rnode{mi}{\lambda \overline{\eta_i}^{[m_i]}} \cdot \ldots
+    \bkptra[ncurv=0.6]{50}{x}{lx}
+    \bkptra[ncurv=0.5]{50}{mi}{n}$$
+
+    \item Suppose $n$ is labelled by the ground type variable $y$. This case is impossible since in a traversal
+    a node following $y$ must be labelled $\lambda$. In the current case the following node is $\lambda \overline{x}$.
+
+    \item Suppose $n$ is labelled $\psi @$. This means that this occurrence of the variable $\psi$ is substituted by the term
+    $\kappa(\lambda \overline{x})$ during the evaluation of the term.
+    $$
+    \tree{@}
+    {
+        \tree[levelsep=8ex,linestyle=dotted]{\lambda \psi}
+        {
+            \pstree[levelsep=8ex]{\TR{\psi @^{[n]}}}
+            {
+                \tree{\lambda \overline{\eta_1}^{[m_1]}}{\vdots}\tvput*{1}
+                \TR[edge=\dedge]{}
+                \tree{\lambda \overline{\eta_i}^{[m_i]}}{\vdots}\tvput*{{\tiny i}}
+                \TR[edge=\dedge]{}
+                \tree{\lambda \overline{\eta_n}^{[m_n]}}{\vdots}\tvput*{n}
+            }
+        }
+        \pstree[levelsep=6ex,linestyle=dotted]{\TR{\lambda \overline{x}}}{\TR{x_i}}
+    }
+    $$
+    Therefore during reduction,
+    the occurrence of the variable $x_i$ will be substituted by the term represented by the $i^{th}$ child node of node $\psi @$. Hence
+    the traversal looks like this:
+    \vspace{0.2cm}
+    $$\ldots \rnode{n}{\psi @^{[n]}} \cdot
+    \rnode{lx}{\lambda \overline{x}} \cdot \ldots \cdot
+    \rnode{x}{x_i} \cdot
+    \rnode{mi}{\lambda \overline{\eta_i}^{[m_i]}} \cdot \ldots
+    \bkptra[ncurv=0.6]{50}{x}{lx}
+    \bkptra[ncurv=0.5]{50}{mi}{n}$$
+    \end{itemize}
+\end{itemize}
 \end{dfn}
-\todomargin{definition traversal}
+
+
 
 \begin{property}
 \label{proper:pviewtrav_is_path}
@@ -277,14 +372,20 @@ The P-view of a justified sequence verifying visibility is a well-formed justifi
 
 \begin{dfn}[Reduced-traversal]
 A \emph{reduced-traversal} is a justified sequence of nodes $s$ such that for some traversal $t$:
-$$ s = t \upharpoonright \{ r \}$$
-where $r$ denotes the root of the computation tree.
+$$ s \jseq t \upharpoonright \left( \{ r \} \union N_\Sigma \union N_{fv(M)} \right)$$
+
+where $r$ denotes the root of the computation tree, $N_\Sigma$ denotes nodes lablelled $a$ or $f@$ where
+$a$ and $f$ are $\Sigma$-constant, $N_{fv(M)}$ denotes nodes lablelled $x$ or $\psi@$ where
+$x$ and $\psi$ are variables occuring free in $M$.
 
 We say that $s$ is the reduction of the traversal $t$.
 \end{dfn}
 
-The nodes of a reduced-traversal are either lambda nodes or nodes labelled $x@$ or $x$ (no nodes of type $@$ or $f \in \Sigma$).
-This is because nodes of type $@$ or $f \in \Sigma$ in a traversal have no pointer.
+In a reduced-traversal there are no node labelled $@$:
+nodes are either lambda nodes, nodes labelled $x@$ or $x$
+where $x$ is a variable or nodes labelled $f@$ or $f$
+where $f$ is a $\Sigma$ constant.
+This is because in justified sequences, nodes of type $@$ have no pointer.
 
 \begin{property}[Reduced-traversal and traversal]
 \label{proper:redtrav_trav}
@@ -333,8 +434,7 @@ $$
 \def\bow{\quad\psarc{->}(0,\yNull){1.5ex}{90}{270}}
 
 We now omit the answers moves when we represent the arena.
-The arena is represented on the right and the computation tree on the left.
-
+The arena and the computation tree are represented on the figure below (right and left respectively).
 The dashed line defines a relation $\varphi$ from the set of question moves to nodes in the computation tree.
 $\varphi$ maps questions to zero or more nodes in the computation tree:
 $$
@@ -508,6 +608,7 @@ $\{ nd \mapsto q \}$.
 
 \item[case 2] If $nd$ is labelled with $x@$ then $x:(A_1|\ldots|A_m|o)$.
 The computation tree and the arena  have the following form:
+
 
     $$\tree[levelsep=6ex]{\Rnode{r}{x@^{[nd]}}}
         {   \tree{\TR{\lambda^{[k_1]}}}{\vdots} \TR{\ldots}
@@ -870,8 +971,8 @@ in order to obtain their P-view is the same.
 \end{property}
 \begin{proof}
 (i) By definition of $\varphi^{-1}$, $t$ and $\varphi^{-1}(t)$ have the same pointers. Moreover,
-$\varphi^{-1}$ maps lambda nodes to O-question and non-lambda nodes to P-question. Therefore the computation of the
-P-view on the sequence of moves and the sequence of nodes follows the same steps.
+$\varphi^{-1}$ maps lambda nodes to O-question and non-lambda nodes to P-question. Therefore the computations of the
+P-view of the sequence of moves and P-view of the sequence of nodes follow the same steps.
 (ii) is a consequence of (i).
 \end{proof}
 
@@ -906,9 +1007,9 @@ recovered thanks to the well-bracketing condition.
 
 Let us prove by induction that the pointers for question moves can be recovered.
 
-Base case: if $s \in \sem{M}$ where $|s| \leq 1$ then there is no pointer to recover.
+\textbf{Base case}: if $s \in \sem{M}$ where $|s| \leq 1$ then there is no pointer to recover.
 
-Step case: suppose $s\cdot q \in \sem{M}$.
+\textbf{Step case}: suppose $s\cdot q \in \sem{M}$.
 
 Consider the closed term $M'  = \lambda \overline{y} . M$.
 Up to a retagging of the moves, the justified sequence of moves $s \cdot q$ belongs to the strategy

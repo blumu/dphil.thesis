@@ -212,17 +212,33 @@ and that is not the root of the computation tree has a pointer to a previous nod
 such that $m \vdash n$.
 
 If $n$ points to $m$ we say that $m$ justifies $n$ and we note it:
-$$\justseq{m & \ldots & n \apointto{ll}}$$
+$$\rnode{m}{m} \cdot \ldots \cdot \rnode{n}{n} \bkptra[nodesep=1pt]{40}{n}{m}$$
 
-Hence the pointers in a justified sequence of nodes must be of one of the following forms:
-$$\xymatrix @=12pt@M=0pt{
-\lambda \overline{\xi} & \ldots & \xi_i @ \apointto{ll} \\
-\lambda \overline{\xi}  & \ldots & \xi_i \apointto{ll} \\
-@  & \ldots & \lambda \overline{\xi} \apointto{ll} \\
-x@ & \ldots & \lambda \overline{\xi} \apointto{ll} \\
-f@ & \ldots & \lambda \overline{\xi} \apointto{ll}
-}$$
-where $x$ is a variable and $f$ a $\Sigma$-constant.
+
+We sometimes add a label to the edge to specify that
+either node $n$ is labelled by the $i^{th}$ variable abstracted in the lambda node $m$
+or that $n$ is the $i^{th}$ child of the non-lambda node $m$.
+Hence the pointers in a justified sequence of nodes must be of one of the following five forms:
+\vspace{2pt}
+$$
+\rnode{m}{\lambda \overline{\xi}} \cdot \ldots \cdot \rnode{n}{\xi_i @} \bkptra[nodesep=1pt]{40}{n}{m} \bklabel{i}
+\hspace{2cm}
+\rnode{m}{\lambda \overline{\xi}} \cdot \ldots \cdot \rnode{n}{\xi_i} \bkptra[nodesep=1pt]{40}{n}{m} \bklabel{i}$$
+\vspace{5pt}
+$$\rnode{m}{@ } \cdot \ldots \cdot \rnode{n}{\lambda \overline{\xi}} \bkptra[nodesep=1pt]{40}{n}{m} \bklabel{i}
+\hspace{2cm}
+\rnode{m}{x@} \cdot \ldots \cdot \rnode{n}{\lambda \overline{\xi}} \bkptra[nodesep=1pt]{40}{n}{m} \bklabel{i}
+\hspace{2cm}
+\rnode{m}{f@ } \cdot \ldots \cdot \rnode{n}{\lambda \overline{\xi}} \bkptra[nodesep=1pt]{40}{n}{m} \bklabel{i}
+$$
+for some integer $i$, variable $x$ and $\Sigma$-constant $f$.
+
+With the following conventions:
+\begin{itemize}
+\item the first child of a $@$ node is numbered $0$,
+\item the first child of an application nodes of type $x@$ is numbered $1$,
+\item the first variable in $\overline{\xi}$ is numbered $1$.
+\end{itemize}
 \end{dfn}
 
 Note that justified sequences are also defined for non closed terms
@@ -248,25 +264,56 @@ We note $s \jseq t$ to denotes that the two justified sequences $t$ and $s$ are 
 The P-view of a justified sequence of nodes $t$ of $\tau(M)$ noted $\pview{t}$ is defined as follows:
 \begin{eqnarray*}
  \pview{\epsilon} &=&  \epsilon \\
- \pview{s \cdot f@ }  &=&  \pview{s} \cdot f@ \\
- \pview{s \cdot @ }  &=&  \pview{s} \cdot @ \\
-\pview{s \cdot x@ }  &=&   \pview{s} \cdot x@ \\
- \pview{s \cdot x }  &=&   \pview{s} \cdot x \\
- \pview{s \cdot \lambda \overline{\xi} }  &=&  \lambda \overline{\xi} \qquad \mbox{if $\lambda \overline{\xi}$ is the root of } \tau(M) \\
- \pview{\justseq[5pt]{s & m & \ldots & \lambda \overline{\xi}\pointto{ll} }}  &=& \justseq[5pt]{ \pview{s} & m & \lambda \overline{\xi}\pointto{l} }
+ \pview{s \cdot n }  &=&  \pview{s} \cdot n \\
+ \pview{s \cdot \rnode{m}{m} \cdot \ldots \cdot \rnode{lmd}{\lambda \overline{\xi}}} &=& \pview{s} \cdot \rnode{m2}{m} \cdot \rnode{lmd2}{\lambda \overline{\xi}}
+   \bkptra[nodesep=1pt]{30}{lmd}{m}
+   \bkptra[nodesep=1pt]{60}{lmd2}{m2} \\
+ \pview{s \cdot r }  &=&  r
 \end{eqnarray*}
-where $f$ ranges over $\Sigma$ and $x$ over variables.
+where $r$ is the root of the tree $\tau(M)$ and
+$n$ ranges over non-lambda nodes (either $@$, $f@$, $f$, $x$ or $x@$ for some $\Sigma$-constant $f$
+or variable $x$).
+
+In the second equality, the pointer associated to $n$ is preserved from the left-hand side to the right-hand side:
+if in the left-hand side, $n$ points to some node in $s$ that is also present in $\pview{s}$ then in the right-hand side,
+  $n$ points to that corresponding occurrence of the node in $\pview{s}$.
+
+In the third equality, the pointer associated to $m$ is also preserved.
 \end{dfn}
 
+Similarly we define the O-view, the dual of the P-view:
+\begin{dfn}[O-view of justified sequence of nodes]
+The O-view of a justified sequence of nodes $t$ of $\tau(M)$ noted $\oview{t}$ is defined as follows:
+\begin{eqnarray*}
+ \oview{\epsilon} &=&  \epsilon \\
+ \oview{s \cdot \lambda \overline{\xi} }  &=&  \oview{s} \cdot \lambda \overline{\xi} \\
+ \oview{s \cdot \rnode{m}{m} \cdot \ldots \cdot \rnode{n}{n}} &=& \oview{s} \cdot \rnode{m2}{m} \cdot \rnode{n2}{n} \\
+   \bkptra[nodesep=1pt]{30}{n}{m}
+   \bkptra[nodesep=1pt]{60}{n2}{m2}
+ \oview{s \cdot n' }  &=&  n'
+\end{eqnarray*}
+where $n$ ranges over non-lambda nodes $x$ or $x@$ where $x$ is a variable bound in $M$.
+and  $n'$ ranges over non-lambda nodes with no pointer (either $@$, $f@$, $f$, $x$ or $x@$ for some
+$\Sigma$-constant $f$ or variable $x$ free in $M$).
 
-\begin{dfn}[Visibility]
+The pointer associated to $\lambda \overline{\xi}$ in the second equality
+as well as the pointer associated to $m$ in the third equality are preserved from the left-hand side to the right-hand side of the equalities.
 \end{dfn}
-\todomargin{definition visibility}
+
+\begin{dfn}[Visibility] \ \\
+A justified sequence of nodes $s$ satisfies \emph{P-visibility} if every non-lambda node occurring in it that has a pointer
+points to a node occurring in the P-view a that point.
+
+Dually, $s$ satisfies \emph{O-visibility} if every lambda node occurring in it that has a pointer
+points to a node in the O-view a that point.
+\end{dfn}
 
 \begin{property}
 \label{proper:pview_visibility}
-The P-view of a justified sequence verifying visibility is a well-formed justified sequence verifying P-visibility.
+The P-view (resp. O-view) of a justified sequence verifying P-visibility (resp. O-visibility)
+is a well-formed justified sequence verifying P-visibility (resp. P-visibility).
 \end{property}
+This is proved by an easy induction.
 
 
 \subsubsection{Traversal of the computation tree}
@@ -274,8 +321,8 @@ The evaluation of term is performed by traversing the computation tree in a part
 \emph{traversal}. Intuitively, a \emph{traversal} is a justified sequence of nodes of the computation tree such that each node
 of the sequence indicates which step is taken during the evaluation of the term.
 
-Formally a \emph{traversal} is defined to be the prefix of a maximal-traversal.
-A maximal-traversal is a traversal that cannot be extended by visiting another node and is defined as follows:
+A \emph{traversal} is defined to be the prefix of a maximal-traversal.
+A maximal-traversal is a traversal that cannot be extended by visiting another node. It is formally defined as follows:
 \begin{dfn}[Maximal-traversal]
 A maximal-traversal always starts with the root of the tree. This marks the beginning of the computation.
 The exploration of the tree then progresses as follows:
@@ -283,92 +330,119 @@ The exploration of the tree then progresses as follows:
 \item (Lam) After visiting a lambda-node, a maximal-traversal must visit its child node.
 
 \item (App) After a node labelled $@$, a maximal-traversal must visit the node
-corresponding to the operator of the application (the leftmost child node of $@$).
+corresponding to the operator of the application: the child node number $0$.
 
-\item (Sig) After a node labelled $f@$ where $f$ is a $\Sigma$-constant,
-a maximal-traversal must visit one of the children nodes of $f@$.
+\item ($\mbox{Sig}^0$) After a node labelled $f$ where $f$ is an order 0 $\Sigma$-constant a maximal-traversal stops.
 
-\item (Var) After a node labelled $x$ or $x@$ where either $x$ occurs free variable in $M$
-                or $x$ is bound by the root of the tree $\tau(M)$,
-        a maximal-traversal must visit one of the children nodes.
+\item (Sig) After a node labelled $f@$ where $f$ is an order 1 $\Sigma$-constant,
+a maximal-traversal must visit one of the children nodes of $f@$ (which are all labelled $\lambda$).
+
+\item (Var) After a node labelled $x$ or $x@$ where $x$ is either a variable occuring free in $M$
+or bound by the root of the tree $\tau(M)$, a maximal-traversal must visit one of the children nodes.
 
 \item (Var') If the last node visited is $x_i$ (or $x_i@$) where the node $x_i$ is bound by a node $\lambda \overline{x}$
-different from the root of $\tau(M)$. Then the next node to be visited in a maximal-traversal
+different from the root of $\tau(M)$, then the next node visited in a maximal-traversal
 corresponds to the term that would be substituted for $x_i$ if the $\beta$-redex
 in term $M$ were reduced.
 
-Then binding node $\lambda \overline{x}$ must have been visited previously in the traversal.
-Since $\lambda \overline{x}$ is not the root of the tree, there must be an application node $n$
-preceding $\lambda \overline{x}$ in the traversal.
+The binding node $\lambda \overline{x}$ must have been visited previously in the traversal.
+Since $\lambda \overline{x}$ is not the root of the tree, it must be justified by some previous node in the traversal,
+therefore there must be an application node $n$ preceding $\lambda \overline{x}$ in the traversal. We do a case analysis
+on $n$:
 
     \begin{itemize}
-    \item Suppose $n$ is the parent node of $\lambda \overline{x}$, then $n$ is an application node labelled $@$ having exactly $|\overline{x}| + 1$ children numbered
-    $m_0, m_1, \ldots m_n$:
+    \item Suppose $n$ is labelled by a constant $f@$ or a ground type variable $y$. This implies
+    that the node visited after $n$ is labelled $\lambda$. However here the following node is $\lambda \overline{x}$,
+    therefore this case is impossible.
+
+    \item Suppose $n$ is an application node $@$ then $\lambda \overline{x}$ is the first child node of $n$
+    and $n$ has exactly $|\overline{x}| + 1$ children nodes:
     $$\pstree[levelsep=8ex]{\TR{\stackrel{\vdots}{@^{[n]}}}}
-    {   \pstree[linestyle=dotted]{\TR{\lambda \overline{x}}\tvput*{0}}
-            {\TR{x_i}}
-        \tree{\lambda \overline{\eta_1}^{[m_1]}}{\vdots}\tvput*{1}
+    {   \pstree[linestyle=dotted]{\TR{\lambda \overline{x}}\treelabel{0}}
+            {\TR{x_i @}}
+        \tree{\lambda \overline{\eta_1}}{\vdots}\treelabel{1}
         \TR[edge=\dedge]{}
-        \tree{\lambda \overline{\eta_i}^{[m_i]}}{\vdots}\tvput*{{\tiny i}}
+        \tree{\lambda \overline{\eta_i}}{\vdots}\treelabel{i}
         \TR[edge=\dedge]{}
-        \tree{\lambda \overline{\eta_n}^{[m_n]}}{\vdots}\tvput*{n}
+        \tree{\lambda \overline{\eta_n}}{\vdots}\treelabel{n}
     }
     $$
-    The next step of the maximal-traversal is a jump to the child node $m_i$
+    The next step of the maximal-traversal is a jump to the $i^{th}$ child of $@$
     (the node corresponding to the term that would be substituted for $x_i$ if the $\beta$-reduction was performed).
     The traversal has the following form:
-    \vspace{0.2cm}
+    \vspace{0.3cm}
     $$\ldots \rnode{n}{@^{[n]}} \cdot
     \rnode{lx}{\lambda \overline{x}} \cdot \ldots \cdot
-    \rnode{x}{x_i} \cdot
-    \rnode{mi}{\lambda \overline{\eta_i}^{[m_i]}} \cdot \ldots
-    \bkptra[ncurv=0.6]{50}{x}{lx}
-    \bkptra[ncurv=0.5]{50}{mi}{n}$$
+    \rnode{x}{x_i@} \cdot
+    \rnode{mi}{\lambda \overline{\eta_i}} \cdot \ldots
+    \bkptra[ncurv=0.45]{45}{mi}{n} \bklabel{i}
+    \bkptra[nodesep=0pt,ncurv=0.6]{50}{x}{lx} \bklabel{i}
+    $$
 
-    \item Suppose $n$ is labelled by the ground type variable $y$. This case is impossible since in a traversal
-    a node following $y$ must be labelled $\lambda$. In the current case the following node is $\lambda \overline{x}$.
 
-    \item Suppose $n$ is labelled $\psi @$. This means that this occurrence of the variable $\psi$ is substituted by the term
+    \item Suppose $n$ is labelled $y @$. This means that this occurrence of the variable $y$ is substituted by the term
     $\kappa(\lambda \overline{x})$ during the evaluation of the term.
-    $$
-    \tree{@}
-    {
-        \tree[levelsep=8ex,linestyle=dotted]{\lambda \psi}
-        {
-            \pstree[levelsep=8ex]{\TR{\psi @^{[n]}}}
-            {
-                \tree{\lambda \overline{\eta_1}^{[m_1]}}{\vdots}\tvput*{1}
-                \TR[edge=\dedge]{}
-                \tree{\lambda \overline{\eta_i}^{[m_i]}}{\vdots}\tvput*{{\tiny i}}
-                \TR[edge=\dedge]{}
-                \tree{\lambda \overline{\eta_n}^{[m_n]}}{\vdots}\tvput*{n}
-            }
-        }
-        \pstree[levelsep=6ex,linestyle=dotted]{\TR{\lambda \overline{x}}}{\TR{x_i}}
-    }
-    $$
+    Hence $y$ must be a non-free variable bound by a node different from the root (otherwise $y$ would not be substituted during the evaluation of the term).
+
     Therefore during reduction,
-    the occurrence of the variable $x_i$ will be substituted by the term represented by the $i^{th}$ child node of node $\psi @$. Hence
-    the traversal looks like this:
+    the occurrence of the variable $x_i$ will be substituted by the term represented by the $i^{th}$ child node of node $y @$.
+    Hence the next node in the traversal is the $i^{th}$ child of $y@$ noted $\lambda \overline{\eta_i}$:
     \vspace{0.2cm}
-    $$\ldots \rnode{n}{\psi @^{[n]}} \cdot
+    $$\ldots \cdot \rnode{n}{y @^{[n]}} \cdot
     \rnode{lx}{\lambda \overline{x}} \cdot \ldots \cdot
-    \rnode{x}{x_i} \cdot
-    \rnode{mi}{\lambda \overline{\eta_i}^{[m_i]}} \cdot \ldots
-    \bkptra[ncurv=0.6]{50}{x}{lx}
-    \bkptra[ncurv=0.5]{50}{mi}{n}$$
+    \rnode{x}{x_i @} \cdot
+    \rnode{mi}{\lambda \overline{\eta_i}} \cdot \ldots
+    \bkptra[ncurv=0.6]{50}{x}{lx} \bklabel{i}
+    \bkptra[ncurv=0.5]{50}{mi}{n} \bklabel{i}$$
+
     \end{itemize}
 \end{itemize}
 \end{dfn}
 
+\begin{exmp}
+Consider the following tree:
+$$\tree{\lambda}
+{
+    \tree{@}
+    {
+        \pstree[levelsep=8ex,linestyle=dotted]{\TR{\lambda y}\treelabel{0} }
+        {
+            \pstree[levelsep=8ex]{\TR{y @}}
+            {
+                \tree{\lambda \overline{\eta_1}}{\vdots} \treelabel{1}
+                \TR[edge=\dedge]{}
+                \tree{\lambda \overline{\eta_i}}{\vdots}\treelabel{i}
+                \TR[edge=\dedge]{}
+                \tree{\lambda \overline{\eta_n}}{\vdots}\treelabel{n}
+            }
+        }
+        \pstree[levelsep=6ex,linestyle=dotted]{\TR{\lambda \overline{x}}\treelabel{1}}{ \tree{x_i @}{\TR{} \TR{} } }
+    }
+}
+$$
+The following justified sequence is a traversal of the tree:
+\vspace{0.3cm}
+$$ \lambda \cdot
+\rnode{app}{@}  \cdot
+\rnode{ly}{\lambda y} \cdot \ldots \cdot
+\rnode{y}{y @} \cdot
+\rnode{lx}{\lambda \overline{x}} \cdot \ldots \cdot
+\rnode{x}{x_i @} \cdot
+\rnode{leta}{\lambda \overline{\eta_i} } \cdot \ldots
+\bkptra[ncurv=0.6,nodesep=0]{40}{x}{lx}  \bklabel{i}
+\bkptra[ncurv=0.5]{50}{leta}{y}  \bklabel{i}
+\bkptra[ncurv=0.6,nodesep=0]{40}{y}{ly}  \bklabel{1}
+\bkptra[ncurv=0.5]{50}{lx}{app}  \bklabel{1}$$
 
+\end{exmp}
 
-\begin{property}
-\label{proper:pviewtrav_is_path}
-(i) Traversals are justified sequence verifying P-visibility.
-(ii) The P-view of a traversal is a path from the root to some node in the computation tree.
+\begin{property} \  \label{proper:pviewtrav_is_path}
+\begin{itemize}
+\item[(i)] Traversals are justified sequence verifying P-visibility and O-visibility.
+\item[(ii)] The P-view of a traversal is a path from the root to some node in the computation tree.
+\end{itemize}
 \end{property}
-\todomargin{proof}
+(i) and (ii) are proved simultaneously by induction on the rule. The proof is given in \citep{OngLics2006}.
 
 \begin{dfn}[Reduced-traversal]
 A \emph{reduced-traversal} is a justified sequence of nodes $s$ such that for some traversal $t$:
@@ -378,23 +452,222 @@ where $r$ denotes the root of the computation tree.
 We say that $s$ is the reduction of the traversal $t$.
 \end{dfn}
 
-In a reduced-traversal, application nodes are all labelled
-$\psi @$ for some variable $\psi$ \emph{bound} in $M$. There are
-no node labelled $@$, $u@$ or $u$ where $u$ is a free variable in $M$ or a $\Sigma$-constant.
-This is because in a justified sequence, nodes of these types have no pointer.
+In a reduced-traversal, non-lambda nodes are all labelled
+$x @$ or $x$ for some variable $x$ \emph{bound} in $M$.
+There cannot be nodes labelled $@$, $u@$ or $u$, where $u$ is a free variable in $M$ or a $\Sigma$-constant,
+since such nodes are pointer-less.
+
+\begin{rem}
+\label{rem:redtrav}
+If $s$ is a reduced-traversal $s$ then $s \jseq t \upharpoonright \{ r \}$ for some
+traversal $t$ whose last node does not belong to $N_\Sigma \union Succ(N_\Sigma)$.
+\end{rem}
+
+\begin{dfn}[Set substraction operator]
+Suppose $s$ is a justified sequence of nodes and $N$ is a set of nodes then $s \setminus N$ is the justified sequence of nodes
+obtained by removing from $s$ all the nodes that belongs to $N$.
+The links of $s \setminus N$ are the links of $s$ minus all the links pointing from or to nodes in $N$.
+\end{dfn}
+
+\begin{property}[Traversal of closed term in $\beta \eta$-long normal form]
+\label{proper:betaeta_trav}
+Suppose $M$ is a closed term in $\beta \eta$-long normal form (i.e. the $\eta$-long normal form of a $\beta$-normal form), then
+for any traversal $t$ of $\tau(M)$ and any node $n$ in $t$:
+\begin{eqnarray*}
+n \mbox{ not hereditarily justified by } r \quad \iff \quad  n \in N_\Sigma \union Succ(N_\Sigma)
+\end{eqnarray*}
+where $N_\Sigma$ denotes the set of nodes labelled $u$ or $u@$ for some
+$\Sigma$-constant $u$, $Succ(N)$ denotes the set of nodes of $\tau(M)$ whose parent nodes are
+in $N$ and $r$ denotes the root of the tree $\tau(M)$.
+\end{property}
+\begin{proof}
+For the right-to-left implication: node in $N_\Sigma$ do not have justified pointer, nodes
+in $Succ(N_\Sigma)$ are justified by nodes in $N_\Sigma$. We can conclude by observing that $r \not\in N_\Sigma \union Succ(N_\Sigma)$.
+
+For the left-to-right implication: we proved the contraposition by induction on the length of the traversal.
+It is trivially true for the empty traversal.
+Suppose $n$ is not in $N_\Sigma \union Succ(N_\Sigma)$.
+
+There are two cases:
+\begin{itemize}
+\item $n$ a non-lambda node:
+We observe that in the computation tree of a term in $\beta \eta$-long normal form
+there is no node of type $@$. Moreover $M$ is closed therefore there is no node of type $x@$ or $x$ for some
+free variable  $x$ .
+
+Consequently, only the nodes in $N_\Sigma$ have no pointer.
+Since $n \not\in N_\Sigma \union Succ(N_\Sigma)$, $n$ must have a pointer to a previous lambda node $m$ in the traversal.
+
+$m$ is not in $Succ(N_\Sigma)$ because these nodes are all labelled $\lambda$ and no other node can point to such node.
+Hence $m\not\in N_\Sigma \union Succ(N_\Sigma)$.
+
+\item $n$ is a lambda node:
+$n$ does not point to a node in $N_\Sigma$ otherwise $n$ would be in $Succ(N_\Sigma)$. Hence $n$ points to some
+previous non-lambda node $m$ in the traversal such that $m\not\in N_\Sigma \union Succ(N_\Sigma)$
+\end{itemize}
+In both case, we use the induction hypothesis to conclude that $m$ is hereditarily justified by $r$ and
+therefore $n$ is hereditarily justified by $r$.
+\end{proof}
 
 \begin{lem}[Reduced-traversal and traversal]
 \label{lem:redtrav_trav}
-Suppose $M$ is in $\beta \eta$-long normal form (i.e. the $\eta$-long normal form of a $\beta$-normal form) then
-any for any reduced-traversal $s \jseq t \upharpoonright \{ r \}$:
-$$ \pview{s} \jseq \pview{t} \setminus \left( N_\Sigma \union Succ(N_{fv(M)}) \right)$$
+Suppose $M$ is a closed term in $\beta \eta$-long normal form (i.e. the $\eta$-long normal form of a $\beta$-normal form) then:
+\begin{itemize}
+\item[(i)] for any traversal $t$, the reduced-traversal $s \jseq t \upharpoonright \{ r \}$ verifies
+$$ \pview{s} \jseq \pview{t} \setminus \left( N_\Sigma \union Succ(N_\Sigma) \right)$$
+\item[(ii)] for any traversal $t$ whose last node does not belong to $N_\Sigma \union Succ(N_\Sigma)$,
+     the reduced-traversal $s \jseq t \upharpoonright \{ r \}$ verifies
+    $$ \oview{s} \jseq \oview{t}$$
+\end{itemize}
 
-where $N_\Sigma$ denotes nodes lablelled $u$ or $u@$ for some
-$\Sigma$-constant $u$, $N_{fv(M)}$ denotes nodes lablelled $u$ or $u@$ for some
-variable $x$ free in $M$ and $Succ(N)$ denotes the set of child nodes of
-$N$ in the tree $\tau(M)$.
+where $N_\Sigma$ denotes the set of nodes labelled $u$ or $u@$ for some
+$\Sigma$-constant $u$ and $Succ(N)$ denotes the set of nodes of $\tau(M)$ whose parent nodes are
+in $N$.
 \end{lem}
-\todomargin{proof}
+
+\begin{proof}
+(i) By induction: it is trivially true for the empty traversal $t =
+\epsilon$. We note $s$ the reduced-traversal $s = t \upharpoonright
+\{ r \}$
+\begin{itemize}
+\item Suppose $n$ is $r$ the root of the tree. Then $t = r$ because the root node can only occur once in a traversal. Hence:
+    \begin{eqnarray*}
+    \pview{t} \setminus \left( N_\Sigma \union Succ(N_\Sigma) \right)
+    \jseq& r \setminus \left( N_\Sigma \union Succ(N_\Sigma) \right) \\
+    \jseq& r  & (r \notin N_\Sigma \union Succ(N_\Sigma))  \\
+    \jseq& \pview{r} \\
+    \jseq& \pview{r  \upharpoonright \{ r \}} \quad
+    \jseq \pview{t  \upharpoonright \{ r \}} \quad
+    \jseq \quad \pview{s}
+    \end{eqnarray*}
+
+\item Consider a traversal $t = t' \cdot n$ where $n$ is a non-lambda
+move. Suppose that property (i) is verified for traversal $t'$. We
+note $s'$ the reduced-traversal $s' = t' \upharpoonright \{ r \}$:
+    \begin{equation}
+    \pview{t} = \pview{t' \cdot n} = \pview{t'} \cdot n  \label{eq_tprime}
+    \end{equation}
+
+    We consider the following two sub-cases:
+    \begin{itemize}
+    \item $n$ is not hereditarily justified by $r$. Then
+    \begin{equation}
+    s = (t' \cdot n) \upharpoonright \{ r \} = t' \upharpoonright \{ r \} = s' \label{eq_ssprime_1a}
+    \end{equation}
+
+    From property \ref{proper:betaeta_trav}, $n \in N_\Sigma \union Succ(N_\Sigma)$ hence:
+    \begin{eqnarray*}
+    \pview{t} \setminus \left( N_\Sigma \union Succ(N_\Sigma) \right)
+    \jseq& (\pview{t'} \cdot n) \setminus \left( N_\Sigma \union Succ(N_\Sigma) \right) & \mbox{(equation \ref{eq_tprime})} \\
+    \jseq& \pview{t'} \setminus \left( N_\Sigma \union Succ(N_\Sigma) \right) & (n \in N_\Sigma \union Succ(N_\Sigma)) \\
+    \jseq& \pview{s'} & \mbox{(induction hypothesis)} \\
+    \jseq& \pview{s} & \mbox{(equation \ref{eq_ssprime_1a})}
+    \end{eqnarray*}
+
+    \item $n$ is hereditarily justified by $r$. Then
+    \begin{equation}
+    s = (t' \cdot n) \upharpoonright \{ r \} = (t' \upharpoonright \{ r \}) \cdot n = s' \cdot n  \label{eq_ssprime_1b}
+    \end{equation}
+    \end{itemize}
+
+    From property \ref{proper:betaeta_trav}, $n \notin N_\Sigma \union Succ(N_\Sigma)$ hence:
+    \begin{eqnarray*}
+    \pview{t} \setminus \left( N_\Sigma \union Succ(N_\Sigma) \right)
+    \jseq& (\pview{t'} \cdot n) \setminus \left( N_\Sigma \union Succ(N_\Sigma) \right) & \mbox{(equation \ref{eq_tprime})} \\
+    \jseq& (\pview{t'} \setminus \left( N_\Sigma \union Succ(N_\Sigma) \right)) \cdot n & (n \notin N_\Sigma \union Succ(N_\Sigma)) \\
+    \jseq& \pview{s'} \cdot n & \mbox{(induction hypothesis)} \\
+    \jseq& \pview{s' \cdot n }  & \mbox{(def. P-view)} \\
+    \jseq& \pview{s} & \mbox{(equation \ref{eq_ssprime_1b})}
+    \end{eqnarray*}
+
+
+\item Consider the traversal:
+    $$  t =  t'' \cdot \rnode{m}{m} \cdot  u \cdot \rnode{lmd}{n}
+    \bkptra[nodesep=1pt]{30}{lmd}{m}$$
+
+    and suppose that $t''$ verifies property (i). We note
+    $s''$ the reduced-traversal $s'' = t'' \upharpoonright \{ r \}$.
+
+    We have:
+    \begin{equation}
+    \pview{t} = \pview{t' \cdot \rnode{m}{m} \cdot u \cdot \rnode{n}{n}}
+            = \pview{t''} \cdot \rnode{m2}{m} \cdot \rnode{n2}{n}
+    \bkptra[nodesep=1pt]{60}{n}{m}
+    \bkptra[nodesep=1pt]{60}{n2}{m2}
+    \label{eq_tprime_2}
+    \end{equation}
+
+    \begin{itemize}
+    \item Suppose $n = \lambda$, then $n \in Succ(N_\Sigma)$ and $m \in
+N_\Sigma$. Therefore by property \ref{proper:betaeta_trav}, $m$ and
+$r$ are not hereditarily justified by $r$.
+        \begin{eqnarray*}
+        \pview{t} \setminus \left( N_\Sigma \union Succ(N_\Sigma) \right)
+        \jseq& (\pview{t''} \cdot \rnode{m}{m} \cdot \rnode{lmd}{n} ) \setminus \left( N_\Sigma \union Succ(N_\Sigma) \right) & \mbox{(equation \ref{eq_tprime_2})} \\
+       \bkptra[nodesep=1pt]{60}{lmd}{m}
+        \jseq& \pview{t''} \setminus \left( N_\Sigma \union Succ(N_\Sigma) \right)  & (m, n \in N_\Sigma \union Succ(N_\Sigma)) \\
+        \jseq& \pview{s''} & \mbox{(induction hypothesis)} \\
+%
+        \jseq& \pview{ s'' \cdot \rnode{m}{m} \cdot (u \upharpoonright \{r\}) \cdot \rnode{lmd}{n}}
+          & \mbox{(def. P-view)}
+          \bkptra[nodesep=1pt,ncurv=0.7]{30}{lmd}{m} \\
+%
+        \jseq& \pview{ (t''\upharpoonright \{r\}) \cdot \rnode{m}{m} \cdot (u \upharpoonright \{r\}) \cdot \rnode{lmd}{n}}
+          & \mbox{(def. s'')}
+          \bkptra[nodesep=1pt,ncurv=0.7]{30}{lmd}{m} \\
+%
+        \jseq& \pview{ (t'' \cdot \rnode{m}{m} \cdot u \cdot \rnode{lmd}{n}) \upharpoonright \{r\} }
+          & \mbox{(def. operator $\setminus$)}
+          \bkptra[nodesep=1pt,ncurv=0.7]{40}{lmd}{m} \\
+%
+        \jseq& \pview{ t \upharpoonright \{r\} }
+          & \mbox{(def. of $t$)} \\
+%
+        \jseq& \pview{ s }
+          & \mbox{(def. of $s$)}
+        \end{eqnarray*}
+
+
+
+    \item Suppose $n = \lambda \overline{\xi}$ then $n \notin
+Succ(N_\Sigma)$ and $m \notin N_\Sigma$ which implies by property
+\ref{proper:betaeta_trav} that $m$ and $n$ are hereditarily
+justified by $r$.
+     \begin{eqnarray*}
+        \pview{t} \setminus \left( N_\Sigma \union Succ(N_\Sigma) \right)
+        \jseq& (\pview{t''} \cdot \rnode{m}{m} \cdot \rnode{lmd}{n} ) \setminus \left( N_\Sigma \union Succ(N_\Sigma) \right) & \mbox{(equation \ref{eq_tprime_2})} \\
+       \bkptra[nodesep=1pt]{60}{lmd}{m}
+%
+        \jseq& \pview{t''} \setminus \left( N_\Sigma \union Succ(N_\Sigma) \right) \cdot \rnode{m}{m} \cdot \rnode{lmd}{n} & (m, n \not\in N_\Sigma \union Succ(N_\Sigma))
+       \bkptra[nodesep=1pt]{60}{lmd}{m} \\
+%
+        \jseq& \pview{s''} \cdot \rnode{m}{m} \cdot \rnode{lmd}{n} & \mbox{(induction hypothesis)}
+       \bkptra[nodesep=1pt]{60}{lmd}{m} \\
+%
+        \jseq& \pview{ s'' \cdot \rnode{m}{m} \cdot (u \upharpoonright \{r\}) \cdot \rnode{lmd}{n}}
+          & \mbox{(def. P-view)}
+          \bkptra[nodesep=1pt,ncurv=0.7]{30}{lmd}{m} \\
+%
+        \jseq& \pview{ (t''\upharpoonright \{r\}) \cdot \rnode{m}{m} \cdot (u \upharpoonright \{r\}) \cdot \rnode{lmd}{n}}
+          & \mbox{(def. s'')}
+          \bkptra[nodesep=1pt,ncurv=0.7]{30}{lmd}{m} \\
+%
+        \jseq& \pview{ (t'' \cdot \rnode{m}{m} \cdot u \cdot \rnode{lmd}{n}) \upharpoonright \{r\} }
+          & \mbox{(def. operator $\setminus$)}
+          \bkptra[nodesep=1pt,ncurv=0.7]{40}{lmd}{m} \\
+%
+        \jseq& \pview{ t \upharpoonright \{r\} }
+          & \mbox{(def. of $t$)} \\
+%
+        \jseq& \pview{ s }
+          & \mbox{(def. of $s$)}
+        \end{eqnarray*}
+    \end{itemize}
+
+\end{itemize}
+(ii) \todomargin{proof of ii}
+
+\end{proof}
 
 \subsection{Correspondence with game semantics}
 
@@ -437,8 +710,8 @@ $$
 
 We now omit the answers moves when we represent the arena.
 The arena and the computation tree are represented on the figure below (right and left respectively).
-The dashed line defines a relation $\varphi$ from the set of question moves to nodes in the computation tree.
-$\varphi$ maps questions to zero or more nodes in the computation tree:
+The dashed line defines a partial function $\varphi$ from the set of nodes in the computation tree to the set of
+question moves:
 $$
 \tree{ \Rnode{root} {\lambda f z w}^{[1]} }
      {  \tree{@^{[2]}}
@@ -456,12 +729,12 @@ $$
         \TR{\Rnode{q5}q^5}
     }
 \psset{nodesep=1pt,arrows=->,arcangle=-20,arrowsize=2pt 1,linestyle=dashed,linewidth=0.3pt}
-\ncline{<-}{root}{q1} \aput*{:U}{\varphi}
-\ncarc{->}{q2}{z}
-\ncline{->}{q3}{f}
-\ncline{->}{q4}{lmd}
-\ncline{->}{q3}{f2}
-\ncline{->}{q4}{lmd2}
+\ncline{->}{root}{q1} \aput*{:U}{\varphi}
+\ncarc{->}{z}{q2}
+\ncline{->}{f}{q3}
+\ncline{->}{lmd}{q4}
+\ncline{->}{f2}{q3}
+\ncline{->}{lmd2}{q4}
 $$
 
 Consider the justified sequence of moves $s \in \sem{M}$:
@@ -494,7 +767,7 @@ $$r =
 \bkptra[ncurv=0.4]{75}{q3b}{q1}
 \bkptra[ncurv=0.8]{70}{q4b}{q3b}
 \bkptra[ncurv=0.4]{80}{q2}{q1}$$
-such that $r_i \in \varphi(s_i)$ for all $i < |s|$.
+such that $s_i = \varphi(r_i)$ for all $i < |s|$.
 
 The sequence $r$ is in fact a reduced-traversal, it is the reduction of the following traversal:
 \vspace{1cm}
@@ -530,7 +803,7 @@ Suppose $(M^{QA},\vdash)$ is the arena $\sem{A}$ where $M^{QA}$ is the set of mo
 $M^Q \subseteq M^{QA}$ denotes the set of question-moves.
 We note $(N,E)$ the computation tree $\tau(M)$ where $N$ is the set of nodes and leaves of the tree and $E$ is the parent-child relation.
 
-We give an algorithm computing the partial function $\varphi^{-1} : N \rightarrow M^Q$ which maps
+We give an algorithm computing the partial function $\varphi : N \rightarrow M^Q$ which maps
 some question-moves to set of nodes in the computation tree.
 
 \begin{dfn}[Relation between question-moves and nodes of the computation tree]
@@ -644,29 +917,29 @@ The computation tree and the arena  have the following form:
 \end{itemize}
 \end{description}
 
-We define $\varphi^{-1}$ as follows:
-$$\varphi^{-1} = f(0,q^0)$$
+We define $\varphi$ as follows:
+$$\varphi = f(0,q^0)$$
 where the index $0$ denotes the root of the computation tree and $q^0$ is the root of the arena
 (in the game semantics of simply-typed lambda calculus the arenas have
 a single root).
 \end{dfn}
 
-The function $\varphi^{-1} : N \rightarrow M^Q$ and its inverse
-$\varphi : M^Q \rightarrow \mathcal{P}(N)$ are partial function.
+The function $\varphi : N \rightarrow M^Q$ and its inverse
+$\varphi^{-1} : M^Q \rightarrow \mathcal{P}(N)$ are partial function.
 Moreover $\varphi$ relates player O questions to $\lambda$-nodes
 and player P questions to $x @$-nodes or $x$-nodes where $x$ is a variable.
 
-\begin{property}[$\varphi^{-1}$ conserves order]
+\begin{property}[$\varphi$ conserves order]
 \label{proper:phi_conserve_order}
-$\varphi^{-1}$ maps nodes of a given order to moves of the same order.
+$\varphi$ maps nodes of a given order to moves of the same order.
 \end{property}
 
 
-The function $\varphi^{-1}$ is also defined on justified sequences: suppose $t$
-is a justified sequences of nodes $t = t_0 t_1 \ldots$ then $\varphi^{-1}(t)$ denotes
+The function $\varphi$ is also defined on justified sequences: suppose $t$
+is a justified sequences of nodes $t = t_0 t_1 \ldots$ then $\varphi(t)$ denotes
 the following justified sequence of question-moves of the arena $\sem{A}$:
-$$\varphi^{-1}(t) = \varphi^{-1}(t_0)\ \varphi^{-1}(t_1)\  \varphi^{-1}(t_2) \ldots$$
-where the pointers of the justified sequence of move $\varphi^{-1}(t)$ are defined to be exactly those
+$$\varphi(t) = \varphi(t_0)\ \varphi(t_1)\  \varphi(t_2) \ldots$$
+where the pointers of the justified sequence of move $\varphi(t)$ are defined to be exactly those
 of the justified sequences of nodes $t$.
 
 \begin{dfn}[Question-move filtering]
@@ -681,11 +954,11 @@ $\tilde{s}$ is also a justified sequence of move (there is no dangling pointer s
 If $s = u\upharpoonright A,B$ then clearly $\tilde{s} = \tilde{u} \upharpoonright A,B$.
 \end{dfn}
 
-\begin{property} Let $s$ be a justified sequence of moves. Then
-\label{proper:tildepview}
-$$\widetilde{\pview{s}} = \pview{\tilde{s}}$$
-\end{property}
-The proof is an easy induction.
+%\begin{property} Let $s$ be a justified sequence of moves. Then
+%\label{proper:tildepview}
+%$$\widetilde{\pview{s}} = \pview{\tilde{s}}$$
+%\end{property}
+%The proof is an easy induction.
 
 
 \begin{prop}[Relation between game semantics and reduced-traversals]
@@ -694,7 +967,7 @@ Let $\emptyset \vdash M : A$ be a closed term.
 Let $r$ denotes the root of $\tau(M)$. If $s$ is a justified sequence of moves such
 that $s \in \sem{\Gamma \vdash M:A}$ then there is a reduced-traversal of nodes of $\tau(M)$
 $t = n_0 n_1 \ldots$ such that:
- $$\tilde{s} \jseq  \varphi_M^{-1} (t)$$
+ $$\tilde{s} \jseq  \varphi_M(t)$$
 \end{prop}
 \begin{proof}
 Let us assume that $M$ is already in $\eta$-long normal form.
@@ -735,12 +1008,12 @@ the tree $\tau(M)$ and by case analysis on the structure of the term.
     $\lambda \overline{\xi}$:
     $$ t \jseq  \tilde{s} [\lambda \overline{\xi} / q_C].$$
 
-    Since $\tilde{s} \in \{ q_C \}^*$ and $\varphi^{-1}_{M}(\lambda \overline{\xi}) = q_C$, we have:
-    $$\varphi^{-1}_{M} (t) = \varphi^{-1}_{M}( \tilde{s} [\lambda \overline{\xi} / q_C] )
+    Since $\tilde{s} \in \{ q_C \}^*$ and $\varphi_{M}(\lambda \overline{\xi}) = q_C$, we have:
+    $$\varphi_{M} (t) = \varphi_{M}( \tilde{s} [\lambda \overline{\xi} / q_C] )
         = \tilde{s} [\lambda \overline{\xi} / q_C] [q_C / \lambda \overline{\xi}]
         = \tilde{s}$$
     Since all the moves in $\tilde{s}$ are initial, they do not have pointers. Hence
-    $$ \varphi^{-1}_{M} (t) \jseq \tilde{s} $$
+    $$ \varphi_{M} (t) \jseq \tilde{s} $$
 
 
     \item (variable-abstraction)
@@ -764,7 +1037,7 @@ the tree $\tau(M)$ and by case analysis on the structure of the term.
         Therefore the only question-moves that can occur in $s \in \sem{M}$ are the initial question $q$ and the question $q_x$.
         We take $t \jseq \tilde{s} [0/q, 1/q^x]$ which is a valid justified sequence of nodes since
         node $1$ ($x$) is bound by node $0$ ($\lambda \overline{\xi}$) and a valid
-        reduced-traversal. Clearly we have $\varphi^{-1}(t) \jseq \tilde{s}$.
+        reduced-traversal. Clearly we have $\varphi(t) \jseq \tilde{s}$.
 
     \item (application-abstraction) The term $M$ is of the form $M = \lambda \overline{\xi} . x N_1 \ldots N_p$ where
     \begin{eqnarray*}
@@ -824,7 +1097,7 @@ the tree $\tau(M)$ and by case analysis on the structure of the term.
     the term $N'_j$ has the same height as the term $N_j$ which is strictly smaller than the height
     of the term $M$, we can use the induction hypothesis on $N'_j$:
     there is a reduced-traversal $t'$ of the tree $\tau(N'_j)$
-    such that $\varphi^{-1}_{N'_j}(t') \jseq \tilde{z}$.
+    such that $\varphi_{N'_j}(t') \jseq \tilde{z}$.
 
 
 
@@ -846,7 +1119,7 @@ the tree $\tau(M)$ and by case analysis on the structure of the term.
     \end{eqnarray*}
 
 
-    Hence $\varphi^{-1}_{N'_j}(t') \jseq \tilde{w}$.
+    Hence $\varphi_{N'_j}(t') \jseq \tilde{w}$.
 
 
     For $i \in 1..p$, the tree $\tau(N_i)$ (left) and $\tau(N'_i)$ (right) have the following form:
@@ -867,18 +1140,18 @@ the tree $\tau(M)$ and by case analysis on the structure of the term.
     $t$ is a valid justified sequence of nodes of $\tau(M)$ since the nodes labelled $\xi_i$ and $\xi_i @$
     are bound by the root $\lambda \overline{\xi}$.
 
-    The function $\varphi^{-1} : Nodes \rightarrow M^Q$ has been defined by an inductive procedure
-    guaranteeing that $\varphi^{-1}_{N_j}$ is equal to the function $\varphi^{-1}_{M}$ restricted to
+    The function $\varphi : Nodes \rightarrow M^Q$ has been defined by an inductive procedure
+    guaranteeing that $\varphi_{N_j}$ is equal to the function $\varphi_{M}$ restricted to
     the set of nodes of $\tau(N_j)$. Hence we have:
     \begin{equation}
-    \varphi^{-1}_{M}(t) \jseq \tilde{w}. \label{eq:def_t}
+    \varphi_{M}(t) \jseq \tilde{w}. \label{eq:def_t}
     \end{equation}
 
     Let $q_C$ denotes the only question of the arena $C = \sem{o}$.
     We can construct from $t$ the justified sequence $t^\ast$ as follows:
     we insert the root node $\lambda \overline{\xi}$ at the positions where the move $q_C$ occurs in $\tilde{u}$.
-    Since $\varphi^{-1}_{M}(\lambda \overline{\xi}) = q_C$, we have:
-    $$\varphi^{-1}_{M}(t^\ast) = \tilde{u}$$
+    Since $\varphi_{M}(\lambda \overline{\xi}) = q_C$, we have:
+    $$\varphi_{M}(t^\ast) = \tilde{u}$$
 
     Now we transfer links from $\tilde{u}$ to $t^\ast$: for each
     move $\tilde{u}_k$ pointing to $\tilde{u}_i = q_C$ in $\tilde{u}$ for some $0 \leq i \leq k$,
@@ -886,7 +1159,7 @@ the tree $\tau(M)$ and by case analysis on the structure of the term.
 
     Then the pointers of the traversal $t^\ast$ and the sequence of move $\tilde{u}$ are the same and we obtain:
     \begin{equation}
-    \varphi^{-1}_{M}(t^\ast) \jseq \tilde{u}. \label{eq:def_tstar}
+    \varphi_{M}(t^\ast) \jseq \tilde{u}. \label{eq:def_tstar}
     \end{equation}
 
     We need to ensure that the sequence $t^\ast$ is a valid justified sequence of $\tau(M)$.
@@ -902,7 +1175,7 @@ the tree $\tau(M)$ and by case analysis on the structure of the term.
             \TR{\ldots}
             \tree[linestyle=dotted]{q^n}{\TR{} \TR{} }
         }$$
-    We observe from the definition of $\phi^{-1}_{N'_j}$ that the
+    We observe from the definition of $\varphi_{N'_j}$ that the
     only node that are mapped to the question  $q^1 \ldots q^n$ are labelled $\xi_i$ or $\xi_i @$ for some $i\in 1..n$.
     Consequently $t^\ast_k = \xi_i$ and the node $t^\ast_k$ is bound by the node $\lambda \overline{\xi}$.
     Hence the added pointer is indeed valid.\\
@@ -910,15 +1183,15 @@ the tree $\tau(M)$ and by case analysis on the structure of the term.
 
     For any justified sequence of nodes $t$ we define the justified sequence of nodes $t \upharpoonright A,C$
     to be the subsequence of $t$ constituted of nodes $n$
-    verifying $\varphi^{-1}_M(n) \in A \union C$ together with the same
-    pointers as the justified sequence of move $\varphi^{-1}_M(t) \upharpoonright A,C$ (here the
+    verifying $\varphi_M(n) \in A \union C$ together with the same
+    pointers as the justified sequence of move $\varphi_M(t) \upharpoonright A,C$ (here the
     operator $\upharpoonright$ denotes the filtering operator
     defined on justified sequence of moves).
 
     The effect of this transformation is to remove from $t^\ast$ all the elements at positions $i$ such that $\tilde{u}_i \in B$.
     We obtain a justified sequence of nodes $t^\dagger = t^\ast \upharpoonright A,C$
     verifying
-        $$\varphi^{-1}_{M}(t^\dagger) \jseq \tilde{s}$$
+        $$\varphi_{M}(t^\dagger) \jseq \tilde{s}$$
 
     $t^\dagger$ is also a reduced-traversal of $\tau(M)$.
 
@@ -930,14 +1203,14 @@ the tree $\tau(M)$ and by case analysis on the structure of the term.
         & &\in& C & B & C & A & A & C & B & B & C & \ldots \\
         \mbox{ (equation \ref{eq:def_s})} & \tilde{s} &=& q_C & & q_C & m_3  \ar@/_1pc/[l] & m_4 & q_C &  & & q_C & \ldots \\
         \mbox{ (equation \ref{eq:def_w})} & \tilde{w}  &=&  & m_1 &  & m_3 & m_4 &  & m_6 & m_7 &  & \ldots  \\ \\ \\
-        \mbox{ (equation \ref{eq:def_t})} & t &=&  & n_1\ar[uuu]^{\varphi^{-1}_{N'_j}} &  & n_3 \ar[uuu] & n_4\ar[uuu] & & n_6\ar[uuu] & n_7\ar[uuu] &  & \ldots \\ \\
+        \mbox{ (equation \ref{eq:def_t})} & t &=&  & n_1\ar[uuu]^{\varphi_{N'_j}} &  & n_3 \ar[uuu] & n_4\ar[uuu] & & n_6\ar[uuu] & n_7\ar[uuu] &  & \ldots \\ \\
         & \tilde{u}  &=& q_C & m_1 & q_C & m_3 & m_4 & q_C & m_6 & m_7 & q_C & \ldots  \\ \\ \\
-        \mbox{ (equation \ref{eq:def_tstar})} & t^\ast &=& \lambda \ar@{=>}[uuu]^{\varphi^{-1}_{M}} & n_1\ar[uuu]^{\varphi^{-1}_{N'_j}} & \lambda\ar@{=>}[uuu] & n_3 \ar[uuu] \ar@/_1pc/[l] & n_4\ar[uuu] & \lambda\ar@{=>}[uuu] & n_6\ar[uuu] & n_7\ar[uuu] & \lambda\ar@{=>}[uuu] & \ldots \\
+        \mbox{ (equation \ref{eq:def_tstar})} & t^\ast &=& \lambda \ar@{=>}[uuu]^{\varphi_{M}} & n_1\ar[uuu]^{\varphi_{N'_j}} & \lambda\ar@{=>}[uuu] & n_3 \ar[uuu] \ar@/_1pc/[l] & n_4\ar[uuu] & \lambda\ar@{=>}[uuu] & n_6\ar[uuu] & n_7\ar[uuu] & \lambda\ar@{=>}[uuu] & \ldots \\
         t^\ast\upharpoonright A,C =& t^\dagger &=& \lambda &  & \lambda & n_3\ar@/_1pc/[l] & n_4 & \lambda & &  & \lambda & \ldots \\
         }
     $$
     Note that there is only one question $q_C$ in the arena $C$ therefore $m_2 = m_5 = m_8 = q_C$.
-    It is easy to check that $\varphi^{-1}(t') \jseq \tilde{s}$
+    It is easy to check that $\varphi(t') \jseq \tilde{s}$
 \end{itemize}
 \end{proof}
 
@@ -948,13 +1221,13 @@ follows the same step as for the case of closed terms.
 Suppose $\Gamma \vdash M : A$. Let $r$ denotes the root of $\tau(M)$. If $s$ is a justified sequence of moves such
 that $s \in \sem{\Gamma \vdash M:A}$ then there is a reduced-traversal of nodes of $\tau(M)$
 $t = n_0 n_1 \ldots$ such that:
- $$\tilde{s} \upharpoonright \sem{A} \jseq  \varphi^{-1}_M (t \upharpoonright \{r \})$$
+ $$\tilde{s} \upharpoonright \sem{A} \jseq  \varphi_M (t \upharpoonright \{r \})$$
 and
-$$\forall i \geq 0 . \tilde{s}_i = \varphi^{-1}_M(t_i) \not \in \sem{A}
+$$\forall i \geq 0 . \tilde{s}_i = \varphi_M(t_i) \not \in \sem{A}
 \implies \left\{
         \begin{array}{ll}
             t_i = x \mbox{ or } t_i = x@, \hbox{where } x \in \Gamma \\
-            \varphi^{-1}_M(t \upharpoonright \{t_i\}) \jseq \tilde{s} \upharpoonright \{ \varphi^{-1}_M(t_i) \}
+            \varphi_M(t \upharpoonright \{t_i\}) \jseq \tilde{s} \upharpoonright \{ \varphi_M(t_i) \}
         \end{array}
         \right.
 $$
@@ -962,7 +1235,7 @@ $$
 
 \begin{property}
 \label{proper:phi_pview}
-Suppose $\varphi^{-1}(t) \jseq s$ where $s$ is a justified sequence of moves and
+Suppose $\varphi(t) \jseq s$ where $s$ is a justified sequence of moves and
 $t$ is a justified sequence of nodes then
 \begin{itemize}
 \item (i) the P-view of $\tilde{s}$ and the P-view of $t$ are computed
@@ -972,8 +1245,8 @@ in order to obtain their P-view is the same.
 \end{itemize}
 \end{property}
 \begin{proof}
-(i) By definition of $\varphi^{-1}$, $t$ and $\varphi^{-1}(t)$ have the same pointers. Moreover,
-$\varphi^{-1}$ maps lambda nodes to O-question and non-lambda nodes to P-question. Therefore the computations of the
+(i) By definition of $\varphi$, $t$ and $\varphi(t)$ have the same pointers. Moreover,
+$\varphi$ maps lambda nodes to O-question and non-lambda nodes to P-question. Therefore the computations of the
 P-view of the sequence of moves and P-view of the sequence of nodes follow the same steps.
 (ii) is a consequence of (i).
 \end{proof}
@@ -988,8 +1261,31 @@ $x$ is a variable bound in $M$ is bound by the first $\lambda$-node in the path 
 order greater or equal to $\ord{x}$.
 \end{property}
 \begin{proof}
-For safe terms, the first $\lambda$-node $\lambda \overline{\xi}$ in the path to the root such that
-$x \in \overline{\xi}$ is also the first $\lambda$-node whose order is greater or equal to $\ord{x}$.
+(i) In the safe $\lambda$-calculus when applying the abstraction rule the variables in the lowest partition of the context
+(smallest order) must all be abstracted together. Translating this to the computation tree point of view
+(where consecutive abstractions are merged into a single node), it gives :
+for each lambda node $\lambda \overline{\xi}$, any variable $x$ occurring free in $\kappa(\lambda \overline{\xi})$
+has order strictly greater than $\ord{\lambda \overline{\xi}}$.
+
+(ii) If $x$ is bound by a node $\lambda \overline{\xi}$ then
+$\ord{\lambda \overline{\xi}} \geq \ord{x}$.
+
+(iii) Consider the lambda nodes occurring in the path from the node $x$ to the root:
+$\lambda \overline{\eta_1}, \ldots, \lambda \overline{\eta_p}$
+(the bigger the index is the closer the nodes is to the root).
+
+Since $x$ is not free in $M$, it must be bound by one of the nodes
+$\lambda \overline{\eta_1}, \ldots, \lambda \overline{\eta_p}$.
+Take $i$ the smallest index such that $\ord{\lambda \overline{\eta_i}} \geq \ord{x}$ ((ii) guarantees the existence of $i$).
+
+The nodes $\lambda \overline{\eta_j}$ for $j<i$ are of order smaller than $\ord{x}$ therefore
+by (ii) for all $j<i$, $x \not\in \overline{\eta_j}$. Suppose that $x \not\in \overline{\eta_i}$ then $x$ occurs free in
+$\kappa(\lambda \overline{\eta_i})$. By (i) this implies that
+$\ord{x} > \ord{\lambda \overline{\eta_i}}$ which is a contradiction.
+Hence $x \in \overline{\eta_i}$.
+
+Hence the first $\lambda$-node in the path to the root whose order is greater or equal to $\ord{x}$
+is also the first $\lambda$-node $\lambda \overline{\xi}$ in the path to the root such that $x \in \overline{\xi}$.
 \end{proof}
 
 
@@ -1011,45 +1307,68 @@ Let us prove by induction that the pointers for question moves can be recovered.
 
 \textbf{Base case}: if $s \in \sem{M}$ where $|s| \leq 1$ then there is no pointer to recover.
 
-\textbf{Step case}: suppose $s\cdot q \in \sem{M}$.
+\textbf{Step case}: suppose $s \in \sem{M}$ with $|s| > 1$. We note $q$ the last move in $s$.
 
 Consider the closed term $M'  = \lambda \overline{y} . M$.
-Up to a retagging of the moves, the justified sequence of moves $s \cdot q$ belongs to the strategy
+Up to a retagging of the moves, the justified sequence of moves $s$ belongs to the strategy
 $\sem{\vdash \lambda \overline{y} . M} = \Lambda^n(\sem{\Gamma \vdash M})$.
 
 Proposition \ref{prop:rel_gamesem_redtrav_closed} tells us that
-there is a reduced-traversal $t \cdot n$ of $\tau(M')$ such that:
-$$\varphi^{-1}_{M'}(t \cdot n) \jseq \tilde{s} \cdot q.$$
+there is a reduced-traversal $r$ of $\tau(M')$ such that:
+$$\varphi_{M'}(r) \jseq \tilde{s}.$$
+
+Let us note $n$ the last node in the sequence $r$
+and $root$ the root of $\tau(M')$.
+$r$ is a reduced-traversal therefore by remark \ref{rem:redtrav}:
+$$ r \jseq t \upharpoonright \{ root \} $$
+for some traversal $t$ whose last node $n$ is not in $N_\Sigma \union Succ(N_\Sigma)$.
+
+Since $r$ is a reduced-traversal of $\tau(M')$ and $M'$ is in $\beta \eta$-long normal form,
+lemma \ref{lem:redtrav_trav} (i) gives:
+\begin{equation}
+ \pview{r} \jseq \pview{t} \setminus \left( N_\Sigma \union Succ(N_\Sigma) \right) \label{eq:pview_r}
+\end{equation}
 
 \begin{itemize}
 \item Suppose $q$ is a P-move.
 
-By the induction hypothesis, the pointers of $s$ have been recovered therefore we can compute the P-view $\pview{s}$.
-$q$ must point to a question in the P-view at that point therefore it point to $\widetilde{\pview{s}} = \pview{\tilde{s}}$
-(property \ref{proper:tildepview}).
+$t$ satisfies P-visibility (property \ref{proper:pviewtrav_is_path}) therefore $n$ must point
+to a lambda-node in the P-view at that point. But because of equation \ref{eq:pview_r}, $n$
+also points to a lambda-node in the P-view of $r$ (this is because the lambda nodes in
+$N_\Sigma \union Succ(N_\Sigma)$ are the nodes in $Succ(N_{\Sigma})$
+which are labelled $\lambda$, and no node can point to a node labelled $\lambda$).
 
 
-By property \ref{proper:phi_pview}, the P-view of $\tilde{s}$ and the P-view of $t$ are computed
-similarly and have the same pointers. Hence the link
-of $n$ and the link of $q$ points to the same position in
-the justified sequence $\pview{t}$ and $\pview{\tilde{s}}$ respectively.
+By property \ref{proper:phi_pview}, the P-view of $\tilde{s}$ and the P-view of $r$ are computed
+similarly and have the same pointers. This means that
+node $n$ and  move $q$ point to the same position in
+the justified sequence $\pview{r}$ and $\pview{\tilde{s}}$ respectively. Therefore, to conclude, it suffices to retrieve
+the position in $\pview{r}$ where the node $n$ points to.
 
-Since $M'$ is in $\beta \eta$-long normal form, the reduced-traversal $t$ is a traversal
-(Lemma \ref{lem:redtrav_trav}).
-By property \ref{proper:pviewtrav_is_path}, $\pview{t}$ is a path from the root to some node
-in the computation tree $\tau(M)$.
 
-The regularity of $\tau(M)$ (property \ref{proper:regularity}) implies that $n$ points to the
-the first $\lambda$-node in the path to the root that has order greater or equal to $\ord{x}$.
-Hence $n$ points to the the first $\lambda$-node in $\pview{t}$ that
-has order greater or equal to $\ord{x}$.
+By the induction hypothesis, the pointers of $s$ can been recovered up to the last move $q$,
+therefore the P-view $\pview{\tilde{s}}$ can be computed.
 
-But $\varphi^{-1}$ maps nodes of a given order to moves of the same order (property \ref{proper:phi_conserve_order}),
-therefore $q$ also points to the first move in $\pview{\tilde{s}}$ whose
+
+
+Property \ref{proper:pviewtrav_is_path} gives us that $\pview{t}$ is
+the path in $\tau(M)$ from the root to the node $n$.
+
+The regularity of $\tau(M)$ (property \ref{proper:regularity}) ensures that $n$ points to the
+the last $\lambda$-node in $\pview{t}$ (the path from the root to $n$) that has order greater or equal to $\ord{n}$.
+
+The lambda nodes in $N_\Sigma \union Succ(N_\Sigma)$ are the nodes in $Succ(N_{\Sigma})$. They are
+labelled $\lambda$ and therefore no node points to them. Hence
+$n$ also points to the the last $\lambda$-node in $\pview{r}$ that
+has order greater or equal to $\ord{n}$.
+
+
+Finally, since $\varphi$ maps nodes of a given order to moves of the same order (property \ref{proper:phi_conserve_order}),
+$q$ also points to the last O-move in $\pview{\tilde{s}}$ whose
 order is greater or equal to $\ord{q}$.
 
 
-\item Suppose $q$ is a O-move.
+\item Suppose $q$ is an O-move.
 
 Then $q$ points to the last move in the O-view of $\tilde{s}$ having an order strictly greater than $\ord{q}$.
 

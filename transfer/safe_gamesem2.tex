@@ -5,7 +5,7 @@
 \section{Game semantics of safe $\lambda$-terms}
 
 In this section we will prove that the safety condition
-of section \ref{sec:safe_alt} leads to a pointer economy in the game
+of section \ref{sec:safe_alt} leads to am economy of pointer in the game
 semantics: for safe $\lambda$-terms the pointers from the game semantics can be reconstructed uniquely from the moves of
 the play.
 
@@ -62,11 +62,17 @@ The $\eta$-long normal form of a term $M$ is denoted $\aux{M}$ and
 is defined as follows:
 \begin{eqnarray*}
 \aux{x s_1 \ldots s_m : (A_1,\ldots,A_n,o)} &=& \lambda \overline{\varphi} . x \aux{s_1} \aux{s_2} \ldots \aux{s_m} \aux{\varphi_1} \ldots \aux{\varphi_n} \\
-\aux{x s_1 \ldots s_m : o} &=& \lambda . x \aux{s_1} \aux{s_2} \ldots \aux{s_m} \\
 \aux{(\lambda x . s_0) s_1 \ldots s_m } &=& (\lambda x . \aux{s_0}) \aux{s_1} \aux{s_2} \ldots \aux{s_m}
 \end{eqnarray*}
-where $m \geq 0$ and $x$ is either a variable or a constant.
+where $m,n \geq 0$ and $x$ is either a variable or a constant.
 \end{dfn}
+
+For $n=0$, the first clause in the definition gives:
+$$\aux{x s_1 \ldots s_m : o} = \lambda . x \aux{s_1} \aux{s_2} \ldots \aux{s_m} $$
+
+and in that case, the symbol $\lambda$ is called \textsl{dummy} lambda. We do not omit it since it
+plays an important role in the correspondence with game semantics.
+
 
 The $\eta$-long normal form appeared in \citep{DBLP:journals/tcs/JensenP76}
 under the name \emph{long reduced form}
@@ -84,7 +90,10 @@ $\cmptre{s}$. It is obtained by applying the following rules
 inductively \emph{on the $\eta$-long normal form} of $s$. In the
 following $x$ is either a variable or a constant.
 \begin{itemize}
-\item the tree for $\lambda x_1 \ldots x_n. M$ where $M$ is not an abstraction is:
+
+\item the tree for $x$ is the single leaf $x$.
+
+\item for $n\geq0$, the tree for $\lambda x_1 \ldots x_n. M$ where $M$ is not an abstraction is:
 $$ \cmptre{\lambda x_1 \ldots x_n . M} =
   \pstree[levelsep=4ex]
     { \TR{\lambda x_1 \ldots x_n} }
@@ -93,7 +102,7 @@ $$ \cmptre{\lambda x_1 \ldots x_n . M} =
 $$
 
 
-\item the tree for $x s_1 \ldots s_n$ is:
+\item for $n\geq1$, the tree for $x s_1 \ldots s_n$ is:
 $$ \cmptre{ x s_1 \ldots s_n} =
   \pstree[levelsep=4ex]
     { \TR{x @} }
@@ -101,7 +110,6 @@ $$ \cmptre{ x s_1 \ldots s_n} =
     }
 $$
 
-\item the tree for $x$ is the single leaf $x$.
 
 \item the tree for $(\lambda x.s_0) s_1 \ldots s_n$ is:
 $$ \cmptre{(\lambda x.s_0) s_1 \ldots s_n} =
@@ -136,7 +144,7 @@ $\tau(s)$ and $\mathcal{T}$ denotes the set of $\lambda$-terms.
 $\kappa$ associates to any node $n$ of the tree the $\lambda$-term
 $\kappa(n)$ that is represented by the sub-tree of $\tau(s)$ rooted
 at $n$. In particular if $r$ is the root of the tree $\tau(s)$ then
-$\kappa(s) = \aux{s}$.
+$\kappa(r) = \aux{s}$.
 
 \begin{dfn}[Node order]
 The order of a lambda-node $n$ labelled $\lambda \overline{\xi}$ is defined as follows:
@@ -207,7 +215,7 @@ We write $m \vdash n$ and we say that the node $n$ is enabled by $m$ or that $m$
 A \emph{justified sequence of nodes} is an alternating sequence of lambda and non lambda nodes
 from the computation tree $\tau(M)$ together with pointers.
 Each node $n$ of the sequence that is either
-a lambda-node, a $\xi$-node or a $\xi@$-node where $\xi$ is a variable not occurring free in $M$,
+a lambda-node, a $\xi$-node or a $\xi@$-node where $\xi$ is a variable bound in $M$,
 and that is not the root of the computation tree has a pointer to a previous node $m$ in the sequence
 such that $m \vdash n$.
 
@@ -274,7 +282,7 @@ where $r$ is the root of the tree $\tau(M)$ and
 $n$ ranges over non-lambda nodes (either $@$, $f@$, $f$, $x$ or $x@$ for some $\Sigma$-constant $f$
 or variable $x$).
 
-In the second equality, the pointer associated to $n$ is preserved from the left-hand side to the right-hand side:
+In the second clause, the pointer associated to $n$ is preserved from the left-hand side to the right-hand side:
 if in the left-hand side, $n$ points to some node in $s$ that is also present in $\pview{s}$ then in the right-hand side,
   $n$ points to that corresponding occurrence of the node in $\pview{s}$.
 
@@ -301,7 +309,7 @@ as well as the pointer associated to $m$ in the third equality are preserved fro
 \end{dfn}
 
 \begin{dfn}[Visibility] \ \\
-A justified sequence of nodes $s$ satisfies \emph{P-visibility} if every non-lambda node occurring in it that has a pointer
+A justified sequence of nodes $s$ satisfies \emph{P-visibility} if every variable node with pointer
 points to a node occurring in the P-view a that point.
 
 Dually, $s$ satisfies \emph{O-visibility} if every lambda node occurring in it that has a pointer
@@ -1150,21 +1158,26 @@ the tree $\tau(M)$ and by case analysis on the structure of the term.
     \end{equation}
 
     Let $q_C$ denotes the only question of the arena $C = \sem{o}$.
-    We can construct from $t$ the justified sequence $t^\ast$ as follows:
-    we insert the root node $\lambda \overline{\xi}$ at the positions where the move $q_C$ occurs in $\tilde{u}$.
-    Since $\varphi_{M}(\lambda \overline{\xi}) = q_C$, we have:
+    We can construct from $t$ the justified sequence $t^\ast$. The construction is in three steps.
+    \begin{itemize}
+    \item First we describe the elements of the sequence $t^\ast$ (the pointers are ignored at the moment).
+
+    We insert the root node $\lambda \overline{\xi}$ at the positions where the move $q_C$ occurs in $\tilde{u}$.
+    Since $\varphi_{M}(\lambda \overline{\xi}) = q_C$, we have the following equality of \emph{pointer-less} sequences:
     $$\varphi_{M}(t^\ast) = \tilde{u}$$
 
-    Now we transfer links from $\tilde{u}$ to $t^\ast$: for each
+    \item The next step is to add the pointers to the sequence $t^\ast$.
+    These pointers are transferred from $\tilde{u}$ to $t^\ast$: for each
     move $\tilde{u}_k$ pointing to $\tilde{u}_i = q_C$ in $\tilde{u}$ for some $0 \leq i \leq k$,
     we add a pointer in $t^\ast$ going from $t^\ast_k$ to $t^\ast_i = \lambda \overline{\xi}$.
 
-    Then the pointers of the traversal $t^\ast$ and the sequence of move $\tilde{u}$ are the same and we obtain:
+    Then the pointers of the traversal $t^\ast$ and the sequence of move $\tilde{u}$ are the same and we obtain the equality of the
+    \emph{justified} sequences:
     \begin{equation}
     \varphi_{M}(t^\ast) \jseq \tilde{u}. \label{eq:def_tstar}
     \end{equation}
 
-    We need to ensure that the sequence $t^\ast$ is a valid justified sequence of $\tau(M)$.
+    \item Finally, we need to ensure that the sequence $t^\ast$ is a valid justified sequence of $\tau(M)$.
     This requires us to check the validity of the the pointers introduced in $t^\ast$.
     Suppose $u_k$ points to $q_C$ in $\tilde{u}$ then $u_k$ belongs to the arena $A$. More precisely it is one
     of the root $q^1 \ldots q^n$ of the arena $A$. Therefore $u_k$ must belong to the sequence $\tilde{w}$ and
@@ -1181,6 +1194,8 @@ the tree $\tau(M)$ and by case analysis on the structure of the term.
     only node that are mapped to the question  $q^1 \ldots q^n$ are labelled $\xi_i$ or $\xi_i @$ for some $i\in 1..n$.
     Consequently $t^\ast_k = \xi_i$ and the node $t^\ast_k$ is bound by the node $\lambda \overline{\xi}$.
     Hence the added pointer is indeed valid.
+    \end{itemize}
+
     \vspace{5pt}
 
     For any justified sequence of nodes $t$ we define the justified sequence of nodes $t \upharpoonright A,C$

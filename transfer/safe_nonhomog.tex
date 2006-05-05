@@ -8,79 +8,79 @@ give a general notion of safety for the simply typed
 $\lambda$-calculus. The rules we give here do not assume homogeneity
 of the types.
 
-We will call safe terms the simply typed lambda terms that are
+We call safe terms the simply typed lambda terms that are
 typable within the following system of formation rules:
 
 \subsection{Rules}
 
- We use a set of sequents of the form $\Gamma \vdash^{i} M :
-A$ where the meaning is ``variables in $\Gamma$ have orders at least
-$\ord{A}+i$'' where $i \leq 0$. The following set of rules are
-defined for $i \in \nat$:
+We use a set of sequents of the form $\Gamma \vdash M : A$ where $\Gamma$ is the context of the term and $A$ is its type.
+The following system of rules defined the non homogeneous safe $\lambda$-calculus:
 
-$$ \rulename{var} \quad  \rulef{}{x : A\vdash^{0} x : A} $$
+$$ \rulename{var} \quad  \rulef{}{x : A\vdash x : A}
+\qquad  \rulename{wk} \quad  \rulef{\Gamma \vdash M : A}{\Delta \vdash M : A} \quad \Sigma \subseteq \Gamma$$
 
-$$ \rulename{seq} \quad \rulef{\Gamma \vdash^0 M : A}{\Gamma \vdash^{-1} M : A}
-\qquad  \rulename{wk^i} \quad  \rulef{\Gamma \vdash^i M : A}{\Gamma , x : B \vdash^i M : A} \quad \ord{B} \geq \ord{A} + i $$
-
-$$ \rulename{app} \rulef{\Gamma \vdash^{-1} M : (A,\ldots,A_l,B)
-                                        \qquad \Gamma \vdash^{0} N_1 : A_1
-                                        \quad \ldots \quad \Gamma \vdash^{0} N_l : A_l  }
-                                   {\Gamma  \vdash^0 M N_1 \ldots N_l : B}
+$$ \rulename{app} \rulef{\Gamma \vdash M : (A,\ldots,A_l,B)
+                                        \qquad \Gamma \vdash N_1 : A_1
+                                        \quad \ldots \quad \Gamma \vdash N_l : A_l  }
+                                   {\Gamma  \vdash M N_1 \ldots N_l : B}
                                     \quad
                                    \forall y \in \Gamma : \ord{y} \geq \ord{B}$$
 
-$$ \rulename{abs^i} \quad  \rulef{\Gamma, \overline{x} : \overline{A} \vdash^{i} M : B}
-                                   {\Gamma  \vdash^{0} \lambda \overline{x} : \overline{A} . M : (\overline{A},B)} \qquad
+$$ \rulename{abs} \quad  \rulef{\Gamma \union \overline{x} : \overline{A} \vdash M : B}
+                                   {\Gamma  \vdash \lambda \overline{x} : \overline{A} . M : (\overline{A},B)} \qquad
                                    \forall y \in \Gamma : \ord{y} \geq \ord{\overline{A},B}$$
 
 
-Note that:
+Remark:
 \begin{itemize}
 \item $(\overline{A},B)$ denotes the type $(A_1,A_2, \ldots, A_n, B)$;
 \item all the types appearing in the rule are not required to be homogeneous. For instance
-for the type $(A,\ldots,A_l,B)$ in the rule $\rulename{app}$ it is not necessary that $\ord{A_l} \geq \ord{B}$;
-\item the environment $\Gamma, \overline{x}:\overline{A}$ is not stratified. In particular, variables in $\overline{x}$ do not necessarily have the same order;
+the type $(A,\ldots,A_l,B)$ in the rule $\rulename{app}$ may be such that $\ord{A_l} < \ord{B}$;
+\item the environment $\Gamma \union \overline{x}:\overline{A}$ is not stratified. In particular, variables in $\overline{x}$ do not necessarily have the same order;
 \item In the abstraction rule, the side-condition imposes that at least all the variable of the lowest order
 in the context are abstracted. However other variables can also be
 abstracted together with the lowest order variables. Moreover there
 is not constraint on the order on which the variables are abstracted
-(contrary to what happens in the homogeneous case);
-\item The sequents $\Gamma \vdash^0 M$ are the \emph{safe terms} that we want to generate.
-Other terms are only used as intermediate sequents in a proof tree.
+(this contrasts with the homogeneous safe lambda calculus);
 \end{itemize}
-
-\todobox{Problem: with this definition, safety is not preserved by $\eta$-expansion. For instance
-if $M:(A_1,\ldots,A_l,o)$ where $(A_1,\ldots,A_l,o)$ is not homogeneous. The term
-$M x_1 \ldots x_l$ where $x_i :A_i$ will not be a valid term for this system of rules. Therefore the
-$\eta$-expansion will not be a valid term neither.}
 
 \begin{exmp}
 Suppose $x:o$, $f:o\rightarrow o$ and $\varphi:(o\rightarrow
-o)\rightarrow o$ then the term $$\vdash^0 \lambda x f \varphi .
+o)\rightarrow o$ then the term $$\vdash \lambda x f \varphi .
 \varphi : o \rightarrow (o\rightarrow o) \rightarrow ((o\rightarrow
 o)\rightarrow o) \rightarrow (o\rightarrow o)\rightarrow o$$ is
-valid although its type is not homogeneous
+a valid non homogeneous safe term.
 \end{exmp}
 
+Side-remark: safety is preserved by $\eta$-expansion: consider the safe term
+$\Gamma \vdash M:(A_1,\ldots,A_l,o)$ where $(A_1,\ldots,A_l,o)$ is not homogeneous. Then for all $i \in 1..l$ we have $\Gamma \union \Sigma \vdash x_i :A_i$ for some
+context $\Sigma = \{ x_1:A_1, \cdots x_l :A_l \}$. Applying $\rulename{app}$ we then get that $\Gamma, \Sigma \vdash M x_1 \ldots x_l$ is valid. Hence
+the $\eta$-expansion of $M$ is safe:
+$$\Gamma \vdash \lambda x_1:A_1, \cdots x_l:A_l .\ M\ x_1 \ldots x_l$$
 
-\begin{lem}[Basic properties]
-\label{lem:nonhomosafe_basic_prop} Suppose $\Gamma \vdash^i M : B$
-is a valid judgment then every variable in $\Gamma$ has order at
-least $ord(M)+i$.
+
+\begin{lem}[Context reduction]
+\label{lem:nonhomosafe_basic_prop}
+If $\Gamma \vdash M : B$ is a valid judgment then
+\begin{enumerate}
+\item $fv(M) \vdash M : B$
+\item every variable in $\Gamma$ \emph{occuring free in $M$} has order at
+least $ord(M)$.
+\end{enumerate}
+where $fv(M)$ denotes the context constituted of the free variables occurring in $M$.
 \end{lem}
 \begin{proof}
-An easy induction. The step case for the application is: suppose
-$\Gamma \vdash^{i+\delta} M N : B$ where $\Gamma \vdash^i M :
-A\rightarrow B$. Then by induction we have $\forall y \in \Gamma :
-\ord{y} \geq \ord{A\rightarrow B} + i = \max(1+\ord{A}, \ord{B})+i =
-\delta + \ord{B} + i \geq \min(i+\delta,0) + \ord{B}$.
+(i) Suppose some variable $x$ in $\Gamma$ does not occur free in $M$,
+then the $x$ must have been introduced in the context by the weakening rule.
+Hence $M$ must also be typable with the rules of the safe lambda calculus but with the variable $x$ removed from the context.
+(ii) An easy structural induction.
 \end{proof}
+
 
 \subsection{Substitution in the safe lambda calculus}
 
 The traditional notion of substitution, on which the
-$\lambda$-calculus is based on, is the following one:
+$\lambda$-calculus is based on, is defined as follows:
 \begin{dfn}[Substitution]
 \label{dfn:subst}
 \begin{eqnarray*}
@@ -95,7 +95,8 @@ x \subst{t}{x} &=& t\\
 \end{dfn}
 
 In the setting of the safe lambda calculus, the notion of
-substitution can be simplified. Indeed, we remark that for safe
+substitution can be simplified. Indeed, similarly to what we observe in the homogeneous
+safe $\lambda$-calculus, we remark that for safe
 $\lambda$-terms there is no need to rename variables when performing
 substitution:
 
@@ -103,77 +104,23 @@ substitution:
 \label{lem:noclash} There is no variable capture when performing
 substitution on a safe term.
 \end{lem}
-\begin{proof}
-Suppose that a capture occurs during the substitution $M[N/\varphi]$
-where $M$ and $N$ are safe. Then the following conditions must hold:
-\begin{enumerate}
-\item $\varphi:A, \Gamma \vdash^0 M$,
-\item $\Gamma' \vdash^0 N$,
-\item there is a subterm $\lambda \overline{x} . L$ in $M$ (where the abstraction is taken as wide as possible) such that:
-\item $\varphi \in fv(\lambda \overline{x} . L)$ (and therefore $\varphi \in fv(L)$),
-\item $x \in fv(N)$ for some $x \in \overline{x}$.
-\end{enumerate}
 
-By lemma \ref{lem:nonhomosafe_basic_prop} and (v) we have:
-
-\begin{equation}
-\ord{x} \geq \ord{N} = \ord{\varphi} \label{eq:xigeqphi}
-\end{equation}
-
-The abstraction $\lambda \overline{x} . L$ (taken as large as
-possible) is a subterm of $M$, therefore there is a node $\Sigma
-\vdash^u \lambda \overline{x} . L$  for some $u$ in the proof tree
-of $\varphi:A, \Gamma \vdash^0 M$.
-
-There are only three kinds of rules that can produce an abstraction:
-$\rulename{abs^i}$, $\rulename{seq}$ and $\rulename{wk^i}$. The only
-one that can introduce the abstraction is $\rulename{abs^i}$.
-Therefore the proof tree has the following form:
-
-$$ \rulef{
-    \rulef{
-        \rulef{
-            \rulef  {\ldots}
-                   {\Sigma' \vdash^0 \lambda \overline{x} . L} \rulename{abs^i}
-        }
-        {\ldots} r_1
-    }
-    {\vdots} r_2
-    }
-    { \Sigma \vdash^u \lambda \overline{x} . L } r_l
-    \qquad \mbox{where } r_j \in \{ \rulename{seq},\ \rulename{wk^i}\ |\ i \in \nat \},
-            \quad j\in 1..l.
-$$
-
-
-Since $\varphi \in fv (L)$ we must have $\varphi \in \Sigma'$ and
-since $\Sigma' \vdash^0 \lambda \overline{x} . L$, by lemma
-\ref{lem:nonhomosafe_basic_prop} we have:
-
-$$\ord{\varphi} \geq \ord{\lambda \overline{x} . L} \geq \max(1+ \ord{x}, \ord{L}) > \ord{x}$$
-
-which contradicts equation (\ref{eq:xigeqphi}).
-\end{proof}
-
-Hence, in the safe lambda calculus setting, we can omit to to rename
-variable when performing substitution. The equation
+This is the equivalent of lemma \ref{lem:homog_nocapture} for the non-homogeneous case. The proof (which does not rely on homogeneity)
+is identical.
+Consequently, in the safe lambda calculus setting, we can omit to to rename
+variable when performing substitution and the equation
 $$(\lambda x . M) \subst{t}{y} = \lambda z . M \subst{z}{x}
 \subst{t}{y} \mbox{where $z$ is a fresh variable}$$ becomes
-$$(\lambda x . M) \subst{t}{y} = \lambda x . M \subst{t}{y}$$
-
-
+$$(\lambda x . M) \subst{t}{y} = \lambda x . M \subst{t}{y}.$$
 
 Unfortunately, this notion of substitution is still not adequate for
 the purpose of the safe simply-typed lambda calculus. The problem is
 that performing a single $\beta$-reduction on a safe term will not
 necessarily produce another safe term.
 
-To fix this problem, we need to be able to reduce several
-consecutive $\beta$-redex at the same time until we obtain a safe
-term. Consequently, we need a mean of performing several
-substitutions at the same time. To achieve this, we introduce the
-\emph{simultaneous substitution},
- a generalization of the standard substitution given in definition \ref{dfn:subst}.
+The solution consist in reducing several consecutive $\beta$-redex at the same time until we obtain a safe
+term. To achieve this, we introduce the \emph{simultaneous substitution},
+a generalization of the standard substitution given in definition \ref{dfn:subst}.
 
 \begin{dfn}[Simultaneous substitution]
 \label{dnf:simsubst}
@@ -224,30 +171,30 @@ The symbol $\mathbf{(\star)}$ identifies the equation that changed
 compared to the previous definition.
 \end{dfn}
 
-\begin{lem}
+\begin{lem}[Substitution preserves safety]
 \label{lem:subst_preserve_i}
-$$ \Gamma,\overline{x} : \overline{A}\vdash^i M : T
-\quad \mbox{and} \quad \Gamma \vdash^0 N_k : B_k \mbox{, } k \in
-1..n \qquad \mbox{ implies } \qquad \Gamma \vdash^i
+$$ \Gamma\union \overline{x} : \overline{A}\vdash M : T
+\quad \mbox{and} \quad \Gamma \vdash N_k : B_k \mbox{, } k \in
+1..n \qquad \mbox{ implies } \qquad \Gamma \vdash
 M[\overline{N}/\overline{x}] : T$$
 \end{lem}
 
 \begin{proof}
-Suppose that $\Gamma,\overline{x}: \overline{A} \vdash^i M :T$ and
-$\Gamma \vdash^0 N_k : B_k$ for $k \in 1..n$.
+Suppose that $\Gamma \union \overline{x}: \overline{A} \vdash M :T$ and
+$\Gamma \vdash N_k : B_k$ for $k \in 1..n$.
 
-We prove $\Gamma \vdash^i M[\overline{N}/\overline{x}]$ by induction
-on the size of the proof tree of $\Gamma,\overline{x}:\overline{A}
-\vdash^i M : T$ and by case analysis on the last rule used. We just
+We prove $\Gamma \vdash M[\overline{N}/\overline{x}]$ by induction
+on the size of the proof tree of $\Gamma\union \overline{x}:\overline{A}
+\vdash M : T$ and by case analysis on the last rule used. We just
 give the detail for the abstraction case. Suppose that the property
 is verified for terms whose proof tree is smaller than $M$. Suppose
-$\Gamma,\overline{x}:\overline{A} \vdash^0 \lambda \overline{y} :
-\overline{C}. P : (\overline{C}|D)$ where $\Gamma,
-\overline{x}:\overline{A}, \overline{y}:\overline{C} \vdash^i P :
-D$, then by the induction hypothesis $\Gamma,
-\overline{y}:\overline{C} \vdash^i
+$\Gamma \union \overline{x}:\overline{A} \vdash \lambda \overline{y} :
+\overline{C}. P : (\overline{C}|D)$ where $\Gamma\union
+\overline{x}:\overline{A}\union \overline{y}:\overline{C} \vdash P :
+D$, then by the induction hypothesis $\Gamma\union
+\overline{y}:\overline{C} \vdash
 P\subst{\overline{N}}{\overline{x}} : D$. Applying the rule
-$\rulename{abs^i}$ gives $\Gamma \vdash^0 \lambda
+$\rulename{abs}$ gives $\Gamma \vdash \lambda
 \overline{y}:\overline{C} . P \subst{\overline{N}}{\overline{x}}$.
 \end{proof}
 
@@ -259,16 +206,16 @@ lambda calculus:
 We call safe redex a term of the form $(\lambda \overline{x} . M)
 N_1 \ldots N_l$ such that:
 \begin{itemize}
-\item $ \Gamma \vdash^0 (\lambda \overline{x} . M) N_1 \ldots N_l $
+\item $ \Gamma \vdash (\lambda \overline{x} . M) N_1 \ldots N_l $
 \item the variable $\overline{x}=x_1\ldots x_n$ are abstracted altogether by one occurrence of the rule $\rulename{abs}$ in the proof tree.
 \item The terms $(\lambda \overline{x} . M)$, $N_1$, $N_l$ are applied together at once using the $\rulename{app}$ rule :
 $$   \rulef{
-            \Sigma \vdash^{-1} \lambda \overline{x} . M
+            \Sigma \vdash \lambda \overline{x} . M
             \quad
-            \Sigma \vdash^0 N_1         \quad \ldots \quad \Sigma \vdash^0 N_l
+            \Sigma \vdash N_1         \quad \ldots \quad \Sigma \vdash N_l
     }
     {
-       \Sigma \vdash^0 (\lambda \overline{x} . L) N_1 \ldots N_l
+       \Sigma \vdash (\lambda \overline{x} . L) N_1 \ldots N_l
     } (\mathbf{app})
 $$
 Consequently each $N_i$ is safe.
@@ -278,8 +225,8 @@ Consequently each $N_i$ is safe.
 \end{dfn}
 
 Note that the condition $l\leq n$ in the definition is not too
-restrictive because if $l>n$ then the application rule is too wide
-and can in fact be replaced by an application of exactly $n$ terms
+restrictive because if $l>n$ then the application rule is in fact ``wider'' than the abstration
+and it can be replaced by an application of exactly $n$ terms
 followed by another application for the remaining terms $N_{n+1},
 \ldots, N_l$.
 
@@ -293,71 +240,13 @@ $t \equiv \lambda x_l \ldots x_n . M \subst{N_1 \ldots N_l}{x_1 \ldots x_l}$
 
 \todobox{Show that $\betasred \subseteq \betared^*$.}
 
-Using the previous lemma, we will now prove that safe-reduction
-produces safe terms.
 
 \begin{lem}
 \label{lem:safereduction} A safe redex reduces to a safe term.
 \end{lem}
 
-\begin{proof}
-We note $\overline{A}$ for $A_1, \ldots , A_n$, $\overline{x}'$ for
-$x_1 \ldots x_l$ and $\overline{x}''$ for $x_{l+1} \ldots x_n$.
-
-A safe-redex has a proof tree of the following form:
-$$
-   \rulef{
-        \rulef{
-            \rulef{
-                \rulef{
-                    \rulef
-                        { \rulef
-                            {\vdots}
-                            {\Sigma',\overline{x}:\overline{A}\vdash^i L:C  }
-                        }
-                        {\Sigma' \vdash^0 \lambda \overline{x} . L : \overline{A}|C} \rulename{abs^i}
-                }
-                {\vdots} r_1
-            }
-            {\vdots} r_2
-            }
-            { \Sigma \vdash^{-1} \lambda \overline{x} . L : A_1, \ldots , A_l|B} r_q
-            \quad
-            \Sigma \vdash^0 N_1 : A_1
-            \quad \ldots \quad \Sigma \vdash^0 N_l : A_l
-    }
-    {
-       \Sigma \vdash^0 (\lambda \overline{x} . L) N_1 \ldots N_l : B
-    } (\mathbf{app})
-$$
-with the following conditions:
-\begin{enumerate}
-\item for $j\in 1..q$, $r_j \in \{ \rulename{seq}, \rulename{wk^0}, \rulename{wk^{-1}} \}$ therefore
-$\Sigma = \Sigma' \union \Delta$ where $\Delta$ contains the
-variables introduced by the rules $r_1 \ldots r_q$.
-
-\item $A_1, \ldots , A_l|B = A_1, \ldots , A_n|C$ and $l\leq n$. Therefore
-$\ord{B} \geq \ord{C}$.
-\item The side condition of the rule $\rulename{abs}$ gives: $\forall z \in \Sigma : \ord{z} \geq \ord{B}$
-\end{enumerate}
-
-
-The conditions 2 and 3 ensure that $\forall z \in \Delta : \ord{z}
-\geq \ord{C}$ therefore we can use the weakening rule to introduce
-all the variable of $\Delta$ in the context of the sequent
-$\Sigma',\overline{x}:\overline{A}\vdash^i L:C$:
-
-$$\rulef{\rulef{ \Sigma',\overline{x}:\overline{A}\vdash^i L:C  }
-        {\vdots} (wk^i_0)}
-        {\Sigma,\overline{x}:\overline{A}\vdash^i L:C} (wk^i_0)
-$$
-
-By lemma \ref{lem:subst_preserve_i} we obtain:
-$$ \Sigma, \overline{x}'':\overline{A}'' \vdash^i L\subst{N_1 \ldots N_l}{\overline{x}'}$$
-Finally using the abstraction rule:
-$$ \Sigma \vdash^0 \lambda \overline{x}'':\overline{A}'' . L\subst{N_1 \ldots N_l}{\overline{x}'}$$
-\end{proof}
-
+This is a consequence of lemma \ref{lem:subst_preserve_i}. The proof is similar to the proof of lemma \ref{lem:homoh_safered_preserve_safety}
+(the corresponding lemma for the homogeneous case).
 
 
 \subsection{Examples}
@@ -391,8 +280,8 @@ $$ \rulef{{\Gamma' \not\vdash^{-1} \lambda f x. x} \qquad \Gamma' \not\vdash^0 g
 We look at a particular sub-class of lambda terms. The types of
 these terms respect a property call homogeneity as defined in
 section \ref{sec:homotypes}. A type $(A_1, A_2, \ldots A_n, o)$ is
-said to be homogeneous whenever $\order{A_1} \geq \order{A_2} \geq
-\ldots \geq  \order{A_n}$ and each of the $A_i$ are homogeneous. A
+said to be homogeneous whenever $\ord{A_1} \geq \ord{A_2} \geq
+\ldots \geq  \ord{A_n}$ and each of the $A_i$ are homogeneous. A
 term is homogeneous if its type is homogeneous.
 
 
@@ -567,7 +456,7 @@ $$ \rulename{abs^i} \quad  \rulef{\Gamma| \overline{x} : \overline{A} \vdash^{-1
                                    {\Gamma  \vdash^{0} \lambda \overline{x} : \overline{A} . M : (\overline{A}|B)}$$
 
 
-\subsubsection{The rules of the homogeneous safe $\lambda$-calculus}
+\subsubsection{The complete set of rules of the homogeneous safe $\lambda$-calculus}
 
 Table \ref{tab:homosafelmd_rules} recapitulates the entire set of rules:
 

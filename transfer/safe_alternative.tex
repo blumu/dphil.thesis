@@ -25,7 +25,10 @@ terms-in-context) are of the form
 \overline{x_n} :  \overline{A_n}}{M : B}
 \end{equation}
 which is shorthand for $\seq{x_{11} : A_{11}, \cdots, x_{1r}:
-A_{1r}, \cdots}{M : B}$. \emph{Valid typing judgements} of the
+A_{1r}, A_{21},\ldots }{M : B}$ such that the context variables are listed in decreasing type order and
+ with the condition that $\ord{x_{ik}} < \ord{x_{jl}}$ for any $k, l$ and $i<j$.
+
+\emph{Valid typing judgements} of the
 system are defined by induction over the following rules, where
 $\Delta$ is a given homogeneously-typed alphabet:
 
@@ -86,14 +89,16 @@ valid judgment then
 \end{itemize}
 \end{lem}
 
-The following corollary is a consequence of the second point in the previous lemma:
-\begin{property}
-If $\Gamma \vdash M : B$ then $fv(M) \vdash M : B$ where $fv(M) \subseteq \Gamma$ denotes the context which variables are
-are exactly the free variables of $M$.
+From the second assertion of the previous lemma we deduce the following property:
+\begin{property}[Context reduction]
+If $\Gamma \vdash M : B$ then $fv(M) \vdash M : B$.
+
+where $fv(M) \subseteq \Gamma$ denotes the context constituted of the variables
+in the $\Gamma$ occurring free in $M$.
 \end{property}
 
 We now define a special kind of substitution that performs simultaneous substitution and
-that permits variable capture (i.e. does not rename variables when the substitution is performed on an abstraction).
+that permits variable capture (i.e. that does not rename variables when the substitution is performed on an abstraction).
 
 \begin{dfn}[Capture permitting simultaneous substitution (for homogeneous safe terms)]
 \label{dnf:safe_simsubst}
@@ -117,15 +122,36 @@ $s \upharpoonright I$ is the subsequence of $s$ obtained by removing from $s$ al
 at a position that is not in $I$.
 \end{dfn}
 
-We now prove that in the homogeneous safe $\lambda$-calculus, variable capture never occurs. Therefore
-the capture permitting substitution that we use is equivalent to the traditional substitution (where an unbound number of
-variable names are required to avoid capture).
+This substitution is well-defined for safe terms in the sense that safety is preserved by substitution:
+
+\begin{lem}[Capture-permitting simultaneous substitution preserves safety]
+\label{lem:subst_preserve_safety}
+Let $\Gamma \union \overline{x} \vdash M$ be a safe term where $\overline{x}$ denotes a list of variables
+(not necessarily belonging to the same partition).
+
+Then for any safe terms safe terms $\Gamma \vdash N_1, \cdots, \Gamma \vdash N_n$,
+the capture permitting simultaneous substitution $M[N_1 / x_1 , \cdots, N_n / x_n]$ is safe. i.e. the following judgment is valid :
+$$ \Gamma \vdash M[N_1 / x_1 , \cdots, N_n / x_n] $$
+\end{lem}
+\begin{proof}
+An easy proof by an induction on the structure of the safe term.
+\end{proof}
+
+
+
+With the traditional substitution, it is necessary to rename variables when performing substitution on an abstraction
+in order to avoid possible captures of variables. Hence in general implementing substitution requires to have
+access to an unbound number
+of variables names.
+An interesting property of the homogeneous safe $\lambda$-calculus is that
+variable capture never occurs when performing substitution.
+Consequently, the capture permitting substitution will produce the same terms as the traditional substitution:
 
 \begin{lem}[No variable capture lemma]
 In the safe $\lambda$-calculus, there is no capture of variable
 when performing the following capture permitting simultaneous substitution:
 $$ M[N_1 / x_1 , \cdots, N_n / x_n] $$
-where $\Gamma,\overline{x} \vdash M$, $\Gamma \vdash  N_1, \ldots \Gamma \vdash  N_n$.
+provided that $\Gamma \union \overline{x} \vdash M$, $\Gamma \vdash  N_1, \cdots ,\Gamma \vdash  N_n$ are valid judgments.
 
 % provided the substitution is performed simultaneously on
 %\emph{all} free variables of the same order in $M$
@@ -140,26 +166,24 @@ simultaneous substitution gives:
 $$M \subst{\overline{N}}{\overline{x}} = \lambda \overline{y} . P
 \subst{\overline{N} \upharpoonright I}{\overline{x} \upharpoonright I}$$
 
-%The variables $\overline{x}$ all occurs freely in $M$ therefore
-%the variable in $\overline{x}$ cannot be abstracted under the $\lambda \overline{y}$. Hence $I = \emptyset$
-%and:
-%$$M \subst{\overline{N}}{\overline{x}} = \lambda \overline{y} . P
-%\subst{\overline{N}}{\overline{x}}$$
-%By the induction hypothesis there is no variable capture in $P\subst{\overline{N}}{\overline{x}}$.
+where $I  = \{ i \in 1..n \ | \ x_i \not \in \overline{y} \}$.
+
 
 By the induction hypothesis there is no variable capture in $P
 \subst{\overline{N} \upharpoonright I}{\overline{x} \upharpoonright I}$.
 
-Hence the only possible case of variable capture is when for some $i \in I$ and $j \in 1..p$ the variable $y_j$ occurs freely
+Hence the only possible case of variable capture happens when for some $i \in I$ and $j \in 1..p$ the variable $y_j$ occurs freely
 in $N_i$ and $x_i$ occurs freely in $P$. In that case, lemma \ref{lem:safe_basic_prop} (ii) gives:
 $$ \ord{y_j} \geq \ord{N_i} = \ord{x_i}$$
 
-Moreover since $x_i$ occurs freely in $P$ and $i\in I$, $x_i$ must occur freely also in the safe term $\lambda \overline{y}. P$
-and lemma \ref{lem:safe_basic_prop} (ii) gives:
+Moreover $i\in I$ therefore $x_i \not \in \overline{y}$ and since $x_i$ occurs freely in $P$, $x_i$ must also occur freely in the safe term
+$\lambda \overline{y}. P$. Thus, lemma \ref{lem:safe_basic_prop} (ii) gives:
 $$ \ord{x_i} \geq \ord{\lambda y_1 \ldots y_p . T} \geq 1+ \ord{y_j} > \ord{y_j}$$
 
 Hence we reach a contradiction.
 \end{proof}
+
+
 
 
 \subsection{Safe $\beta$-reduction}
@@ -198,16 +222,16 @@ $$
 The formal definition follows:
 
 \begin{dfn}[Safe redex]
-A safe redex is a term having one of the following two forms:
-
+A safe redex is a term of the form:
+$$(\lambda \overline{x} . M) N_1 \ldots N_l$$
+such that the variables $\overline{x}=x_1\ldots x_n$ are abstracted altogether by one occurrence
+of the rule $\rulename{abs}$ in the proof tree (possibly followed by the weakening rule)
+which implies that:
+$$\ord{M} -1 \leq \ord{\overline{x}} = \ord{x_1} = \ldots = \ord{x_n}$$
+and such that the terms $(\lambda \overline{x} . M)$, $N_1$, $N_l$ are applied together at
+once using either:
 \begin{itemize}
-    \item $(\lambda \overline{x} . M) N_1 \ldots N_l$ formed with the $\rulename{app}$ rule such that
-        \begin{itemize}
-        \item the variable $\overline{x}=x_1\ldots x_n$ are abstracted altogether by one occurrence of the rule $\rulename{abs}$ in the proof tree.
-                Consequently:
-                $$\ord{M} \leq \ord{\overline{x}} = \ord{x_1} = \ldots = \ord{x_n}$$
-
-        \item The terms $(\lambda \overline{x} . M)$, $N_1$, $N_l$ are applied together at once using the rule $\rulename{app}$:
+    \item the rule $\rulename{app}$ with
         $$   \rulef{
                     \Sigma \vdash \lambda \overline{x} . M : (\overline{B_1}|\ldots|\overline{B_m}|o)
                     \quad
@@ -215,21 +239,13 @@ A safe redex is a term having one of the following two forms:
                     \quad l = |\overline{B_1}|
             }
             {
-            \Sigma \vdash (\lambda \overline{x} . L) N_1 \ldots N_l
+            \Sigma \vdash (\lambda \overline{x} . M) N_1 \ldots N_l
             } (\mathbf{app})
         $$
 
-        \item $n \leq l$. This is because the variables $x_1, \ldots, x_n$ all belong to the lowest partition $\overline{B_1}$ hence $n\leq |\overline{B_1}| = l$.
+        In which case  $n\leq |\overline{B_1}| = l$.
 
-        \end{itemize}
-
-\item $(\lambda \overline{x} . M) N_1 \ldots N_l$ formed with the $\rulename{app^+}$ rule such that:
-
-        \begin{itemize}
-        \item the variable $\overline{x}=x_1\ldots x_n$ are abstracted altogether by one occurrence of the rule $\rulename{abs}$ in the proof tree.
-                Consequently  $\ord{M} \leq \ord{\overline{x}} = \ord{x_1} = \ldots = \ord{x_n}$
-
-        \item The terms $(\lambda \overline{x} . M)$, $N_1$, $N_l$ are applied together at once using the rule $\rulename{app^+}$:
+\item or the rule $\rulename{app^+}$ with:
         $$   \rulef{
                     \Sigma \vdash \lambda \overline{x} . M : (\overline{B_1}|\ldots|\overline{B_m}|o)
                     \quad
@@ -241,23 +257,21 @@ A safe redex is a term having one of the following two forms:
             } (\mathbf{app^+})
         $$
 
-      \item $n \leq |\overline{B_1}|$ (we do not necessarily have $n = |\overline{B_1}|$).
-
-        \end{itemize}
-
+      In which case $n \leq |\overline{B_1}|$ and no relation holds between $n$ and $l$.
 \end{itemize}
+Note that we do not necessarily have $n = |\overline{B_1}|$.
 \end{dfn}
 
 
 \begin{dfn}[Safe reduction $\beta_s$] \
 For concision the following abbreviations are used $\overline{x} = x_1 \ldots
-x_n$, $\overline{N} = N_1 \ldots N_l$, and when $n\geq l$, $\overline{x_l} = x_1 \ldots
-x_l$, $\overline{x_r} = x_{l+1} \ldots x_n$.
+x_n$, $\overline{N} = N_1 \ldots N_l$, and when $n\geq l$, $\overline{x_L} = x_1 \ldots
+x_l$, $\overline{x_R} = x_{l+1} \ldots x_n$.
 \begin{itemize}
 \item The relation $\beta_s$ is defined on the set of safe redex as follows:
 \begin{eqnarray*}
 \beta_s &=&
-\{  \ (\lambda \overline{x} : \overline{A} . T) N_1 \ldots N_l \mapsto \lambda \overline{x_r}. T\subst{\overline{N}}{\overline{x_l}}  \\
+\{  \ (\lambda \overline{x} : \overline{A} . T) N_1 \ldots N_l \mapsto \lambda \overline{x_R}. T\subst{\overline{N}}{\overline{x_L}}  \\
 && \mbox{ where $(\lambda \overline{x} : \overline{A} . T) N_1 \ldots N_l$ is a safe redex such that $n> l$}
 \} \\
 &\union&
@@ -340,21 +354,9 @@ unicity of $\beta_s$ normal form.
 
 
 
-\begin{lem}[Capture-permitting simultaneous substitution preserves safety]
-\label{lem:subst_preserve_safety}
-Let $\Gamma \union \overline{x} \vdash M$ be a safe term where $\overline{x}$ denotes a list of variables
-(not necessarily belonging to the same partition).
 
-Then for any safe terms safe terms $\Gamma \vdash N_1$, \ldots, $\Gamma \vdash N_n$,
-the capture permitting simultaneous substitution $M[N_1 / x_1 , \cdots, N_n / x_n]$ is safe, i.e.
-$$ \Gamma \vdash M[N_1 / x_1 , \cdots, N_n / x_n] $$
-\end{lem}
-\begin{proof}
-An easy proof by an induction similar to the proof of the previous lemma.
-\end{proof}
-
-since capture-permitting simultaneous substitution preserves safety, a direct consequence is that
-a safe redex $(\lambda \overline{x} . M) N_1 \ldots N_l$ reduces to a safe term:
+Since capture-permitting simultaneous substitution preserves safety (lemma \ref{lem:subst_preserve_safety}),
+consequently any safe redex reduces to a safe term:
 
 \begin{lem}[The safe reduction $\beta_s$ preserves safety] If $M$ is safe and $M \betasred N$ then $N$ is safe.
 \end{lem}
@@ -366,27 +368,23 @@ We proceed by case analysis on the the last rule used to form the redex.
 \begin{itemize}
 \item Suppose the last rules used is $\rulename{app}$, then necessarily $n\leq l$ and the reduction is:
 $$(\lambda x_1 \ldots x_n . M) N_1 \ldots N_l \qquad \mapsto  \qquad t \equiv M[N_1 / x_1 , \cdots, N_n / x_n]\ N_{n+1} \ldots N_l$$
-where $\ord{M} \leq \ord{x_1} = \ldots = \ord{x_n}$.
-
-The first premise of the rule $\rulename{app}$ tells us that $M$ is safe and that $\overline{x}$ is the lowest partition of the context.
-Therefore by lemma \ref{lem:subst_preserve_safety} and using the application rule we obtain that $t$ is safe.
+The first premise of the rule $\rulename{app}$ tells us that $M$ is safe therefore using lemma \ref{lem:subst_preserve_safety} and
+the application rule we obtain that $t$ is safe.
 
 \item Suppose the last rules used is $\rulename{app^+}$ and $n> l$ then the reduction is
-$$ (\lambda \overline{x_l} : \overline{A_l} \
-\overline{x_r}: \overline{A_r} . T) \overline{N_l} \qquad \mapsto
-\qquad t \equiv \lambda \overline{x_r}: \overline{A_r} .
-T\subst{\overline{x_l}}{\overline{N_l}}
+$$ (\lambda \overline{x_L} : \overline{A_L} \
+\overline{x_R}: \overline{A_R} . T) \overline{N_L} \qquad \mapsto
+\qquad t \equiv \lambda \overline{x_R}: \overline{A_R} .
+T\subst{\overline{x_L}}{\overline{N_L}}
 $$
-where $\ord{T} \leq \ord{x_1} = \ldots = \ord{x_n}$
-
-By lemma \ref{lem:subst_preserve_safety}, $T\subst{\overline{x_l}}{\overline{N_l}}$ is a safe term.
+By lemma \ref{lem:subst_preserve_safety}, $T\subst{\overline{x_L}}{\overline{N_L}}$ is a safe term.
 Using the rule $\rulename{abs}$ we derive that $t$ is safe.
 
 \item Suppose the last rules used is $\rulename{app^+}$ and $n\leq l$ then the reduction is
 $$(\lambda x_1 \ldots x_n . M) N_1 \ldots N_l \qquad \mapsto \qquad t \equiv M[N_1 / x_1 , \cdots, N_n / x_n]\ N_{n+1} \ldots N_l$$
-where $\ord{M} \leq \ord{x_1} = \ldots = \ord{x_n}$. The treatment of this case is identical to case $\rulename{app}$.
+Similarly to case $\rulename{app}$, we conclude that $t$ is safe.
 
-\item Rule $\rulename{wk}$ $\rulename{seq}$: these cases lead back to the previous cases.
+\item Rule $\rulename{wk}$ $\rulename{seq}$: these cases reduce to one of the previous cases.
 \end{itemize}
 \end{proof}
 

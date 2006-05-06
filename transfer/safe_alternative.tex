@@ -410,7 +410,8 @@ strictly smaller than $M$ do not occur freely in $M$ and therefore the context c
 \label{lem:restriction}
 
 Suppose that $\Gamma \vdash M : A$ satisfies $P_i$ with $i\leq0$, then we have
-$\Gamma' \vdash^{0} M : A$ where $$\Gamma' = \{ z \in \Gamma \ |
+$\Gamma' \vdash^{0} M : A$
+where $$\Gamma' = \{ z \in \Gamma \ |
 \ \ord{z} \geq \ord{M} \} = \Gamma \setminus \{ z \in \Gamma \ | \ \ord{M} + i \leq \ord{z} < \ord{M} \}$$
 \end{lem}
 \begin{proof}
@@ -492,7 +493,7 @@ or $P_{-1}$ by case analysis on the last rule used to prove $\Gamma \vdash M : T
 
 \begin{itemize}
 \item $\rulename{wk}$ If $\Delta \vdash M : T$ verifies $P_{-1}$ then in particular $\Gamma
-\vdash M : T$ verifies $P_{-1}$ for any $\Gamma \subset \Delta$.
+\vdash M : T$ verifies $P_{-1}$ for any $\Gamma \subseteq \Delta$.
 
 \item $\rulename{perm}$ By the induction hypothesis.
 
@@ -507,8 +508,56 @@ premise verifies $P_{-1}$.
 conclusion of the rule therefore the first premise verifies
 $P_0$. The side-condition of the rule $\rulename{app^+}$ ensures that the other premises verify $P_0$.
 
-\item $\rulename{app}$ Using lemma \ref{lem:restriction}, the induction hypothesis and the rule $\rulename{app}$.
+\item $\rulename{app}$
 
+$$ \rulename{app}
+    \rulef{
+        { \Gamma \vdash M : (\overline{A} \, | B)
+        \qquad
+        \Gamma \vdash N_1 : A_1 \quad \cdots \quad \Gamma \vdash N_{l} : A_l \qquad l = |\overline{A}|
+        }
+    }
+    {
+        \Gamma \vdash^0 M N_1 \cdots N_{l} : B
+    }
+$$
+
+Applying lemma \ref{lem:restriction} to the first premise we obtain:
+\begin{equation}
+ \Sigma \vdash^0 M : (\overline{A} \, | B) \label{eq:seq1}
+\end{equation}
+where $\Sigma = \{ z \in \Gamma \ | \ \ord{z} \geq \ord{(\overline{A} \, | B)} \} = \{ z \in \Gamma \ | \ \ord{z} \geq 1 + \ord{\overline{A}} \} $
+
+Since $\ord{\overline{A}} = \ord{A_1} = \ldots = \ord{A_l}$ by applying lemma \ref{lem:restriction} to all the premises but the first we have
+for all $i \in 1..p$ :
+$$ \Sigma' \vdash^0 N_i : A_i $$
+where
+$\Sigma' = \{ z \in \Gamma \ | \ \ord{z} \geq \ord{\overline{A}} \} \supseteq \Sigma$
+
+If the inclusion $\Sigma \subseteq \Sigma'$ is strict then we apply the weakening rule to sequent (\ref{eq:seq1}):
+$$ \rulef{\Sigma \vdash^0 M : (\overline{A} \, | B)}{\Sigma' \vdash^{-1} M : (\overline{A} \, | B)} \rulename{wk} $$
+
+We obtain the following proof tree:
+$$  \rulef{
+        \rulef{
+            { \Sigma' \vdash^{-1} M : (\overline{A} \, | B)
+            \qquad
+            \Sigma' \vdash^0 N_1 : A_1 \quad \cdots \quad \Sigma' \vdash^0 N_{l} : A_l \qquad l = |\overline{A}|
+            }
+        }
+        {
+            \Sigma' \vdash^0 M N_1 \cdots N_{l} : B
+        } \rulename{app}
+    }
+    {
+         \Gamma \vdash^0 M N_1 \cdots N_{l} : B
+    } \rulename{wk}
+$$
+
+where the last weakening rules is applied only if the inclusion $\Sigma' \subseteq \Gamma$ is strict.
+
+We can now conclude by apply the induction hypothesis on the sequents $\Sigma' \vdash^{-1} M$,
+$\Sigma' \vdash^0 N_1$, \ldots, $\Sigma' \vdash^0 N_l$ .
 \end{itemize}
 \end{proof}
 
@@ -516,31 +565,29 @@ $P_0$. The side-condition of the rule $\rulename{app^+}$ ensures that the other 
 
 Using the observations that we have just made, we will now refine the rules
 of the safe $\lambda$-calculus with homogeneous type. We would like to obtain a system
-of rules generating sequents that verify $P_0$. Those sequents correspond to the ``safe'' terms.
+of rules generating sequents that verify $P_0$. However the system must be able to generate intermediate
+sequents that do not necessarily satisfy $P_0$ and which are used to produce \emph{in fine} terms satisfying $P_0$.
 
-The system of rules must be able to generate intermediate sequents that are then used to produce term
-satisfying $P_0$. Because of the lemma \ref{lem:prooftree01only}, we know that the only necessary intermediate sequents
-are those that either satisfy $P_0$ or $P_{-1}$. In other word, it is useless to produce sequents that do not satisfy
-$P_0$ or $P_{-1}$. We will therefore use the notation $\vdash^0$ and $\vdash^{-1}$ instead of $\vdash$ to precise
-whether a given sequent satisfies $P_0$ or $P_{-1}$.
+Because of the lemma \ref{lem:prooftree01only}, we know that the only necessary intermediate sequents
+are those that either satisfy $P_0$ or $P_{-1}$. It is therefore useless to produce sequents that do not satisfy
+$P_0$ or $P_{-1}$. For that reason, we will assume by default that premises of the rules all satisfy $P_{-1}$.
 
-The first refinement consist in constraining the weakening rule so that
-it only permits the addition of variable having an order big enough:
+We will use the notation $\vdash^0$ and $\vdash^{-1}$ instead of $\vdash$ to precise
+whether a given sequent satisfies $P_0$ or $P_{-1}$ respectively.
+
+We define an additional rules expressing the fact that $P_0$ implies $P_{-1}$:
+$$ \rulename{seq} \quad \rulef{\Gamma \vdash^{0} M : A}{\Gamma \vdash^{-1} M : A} $$
+
+The weakening rules can be specialized in two rules:
 $$ \rulename{wk^{0}} \quad  \rulef{\Gamma \vdash^{0} M : A}{\Gamma , x : B \vdash^{0} M : A} \quad \ord{B} \geq \ord{A} $$
 $$ \rulename{wk^{-1}} \quad  \rulef{\Gamma \vdash^{-1} M : A}{\Gamma , x : B \vdash^{-1} M : A} \quad \ord{B} \geq \ord{A} -1$$
 
-There is also an additional rules expressing the fact that $P_0$ implies $P_{-1}$:
-
-$$ \rulename{seq} \quad \rulef{\Gamma \vdash^{0} M : A}{\Gamma \vdash^{-1} M : A} $$
-
-
 Because of the context reduction lemma, any sequent verifying $P_1$ can be obtained
-by applying the weakening rule $\rulename{wk^{-1}}$ or the rule $\rulename{seq}$ on a sequent
+by applying the weakening rule $\rulename{wk^{-1}}$ or the rule $\rulename{seq}$ to a sequent
 verifying $P_0$. Therefore, with the exception these two rules, we can safely force all the rules to
-have a conclusion sequent verifying $P_0$:
+have a conclusion sequent that verifies $P_0$:
 \begin{itemize}
-\item  For the rules $\rulename{perm}$, $\rulename{const}$ and $\rulename{var}$, only the tagging of the sequent changes:
-
+\item For the rules $\rulename{perm}$, $\rulename{const}$ and $\rulename{var}$, only the tagging of the sequents change:
 $$ \rulename{var} \quad  \rulef{}{x : A\vdash^{0} x : A}
 \qquad
   \rulename{perm} \rulef{
@@ -553,19 +600,19 @@ $$ \rulename{const}
     \rulef{}{ \vdash^0 b : o^r \rightarrow o} \quad b : o^r \rightarrow o \in \Sigma
 $$
 
-\item  The previous definition of the abstraction rule has a side condition
+\item $\rulename{abs}$ The definition of the abstraction rule has a side condition
 expressing the fact that the premise verifies $P_0$ or $P_{-1}$. Since this is always true for sequents
 generated by our new system of rules, we can drop the side condition:
 $$ \rulename{abs} \quad  \rulef{\Gamma | \overline{x} : \overline{A} \vdash^{-1} M : B}
                                    {\Gamma  \vdash^{0} \lambda \overline{x} : \overline{A} . M : (\overline{A},B)}$$
 
 
-\item The application rule $\rulename{app}$ has the following form:
+\item $\rulename{app}$ The application rule has the following form:
 $$ \rulename{app}
     \rulef{
         { \Gamma \vdash^{-1} M : (\overline{A} \, | B)
         \qquad
-        \Gamma \vdash^? N_1 : A_1 \quad \cdots \quad \Gamma \vdash^? N_{l} : A_l \qquad l = |\overline{A}|
+        \Gamma \vdash^{-1} N_1 : A_1 \quad \cdots \quad \Gamma \vdash^{-1} N_{l} : A_l \qquad l = |\overline{A}|
         }
     }
     {
@@ -573,10 +620,9 @@ $$ \rulename{app}
     }
 $$
 
-Suppose that the sequent in the first premise verifies $P_{-1}$, then by Propery \ref{proper:safe_basic_prop}(ii)
-we have:
+Since the first premise verifies $P_{-1}$, by property \ref{proper:safe_basic_prop}(ii) we have:
 $$\forall z \in \Gamma : \ord{z} \geq 1 + \ord{\overline{A}} -1 = \ord{\overline{A}} = \ord{\overline{N}}$$
-Hence, all the sequents of the premises but the first one verify $P_0$. The rule (app) is therefore given by:
+Hence, all the sequents of the premises but the first must verify $P_0$. The rule (app) is therefore given by:
 $$ \rulename{app}
     \rulef{
         { \Gamma \vdash^{-1} M : (\overline{A} \, | B)
@@ -591,7 +637,7 @@ $$
 \item For the application rule $\rulename{app^+}$, the type of the sequent in the first premise has the same order
 as the type of the conclusion premises, therefore since the conclusion verifies $P_0$, the first premise also verifies $P_0$.
 The side-condition implies that that all the other sequents in the premise verify $P_0$. Moreover the fact
-that the first premise verifies $P_0$ ensure that the side-condition holds. Hence the rule becomes:
+that the first premise verifies $P_0$ ensure that the side-condition always holds. Hence the rule becomes:
 $$ \rulename{app^+}
     \rulef{
         \Gamma \vdash^0 M : (\overline{B_1} \, | \, \cdots \, | \, \overline{B_m} \, | \, o) \qquad
@@ -609,7 +655,7 @@ $$ \rulef{\Gamma \vdash^0 M : A\rightarrow B
                                    {\Gamma  \vdash^{0} M N : B}$$
 \end{itemize}
 
-The full set of rules is given in table \ref{tab:homosafelmd_rules_refined}
+The full set of rules is given in table \ref{tab:homosafelmd_rules_refined}.
 
 \begin{table}[htbp]
 $$  \rulename{perm}

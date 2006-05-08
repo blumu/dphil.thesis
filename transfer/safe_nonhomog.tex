@@ -324,13 +324,12 @@ Lemma \ref{lem:nonhomosafe_basic_prop} can be restated as follows:
 \label{lem:context_reduction} If $\Gamma \vdash^i M : A$ then  $fv(M) \vdash^0 M : A$.
 \end{lem}
 
-
+Before looking at each individual rule we prove a useful lemma:
 \begin{lem}
 \label{lem:homog_judg_zero_minusone} Suppose $\Gamma \vdash^0 S : T_s$ is homogeneously-safe
 then there is valid proof tree showing $\Gamma \vdash^0 S : T_S$ containing
 only judgments of the form $\Gamma \vdash^0 M : T$ or $\Gamma \vdash^{-1} M : T$.
 \end{lem}
-
 \begin{proof}
 Consider an homogeneously-safe term $\Gamma \vdash^{0} S : T_S$. We
 prove the result by induction on the size of the proof tree and by
@@ -346,8 +345,8 @@ $$ \rulename{abs} \quad  \rulef{\Gamma \union \overline{x} : \overline{A} \vdash
                                    \forall y \in \Gamma : \ord{y} \geq \ord{\overline{A},B}$$
 
 Type homogeneity requires that for all $i$: $\ord{x_i} = \ord{A_i} \geq
-\ord{B}$. Therefore the premise of the rule verifies $P_0$:
-$$\Gamma, \overline{x} : \overline{A} \vdash^0 M : B.$$
+\ord{B} -1$. Therefore the premise of the rule verifies $P_{-1}$:
+$$\Gamma, \overline{x} : \overline{A} \vdash^{-1} M : B.$$
 
 The induction hypothesis permits to conclude.
 
@@ -377,8 +376,8 @@ We conclude using the rule $\rulename{app}$.
 \end{itemize}
 \end{proof}
 
-This lemma permits us to derive rules specialized for the
-homogeneously-safe lambda calculus.
+We are now ready to look at each rule individually and try to specialize them to
+the homogeneous case.
 
 \subsubsection{The application rule} Let us derive the
 application rules specialized for the case of homogeneous types. We
@@ -435,16 +434,15 @@ $$ \rulename{app_2'} \quad  \rulef{\Gamma \vdash^0 M : A\rightarrow B
 
 Let us derive the abstraction rule specialized for the case of
 homogeneous types. We recall the rule $\rulename{abs}$:
-$$ \rulename{abs^i} \quad  \rulef{\Gamma, \overline{x} : \overline{A} \vdash^{i} M : B}
+$$ \rulename{abs^i} \quad  \rulef{\Gamma \union \overline{x} : \overline{A} \vdash M : B}
                                    {\Gamma  \vdash^{0} \lambda \overline{x} : \overline{A} . M : (\overline{A},B)} \qquad
                                    \forall y \in \Gamma : \ord{y} \geq \ord{\overline{A},B}$$
 
-The context $\Gamma$ is now partitionned according to the order of
+We now partition the context $\Gamma$ is according to the order of
 the variables. The partitions are written in decreasing order of
 type order. The notation $\Gamma | \overline{x}:\overline{A}$ means
 that $\overline{x}:\overline{A}$ is the lowest partition of the
 context.
-
 We also use the notation $(\overline{A}|B)$ to denote the
 homogeneous type $(A_1, A_2, \ldots A_n, B)$ where $\ord{A_1} =
 \ord{A_2} =  \ldots \ord{A_n} \geq \ord{B} -1$.
@@ -454,13 +452,12 @@ Suppose that we abstract the single variable $\overline{x} = x$,
 then in order to respect the side condition, we need to abstract all
 variables of order lower or equal to $\ord{x}$. In particular we
 need to abstract the partition of the order of $x$.
-
 Moreover to respect type homogeneity, we need to abstract variables
 of the lowest order first.
 
 Hence we can change the abstraction rule so that it only allows
 abstraction of the lowest variable partition. The rule can then be
-used repeatedely if further partitions need to be abstracted. We
+used repeatedly if further partitions need to be abstracted. We
 obtained the following rule where the side-condition has
 disappeared:
 
@@ -470,7 +467,8 @@ $$ \rulename{abs^i} \quad  \rulef{\Gamma| \overline{x} : \overline{A} \vdash^{-1
 
 \subsubsection{The complete set of rules of the homogeneous safe $\lambda$-calculus}
 
-Table \ref{tab:homosafelmd_rules} recapitulates the entire set of rules:
+Table \ref{tab:homosafelmd_rules} recapitulates the entire set of rules. We observe that these rules correspond exactly to the rules given in the previous section
+in table \ref{tab:homosafelmd_rules_refined}.
 
 \begin{table}[htbp]
 $$  \rulename{perm}
@@ -481,17 +479,13 @@ $$  \rulename{perm}
 \qquad \rulename{seq} \quad \rulef{\Gamma \vdash^{0} M : A}{\Gamma
 \vdash^{-1} M : A}
 $$
-
 $$
  \rulename{const}
     \rulef{}{ \vdash^0 b : o^r \rightarrow o} \quad b : o^r \rightarrow o \in \Sigma
 \qquad
  \rulename{var} \quad  \rulef{}{x : A\vdash^{0} x : A} $$
-
 $$ \rulename{wk^{0}} \quad  \rulef{\Gamma \vdash^{0} M : A}{\Gamma , x : B \vdash^{0} M : A} \quad \ord{B} \geq \ord{A} $$
-
 $$ \rulename{wk^{-1}} \quad  \rulef{\Gamma \vdash^{-1} M : A}{\Gamma , x : B \vdash^{-1} M : A} \quad \ord{B} \geq \ord{A} -1$$
-
 $$ \rulename{app} \quad  \rulef{\Gamma \vdash^{-1} M : \overline{A} | B
                                         \qquad \Gamma \vdash^{0} N_1 : A_1
                                         \quad \ldots \quad \Gamma \vdash^{0} N_l : A_l
@@ -499,19 +493,12 @@ $$ \rulename{app} \quad  \rulef{\Gamma \vdash^{-1} M : \overline{A} | B
                                         }
                                    {\Gamma  \vdash^{0} M N_1 \ldots N_l : B}
 $$
-
-
 $$ \rulename{app^0} \quad  \rulef{\Gamma \vdash^0 M : A\rightarrow B
                                         \qquad \Gamma \vdash^{0} N : A
                                    }
                                    {\Gamma  \vdash^{0} M N : B}$$
-
 $$ \rulename{abs} \quad  \rulef{\Gamma| \overline{x} : \overline{A} \vdash^{-1} M : B}
                                    {\Gamma  \vdash^{0} \lambda \overline{x} : \overline{A} . M : (\overline{A}|B)}$$
 \caption{Rules of the homogeneous safe lambda calculus}
 \label{tab:homosafelmd_rules}
 \end{table}
-
-
-We observe that these rules correspond exactly to the rules given in the previous section
-in table \ref{tab:homosafelmd_rules_refined}.

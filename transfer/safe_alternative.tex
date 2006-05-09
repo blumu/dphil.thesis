@@ -387,8 +387,7 @@ Similarly to case $\rulename{app}$, we conclude that $t$ is safe.
 
 
 \begin{rem}
-\label{rem:betasred_notpreserv_unsafety} $\betasred$ preserves
-safety but \emph{does not} preserves un-safety: given two terms of
+\label{rem:betasred_notpreserv_unsafety} $\betasred$ \emph{does not} preserves un-safety: given two terms of
 the same type $S$ safe and $U$ unsafe, the term $(\lambda x y . y) U S$ is also unsafe
 but it $\beta_s$-reduces to $S$ which is safe.
 \end{rem}
@@ -403,19 +402,21 @@ variables in $\Gamma$ all have orders at least $\ord{A}+i$. We introduce the not
 \zset$ to mean that $\Gamma \vdash M : A$ is a valid judgment satisfying $P_i$.
 
 
-The following lemma says that if $\Gamma \vdash M : A$ then variable in the context $\Gamma$ with order
-strictly smaller than $M$ do not occur freely in $M$ and therefore the context can be restricted to a smaller number of variables.
+We remark that if $\Gamma \vdash M : A$ then the variables in $\Gamma$ with order
+strictly smaller than $M$ cannot occur freely in $M$ and therefore it is possible to restrict
+the context to a smaller number of variables:
 
 \begin{lem}[Context reduction]
 \label{lem:restriction}
 
-Suppose that $\Gamma \vdash M : A$ satisfies $P_i$ with $i\leq0$, then we have
-$\Gamma' \vdash^{0} M : A$
+If $\Gamma \vdash^i M : A$ then $\Gamma' \vdash^{0} M : A$
 where $$\Gamma' = \{ z \in \Gamma \ |
 \ \ord{z} \geq \ord{M} \} = \Gamma \setminus \{ z \in \Gamma \ | \ \ord{M} + i \leq \ord{z} < \ord{M} \}$$
 \end{lem}
 \begin{proof}
-By induction, the only non trivial cases are $\rulename{app}$ and $\rulename{app^+}$:
+If $i\geq 0$ then the result is trivial.
+Suppose $i<0$. We proceed by structural induction and by case analysis.
+We only give the details for the application cases $\rulename{app}$ and $\rulename{app^+}$:
 \begin{itemize}
 \item Case of the rule $\rulename{app}$:
 
@@ -435,80 +436,84 @@ By induction, the only non trivial cases are $\rulename{app}$ and $\rulename{app
     &=& 1 + \ord{\overline{B_1}} + \ord{\overline{B_2}} - \ord{\overline{B_1}} + i \\
     &=& \ord{M} + (\ord{\overline{B_2}} - \ord{\overline{B_1}} + i)
     \end{eqnarray*}
-    Therefore the first premise satisfies $P_j$ where $j={\ord{\overline{B_2}} - \ord{\overline{B_1}} + i}$
-
-    and $j< 0$ because of the homogeneity of the type. Hence by the induction hypothesis,
-    there is a context $$\Gamma' = \{ z \in \Gamma \ |
-    \ \ord{z} \geq \ord{M} \} = \Gamma \setminus \{ z \in \Gamma \ | \ \ord{M} + j \leq \ord{z} < \ord{M} \}$$
-    such that $\Gamma' \vdash^{0} M : (\overline{B_1} \, | \, \cdots \, | \, \overline{B_m} \, | \, o)$.
+    Therefore the first premise satisfies $P_j$ where $j={\ord{\overline{B_2}} - \ord{\overline{B_1}} + i}$.
+    Hence by the induction hypothesis,
+    $$\Gamma' \vdash^{0} M : (\overline{B_1} \, | \, \cdots \, | \, \overline{B_m} \, | \, o)$$
+    where $\Gamma' = \Gamma \setminus \{ z \in \Gamma \ | \ \ord{M} + j \leq \ord{z} < \ord{M} \}$.
 
 
-    Similarly:
+    Similarly, for all $z \in \Sigma$:
     \begin{eqnarray*}
     \ord{z} \geq 1 + \ord{\overline{B_2}} + i
     &=& \ord{\overline{B_1}} + (1+\ord{\overline{B_2}} - \ord{\overline{B_1}} + i) \\
     &=& \ord{\overline{B_1}} + j+1
     \end{eqnarray*}
+    Hence by the induction hypothesis:
+    $$\Gamma'' \vdash^0 N_k : B_{1k} \mbox{ for } k \in 1..l$$
+    where $\Gamma'' = \Gamma \setminus \{ z \in \Gamma \ | \ \ord{M} + j+1 \leq \ord{z} < \ord{M} \}$.
 
-    where $j+1\leq 0$, hence by the induction hypothesis for $k : 1..l$ there is a
-    context $$\Gamma'' = \{ z \in \Gamma \ |
-    \ \ord{z} \geq \ord{N_k} \} = \Gamma \setminus \{ z \in \Gamma \ | \ \ord{M} + j+1 \leq \ord{z} < \ord{M} \}$$
-    such that $\Gamma'' \vdash N_k : B_{1k}$ verifies $P_0$.
+    Furthermore, $\Gamma'' = \Gamma' \union \{ z \in \Gamma \ | \ \ord{M} + j = \ord{z}\}$ therefore
+    the weakening rule gives:
+    $$\Gamma'' \vdash^{-1} M : (\overline{B_1} \, | \, \cdots \, | \, \overline{B_m} \, | \, o)$$
 
-    But since $\Gamma' = \Gamma'' \union \{ z \in \Gamma \ | \ \ord{M} + j = \ord{z}\}$, we have for $k : 1..l$:
-
-    $\Gamma' \vdash N_k : B_{1k}$ satisfies $P_{-1}$.
-
-
-    By applying  the $\rulename{app}$ rule we obtain:
-    $$\Gamma' \vdash M N_1 \ldots N_l : (\overline{B_2} \, | \, \cdots \, | \,
-    \overline{B_m} \, | \, o)$$
-    where for all $z\in \Gamma'$:
+    Finally the $\rulename{app}$ rule gives:
+    $$\rulef{\Gamma'' \vdash^{-1} M : (\overline{B_1} \, | \, \cdots \, | \, \overline{B_m} \, | \, o)
+    \quad \Gamma'' \vdash^0 N_1 : B_{11} \quad \ldots \quad \Gamma'' \vdash^0 N_1 : B_{1l}
+    }
+        { \Gamma'' \vdash M N_1 \ldots N_l : (\overline{B_2} \, | \, \cdots \, | \,
+            \overline{B_m} \, | \, o)}
+    $$
+    such that for all $z\in \Gamma''$:
     \begin{eqnarray*}
-    \ord{z} \geq 1 + \ord{\overline{B_1}}
-    &>& 1 + \ord{\overline{B_2}} = \ord{M N_1 \ldots N_l}
+    \ord{z} \geq \ord{\overline{B_1}}
+    &\geq& 1 + \ord{\overline{B_2}} = \ord{M N_1 \ldots N_l}
     \end{eqnarray*}
 
-\item $\rulename{app^+}$  The side-condition of the rule $\rulename{app^+}$ ensures that all the premises
+    Therefore:
+    $$\Gamma'' \vdash^0 M N_1 \ldots N_l : (\overline{B_2} \, | \, \cdots \, | \,
+            \overline{B_m} \, | \, o)$$
+
+\item $\rulename{app^+}$  The side-condition of the rule $\rulename{app^+}$ ensures that the first premise
  verify $P_0$. The conclusion of the rule has the same order as the first premise
- therefore the conclusion verifies $P_0$.
+ therefore the conclusion also verifies $P_0$.
 \end{itemize}
 \end{proof}
 
 
 \begin{lem}
 \label{lem:prooftree01only}
-If $\Gamma \vdash^{0} M : T$ then there is valid proof tree
-showing that $\Gamma \vdash M : T$ such that all the judgments
-of the proof tree verify $P_0$ or $P_{-1}$.
+If $\Gamma \vdash^{0} M : T$ or $\Gamma \vdash^{-1} M : T$ then there is valid proof tree
+showing $\Gamma \vdash M : T$ such that all the judgments
+appearing in the proof tree verify either $P_0$ or $P_{-1}$.
 \end{lem}
 
 
 \begin{proof}
-Suppose that $\Gamma \vdash M : T$ such that it satisfies $P_{-1}$.
+Since $P_{-1}$ implies $P_0$, we assume that the judgment $\Gamma \vdash M : T$ satisfies $P_{-1}$.
 
 We show that there is a proof tree for
 $\Gamma \vdash M : T$ where all the nodes of the tree verify $P_0$
-or $P_{-1}$ by case analysis on the last rule used to prove $\Gamma \vdash M : T$ .
-
+or $P_{-1}$. We proceed by structural induction and case analysis on the last rule used
+to show $\Gamma \vdash M : T$.
 \begin{itemize}
-\item $\rulename{wk}$ If $\Delta \vdash M : T$ verifies $P_{-1}$ then in particular $\Gamma
+\item Axiom $\rulename{\Sigma\mbox{\textbf{-const}}}$: the context is empty therefore the sequent verifies $P_{-1}$.
+
+\item Axiom $\rulename{var}$: the context contains only the variable itself therefore the sequent verifies $P_0$.
+
+\item Rule $\rulename{wk}$: If $\Delta \vdash M : T$ verifies $P_{-1}$ then in particular $\Gamma
 \vdash M : T$ verifies $P_{-1}$ for any $\Gamma \subseteq \Delta$.
 
-\item $\rulename{perm}$ By the induction hypothesis.
+\item Rule $\rulename{perm}$: By the induction hypothesis.
 
-\item $\rulename{\Sigma\mbox{\textbf{-const}}}$ the context is empty therefore the sequent verifies $P_{-1}$.
 
-\item $\rulename{var}$ the context contains only the variable itself : verifies $P_0$.
-
-\item $\rulename{abs}$ the second premise of the rule guarantees that the first
+\item Rule $\rulename{abs}$: the second premise of the rule guarantees that the first
 premise verifies $P_{-1}$.
 
-\item $\rulename{app^+}$ The first premise has the same order has the
+\item Rule $\rulename{app^+}$: The first premise has the same order has the
 conclusion of the rule therefore the first premise verifies
-$P_0$. The side-condition of the rule $\rulename{app^+}$ ensures that the other premises verify $P_0$.
+$P_0$. The side-condition of the rule $\rulename{app^+}$ ensures that all the other premises verify $P_0$.
 
-\item $\rulename{app}$
+\item Rule $\rulename{app}$:
 
 $$ \rulename{app}
     \rulef{
@@ -556,38 +561,38 @@ $$
 
 where the last weakening rules is applied only if the inclusion $\Sigma' \subseteq \Gamma$ is strict.
 
-We can now conclude by apply the induction hypothesis on the sequents $\Sigma' \vdash^{-1} M$,
+We can now conclude using the induction hypothesis on the sequents $\Sigma' \vdash^{-1} M$,
 $\Sigma' \vdash^0 N_1$, \ldots, $\Sigma' \vdash^0 N_l$ .
 \end{itemize}
 \end{proof}
 
 \subsubsection{Refining the rules of the homogeneous safe $\lambda$-calculus}
 
-Using the observations that we have just made, we will now refine the rules
-of the safe $\lambda$-calculus with homogeneous type. We would like to obtain a system
-of rules generating sequents that verify $P_0$. However the system must be able to generate intermediate
-sequents that do not necessarily satisfy $P_0$ and which are used to produce \emph{in fine} terms satisfying $P_0$.
+Using the observations that we have just made, we will now derive the rules
+of the safe $\lambda$-calculus with homogeneous type. We want a system
+of rules generating sequents that verify $P_0$. Also, it must be able to generate intermediate
+sequents that do not necessarily satisfy $P_0$ provided that they can be used
+to produce \emph{in fine} terms satisfying $P_0$.
 
 Because of the lemma \ref{lem:prooftree01only}, we know that the only necessary intermediate sequents
-are those that either satisfy $P_0$ or $P_{-1}$. It is therefore useless to produce sequents that do not satisfy
-$P_0$ or $P_{-1}$. For that reason, we will assume by default that premises of the rules all satisfy $P_{-1}$.
+are those that either satisfy $P_0$ or $P_{-1}$.
+Hence, we will assume by default that premises of the rules all satisfy $P_{-1}$. We will see that in
+some cases, some premise will actually satisfy $P_0$.
 
-We will use the notation $\vdash^0$ and $\vdash^{-1}$ instead of $\vdash$ to precise
-whether a given sequent satisfies $P_0$ or $P_{-1}$ respectively.
-
-We define an additional rules expressing the fact that $P_0$ implies $P_{-1}$:
+First we define an additional rules expressing the fact that $P_0$ implies $P_{-1}$:
 $$ \rulename{seq} \quad \rulef{\Gamma \vdash^{0} M : A}{\Gamma \vdash^{-1} M : A} $$
 
-The weakening rules can be specialized in two rules:
+The weakening rule specializes into two rules:
 $$ \rulename{wk^{0}} \quad  \rulef{\Gamma \vdash^{0} M : A}{\Gamma , x : B \vdash^{0} M : A} \quad \ord{B} \geq \ord{A} $$
 $$ \rulename{wk^{-1}} \quad  \rulef{\Gamma \vdash^{-1} M : A}{\Gamma , x : B \vdash^{-1} M : A} \quad \ord{B} \geq \ord{A} -1$$
 
-Because of the context reduction lemma, any sequent verifying $P_1$ can be obtained
-by applying the weakening rule $\rulename{wk^{-1}}$ or the rule $\rulename{seq}$ to a sequent
-verifying $P_0$. Therefore, with the exception these two rules, we can safely force all the rules to
-have a conclusion sequent that verifies $P_0$:
+Because of the context reduction lemma, any sequent verifying $P_{-1}$ can be obtained
+by applying the weakening rule $\rulename{wk^{-1}}$ or the rule $\rulename{seq}$ to another sequent
+verifying $P_0$. Therefore, with the exception of these two rules, we only need to use rules
+whose conclusion sequents verify $P_0$:
 \begin{itemize}
-\item For the rules $\rulename{perm}$, $\rulename{const}$ and $\rulename{var}$, only the tagging of the sequents change:
+\item For the rules $\rulename{perm}$, $\rulename{const}$ and $\rulename{var}$, only the tagging of the sequents
+changes:
 $$ \rulename{var} \quad  \rulef{}{x : A\vdash^{0} x : A}
 \qquad
   \rulename{perm} \rulef{
@@ -648,7 +653,7 @@ $$ \rulename{app^+}
     }
 $$
 where $\overline{B_1} = B_{11}, \ldots, B_{1l},\overline{B}$.
-This rule can be equivalently stated as:
+Clearly, this rule can be equivalently stated as:
 $$ \rulef{\Gamma \vdash^0 M : A\rightarrow B
                                         \qquad \Gamma \vdash^{0} N : A
                                    }

@@ -147,11 +147,16 @@ at $n$. In particular if $r$ is the root of the tree $\tau(s)$ then
 $\kappa(r) = \aux{s}$.
 
 \begin{dfn}[Node order]
-The order of a lambda-node $n$ labelled $\lambda \overline{\xi}$ is defined as follows:
-$$\ord{n} = \max_{i=1..n} \ord{\xi_i}$$
-The order of $n$ labelled $x$ or $x@$ is the order of the variable or constant $x$:
-$\ord{n} = \ord{x}$.
-The order of node labelled $@$ is $0$.
+The node-order function $\textsf{ord}$ is defined on nodes as
+follows:
+\begin{eqnarray*}
+\ord{\lambda \overline{\xi}} &=& \max_{i=1..n} \ord{\xi_i} \\
+\ord{\lambda} &=& -1 \\
+\ord{x} &=& \ord{x} \\
+\ord{x@} &=& \ord{x} \\
+\ord{@} &=& 0
+\end{eqnarray*}
+where $x$ denotes a variable or a constant.
 \end{dfn}
 
 
@@ -191,17 +196,17 @@ operator-application nodes, variable or constant nodes (the root level being num
 \subsubsection{Pointers and justified sequence of nodes}
 
 \begin{dfn}[Binder]
-Let $n$ be a node of the computation tree labelled $x$ or $x@$.
-We say a node $n$ is bound by the node $m$ if $m$ is
-the closest node in the path from $n$ to the root of the tree such that
-$m$ is labelled $\lambda \overline{\xi}$ with $x\in \overline{\xi}$.
-$m$ is called the binder of $n$
+Let $n$ be a node of the computation tree labelled $x$ or $x@$. We
+say a node $n$ is bound by the node $m$ if $m$ is the closest node
+in the path from $n$ to the root of the tree such that $m$ is
+labelled $\lambda \overline{\xi}$ with $x\in \overline{\xi}$. $m$ is
+called the binder of $n$.
 \end{dfn}
 
 \begin{dfn}[Enabling]
-The enabling relation noted $\vdash$ over the set of nodes of the computation tree is defined as follows:
-
-We write $m \vdash n$ and we say that the node $n$ is enabled by $m$ or that $m$ enables $n$ if and only if
+The enabling relation $\vdash$ is defined on the set of nodes of the
+computation tree. We write $m \vdash n$ and we say that the node $n$
+is enabled by $m$ or that $m$ enables $n$ if and only if
 \begin{itemize}
 \item the node $n$ is labelled $x$ or $x@$ and $m$ is the binder of $n$;
 \item or $n$ is a lambda node labelled $\lambda \overline{\xi}$ and $m$ is the parent node of $n$
@@ -343,13 +348,19 @@ corresponding to the operator of the application: the child node number $0$.
 
 \item ($\mbox{Sig}^0$) After a node labelled $f$ where $f$ is an order 0 $\Sigma$-constant a maximal-traversal stops.
 
-\item (Sig) After a node labelled $f@$ where $f$ is an order 1 $\Sigma$-constant,
-a maximal-traversal must visit one of the children nodes of $f@$ (which are all labelled $\lambda$).
+\item ($\mbox{Sig}^{\geq 1}$) After a node labelled $f@$ where $f$ is a $\Sigma$-constant of order greater or equal to $1$,
+a maximal-traversal must visit one of the children nodes of $f@$.
 
-\item (Var) After a node labelled $x$ or $x@$ where $x$ is either a variable occuring free in $M$
-or bound by the root of the tree $\tau(M)$, a maximal-traversal must visit one of the children nodes.
+\item ($\mbox{Var}^0$) After a node labelled $x$ where $x$ is a variable of order $0$ either occurring free in $M$
+or bound by the root of the tree $\tau(M)$, a maximal-traversal
+stops.
 
-\item (Var') If the last node visited is $x_i$ (or $x_i@$) where the node $x_i$ is bound by a node $\lambda \overline{x}$
+\item ($\mbox{Var}^{\geq 1}$) After a node labelled $x@$ where $x$ is a variable of order greater or equal to $1$ either occurring free in $M$
+or bound by the root of the tree $\tau(M)$, a maximal-traversal must
+visit one of the children nodes.
+
+
+\item (Var) If the last node visited is $x_i$ (or $x_i@$) where the node $x_i$ is bound by a node $\lambda \overline{x}$
 different from the root of $\tau(M)$, then the next node visited in a maximal-traversal
 corresponds to the term that would be substituted for $x_i$ if the $\beta$-redex
 in term $M$ were reduced.
@@ -987,9 +998,14 @@ We proceed by induction on the height of of
 the tree $\tau(M)$ and by case analysis on the structure of the term.
 
 \begin{itemize}
-  \item (variable) $M = x$. This case does not happen since $M$ is a closed term.
+  \item[(constant)] $M = f \in \Sigma$. The tree $\tau(M)$ has the following form:
+  $$ \tree[levelsep=6ex]{r}{ \TR{f} }$$
+  There is only one question in the game arena: the initial question $q$ verifying $ q = \varphi_M(r)$.
+  It suffices to take $t = r^{|\tilde{s}|}$.
 
-    \item (application) The term $M$ is of the form $\emptyset \vdash N_0 N_1 \ldots N_p : o$ where $N_0$ is not
+  \item[(variable)] $M = x$. This case does not happen since $M$ is a closed term.
+
+  \item[(application)] The term $M$ is of the form $\emptyset \vdash N_0 N_1 \ldots N_p : o$ where $N_0$ is not
     a variable (since $M$ is closed) and:
     \begin{eqnarray*}
     \emptyset &\vdash& N_0 : (A_1,\ldots,A_p,o)\\
@@ -1026,9 +1042,12 @@ the tree $\tau(M)$ and by case analysis on the structure of the term.
     $$ \varphi_{M} (t) \jseq \tilde{s} $$
 
 
-    \item (abstraction of a constant)
-
-    \item (abstraction of a variable)
+  \item[(abstraction)]
+    $M \equiv \lambda \overline{\xi} . M'$ where $M'$ is not an abstraction. We do a case analysis on
+    the last rule used to derive $N'$:
+    \begin{itemize}
+      \item $M'$ is a constant: same treatment as the (constant) case above.
+      \item $M'$ is a variable:
         $M = \lambda \overline{\xi} . x$.  Then $x$ must be of ground type $o$ and since $M$ is closed
         $x = \xi_i \in \overline{\xi}$ .
         Then $\tau(M)$ has the following shape:
@@ -1051,7 +1070,7 @@ the tree $\tau(M)$ and by case analysis on the structure of the term.
         node $1$ ($x$) is bound by node $0$ ($\lambda \overline{\xi}$) and a valid
         reduced-traversal. Clearly we have $\varphi(t) \jseq \tilde{s}$.
 
-    \item (abstraction of an application) The term $M$ is of the form $M = \lambda \overline{\xi} . x N_1 \ldots N_p$ where
+    \item $M'$ is an application: $M = \lambda \overline{\xi} . x N_1 \ldots N_p$ where
     \begin{eqnarray*}
     \emptyset &\vdash& M : (X_1,\ldots,X_n,o) \\
     \Gamma &\vdash& x N_1 \ldots N_p : o \\
@@ -1230,6 +1249,7 @@ the tree $\tau(M)$ and by case analysis on the structure of the term.
     $$
     Note that there is only one question $q_C$ in the arena $C$ therefore $m_2 = m_5 = m_8 = q_C$.
     It is easy to check that $\varphi(t') \jseq \tilde{s}$
+    \end{itemize}
 \end{itemize}
 \end{proof}
 
@@ -1366,11 +1386,13 @@ the path in $\tau(M)$ from the root to the node $n$.
 Hence the regularity of $\tau(M)$ (property \ref{proper:regularity}) tells us that $n$ points to the
 the last $\lambda$-node in $\pview{t}$ (the path from the root to $n$) that has order greater or equal to $\ord{n}$.
 
-The lambda nodes in $N_\Sigma \union Succ(N_\Sigma)$ are the nodes in $Succ(N_{\Sigma})$; they are
-labelled $\lambda$ and therefore no node points to them. Therefore, because of equation \ref{eq:pview_r},
-$n$ also points to the the last $\lambda$-node in $\pview{r}$ that
-has order greater or equal to $\ord{n}$.
-
+The lambda nodes in $N_\Sigma \union Succ(N_\Sigma)$ are exactly the
+nodes in $Succ(N_{\Sigma})$, they are all labelled $\lambda$ and
+hence are of order $-1$. Moreover we have $\ord{n} \geq 0$ therefore
+the last $\lambda$-node in $\pview{t}$ that has order greater or
+equal to $\ord{n}$ is also the last node in $\pview{r} = \pview{t}
+\setminus \left( N_\Sigma \union Succ(N_\Sigma) \right)$ that has
+order greater or equal to $\ord{n}$.
 
 By property \ref{proper:phi_pview} (ii), the P-view of $\tilde{s}$ and the P-view of $r$ are computed
 similarly and have the same pointers. This means that

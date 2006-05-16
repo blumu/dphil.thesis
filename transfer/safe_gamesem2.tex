@@ -334,47 +334,72 @@ The evaluation of term is performed by traversing the computation tree in a part
 \emph{traversal}. Intuitively, a \emph{traversal} is a justified sequence of nodes of the computation tree such that each node
 of the sequence indicates which step is taken during the evaluation of the term.
 
-A \emph{traversal} is defined to be the prefix of a maximal-traversal.
-A maximal-traversal is a traversal that cannot be extended by visiting another node. It is formally defined as follows:
-\begin{dfn}[Maximal-traversal]
-\label{def:maxtraversal}
-A maximal-traversal always starts with the root of the tree. This marks the beginning of the computation.
-The exploration of the tree then progresses as follows:
+It is formally defined as follows:
+
+\begin{dfn}[Traversal]
+\label{def:traversal} A traversal over a computation tree $\tau(M)$
+is a justified sequence of nodes defined by induction on the rules
+given below. A maximal-traversal is a traversal that cannot be
+extended by visiting another node. A \emph{traversal} is a prefix of
+a maximal-traversal.
+
+A traversal always starts with the root of the tree. This marks the
+beginning of the computation. The exploration of the tree then
+progresses as follows:
 \begin{itemize}
-\item (Lam) After visiting a lambda-node, a maximal-traversal must visit its child node.
+\item (Lam) Suppose that $t \cdot \lambda \overline{\xi}$ is a traversal then the next node that can be visited is the only child
+node $n$ of $\lambda \overline{\xi}$. Suppose that the node binding
+$n$ occurs in $\pview{t \cdot \lambda \overline{\xi}}$, then the
+justified sequence of nodes:
+$$t \cdot \lambda \overline{\xi} \cdot n,$$
+where $n$ points to the previous occurrence in $\pview{t \cdot
+\lambda \overline{\xi}}$ of its binding node, is also a traversal.
 
-\item (App) After a node labelled $@$, a maximal-traversal must visit the node
-corresponding to the operator of the application: the child node number $0$.
+\item (App) If $t \cdot @$ is a traversal then so is
+$$t \cdot \rnode{m}{@} \cdot
+\rnode{n}{n} \bkptra[nodesep=1pt]{40}{n}{m} \bklabel{0}$$
 
-\item ($\mbox{Sig}^0$) After a node labelled $f$ where $f$ is an order 0 $\Sigma$-constant a maximal-traversal stops.
-
-\item ($\mbox{Sig}^{\geq 1}$) After a node labelled $f@$ where $f$ is a $\Sigma$-constant of order greater or equal to $1$,
-a maximal-traversal must visit one of the children nodes of $f@$.
-
-\item ($\mbox{Var}^0$) After a node labelled $x$ where $x$ is a variable of order $0$ either occurring free in $M$
-or bound by the root of the tree $\tau(M)$, a maximal-traversal
-stops.
-
-\item ($\mbox{Var}^{\geq 1}$) After a node labelled $x@$ where $x$ is a variable of order greater or equal to $1$ either occurring free in $M$
-or bound by the root of the tree $\tau(M)$, a maximal-traversal must
-visit one of the children nodes.
+i.e. the next visited node is the $0^{th}$ child node of $@$ : the
+node corresponding to the operator of the application.
 
 
-\item (Var) If the last node visited is $x_i$ (or $x_i@$) where the node $x_i$ is bound by a node $\lambda \overline{x}$
-different from the root of $\tau(M)$, then the next node visited in a maximal-traversal
-corresponds to the term that would be substituted for $x_i$ if the $\beta$-redex
-in term $M$ were reduced.
+\item ($\mbox{Sig}^0$) If $t \cdot f$ is a traversal where $f$ is an order 0 $\Sigma$-constant then $t \cdot f$ is a maximal traversal.
 
-The binding node $\lambda \overline{x}$ must have been visited previously in the traversal.
-Since $\lambda \overline{x}$ is not the root of the tree, it must be justified by some previous node in the traversal,
-therefore there must be an application node $n$ preceding $\lambda \overline{x}$ in the traversal. We do a case analysis
-on $n$:
+\item ($\mbox{Sig}^{\geq 1}$) If $t \cdot f@$ is a traversal where $f$ is a $\Sigma$-constant of order greater or equal to
+$1$ then so is
+$$t \cdot \rnode{m}{f@} \cdot
+\rnode{n}{n} \bkptra[nodesep=1pt]{40}{n}{m} \bklabel{0}
+\qquad \mbox{ for } 1 \leq i \leq arity(f) $$
+
+i.e. the traversal must visit one of the children nodes of $f@$.
+
+\item ($\mbox{Var}^0$) If $t \cdot x$ is a traversal where $x$ is a variable of order $0$ either occurring free in $M$
+or bound by the root of the tree $\tau(M)$ then it is a maximal
+traversal.
+
+\item ($\mbox{Var}^{\geq 1}$) If $t \cdot x@$ is a traversal where $x$ is a variable of order greater or equal to $1$ either occurring free in $M$
+or bound by the root of the tree $\tau(M)$ then so is
+$$t \cdot \rnode{m}{x@} \cdot
+\rnode{n}{n} \bkptra[nodesep=1pt]{40}{n}{m} \bklabel{0}
+\qquad \mbox{ for } 1 \leq i \leq arity(x) $$
+i.e. the
+traversal must visit one of the children nodes of $x@$.
+
+
+\item (Var) If $t \cdot x_i$ is a traversal (or $t \cdot x_i@$) where the node $x_i$ is bound by a node $\lambda \overline{x}$
+different from the root of $\tau(M)$, then the next node to visit in
+the traversal must correspond to the term that would be substituted
+for $x_i$ if the $\beta$-redex in term $M$ were reduced.
+
+The binding node $\lambda \overline{x}$ must have been visited
+previously in the traversal. Since $\lambda \overline{x}$ is not the
+root of the tree, it must be justified by some previous node in the
+traversal. This implies that $\lambda \overline{x}$ is not the first
+node in the traversal and therefore there is an application node $n$
+preceding $\lambda \overline{x}$ in the traversal: $t \cdot x_i = t'
+\cdot n \cdot x_i$. We do a case analysis on $n$:
 
     \begin{itemize}
-    \item Suppose $n$ is labelled by a constant $f@$ or a ground type variable $y$. This implies
-    that the node visited after $n$ is labelled $\lambda$. However here the following node is $\lambda \overline{x}$,
-    therefore this case is impossible.
-
     \item Suppose $n$ is an application node $@$ then $\lambda \overline{x}$ is the first child node of $n$
     and $n$ has exactly $|\overline{x}| + 1$ children nodes:
     $$\pstree[levelsep=8ex]{\TR{\stackrel{\vdots}{@^{[n]}}}}
@@ -384,31 +409,36 @@ on $n$:
         \TR[edge=\dedge]{}
         \tree{\lambda \overline{\eta_i}}{\vdots}\treelabel{i}
         \TR[edge=\dedge]{}
-        \tree{\lambda \overline{\eta_n}}{\vdots}\treelabel{n}
+        \tree{\lambda \overline{\eta_{|x|}}}{\vdots}\treelabel{|x|}
     }
     $$
-    The next step of the maximal-traversal is a jump to the $i^{th}$ child of $@$
-    (the node corresponding to the term that would be substituted for $x_i$ if the $\beta$-reduction was performed).
-    The traversal has the following form:
+    Then the following justified sequence is also a traversal:
     \vspace{0.3cm}
-    $$\ldots \rnode{n}{@^{[n]}} \cdot
+    $$t' \cdot \rnode{n}{@^{[n]}} \cdot
     \rnode{lx}{\lambda \overline{x}} \cdot \ldots \cdot
     \rnode{x}{x_i@} \cdot
     \rnode{mi}{\lambda \overline{\eta_i}} \cdot \ldots
     \bkptra[ncurv=0.45]{45}{mi}{n} \bklabel{i}
     \bkptra[nodesep=0pt,ncurv=0.6]{50}{x}{lx} \bklabel{i}
     $$
+    i.e. the next step of the traversal is a jump to the $i^{th}$ child of
+    $@$ ($\lambda \overline{\eta_i}$) which corresponds to the term that would be substituted for $x_i$ if the $\beta$-reduction was
+    performed.
+
 
 
     \item Suppose $n$ is labelled $y @$. This means that this occurrence of the variable $y$ is substituted by the term
     $\kappa(\lambda \overline{x})$ during the evaluation of the term.
-    Hence $y$ must be a non-free variable bound by a node different from the root (otherwise $y$ would not be substituted during the evaluation of the term).
+    $y$ is neither a constant nor a free variable (otherwise $y$ would not be substituted during the evaluation of the term).
+    Hence $y$ must be a variable bound by a node different from the
+    root.
 
-    Therefore during reduction,
-    the occurrence of the variable $x_i$ will be substituted by the term represented by the $i^{th}$ child node of node $y @$.
-    Hence the next node in the traversal is the $i^{th}$ child of $y@$ noted $\lambda \overline{\eta_i}$:
+    During reduction, the occurrence of the variable $x_i$ will be substituted by the term represented by
+    node $\lambda \overline{\eta_i}$ (the $i^{th}$ child node of $y
+    @$).
+    Hence the following justified sequence is also a traversal:
     \vspace{0.2cm}
-    $$\ldots \cdot \rnode{n}{y @^{[n]}} \cdot
+    $$t' \cdot \rnode{n}{y @^{[n]}} \cdot
     \rnode{lx}{\lambda \overline{x}} \cdot \ldots \cdot
     \rnode{x}{x_i @} \cdot
     \rnode{mi}{\lambda \overline{\eta_i}} \cdot \ldots
@@ -418,6 +448,7 @@ on $n$:
     \end{itemize}
 \end{itemize}
 \end{dfn}
+
 
 \begin{exmp}
 Consider the following tree:
@@ -472,223 +503,194 @@ where $r$ denotes the root of the computation tree.
 We say that $s$ is the reduction of the traversal $t$.
 \end{dfn}
 
-In a reduced-traversal, non-lambda nodes are all labelled
-$x @$ or $x$ for some variable $x$ \emph{bound} in $M$.
-There cannot be nodes labelled $@$, $u@$ or $u$, where $u$ is a free variable in $M$ or a $\Sigma$-constant,
-since such nodes are pointer-less.
-
 \begin{rem}
-\label{rem:redtrav}
-If $s$ is a reduced-traversal $s$ then $s \jseq t \upharpoonright \{ r \}$ for some
-traversal $t$ whose last node does not belong to $N_\Sigma \union Succ(N_\Sigma)$.
+\label{rem:redtrav} Clearly, if $s$ is a reduced-traversal then
+there is a traversal $t$ \emph{whose last node is justified by $r$}
+such that $s \jseq t \upharpoonright \{ r \}$.
 \end{rem}
 
-\begin{dfn}[Set substraction operator]
-Suppose $s$ is a justified sequence of nodes and $N$ is a set of nodes then $s \setminus N$ is the justified sequence of nodes
-obtained by removing from $s$ all the nodes that belongs to $N$.
-The links of $s \setminus N$ are the links of $s$ minus all the links pointing from or to nodes in $N$.
-\end{dfn}
+In a reduced-traversal, non-lambda nodes are all labelled $x @$ or
+$x$ for some variable $x$ \emph{bound} in $M$. There cannot be nodes
+labelled $@$, $u@$ or $u$, where $u$ is a free variable in $M$ or a
+$\Sigma$-constant, since such nodes are pointer-less.
+
+%% REMOVED
+%%
+%%\begin{dfn}[Set substraction operator]
+%%Suppose $s$ is a justified sequence of nodes and $N$ is a set of nodes then $s \setminus N$ is the justified sequence of nodes
+%%obtained by removing from $s$ all the nodes that belongs to $N$.
+%%The links of $s \setminus N$ are the links of $s$ minus all the links pointing from or to nodes in $N$.
+%%\end{dfn}
 
 \begin{property}[Traversal of closed term in $\beta \eta$-long normal form]
 \label{proper:betaeta_trav}
 Suppose $M$ is a closed term in $\beta \eta$-long normal form (i.e. the $\eta$-long normal form of a $\beta$-normal form), then
 for any traversal $t$ of $\tau(M)$ and any node $n$ in $t$:
 \begin{eqnarray*}
-n \mbox{ not hereditarily justified by } r \quad \iff \quad  n \in N_\Sigma \union Succ(N_\Sigma)
+n \mbox{ is not hereditarily justified by } r \quad \iff \quad  n
+\mbox{ is hereditarily justified by some node $m$ in } N_\Sigma
 \end{eqnarray*}
-where $N_\Sigma$ denotes the set of nodes labelled $u$ or $u@$ for some
-$\Sigma$-constant $u$, $Succ(N)$ denotes the set of nodes of $\tau(M)$ whose parent nodes are
-in $N$ and $r$ denotes the root of the tree $\tau(M)$.
+where $r$ denotes the root of the tree
+$\tau(M)$ and $N_\Sigma$ denotes the set of nodes labelled $f$ or $f@$ for
+some $\Sigma$-constant $f$.
 \end{property}
 \begin{proof}
-For the right-to-left implication: node in $N_\Sigma$ do not have justified pointer, nodes
-in $Succ(N_\Sigma)$ are justified by nodes in $N_\Sigma$. We can conclude by observing that $r \not\in N_\Sigma \union Succ(N_\Sigma)$.
+In a computation tree, the only nodes with no justification pointer are:
+the root node $r$, the application nodes $@$, the application nodes $u @$ or $u$ where $u$ is a $\Sigma$ constant or a free variable.
 
-For the left-to-right implication: we proved the contraposition by induction on the length of the traversal.
-It is trivially true for the empty traversal.
-Suppose $n$ is not in $N_\Sigma \union Succ(N_\Sigma)$.
+Here the term $M$ is in $\beta \eta$-long normal form therefore there is no node of type $@$ in the computation tree.
+Moreover $M$ is closed therefore there is no node of type $x@$ or $x$ where $x$ is a
+free variable. Hence the only nodes of the computation tree of $M$ without pointer are the root and the nodes in $N_\Sigma$.
 
-There are two cases:
-\begin{itemize}
-\item $n$ a non-lambda node:
-We observe that in the computation tree of a term in $\beta \eta$-long normal form
-there is no node of type $@$. Moreover $M$ is closed therefore there is no node of type $x@$ or $x$ for some
-free variable  $x$ .
-
-Consequently, only the nodes in $N_\Sigma$ have no pointer.
-Since $n \not\in N_\Sigma \union Succ(N_\Sigma)$, $n$ must have a pointer to a previous lambda node $m$ in the traversal.
-
-$m$ is not in $Succ(N_\Sigma)$ because these nodes are all labelled $\lambda$ and no other node can point to such node.
-Hence $m\not\in N_\Sigma \union Succ(N_\Sigma)$.
-
-\item $n$ is a lambda node:
-$n$ does not point to a node in $N_\Sigma$ otherwise $n$ would be in $Succ(N_\Sigma)$. Hence $n$ points to some
-previous non-lambda node $m$ in the traversal such that $m\not\in N_\Sigma \union Succ(N_\Sigma)$
-\end{itemize}
-In both case, we use the induction hypothesis to conclude that $m$ is hereditarily justified by $r$ and
-therefore $n$ is hereditarily justified by $r$.
+Consequently, all the nodes in the tree are either hereditarily justified by the root $r$ or by a node in $N_\Sigma$. Since $r$ is not in
+$N_\Sigma$, the ``or'' is an exclusive-or.
 \end{proof}
 
 \begin{lem}[Reduced-traversal and traversal]
-\label{lem:redtrav_trav}
-Suppose $M$ is a closed term in $\beta \eta$-long normal form (i.e. the $\eta$-long normal form of a $\beta$-normal form) then:
+\label{lem:redtrav_trav} Suppose $M$ is a closed term in $\beta
+\eta$-long normal form (i.e. the $\eta$-long normal form of a
+$\beta$-normal form). Let us note $r$ denotes the root of the tree
+$\tau(M)$. Then:
 \begin{itemize}
-\item[(i)] for any traversal $t$, the reduced-traversal $s \jseq t \upharpoonright \{ r \}$ verifies
-$$ \pview{s} \jseq \pview{t} \setminus \left( N_\Sigma \union Succ(N_\Sigma) \right)$$
-\item[(ii)] for any traversal $t$ whose last node does not belong to $N_\Sigma \union Succ(N_\Sigma)$,
-     the reduced-traversal $s \jseq t \upharpoonright \{ r \}$ verifies
-    $$ \oview{s} \jseq \oview{t}$$
+\item[(i)] for any traversal $t$, the reduced-traversal $t \upharpoonright \{ r \}$ verifies
+$$ \pview{t \upharpoonright \{ r \}} \jseq \pview{t} \upharpoonright \{ r \},$$
+\item[(ii)] for any traversal $t$ whose last node is hereditarily justified by $r$,
+     the reduced-traversal $t \upharpoonright \{ r \}$ verifies
+    $$ \oview{t \upharpoonright \{ r \}} \jseq \oview{t}.$$
 \end{itemize}
-
-where $N_\Sigma$ denotes the set of nodes labelled $u$ or $u@$ for
-some $\Sigma$-constant $u$, $Succ(N)$ denotes the set of nodes of
-$\tau(M)$ whose parent nodes are in $N$ and $r$ denotes the root of
-the tree $\tau(M)$.
 \end{lem}
 
 \begin{proof}
-(i) By induction: it is trivially true for the empty traversal $t =
-\epsilon$. Let $s$ be the reduced-traversal $s = t \upharpoonright
-\{ r \}$
+(i) By induction. Base case: it is trivially true for the empty
+traversal $t = \epsilon$. Step case: consider a traversal $t$ and
+suppose that the property (i) is verified for all traversal smaller
+than $t$. There are three cases:
 \begin{itemize}
-\item Suppose $n$ is $r$ the root of the tree. Then $t = r$ because the root node occurs only once in a traversal. Hence:
-    \begin{eqnarray*}
-    \pview{t} \setminus \left( N_\Sigma \union Succ(N_\Sigma) \right)
-    \jseq& r \setminus \left( N_\Sigma \union Succ(N_\Sigma) \right) \\
-    \jseq& r  & (r \notin N_\Sigma \union Succ(N_\Sigma))  \\
-    \jseq& \pview{r} \\
-    \jseq& \pview{r  \upharpoonright \{ r \}} \quad
-    \jseq \pview{t  \upharpoonright \{ r \}} \quad
-    \jseq \quad \pview{s}
-    \end{eqnarray*}
+\item Suppose $t = t' \cdot n$ where $n = r$. We have:
+    \begin{align*}
+    \pview{t} \upharpoonright \{ r \}
+        &\jseq  \pview{t' \cdot r } \upharpoonright \{ r \}      & (\mbox{definition of } t)\\
+        &\jseq  r \upharpoonright \{ r \}                        & (\mbox{def. P-view})\\
+        &\jseq  r                                                & (\mbox{def. operator $\upharpoonright$})\\
+        &\jseq  \pview{(t' \upharpoonright \{ r \}) \cdot r }    & (\mbox{def. P-view})\\
+        &\jseq  \pview{(t' \cdot r)  \upharpoonright \{ r \}}    & (\mbox{def. operator $\upharpoonright$})\\
+        &\jseq \pview{t \upharpoonright \{ r \}}                & (\mbox{definition of } t)
+    \end{align*}
 
-\item Consider a traversal $t = t' \cdot n$ where $n$ is a non-lambda
-move. Suppose that property (i) is verified for traversal $t'$. Let
-$s'$ be the reduced-traversal $s' = t' \upharpoonright \{ r \}$:
+\item Suppose $t = t' \cdot n$ where $n$ is a non-lambda
+move. We have:
     \begin{equation}
     \pview{t} = \pview{t' \cdot n} = \pview{t'} \cdot n  \label{eq_tprime}
     \end{equation}
 
     We consider the following two sub-cases:
     \begin{itemize}
-    \item $n$ is not hereditarily justified by $r$. Then
-    \begin{equation}
-    s = (t' \cdot n) \upharpoonright \{ r \} = t' \upharpoonright \{ r \} = s' \label{eq_ssprime_1a}
-    \end{equation}
+    \item Suppose that $n$ is not hereditarily justified by $r$ then:
+    \begin{align*}
+    \pview{t} \upharpoonright \{ r \}
+        &\jseq (\pview{t'} \cdot n) \upharpoonright \{ r \} & (\mbox{equation \ref{eq_tprime}}) \\
+        &\jseq \pview{t'} \upharpoonright \{ r \}           & (n \mbox{ is not hereditarily justified by } r) \\
+        &\jseq \pview{t' \upharpoonright \{ r \}}           & (\mbox{induction hypothesis}) \\
+        &\jseq \pview{(t' \cdot n) \upharpoonright \{ r \}} & (n \mbox{ is not hereditarily justified by } r) \\
+        &\jseq \pview{t \upharpoonright \{ r \} }           & (\mbox{definition of } t)
+    \end{align*}
 
-    From property \ref{proper:betaeta_trav}, $n \in N_\Sigma \union Succ(N_\Sigma)$ hence:
-    \begin{eqnarray*}
-    \pview{t} \setminus \left( N_\Sigma \union Succ(N_\Sigma) \right)
-    \jseq& (\pview{t'} \cdot n) \setminus \left( N_\Sigma \union Succ(N_\Sigma) \right) & \mbox{(equation \ref{eq_tprime})} \\
-    \jseq& \pview{t'} \setminus \left( N_\Sigma \union Succ(N_\Sigma) \right) & (n \in N_\Sigma \union Succ(N_\Sigma)) \\
-    \jseq& \pview{s'} & \mbox{(induction hypothesis)} \\
-    \jseq& \pview{s} & \mbox{(equation \ref{eq_ssprime_1a})}
-    \end{eqnarray*}
-
-    \item $n$ is hereditarily justified by $r$. Then
-    \begin{equation}
-    s = (t' \cdot n) \upharpoonright \{ r \} = (t' \upharpoonright \{ r \}) \cdot n = s' \cdot n  \label{eq_ssprime_1b}
-    \end{equation}
+    \item Suppose that $n$ is hereditarily justified by $r$ then:
+    \begin{align*}
+    \pview{t} \upharpoonright \{ r \}
+    &\jseq (\pview{t'} \cdot n) \upharpoonright \{ r \}     & (\mbox{equation \ref{eq_tprime}}) \\
+    &\jseq (\pview{t'} \upharpoonright \{ r \} ) \cdot n    & (n \mbox{ is hereditarily justified by } r)\\
+    &\jseq \pview{t' \upharpoonright \{ r \}} \cdot n       & (\mbox{induction hypothesis}) \\
+    &\jseq \pview{(t' \upharpoonright \{ r \}) \cdot n }    & (\mbox{def. P-view}) \\
+    &\jseq \pview{(t' \cdot n) \upharpoonright \{ r \} }    & (n \mbox{ is hereditarily justified by } r) \\
+    &\jseq \pview{t \upharpoonright \{ r \} }               & (\mbox{definition of } t)
+    \end{align*}
     \end{itemize}
 
-    From property \ref{proper:betaeta_trav}, $n \notin N_\Sigma \union Succ(N_\Sigma)$ hence:
-    \begin{eqnarray*}
-    \pview{t} \setminus \left( N_\Sigma \union Succ(N_\Sigma) \right)
-    \jseq& (\pview{t'} \cdot n) \setminus \left( N_\Sigma \union Succ(N_\Sigma) \right) & \mbox{(equation \ref{eq_tprime})} \\
-    \jseq& (\pview{t'} \setminus \left( N_\Sigma \union Succ(N_\Sigma) \right)) \cdot n & (n \notin N_\Sigma \union Succ(N_\Sigma)) \\
-    \jseq& \pview{s'} \cdot n & \mbox{(induction hypothesis)} \\
-    \jseq& \pview{s' \cdot n }  & \mbox{(def. P-view)} \\
-    \jseq& \pview{s} & \mbox{(equation \ref{eq_ssprime_1b})}
-    \end{eqnarray*}
 
-
-\item Consider the traversal:
-    $$  t =  t'' \cdot \rnode{m}{m} \cdot  u \cdot \rnode{lmd}{n}
+\item Suppose that the traversal is:
+    $$  t =  t' \cdot \rnode{m}{m} \cdot  u \cdot \rnode{lmd}{n}
     \bkptra[nodesep=1pt]{30}{lmd}{m}$$
 
-    and suppose that $t''$ verifies property (i). Let
-    $s''$ be the reduced-traversal $s'' = t'' \upharpoonright \{ r \}$.
-
-    We have:
+    where $n$ is a $\lambda$ node. Then we have:
     \begin{equation}
     \pview{t} = \pview{t' \cdot \rnode{m}{m} \cdot u \cdot \rnode{n}{n}}
-            = \pview{t''} \cdot \rnode{m2}{m} \cdot \rnode{n2}{n}
+            = \pview{t'} \cdot \rnode{m2}{m} \cdot \rnode{n2}{n}
     \bkptra[nodesep=1pt]{60}{n}{m}
     \bkptra[nodesep=1pt]{60}{n2}{m2}
     \label{eq_tprime_2}
     \end{equation}
 
+
     \begin{itemize}
-    \item Suppose $n = \lambda$, then $n \in Succ(N_\Sigma)$ and $m \in
-N_\Sigma$. Therefore by property \ref{proper:betaeta_trav}, $m$ and
-$r$ are not hereditarily justified by $r$.
+    \item Suppose that $m$ is not hereditarily justified by $r$ then
+    neither is $n$.
+
+    Lambda nodes are justified by their parent node therefore $m$ is the parent of $n$.
+    By property \ref{proper:betaeta_trav}, nodes that are not hereditarily justified by the root are
+    exactly the nodes that are hereditarily justified by $N_\Sigma$.
+    Moreover, since $\Sigma$ contains only constant of order $1$ at most, the only nodes that are hereditarily justified by $N_\Sigma$ are the nodes
+    in $N_\Sigma \union Succ(N_\Sigma)$ where $Succ(N_\Sigma)$ denotes the set of nodes whose parent node is in in $N_\Sigma$.
+
+    The lambda nodes in $N_\Sigma \union Succ(N_\Sigma)$ are the
+    nodes in $Succ(N_{\Sigma})$, they are all labelled $\lambda$.
+    Hence necessarily we have $n = \lambda$ and $m \in N_{\Sigma}$.
+
+    Thus, the traversal has the following form:
+    $$  t =  t' \cdot \rnode{m}{f@} \cdot  u \cdot \rnode{lmd}{\lambda}
+    \bkptra[nodesep=1pt]{30}{lmd}{m}$$
+    for some constant $f\in \Sigma$.
+
+    The rules defining traversals are such that any node $\lambda \in Succ(N_\Sigma)$ must be preceded by its parent node. Hence $m$ must preceed $n$
+    in the traversal and therefore $u= \epsilon$
         \begin{align*}
-        \pview{t} \setminus \left( N_\Sigma \union Succ(N_\Sigma)
-\right) &\jseq
-         (\pview{t''} \cdot \rnode{m}{m} \cdot \rnode{lmd}{n} ) \setminus \left( N_\Sigma \union Succ(N_\Sigma) \right) & \mbox{(equation \ref{eq_tprime_2})} \\
-       \bkptra[nodesep=1pt]{60}{lmd}{m}
-        &\jseq \pview{t''} \setminus \left( N_\Sigma \union Succ(N_\Sigma) \right)  & (m, n \in N_\Sigma \union Succ(N_\Sigma)) \\
-        &\jseq \pview{s''} & \mbox{(induction hypothesis)} \\
+        \pview{t} \upharpoonright \{ r \}
+        &\jseq (\pview{t'} \cdot \rnode{m}{m} \cdot \rnode{lmd}{n} ) \upharpoonright \{ r \}
+               \bkptra[nodesep=1pt]{60}{lmd}{m}                 & \mbox{(equation \ref{eq_tprime_2})} \\
+        &\jseq \pview{t'} \upharpoonright \{ r \}               & (m, n \mbox{ are not hereditarily justified by } r) \\
+        &\jseq \pview{t' \upharpoonright \{ r \}}               & \mbox{(induction hypothesis)} \\
 %
-        &\jseq \pview{ s'' \cdot \rnode{m}{m} \cdot (u \upharpoonright \{r\}) \cdot \rnode{lmd}{n}}
-          & \mbox{(def. P-view)}
+        &\jseq \pview{ (t' \cdot u ) \upharpoonright \{r\} }    & (u = \epsilon)
           \bkptra[nodesep=1pt,ncurv=0.7]{30}{lmd}{m} \\
 %
-        &\jseq \pview{ (t''\upharpoonright \{r\}) \cdot \rnode{m}{m} \cdot (u \upharpoonright \{r\}) \cdot \rnode{lmd}{n}}
-          & \mbox{(def. s'')}
-          \bkptra[nodesep=1pt,ncurv=0.7]{30}{lmd}{m} \\
-%
-        &\jseq \pview{ (t'' \cdot \rnode{m}{m} \cdot u \cdot \rnode{lmd}{n}) \upharpoonright \{r\} }
-          & \mbox{(def. operator $\setminus$)}
+        &\jseq \pview{ (t' \cdot \rnode{m}{m} \cdot u \cdot \rnode{lmd}{n}) \upharpoonright \{r\} }
+                                                                & (\mbox{def. operator $\upharpoonright$ and } m, n \mbox{ are not her. just. by } r)
           \bkptra[nodesep=1pt,ncurv=0.7]{40}{lmd}{m} \\
 %
-        &\jseq \pview{ t \upharpoonright \{r\} }
-          & \mbox{(def. of $t$)} \\
-%
-        &\jseq \pview{ s }
-          & \mbox{(def. of $s$)}
+        &\jseq \pview{ t \upharpoonright \{r\} }                & \mbox{(def. of $t$)}
         \end{align*}
 
-
-
-    \item Suppose $n = \lambda \overline{\xi}$ then $n \notin
-Succ(N_\Sigma)$ and $m \notin N_\Sigma$ which implies by property
-\ref{proper:betaeta_trav} that $m$ and $n$ are hereditarily
-justified by $r$.
+    \item Suppose that $m$ is hereditarily justified by $r$ then
+    so is $n$ and we have:
      \begin{align*}
-        \pview{t} \setminus \left( N_\Sigma \union Succ(N_\Sigma) \right)
-        &\jseq (\pview{t''} \cdot \rnode{m}{m} \cdot \rnode{lmd}{n} ) \setminus \left( N_\Sigma \union Succ(N_\Sigma) \right) & \mbox{(equation \ref{eq_tprime_2})} \\
+        \pview{t} \upharpoonright \{ r \}
+        &\jseq (\pview{t'} \cdot \rnode{m}{m} \cdot \rnode{lmd}{n} ) \upharpoonright \{ r \}
+                                                & \mbox{(equation \ref{eq_tprime_2})} \\
        \bkptra[nodesep=1pt]{60}{lmd}{m}
 %
-        &\jseq \pview{t''} \setminus \left( N_\Sigma \union Succ(N_\Sigma) \right) \cdot \rnode{m}{m} \cdot \rnode{lmd}{n} & (m, n \not\in N_\Sigma \union Succ(N_\Sigma))
+        &\jseq \pview{t'} \upharpoonright \{ r \} \cdot \rnode{m}{m} \cdot \rnode{lmd}{n}
+                                                & (m, n \mbox{ are hereditarily justified by } r)
        \bkptra[nodesep=1pt]{60}{lmd}{m} \\
 %
-        &\jseq \pview{s''} \cdot \rnode{m}{m} \cdot \rnode{lmd}{n} & \mbox{(induction hypothesis)}
+        &\jseq \pview{t' \upharpoonright \{ r \}} \cdot \rnode{m}{m} \cdot \rnode{lmd}{n}
+                                                & \mbox{(induction hypothesis)}
        \bkptra[nodesep=1pt]{60}{lmd}{m} \\
 %
-        &\jseq \pview{ s'' \cdot \rnode{m}{m} \cdot (u \upharpoonright \{r\}) \cdot \rnode{lmd}{n}}
-          & \mbox{(def. P-view)}
+        &\jseq \pview{ (t' \upharpoonright \{ r \}) \cdot \rnode{m}{m} \cdot (u \upharpoonright \{r\}) \cdot \rnode{lmd}{n}}
+                                                & \mbox{(def. P-view)}
           \bkptra[nodesep=1pt,ncurv=0.7]{30}{lmd}{m} \\
 %
-        &\jseq \pview{ (t''\upharpoonright \{r\}) \cdot \rnode{m}{m} \cdot (u \upharpoonright \{r\}) \cdot \rnode{lmd}{n}}
-          & \mbox{(def. s'')}
-          \bkptra[nodesep=1pt,ncurv=0.7]{30}{lmd}{m} \\
-%
-        &\jseq \pview{ (t'' \cdot \rnode{m}{m} \cdot u \cdot \rnode{lmd}{n}) \upharpoonright \{r\} }
-          & \mbox{(def. operator $\setminus$)}
+        &\jseq \pview{ (t' \cdot \rnode{m}{m} \cdot u \cdot \rnode{lmd}{n}) \upharpoonright \{r\} }
+                                                & \mbox{(def. operator $\upharpoonright$)}
           \bkptra[nodesep=1pt,ncurv=0.7]{40}{lmd}{m} \\
 %
         &\jseq \pview{ t \upharpoonright \{r\} }
-          & \mbox{(def. of $t$)} \\
-%
-        &\jseq \pview{ s }
-          & \mbox{(def. of $s$)}
+                                                & \mbox{(def. of $t$)}
         \end{align*}
     \end{itemize}
 
 \end{itemize}
-(ii) \todomargin{proof of ii}
-
+(ii) By a straightforward induction similar to (i).
 \end{proof}
 
 \subsection{Correspondence with game semantics}
@@ -1368,7 +1370,7 @@ Let us note $n$ the last node in the sequence $r$
 and $root$ the root of $\tau(M')$.
 $r$ is a reduced-traversal therefore by remark \ref{rem:redtrav}:
 $$ r \jseq t \upharpoonright \{ root \} $$
-for some traversal $t$ whose last node $n$ is not in $N_\Sigma \union Succ(N_\Sigma)$.
+for some traversal $t$ whose last node $n$ is hereditarily justified by $root$.
 
 \begin{itemize}
 \item Suppose $q$ is a P-move.
@@ -1376,23 +1378,37 @@ for some traversal $t$ whose last node $n$ is not in $N_\Sigma \union Succ(N_\Si
 Since $r$ is a reduced-traversal of $\tau(M')$ and $M'$ is in $\beta
 \eta$-long normal form, lemma \ref{lem:redtrav_trav} (i) gives:
 \begin{equation}
- \pview{r} \jseq \pview{t} \setminus \left( N_\Sigma \union Succ(N_\Sigma) \right) \label{eq:pview_r}
+ \pview{r} \jseq \pview{t} \upharpoonright \{ root \} \label{eq:pre_pview_r}
 \end{equation}
 
+%% REMOVED
+%%By property \ref{proper:betaeta_trav}, the nodes that are not hereditarily justified by the root are
+%%exactly the nodes that are hereditarily justified by $N_\Sigma$.
+%%Since $\Sigma$ contains only constant of order $1$ at most, the only nodes that are hereditarily justified by $N_\Sigma$ are the nodes
+%%in $N_\Sigma \union Succ(N_\Sigma)$. Hence equation \label{eq:pre_pview_r} becomes:
+%%\begin{equation}
+%% \pview{r} \jseq \pview{t} \setminus \left( N_\Sigma \union Succ(N_\Sigma) \right) \label{eq:pview_r}
+%%\end{equation}
 
 Property \ref{proper:pviewtrav_is_path} gives us that $\pview{t}$ is
 the path in $\tau(M)$ from the root to the node $n$.
-
 Hence the regularity of $\tau(M)$ (property \ref{proper:regularity}) tells us that $n$ points to the
-the last $\lambda$-node in $\pview{t}$ (the path from the root to $n$) that has order greater or equal to $\ord{n}$.
+last $\lambda$-node in $\pview{t}$ (the path from the root to $n$) that has order greater or equal to $\ord{n}$.
 
-The lambda nodes in $N_\Sigma \union Succ(N_\Sigma)$ are exactly the
-nodes in $Succ(N_{\Sigma})$, they are all labelled $\lambda$ and
-hence are of order $-1$. Moreover we have $\ord{n} \geq 0$ therefore
-the last $\lambda$-node in $\pview{t}$ that has order greater or
-equal to $\ord{n}$ is also the last node in $\pview{r} = \pview{t}
-\setminus \left( N_\Sigma \union Succ(N_\Sigma) \right)$ that has
-order greater or equal to $\ord{n}$.
+Since $n$ is the last node of $\pview{t} \upharpoonright \{ root \}$, it is hereditarily justified by the root and
+it must point to a node $m$ in $\pview{t}$ that is also hereditarily justified by the root (i.e. $m$ also occurs in $\pview{r}$).
+But $m$ is the last $\lambda$-node in $\pview{t}$ that has order greater or equal to $\ord{n}$, therefore
+since $\pview{r}$ is a subsequence of $\pview{t}$, $m$ is also the
+last $\lambda$-node in $\pview{r}$ that has order greater or equal to $\ord{n}$.
+
+
+%The lambda nodes in $N_\Sigma \union Succ(N_\Sigma)$ are exactly the
+%nodes in $Succ(N_{\Sigma})$, they are all labelled $\lambda$ and
+%hence are of order $-1$. Moreover we have $\ord{n} \geq 0$ therefore
+%the last $\lambda$-node in $\pview{t}$ that has order greater or
+%equal to $\ord{n}$ is also the last node in $\pview{r} = \pview{t}
+%\setminus \left( N_\Sigma \union Succ(N_\Sigma) \right)$ that has
+%order greater or equal to $\ord{n}$.
 
 By property \ref{proper:phi_pview} (ii), the P-view of $\tilde{s}$ and the P-view of $r$ are computed
 similarly and have the same pointers. This means that
@@ -1409,7 +1425,7 @@ order is greater or equal to $\ord{q}$.
 \item Suppose $q$ is an O-move.
 
 $M'$ is in $\beta\eta$-long normal form and $t$ is a traversal of $\tau(M')$
-whose last node $n$ is not in $N_\Sigma \union Succ(N_\Sigma)$. Therefore  by lemma \ref{lem:redtrav_trav} (ii):
+whose last node $n$ is hereditarily justified by $root$. Therefore  by lemma \ref{lem:redtrav_trav} (ii):
 \begin{equation}
  \oview{r} \jseq \oview{t} \label{eq:oview_r}
 \end{equation}

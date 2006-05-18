@@ -44,22 +44,9 @@ open days.
 %mu calculus, termination analysis \cite{podelski-transinvar,
 %podelski-transpredabsrt, abel-structuralrecanalysis}, automata
 %theory \cite{alur-vpa}.
-
-%\section*{13 - Research plan for the next term and vacation:}
-
-%I will study a restriction of lambda-calculus called ``safe
-%lambda-calculus'' as described in \cite{safety-mirlong2004}. My goal
-%will be to determine some nice properties on safe lambda terms (for
-%instance whether a safe lambda term is size-change terminating, see
-%\cite{jones01,blum-mscthesis}).
-%
-%I will also work on a small project with Matthew Hagues and Luke Ong
-%about LTL model checking. Using techniques described in
-%\cite{DBLP:conf/cav/McMillan03, ckos2005, hammer:truly}, we would
-%like to implement a fast algorithm to verify a property expressed in
-%LTL on a model given by a Kripke structure.
-%
 %%%%%%%%%%%%%%%%%%%%
+
+\subsection{Game semantics}
 
 During the past months, I have studied a restriction of
 lambda-calculus called ``safe lambda-calculus''. \emph{Safety} is a
@@ -70,36 +57,32 @@ a safe recursion scheme of level $n$ is decidable. More recently,
 Ong proved in \cite{OngLics2006} that the safety assumption is in
 fact not necessary.
 
-I am interested in the transposition of the safety property for
-grammar to the safety property for lambda terms. A definition of the
-safe $\lambda$-calculus was first given in a technical report by
-Aehlig, de Miranda and Ong in \cite{safety-mirlong2004}. One
-interesting property of safe lambda terms is that performing
-substitution on such terms does not involve renaming of the
-variable.
+I am interested in the transposition of the safety property from
+grammars to lambda terms. A definition of the safe
+$\lambda$-calculus was first given in a technical report by Aehlig,
+de Miranda and Ong in \cite{safety-mirlong2004}. One interesting
+property of safe lambda terms is that performing substitution on
+such terms does not involve renaming of the variable.
 
 I have investigated different possible definitions of a safe lambda
-calculus. I also tried to find a more general notion of safety that
-do not assume homogeneity of types. Unfortunately, I have not yet
-found a definition that would preserve the \emph{no variable
-renaming} property.
+calculus and I have proposed a more general notion of safety that do
+not assume homogeneity of types while still preserving  the \emph{no
+variable renaming} property.
 
-Another direction of research that I have been investigating
-consisted in relating the safety restriction and the
+I also tried to relate the safety restriction and the
 \emph{size-change termination} property defined in
 \cite{jones01,jones04}. Jones conjectured that any simply typed term
 is size-change terminating, however Damien Sereni disproved this
 conjecture by exhibiting a class of counter-examples
-(\cite{serenistypesct05}). The terms of this class are not all of
-homogeneous type but there is a subclass of homogenous and safe
-simply typed terms that are not size-change terminating. This
-suggests that there is no obvious link between safety and
-size-change termination.
+(\cite{serenistypesct05}). The terms of this class are safe simply
+typed terms (not all of homogeneous type) and not size-change
+terminating. This suggests that there is no real interesting
+relation between safety and size-change termination.
 
 
 Recently, inspired by my reading on game semantics
-\cite{abramsky:game-semantics} and by the technics developed by Luke
-Ong in \cite{OngLics2006}, I have proved a result on the game
+\citep{abramsky:game-semantics} and by the technics developed by
+Luke Ong in \citep{OngLics2006}, I have proved a result on the game
 semantics of safe terms: the pointers in the game semantics of safe
 simply type terms can be recovered uniquely from the sequence of
 moves. This result is similar to the standard result in game
@@ -109,32 +92,100 @@ is that the semantics of such terms can be described by (extended)
 regular expressions \cite{ghicamccusker00}.
 
 
+\subsection{Verification}
 
 In parallel, I worked on a separate project with Matthew Hagues and
-Luke Ong. We developed a SAT-based approach to the LTL model
-checking problem based on the work of Merz \emph{et al}
-\cite{hammer:truly} and McMillan \cite{DBLP:conf/cav/McMillan03}.
+Luke Ong. We developed a SAT-based  model checker for verifying
+Linear Temporal Logic formulae (LTL) on programs expressed as finite
+state machines. Our approach consists in combining techniques
+presented in two papers: \cite{hammer:truly,
+DBLP:conf/cav/McMillan03}.
 
+In \cite{DBLP:conf/cav/McMillan03}, McMillan describes an
+acceleration technique for the SAT-based Bounded Model Checking
+problem.
+
+In \citep{hammer:truly}, Hammer et al. introduced a new kind of
+automata called \emph{Linearly Weak Alternating Automata},
+abbreviated LWAA. The set of languages recognized by these automata
+are exactly the set of languages definable in LTL. There is a
+straightforward translation from LTL formulae to LWAAs. The size of
+the resulting automaton is linear in the size of the LTL formula.
+Checking emptiness of LWAA then amounts to finding in the
+configuration graph a lasso verifying certain conditions.
+
+Our approach can be summarized as follows: we translate the model
+checking problem into an emptiness checking of a \emph{Linear Weak
+Alternating Automaton}, or LWAA for short: the automata is empty if
+and only if the formula is true. The emptiness of the automaton is
+expressed in term of reachability problem. As in the traditional
+SAT-based bounded-model checking approach (\cite{biere99symbolic}),
+we then construct a boolean formula that it is satisfiable if and
+only if the desired configuration is reachable in at most $k$ steps
+(i.e. there is a counter-example of length $k$ at most).
+
+Then instead of using the traditional SAT-solver technique, that
+iterates $k$ until the completeness threshold is reached, we use the
+acceleration method described in \cite{DBLP:conf/cav/McMillan03}.
+The principle is the following: for every iteration of $k$, if the
+formula is not satisfiable then we perform some over-approximation
+of the set of initial configuration. If after over-approximating the
+initial configuration, the final configuration can be reached in $k$
+steps then we are still not sure that the formula has a valid
+counter-example since the counter-example obtained may be spuriously
+created by the over-approximation: hence we increase $k$ and move on
+to the next iteration. However, if after performing several
+over-approximation we reach a fixed point and the formula is still
+not satisfiable (not counter-example of length $k$ at most) then we
+know that there cannot be any counter-example of any length : we
+have therefore reached the completeness threshold and we know that
+the formula is true.
+
+
+The are two reasons why we think that our approach may lead to a
+gain of performance are: the size of a LWAA is linear in the length
+of the formula as opposed to the standard translation which produces
+a B\"uchi automaton of size exponential in the length of the
+formula. Secondly, in the case when there is no counter-example,
+McMillan's acceleration method based on over-approximation permits
+to detect quickly if we have reached the completeness threshold.
+
+
+%\cite{ckos2005}
 We have produced an experimental implementation in OCaml and C. The
-program input is an NuSMV file (\cite{CAV02:nusmv}) containing the
-model and the LTL properties to verify.
+program parses a file in the NuSMV format (\cite{CAV02:nusmv})
+containing the kripke structure of the model and the set of LTL
+properties to verify. Our tools can be interfaced with two SAT
+solvers: ZChaff \citep{zChaff} and MiniSat \citep{ES03}. We also use
+BDD to perform simplification on the propositional formula and to
+generate the CNF representation that the SAT solver takes as its
+input.
 
-The result obtained at the moment are not too encouraging but it is
-apparently due to an unfortunate bug in the implementation that we
-are tracking down. There are also some optimizations that we have
-not finished to implement.
+Compared to the LWAASpin LTL model checker (\cite{hammer:truly}),
+our tool performs quite poorly. As soon as a model is taken into
+account, our procedure generate increasingly bigger propositional
+formulae that the SAT solver struggle to solve. However for pure LTL
+emptiness checking, our tool performs quite well.
 
-We are currently finishing to write a paper about it and we hope to
-submit it to the BMC workshop.
+It seems disappointing that our approach does not give good result
+for model checking, however the reason seems to be that the
+SAT-solvers we are using produce bad interpolants. In the future we
+would like to interface our model checking tool with other SAT
+solvers and interpolers.
+
+There are also some optimizations that we have not finished to
+implement. For instance, there are different ways of encoding the
+bounded model checking problem into a propositional formula. We are
+going to do some experiments do determine which encoding gives the
+best result.
 
 \chapter{Research plan}
 
-First I need to extend the safety restriction to Idealized Algol
-terms. Then I would like to extend the result I obtained for game
-semantics of safe simply typed term to safe Idealized Algol terms
-and investigate if it leads to some application in algorithmic game
+My first goal is to extend the result I obtained for game semantics
+of safe simply typed term to safe Idealized Algol terms (after
+having given a proper definition of safe IA). Then I will
+investigate the implication of such result in algorithmic game
 semantics.
-
 
 In \cite{abramsky:mchecking_ia}, Abramsky has studied a language
 called Serially Re-entrant Idealized Algol, or SRIA for short. This
@@ -142,11 +193,8 @@ language allows multiple occurrences or uses of arguments, as long
 as they do not overlap in time. In the games of this language there
 is at most one pending occurrence of a question at any time, so that
 each move has a unique justifier and so justification pointers may
-be ignored.
-
-I would like to find out whether there is a relationship between
-SRIA and safe Idealized Algol.
-
+be ignored. I would like to find out whether there is a relationship
+between SRIA and safe Idealized Algol.
 
 I also want to investigate some application of game semantics to
 program analysis and transformation by trying to extend the work of
@@ -155,7 +203,3 @@ data-absraction refinement based on game semantics.
 
 Finally I will continue to work with Matthew Hagues and Luke Ong on
 the LTL model checking problem.
-
-
-\subsection{LTL model checking}
-LTL model checking. LWAA. Project with Matthew and Luke.

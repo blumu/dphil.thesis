@@ -1,30 +1,51 @@
 \chapter{Game semantics}
-\section{Semantics of programming languages}
 
-Before the introduction of game semantics in the 1990s, there were
-many approaches to define models for programming languages that we classify into different categories.
-Among them there is axiomatic, operational and denotational semantics.
+In this chapter we start with a history of game semantics then we
+introduce the basic notions used in games and finally we explain how
+games can be used to define a syntax-independent model of
+programming languages like PCF and Idealized Algol.
 
-Operational semantics gives a meaning to a program by describing the
+\section{History}
+
+Before the 1980s, there were many approaches to define models for
+programming languages. Among the successful ones, there were the
+axiomatic, operational and denotational semantics:
+\begin{itemize}
+\item Operational semantics gives a meaning to a program by describing the
 behaviour of a machine executing the program. It is defined formally by giving
 a state transition system.
-
-Axiomatic semantics defined the behaviour of the program
+\item Axiomatic semantics defined the behaviour of the program
 with axioms and is used to prove program correctness by static analysis of
 the code of the program.
-
-The denotational semantics approach consists in mapping a program to a mathematical structure
+\item The denotational semantics approach consists in mapping a program to a mathematical structure
 having good properties such as compositionality. This mapping is achieved by structural induction
 on the syntax of the program.
+\end{itemize}
 
-In the 1990s, a new kind of semantics called game semantics has been
-introduced for modeling programming languages. In game semantics,
-the meaning of a program is given by a strategy in a two-player
-game. The two players are the Opponent, representing the
-environment, and the Proponent, representing the system.
+In the 1950s, Paul Lorenzen invented Game semantics as a tool to
+study semantics of intuitionistic logic \citep{lor61}. However it is
+only four decades later that Game semantics has been applied to the
+study of models of programming languages.
+
+In the 1990s, three different independent research groups: Samson
+Abramsky, Radhakrishnan Jagadeesan and Pasquale Malacaria
+\citep{abramsky94full}, Martin Hyland and Luke Ong
+\citep{hylandong_pcf} and Nickau \citep{Nickau:lfcs94} have used
+game semantics to solve a long standing problem in the semanticists
+community : finding a fully abstract model for PCF.
+
+This result has then been adapted to other varieties of programming
+paradigm including languages with stores (Idealized Algol),
+call-by-value \citep{honda99gametheoretic, abramsky98callbyvalue}
+and call-by-name, general referencees
+\citep{DBLP:conf/lics/AbramskyHM98}, polymorphism
+\citep{DBLP:journals/apal/AbramskyJ05}, control features
+(continuation and exception), non determinism, concurrency. In all
+these cases, the game semantics model led to a syntax-independent
+fully abstract model of the corresponding language.
 
 
-\subsection{Model for PCF}
+\subsection{Fully abstract model of PCF}
 
 PCF is a simple programming language introduced in a classical paper
 by Plotkin ``LCF considered as a programming language''
@@ -66,39 +87,43 @@ language we are now dealing with is strictly more powerful than PCF,
 it allows parallel execution of commands whereas PCF only permits
 sequential execution.
 
-Another approach consist in getting rid of the undefinable elements
+Another approach consists in getting rid of the undefinable elements
 (like p-or) by strengthening the conditions on the function used in
 the model (a condition stronger than strictness and continuity) but
 unfortunately this approach did not succeed.
 
-Hence the problem remains: is there any fully abstract model for
-PCF? Solutions to the full abstraction problem for PCF have
-eventually been discovered in the 1990s by three different
-independent research groups: Ambramsky, Jagadeesan and Malacaria
+The only successful approaches to obtain a fully abstract model for
+PCF were the ones taken by Ambramsky, Jagadeesan and Malacaria
 \citep{abramsky94full}, Hyland and Ong \citep{hylandong_pcf} and
-Nickau \citep{Nickau:lfcs94}. There are all based on game semantics.
+Nickau \citep{Nickau:lfcs94}, all based on game semantics. In game
+semantics, the meaning of a program is given by a strategy in a
+two-player game. The two players are the Opponent, representing the
+environment, and the Proponent, representing the system.
 
 
 \section{Games}
-
 \label{sec:catgames}
 
-We introduce here the notion of game that will be used in the following section to give a model of the programming languages
-PCF and Idealized Algol. The definitions are taken from \cite{abramsky:game-semantics, hylandong_pcf, abramsky94full}.
+We now introduce formally the notion of game that will be used in
+the following section to give a model of the programming languages
+PCF and Idealized Algol. The definitions are taken from
+\cite{abramsky:game-semantics, hylandong_pcf, abramsky94full}.
 
-\subsection{Example}
-\todobox{TO DO: Introduce the principle with a small example}
 
 \subsection{Basic definition}
 
 The games we are interested in are two-players games. The players are named O for Opponent and P for Proponent.
 
-The game played by O and P is constraint by something called \emph{arena}. The arena defines the possible moves of the game.
-By analogy with board games, the arena represents the board and the rules that tell how players can make their moves
-on the board\footnote{In fact there is an analogy more appropriate than board games which illustrates
-well the notion of game that we are exposing here: dialog games.
-In these games one person (O) interviews another person (P) while
-P tries to answer the initial O-question by possibly asking O some precisions about its initial question.}.
+The game played by O and P is constraint by something called
+\emph{arena}. The arena defines the possible moves of the game. By
+analogy with real board games, the arena represents the board
+together with the rules that tell how players can make their moves
+on the board. In fact the analogy with board game stops here. Our
+games can be thought as dialog games: one person O interviews
+another person P, P tries to answer the initial O-question by
+possibly asking O some precisions about its initial question.
+Moreover, the notion of winner and winning strategy will not be
+relevant in our setting.
 
 
 More formally, the arena can be seen as a forest of trees whose nodes are possible questions and leaves are possible answers.
@@ -146,6 +171,32 @@ $$\overline{\lambda(m)} = OQ \iff \lambda(m) = PQ$$
 
 The roots of the forest of tree $(M,\vdash)$ are the \emph{initial moves}.
 
+For example, the simplest possible arena is written $\mathbf{1}$ and
+denotes the arena which set of moves $M$ is empty.
+
+\begin{exmp}[The flat arena]
+\label{exmp:flatarena}
+
+ Let $A$ be any countable set then the flat arena over $A$
+is defined to be the arena $\langle M, \lambda, \vdash \rangle$ such
+that $M$ has one move $q$ with $\lambda(q) = OQ$ and for each
+element in $A$, there is a corresponding move $a_i$ in $M$ with
+$\lambda(a_i) = PA$ for some $i \in \nat$. The enabling relation
+$\vdash$ is defined to be $\{ q \vdash a_i \ | i \in \nat \}$.
+
+This arena is represented by the following tree:
+\begin{center}
+  \pstree[levelsep=6ex]
+    { \TR{$q$} }
+    {    \TR{$a_1$} \TR{$a_2$} \TR{\ldots} }
+\end{center}
+The vertices represent the moves and the edges represent the
+enabling relation.
+
+The flat arena over $\nat$ and $\mathbb{B}$ is written
+$\mathbf{int}$ and  $\mathbf{bool}$ respectively.
+
+\end{exmp}
 
 Once the arena has been defined, the bases of the game are set and the players have something to play with.
 We now need to describe the state of the game, for that purpose
@@ -157,10 +208,15 @@ A justified sequence is a sequence of moves $s$ together with an associated sequ
 move $m$ in the sequence that is not initial has as pointer that points to a previous move $n$ that justifies it (i.e. $n \vdash m$).
 \end{dfn}
 
+Notation: we write $s t$ or sometimes $s \cdot t$ do denote the
+sequences obtain by concatenating $s$ and $t$. The empty sequence is
+written $\epsilon$.
 
-A justified sequence has two particular subsequences which will be of particular interest later on when we
-introduce strategies. These subsequences are called the P-view and the O-view of the sequence.
-The idea is that a view describes the local context of the game. Here is the formal definition:
+ A justified sequence has two particular subsequences which
+will be of particular interest later on when we introduce
+strategies. These subsequences are called the P-view and the O-view
+of the sequence. The idea is that a view describes the local context
+of the game. Here is the formal definition:
 
 \begin{dfn}[View]
 Given a justified sequence of moves $s$. We define the proponent view (P-view) noted $\pview{s}$ by induction:
@@ -180,15 +236,20 @@ The O-view $\oview{s}$ is defined similarly:
 \end{align*}
 \end{dfn}
 
-In fact not all justified sequences will be of interest for the games that we will use.
-We call \emph{legal position} any justified sequence
-verifying two additional conditions: alternation and visibility.
+In fact not all justified sequences will be of interest for the
+games that we will use. We call \emph{legal position} any justified
+sequence verifying two additional conditions: alternation and
+visibility. Alternation says that players O and P plays
+alternatively. Visibility expresses that each non-initial move is
+justified by a move situated in the local context at that point.
+Intuitively, the visibility condition gives some coherence to the
+justification pointers of the sequence.
 
 \begin{dfn}[Legal position]
 A legal position is a justified sequence of move $s$ respecting the following constraint:
 \begin{itemize}
 \item Alternation: For any subsequence $m \cdot n$ of $s$, $\lambda^{OP}(m) \neq \lambda^{OP}(n)$.
-\item Visibility: For any subsequence $t m$ of $s$, if $m$ is a P-move then $m$ points to a move in $\pview{s}$
+\item Visibility: For any subsequence $t m$ of $s$ where $m$ is not initial, if $m$ is a P-move then $m$ points to a move in $\pview{s}$
 and if $m$ is a O-move then $m$ points to a move in $\oview{s}$.
 \end{itemize}
 
@@ -198,6 +259,9 @@ The set of legal position of an arena $A$ is noted $L_A$.
 We say that a move $n$ is hereditarily justified by a move $m$ if there is a sequence of move
 $m_1, \ldots, m_q$ such that:
 $$ m \vdash m_1 \vdash m_2 \vdash \ldots m_q \vdash n$$
+If a move has no justification pointer, we says that it is an
+\emph{initial move} (in that case it must be a root of the forest
+arena).
 
 Suppose that $n$ is an occurrence of a move in the sequence $s$ then
 $s \upharpoonright n$ denotes the subsequence of $s$ containing all the moves hereditarily justified by $n$.
@@ -208,17 +272,39 @@ subsequence of $s$ containing all the moves hereditarily justified by the moves 
 A game is a structure $\langle M, \lambda, \vdash, P \rangle$ such that
 \begin{itemize}
 \item $ \langle M, \lambda, \vdash \rangle$ is an arena.
-\item $P$, called the set of valid positions, is
+\item $P$ is called the set of valid positions, it is:
     \begin{itemize}
     \item a non-empty prefix closed subset of the set of legal position
-    \item closed by hereditary filtering: if $I$ is the set of initial moves of $s$ then
-        $$ s \in P \imp s\upharpoonright I \in P$$
+    \item closed by initial hereditary filtering: if $s$ is a valid position then for any set $I$ of occurrences of initial moves
+    in $s$, $s\upharpoonright I$ is also a valid position.
     \end{itemize}
 \end{itemize}
 \end{dfn}
 
+\begin{exmp}  Consider the flat arena  $\mathbf{int}$.
+The set of legal position $P = \{ \epsilon, q \} \union \{ q \cdot
+a_i \ | i \in \nat \}$ defines a game on the arena $\mathbf{int}$.
+\end{exmp}
+
 \subsection{Game construction}
-tensor product, implication, product
+
+We now define game constructors that will be useful later on.
+
+Consider the two functions $f : A \rightarrow C$ and $g : B
+\rightarrow C$, we write $[f,g]$ to denote the pairing of $f$ and
+$g$ defined on the direct sum $A + B$.
+
+Given two games $A$ and $B$ we define the tensor product constructor
+$A \otimes B$ and the arrow constructor $A \multimap B$ as follows:
+
+\begin{eqnarray*}
+  M_{A \otimes B} &=& M_A + M_B \\
+  \lambda_{A\otimes B} &=& [\lambda_A,\lambda_B]
+  n \mbox{ initial in } A\otimes B &\iif& m \mbox{ initial in } A
+  \mbox{ or } m \mbox{ is initial in }B \\
+  m \vdash_{A\otimes B} n &\iif& m \vdash_{A} n \zor m \vdash_{B} n 
+\end{eqnarray*}
+
 
 \subsection{Strategy}
 During a game, a player may have several choices for his next move.
@@ -332,7 +418,153 @@ Here is a graphic representation of the arenas $T_i$ for $i \in I_0$ and $T_j$ f
 \end{center}
 
 
-\input{proof.tex}
+
+For any justified sequence of moves $u$, we write $?(u)$ for the
+subsequence of $u$ consisting of the questions in the sequence $u$
+that are still pending at the end of the sequence.
+
+Let $L$ be the following language $L = \{\ p^i q^i\ | \ i \in I_1
+\}$. We consider the following cases:
+
+\begin{center}
+\begin{tabular}{c|c|l|l}
+Case & $\lambda_{OP}(m)$ & $?(u) \in$ & condition \\ \hline
+0 & O & $\{ \epsilon \}$ \\
+A & P & $q$ \\
+B & O & $q \cdot L^* \cdot p^i$     & $i \in I_1$ \\
+C & P & $q \cdot L^* \cdot p^i q^i$ & $i \in I_1$ \\
+D & O & $q \cdot L^* \cdot q^i$      & $i \in I_0$ \\
+\end{tabular}
+\end{center}
+
+We use the notation $\hat{s}$ to denote a legal and well-bracketed
+\emph{justified} sequence of moves and $s$ to denote the same
+sequence of moves with pointers removed.
+
+Note that the well-bracketing condition already tells us how to
+uniquely recover the pointers for P answer moves: a P-answers points
+to the last pending question having the same tag. However for O
+answers, we will see that the visibility condition already ensures
+the unique recoverability of the pointer and that the
+well-bracketing condition is not needed.
+
+
+We prove by induction on the sequence of moves $u$ that $?(u)$
+corresponds to either case 0, A, B, C or D and that the pointers in
+$u$ can be recovered uniquely.
+
+\textbf{Base cases:}
+
+If $u$ is the empty sequence $\epsilon$ then there is no pointer to
+recover and it corresponds to case 0.
+
+If $u$ is a singleton then it must be the initial question $q$ and
+there is not pointer to recover. This corresponds to case A.
+
+\textbf{Step case:}
+
+Consider a legal well-bracketed justified sequence $\hat{s}$ where
+$s = u \cdot m$ and $m \in M_A$. The induction hypothesis tells us
+that the pointers of $u$ can be recovered (and therefore the P-view
+or O-view at that point can be computed) and that $u$ corresponds to
+one of the cases 0,A,B,C or D.
+
+We proceed by case analysis on $u$:
+
+\begin{description}
+
+\item[case 0] This case cannot happen because $?(u) = \epsilon$ ($u$ is a complete play) implies that there cannot be any further move $m$.
+
+Indeed the visibility condition implies that $m$ must point to a
+P-question in the O-view at that point. But since $u$ is a complete
+play, the O-view is $\oview{\hat{u}} = q a$ which does not contain
+any P-question. Hence the move $m$ cannot be justified and is not
+valid.
+
+
+\item[case A] $?(u) = q$ and the last move $m$ is played by P.
+    There are several cases:
+    \begin{itemize}
+    \item $m$ is an answer $a_k$ (to the initial question
+    $q$) for some $k$, then $m$ points to $q$:
+
+    $\hat{s} = \justseq{ q & \ldots & m \pointto{ll}}$
+
+    and $?(s) = \epsilon$ therefore $s$ correspond to the case 0 (complete play).
+
+    \item $m = q^i$ where $q^i$ is an order 0 question ($i \in I_0$).
+    Then $q^i$ points to the initial question $q$ and $s$ falls into category D.
+
+    \item $m = p^i$, a first order question, then $p^i$ points to $q$,
+
+    $?(s)= q p^i$ and it is O's turn after $s$ therefore $s$ falls into category B.
+
+    \end{itemize}
+
+
+\item[case B] $?(u) \in q \cdot L^* \cdot p^i$ where $i \in I_1$ and O plays the move $m$.
+
+We now analyse the different possible O-moves:
+\begin{itemize}
+\item Suppose that O gives the (tagged) answer $b^j$ for some $j \in I_1$ then
+the visibility condition constraints it to point to a question in
+the O-view at that point.
+
+We remark that the last move in $\hat{u}$ must be $p^i$. Indeed,
+suppose that there is a move $x \in M_A$ such that $\hat{u} =
+\justseq{q & \ldots & p^i\ x \pointto{ll}}$ then by visibility, the
+O-move $x$ should points to a move in the O-view a that point. The
+O-view is $q p^i$, therefore $x$ can only points to $p^i$. But then,
+$p^i$ is not a pending question in $s$ which is a contradiction.
+
+
+Therefore $\oview{\hat{u}} = \oview{ \justseq{ q & \ldots & p^i
+\pointto{ll}} } = q p^i$.
+
+Hence $b^j$ can only point to $p^i$ (and therefore $i=j$).
+
+We then have $?(s) = ?(u \cdot b^i) \in  q \cdot L^*$ which is
+covered by case A and C.
+
+\item The only other possible O-move is $q^i$ which, again by the visibility condition, points necessarily
+to the previous move $p^i$. We then have $?(s) = ?(u \cdot q^i) \in
+q \cdot L^* \cdot p^i q^i$. This falls into category C.
+
+\end{itemize}
+
+\item[case C] $?(u) \in q \cdot L^* \cdot p^i q^i$ where $i \in I_1$ and the move $m$ is played by $P$.
+
+Suppose $m$ is an answer, then the well-bracketing condition imposes
+to answer to $q^i$ first. The move $m$ is therefore an integer $a^i$
+pointing to $q^i$. We then have $?(s) = ?(u \cdot a^i) \in  q \cdot
+L^* \cdot p^i$. This correspond to case B.
+
+
+Suppose $m$ is a question then there are two cases:
+\begin{itemize}
+\item $m = q^j$ with $j \in I_0$, the pointer goes to the initial question $q$ and $s$ falls into category D.
+\item $m = p^j$ with $j \in I_1$, the pointer goes to the initial question $q$ and $s$ falls into category B.
+\end{itemize}
+
+\item[case D] $?(u) \in q \cdot L^* \cdot q^i$ where $i \in I_0$ and the move $m$ is played by $O$.
+
+    The same argument as in case B holds. However there is now another possible move:
+    the answer $m = a^i_k$ for some $k$.  This moves can only points to
+    $q^i$ (this is the only pending question tagged by $i \in I_0$).
+
+    Then $?(\hat{s}) = ?(\hat{u}\cdot a^i_k) = ?(\justseq{ q & \ldots & q^i \pointto{ll} & \ldots & a^i_k \pointto{ll}}) \in q \cdot L^* $ therefore $s$ falls either into category A or C.
+
+\end{description}
+
+This completes the induction.
+
+How to generalize the proof to arenas that have multiple roots
+(forest arenas)? In fact there is no ambiguity since all the moves
+are implicitly tagged according to the arena that they belong to.
+Therefore in the induction, it suffices to ignore the moves that
+belong to another tree (as if they were part of a different game
+played in parallel).
+
 
 \end{proof}
 
@@ -389,8 +621,8 @@ y . x$. And the entire play is part of the strategy $\sem{M_2}$.
 Similarly, if the link points to the second occurrence of $q^2$ then
 the play belongs to the strategy $\sem{M_1}$.
 
-\section{PCF}
-\subsection{The syntax of the language}
+\section{Model of PCF}
+\subsection{Syntax of the PCF language}
 PCF is a simply-type $\lambda$-calculus with the following
 additions: integer constants  (of ground type), first-order
 arithmetic operators, if-then-else branching, and the recursion
@@ -429,7 +661,7 @@ $$
 \label{tab:pcf_formrules}
 \end{table}
 
-\subsection{Operational semantics}
+\subsection{Operational semantics of PCF}
 
 We give the big-step operational semantics of PCF. The notation $M \eval V$ means
 that the closed term $M$ evaluates to the canonical form $V$. The canonical forms are given by the following
@@ -610,7 +842,8 @@ There are only two kinds strategy on this arena:
 Given the interpretation of base types, we define the interpretation of $A\rightarrow B$ by induction:
 $$\sem{A \rightarrow B} = \sem{A} \Rightarrow \sem{B}$$
 
-where the operator $\Rightarrow$ denotes the arena construction $!A \multimap B$ which exist because $\mathcal{C}$ is cartesian closed.
+where the operator $\Rightarrow$ denotes the arena construction $!A
+\multimap B$ which exists because $\mathcal{C}$ is cartesian closed.
 
 Graphically if we represent the arena $A$ and $B$ by two triangles, the arena for $A \rightarrow B$ would be represented by:
 \begin{center}

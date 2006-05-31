@@ -17,16 +17,32 @@ of game semantics with complete proofs.
 
 \subsection{Game semantics}
 
-In the 1950s, Paul Lorenzen invented Game semantics as a tool to
-study semantics of intuitionistic logic \citep{lor61}.
+In the 1950s, Paul Lorenzen invented Game semantics as a new
+approach to study semantics of intuitionistic logic \citep{lor61}.
+In this setting, the notion of logical truth is modeled using game
+theoretic concepts such as the existence of winning strategy.
 
-Four decade later, Abramsky proved the full completeness of
-Multiplicative Linear Logic (MLL) using game semantics
-\citep{abramsky92games}. Shortly after, game semantics has been used
-as tool to study models of programming languages. In game semantics,
-the meaning of a program is given by a strategy in a two-player
-game. One player, the Opponent, represents the environment while the
-other, the Proponent, represents the system.
+Four decade later, game semantics is used to prove the full
+completeness of Multiplicative Linear Logic (MLL)
+\citep{abramsky92games,HO93a}. Shortly after, a connection between
+games and linear logic has been established. Game semantics has then
+been used as tool to study formal models of programming languages.
+The idea is to model the execution of a program as a game played by
+two protagonists: the Opponent representing the environment and the
+Proponent representing the system. The meaning of the program being
+modeled by a strategy for the Proponent.
+
+
+These game-based model were used to give a solution to the
+long-standing problem of ``Full abstraction of PCF''
+\citep{abramsky94full, hylandong_pcf,Nickau:lfcs94}.
+
+Based on that major result, in a more applied direction, games have
+been used as a new tool for software verification
+\cite{ghicamccusker00}. This open-up a new field called Algorithmic
+Game Semantics \citep{Abr02}.
+
+
 
 
 \subsection{Model of programming languages}
@@ -89,17 +105,21 @@ apply to a term computing p-or. Since p-or is not definable in PCF,
 these two terms will have the same denotation. This implies that the
 model is not fully abstract.
 
-One can patch PCF by adding the operator $p-or$, the resulting
-language ``PCF+p-or'' now becomes fully-abstracted by Scott domain
-theoretic model \citep{DBLP:journals/tcs/Plotkin77}. However the
-language we are now dealing with is strictly more powerful than PCF,
-it allows parallel execution of commands whereas PCF only permits
-sequential execution.
 
-Another approach consists in getting rid of the undefinable elements
+It is possible to patch PCF by adding the operator $p-or$, the
+resulting language ``PCF+p-or'' becomes fully-abstracted by Scott
+domain theoretic model \citep{DBLP:journals/tcs/Plotkin77}. However
+the language we are now dealing with is strictly more powerful than
+PCF, it allows parallel execution of commands whereas PCF only
+permits sequential execution.
+
+Another approach consists in eliminating  the undefinable elements
 (like p-or) by strengthening the conditions on the function used in
-the model (a condition stronger than strictness and continuity) but
-unfortunately this approach did not succeed.
+the model. This approach has been followed by Berry in
+\cite{berry-stable,gberry-thesis} where he gives a model based on
+stable functions, a class of function smaller than the class of
+strict and continuous function. Unfortunately this approach did not
+succeed.
 
 The only successful approaches to obtain a fully abstract model for
 PCF were the ones taken by Ambramsky, Jagadeesan and Malacaria
@@ -605,7 +625,7 @@ $$ \left(
 \end{dfn}
 
 
-\subsection{Categorical interpretation of games}
+\subsection{Categorical interpretation}
 
 In this section we recall some results about the categorical representation of Games.
 These results with complete details and proofs can be found in \cite{McC96b,hylandong_pcf,abramsky94full}.
@@ -742,24 +762,32 @@ Hence $\mathcal{C}$ is a cartesian closed category. Moreover $\mathcal{C}_i$ and
 are sub-cartesian closed caterogies of $\mathcal{C}$ and $\mathcal{C}_{ib}$ is as sub-cartesian closed category
 of each of $\mathcal{C}$, $\mathcal{C}_i$ and $\mathcal{C}_b$.
 
+We write $\Lambda(f) : A \rightarrow B \imp C$ to denote the
+strategy obtained by transforming $f : A\&B \rightarrow C$ across
+the isomorphism just defined. This corresponds to the usual
+curryfication in cartesian closed categories. We write $ev_{A,B} :
+(A \imp B) \& A$ to denote the strategy obtained by uncurrying the
+identity map on $A \rightarrow B$.
+
 
 
 \subsubsection{Order enrichment}
 
-Strategies can be ordered using the inclusion ordering.
-The set of strategies on a given game $A$ is a pointed directed complete partial order under this ordering: the
-least upper bounds is the union of two strategies and the least element is the empty strategy $\{ \epsilon \}$.
+Strategies can be ordered using the inclusion ordering. Under this
+ordering, the set of strategies on a given game $A$ is a pointed
+directed complete partial order : the least upper bounds is the
+union of two strategies and the least element is the empty strategy
+$\{ \epsilon \}$.
 
-The category  $\mathcal{C}$ and  $\mathcal{G}$ are cpo-enriched.
+Moreover all the operators on strategies that we have defined so far
+(composition, tensor product, ...) are continuous. Hence the
+category $\mathcal{C}$ and $\mathcal{G}$ are cpo-enriched.
 
+This significant characteristic will prove to be extremely useful
+when it comes to model programming languages with recursion such as
+PCF.
 
-
-
-
-directe It is possible to define an order on strategies
-
-
-\subsection{Arena of order at most 2}
+\subsection{Special case of arenas of order 2 at most}
 In this section, we consider a restricted class of arena and prove a
 property on the games played on these arenas.
 
@@ -969,18 +997,18 @@ played in parallel).
 \end{proof}
 
 
-\subsection{Pointer-less strategies}
-\label{subsec:ptrless_strat}
+\subsection{Pointers are necessary}
+\label{subsec:pointer_necessary}
 
 Up to order 2, the semantics of PCF terms is entirely defined by
 pointer-less strategies. In other words, the pointers can be
 uniquely reconstructed from any non justified sequence of moves
 satisfying the visibility and well-bracketing condition.
 
-At level 3 however, pointers cannot be omitted in general. Here is an example
-taken from \cite{abramsky:game-semantics} illustrating this. Consider the
-following two terms of type $((\nat \typar \nat) \typar \nat) \typar
-\nat$:
+At level 3 however, pointers cannot be omitted in general. Here is
+an example taken from \cite{abramsky:game-semantics} illustrating
+this. Consider the following two terms, called the Kierstead terms,
+of type $((\nat \typar \nat) \typar \nat) \typar \nat$:
 
 $$M_1 = \lambda f . f (\lambda x . f (\lambda y .y ))$$
 $$M_2 = \lambda f . f (\lambda x . f (\lambda y .x ))$$
@@ -1387,6 +1415,142 @@ $$\sem{M} \precsim_b \sem{N} \ \iff \ M \sqsubseteq N$$
 where $\precsim_b$ denotes the intrinsic preorder of the category $\mathcal{C}_b$.
 
 
-\subsection{Call-by-Value first-order Idealized Algol}
+\subsubsection{Call-by-Value first-order Idealized Algol}
 
 Game semantics for call-by-value programming Language.
+
+
+
+\section{Applications of game semantics}
+
+\subsection{Algorithmic game semantics}
+
+\subsubsection{First-order and second-order Idealized Algol}
+
+The strategies of second-order IA (IA$_2$) are given by the set of
+complete plays. Up to order 2, these set of complete plays are
+representable by extended regular languages, hence program
+approximation and equivalence is decidable (see work of Dan R. Ghica
+and Guy McCusker).
+
+\subsubsection{Other fragments of IA}
+
+\todo The limits of algorithmic game semantics: decidability and
+complexity results.
+
+
+
+\subsection{Program analysis}
+
+Application to program analysis: abstraction refinement,
+data-abstraction refinement, modular abstraction, inter-procedural
+data flow analysis, predicate abstraction.
+
+Recently \citeauthor{DBLP:conf/sas/DimovskiGL05} presented
+\citep{DBLP:conf/sas/DimovskiGL05} a new technique for
+data-abstraction refinement based on game semantics.
+
+\subsubsection{Abstraction refinement}
+
+Abstraction refinement is a technique aiming at solving the
+following problem: does the safety property $\varphi$ holds for a
+given infinite model $M$.
+
+In general the problem is undecidable. The difficulty lies in the
+non-finiteness of the model. Indeed, the problem becomes decidable
+for finite models. Abstraction refinement makes use of this remark:
+it tries to reduces the problem to finite models. The idea is to
+produce an abstraction of the model which is finite. Using model
+checking techniques, one can check whether a particular property
+holds or not for that abstracted model. If it does not hold, then a
+counter-example can be produced. If this counter-example is not
+spurious (it is a valid trace in the model $M$) then we know that
+$M$ does not verify the safety property. If the counter-example is
+spurious then we use it to produced a new abstraction, finer that
+the previous one. The process is then repeated.
+
+The abstraction produced must be a conservative over-abstraction:
+its safety implies the safety of the original model. Therefore the
+abstraction refinement algorithm can be stated as follows:
+
+\begin{algo}[Abstraction refinement]
+The input: $M$ an infinite model, $\varphi$ a safety property. The
+question: does $M \models \varphi$ hold?
+\begin{enumerate}
+\item[step 1] Build a (finite) abstraction $A$ of model $M$.
+\item[step 2] Check whether $A \models \varphi$ using a model
+checker. If the answer is yes then \textbf{return} $M \models
+\varphi$ otherwise continue to step 3.
+
+\item[step 3] Check whether the counter-example proving that $A \not \models
+\varphi$ is not spurious (i.e. is also a counter-example for $M$).
+If yes then \textbf{return} $M \not\models \varphi$ otherwise
+continue to step 4
+
+\item[step 4] Use the counter-example to refine $A$. Goto step 2.
+\end{enumerate}
+\end{algo}
+
+Note that the refinement process may loop forever.
+
+
+\subsubsection{Game semantics and abstraction refinement} In
+\citep{DBLP:conf/sas/DimovskiGL05}, a data-refinement procedure is
+derived that is guaranteed to discover an error if it exists.
+
+The target language is Idealized Algol (introduced in section
+\ref{sec:ia}).
+
+Abstraction is done at the level of data. For that purpose they
+introduce AIA: Abstract Idealized Algol.
+
+The reduction rules of AIA are similar to those of IA, except that
+they introduce non determinism and the $abort$ operator.
+
+$abort$ reduces to the special value $\varepsilon$ and any program
+involving the evaluation of $abort$ reduces to $\varepsilon$.
+
+
+\subsubsection{Game semantics of EIA (Erratic Idealized Algol)} \todo
+
+\subsubsection{Game semantics of AIA} Abstraction are equivalence
+classes on $\zset$ noted $\pi$. We suppose that the abstractions
+$\pi$ are computable.
+
+- Basics types + abstract data types $exp_\pi$ where $\pi$ is an
+abstraction:
+
+$$ \tau ::= int_\pi\ |\ bool$$
+
+The abstraction used in \cite{DBLP:conf/sas/DimovskiGL05} are:
+$$ [] = \{ \zset \} \qquad [n,m] = \{ \{ i | i<n \}, \{ n \}, \{n+1\},
+\ldots \{ m-1\}, \{ m\}, \{ i | i > m \} \} \mbox{where } n \leq 0
+\leq m$$
+
+
+- new operators defined on these new types
+
+- For simplicity we only consider abstraction of the base type
+$expint$.
+
+- reduction rules: .non determinism
+
+. $abort$ operator.
+
+
+\subsubsection{the algorithm} \todo -identify counter-example
+-analyse it by uncovering the hidden moves.
+
+Strategy represented using CSP process algebra verification done
+with FDR.
+
+
+
+Advantage of the approach:
+
+the game semantics approach gives compositionality for free. small
+size of the model (due to hiding of unobservable internal moves)
+
+
+
+Possible extension: recusion concurrency higher-order fragment

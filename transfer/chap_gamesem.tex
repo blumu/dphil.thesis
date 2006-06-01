@@ -1235,17 +1235,22 @@ $$
 \subsection{Game semantics}
 
 As we have seen in section \ref{sec:catgames}, games and strategies
-form a cartesian closed category, therefore games can model the simply-typed $\lambda$-calculus. Let us first
-explain how this is achieved before extending the model to PCF and IA.
+form a cartesian closed category, therefore games can model the simply-typed $\lambda$-calculus.
+We are now about to make this connection concrete by explicitly giving the strategies corresponding
+to a given $\lambda$-term. We will then extend the game model to PCF and IA.
 
-\subsubsection{Simply typed $\lambda$-calculus}
+\subsubsection{Simply-typed $\lambda$-calculus}
 
-In the cartesian closed category $\mathcal{C}$, the objects are the arenas and the morphisms are the strategies.
+In the games that we are considering, the Opponent represents the environment and
+the Proponent represents the lambda term. Opponent opens the game by asking a question
+such as ``What is the output of the function?'', the proponent then may then ask further information such that ``What is the input of the function?''
+O can then provide $P$ with an answer (the value of the input) or can pursue with another question. The dialog goes on until O gets the answer to his
+initial question.
 
-In the games that we describe here, the Opponent represents the environment while
-the Proponent plays according to a strategy imposed by the program itself.
+O represents the environment, he is responsible for proving input values while P plays from the term's point of view: he is responsible for performing
+the computation and returning the output to O. P plays according to the strategy that is associated to the $\lambda$-term being modeled.
 
-
+We recall that in the cartesian closed category $\mathcal{C}$, the objects are the arenas and the morphisms are the strategies.
 Given a simple type $A$, we will model it as an arena $\sem{A}$.
 A context $\Gamma = x_1 :A_1, \ldots x_n:A_n$ will be mapped to the arena
 $\sem{\Gamma} = \sem{A_1} \times \ldots \times \sem{A_n}$ and a term $\Gamma \vdash M : A$
@@ -1434,90 +1439,53 @@ becomes decidable. Consequently, numbers of interesting verification
 problem become solvable. This development opened up a new direction
 of research called \emph{Algorithmic game semantics}.
 
-
- Ghica has subsequently extended the
-%approach to a call-by-value language with arrays [14], and to model
-%checking Hoare-style program correctness assertions [13].
-
-We believe
-%the time is ripe for a systematic development of this algorithmic
-%approach to game semantics. Game Semantics has several features
-%which make it very promising from this point of view. It provides a
-%very concrete way of building fully abstract models. It has a clear
-%operational content, while admitting compositional methods in the
-%style of denotational semantics. The basic objects studied in Game
-%Semantics are games, and strategies on games. Strategies can be seen
-%as certain kinds of highly-constrained processes, hence they admit
-%the same kind of automata-theoretic representations central to model
-%checking and allied methods in computer-assisted verification. At
-%the same time, games and strategies naturally form themselves into
-%rich mathematical structures which yield very accurate models of
-%advanced high-level programming languages, as the various full
-%abstraction results show. Thus the promise of this approach is to
-%carry over the methods of model checking, which has been so
-%effective in the analysis of circuit designs and communications
-%protocols, to much more structured programming situations, in which
-%data-types as well as control flow are important. A further benefit
-%of the algorithmic approach is that by embodying game semantics in
-%tools, and making it concrete and algorithmic, it should become more
-%accessible and meaningful to practitioners. We see Game Semantics as
-%having the potential to fill the role of a “Popular Formal
-%Semantics” called for in an eloquent paper by David Schmidt [31],
-%which can help to bridge the gap between the semantics and
-%programming language communities. Game Semantics has been successful
-%in its own terms as a semantic theory; we aim to make it useful to
-%and usable by a wider community. In relation to the extensive
-%current activity in software model checking and computer assisted
-%verification (see e.g. [8, 12]), our approach is distinctive, being
-%founded on a highly-structured compositional semantic model. This
-%means that we can directly apply our methods to program phrases
-%(i.e. terms-in-context with free variables) in a high-level language
-%with procedures, local variables and data types; moreover, the
-%soundness of our methods is guaranteed by the properties of the
-%semantic models on which they are based. By contrast, most current
-%model checking applies to relatively “flat” unstructured situations,
-%in which the system being analyzed is presented as a transition
-%system or automaton. Our aim is to build on the tools and methods
-%which have been developed in the verification community, while
-%exploring the advantages offered by our semantics-based approach.
-%1.1. OVERVIEW In the following section, we shall begin with an
-%informal overview of game semantics, followed by a step-by-step
-%development of how constructs in a procedural programming language
-%can be modelled in this
-
 \subsection{Program verification}
 
 
 In \citep{AM97a} it is shown that observational equivalence of IA is
-characterized by complete plays. A game i simple if the complete
+characterized by complete plays.
+
+A play of a game is \emph{complete} if it is maximal and all
+question have been answered. A game is \emph{simple} if the complete
 plays are exactly those in which the initial question has been
-answered.
-
-\begin{thm}[Characterization Theorem for Simple Game. (Abramsky, McCusker 1997)]
+answered. It can be shown that for any IA type $T$, $\sem{T}$ is a
+simple game. The following characterization theorem holds for simple
+games:
+\begin{thm}[Characterization Theorem for Simple Game (Abramsky, McCusker 1997)]
 Let $\sigma$ and $\tau$ be strategies on a simple game $A$ then:
-$$\sigma \leq \tau \iff \textsf{comp}(\sem{\[ ¡ ` M : A]) = comp([ ¡ `
-N : A])
+$$\sigma \leq \tau \iff \textsf{comp}(\sigma) = \textsf{comp}(\tau)$$
 \end{thm}
+Therefore terms in IA are fully described by the complete plays of
+the corresponding strategies.
 
-\subsubsection{$IA_2$ fragment}
-Dan R. Ghica and Guy McCusker
 
-The strategies of second-order IA (IA$_2$) are given by the set of
-complete plays. Up to order 2, these set of complete plays are
+\subsubsection{Finitary Idealized algol}
+Finitary Idealized algol is the recursion-free sub-fragment of \ialgol over finite ground types.
+A term $\Gamma \vdash M:T$ of finitary Idealized algol is an $i^{th}$-order term if
+$T$ is of order $i$ at most and the variables in
+$\Gamma$ are of order strictly less than $i$.
+$\ialgol_i$ denotes the fragment of finitary Idealized Algol consisting of terms of $i^{th}$-order terms.
+
+
+\subsubsection{$\ialgol_2$ fragment}
+In \cite{ghicamccusker00}, Dan R. Ghica and Guy McCusker considered the $\ialgol_2$ fragment.
+They show that in $\ialgol_2$ the set of complete plays are
 representable by extended regular languages.
 
+\begin{lem}[Ghica and McCusker 2000]
+The set of complete plays in the game semantics of a $\ialgol_2$-terms is regular.
+\end{lem}
 
-Lemma. (Ghica+McCusker 2000) The set of complete plays in (fully
-abstract) game semantics [ ¡ ` M : A] is regular.
 
+\begin{thm}[(Ghica + McCusker 2000)]
+For $\ialgol_2$-terms M and N,  $M ¼ N$ () [ ¡ ` M : A]reg | {Rz
+} ´ [ ¡ ` N : A]reg | {Sz }
 
-Theorem. (Ghica + McCusker 2000). For IA2-termsM and N M ¼ N () [ ¡
-` M : A]reg | {Rz } ´ [ ¡ ` N : A]reg | {Sz } Moreover R ´ S,
-equivalence of regular expressions, is decidable.
-
+Moreover R ´ S, equivalence of regular expressions, is decidable.
+\end{thm}
 
 Hence program approximation and equivalence is decidable. Same for
-IA2 + while.
+$\ialgol_2$ + while.
 
 
 \subsubsection{Other fragments of IA}
@@ -1527,21 +1495,20 @@ Can Ghica-McCusker’s results be extended to larger fragments?
 Two orthogonal directions of extension: Fragments of IA Is
 observational equivalence decidable?
 
-IA2 Yes. (Ghica+McCusker ICALP’00)
+$\ialgol_2$ Yes. (Ghica+McCusker ICALP’00)
 
-IA2 + while Yes (Ghica+McCusker ICALP’00)
- IA2 + Y1 No. (Ong LICS’02)
+$\ialgol_2$ + while Yes (Ghica+McCusker ICALP’00)
+$\ialgol_2$+ Y1 No. (Ong LICS’02)
 
 
-IA3 Yes: Reduction to DPDA Equivalence. (Ong LICS’02)
+$\ialgol_3$ Yes: Reduction to DPDA Equivalence. (Ong LICS’02)
 
- IAi; i ¸ 4 No.
+$\ialgol_i$ ; i ¸ 4 No.
 
 (Murawski LICS’03) IA3 + while Yes. (Murawski + Walukiewicz
 FOSSACS’05) (Ong MFPS’04)
 
-What about IAi + Y0, for i = 1; 2; 3?
-Complexity?
+What about $\ialgol_i$ + Y0, for i = 1; 2; 3? Complexity?
 
 
 
@@ -1558,11 +1525,11 @@ $N$ in sub-language $L$ of IA, does $M \approx N$ hold?
 \begin{center}
 \begin{tabular}{rcccc}
 Fragment  & pure & +while & +Y0 & +Y1 \\ \hline \hline
-IA0 & PTIME &– &– &– \\
-IA1 & CO-NP & PSPACE & DPDA EQUIV & undecidable \\
-IA2 & PSPACE & PSPACE & DPDA EQUIV & undecidable \\
-IA3 &EXPTIME & EXPTIME & DPDA EQUIV & undecidable \\
-$\textsf{IA}_i, i \geq 4$  & undecidable & undecidable & undecidable
+$\ialgol_0$ & PTIME &– &– &– \\
+$\ialgol_1$ & CO-NP & PSPACE & DPDA EQUIV & undecidable \\
+$\ialgol_2$ & PSPACE & PSPACE & DPDA EQUIV & undecidable \\
+$\ialgol_3$ &EXPTIME & EXPTIME & DPDA EQUIV & undecidable \\
+$\ialgol_i, i \geq 4$  & undecidable & undecidable & undecidable
 & undecidable
 \end{tabular}
 \end{center}
@@ -1575,18 +1542,17 @@ EXPTIME results: Murawski + Walukiewicz FOSSACS’05.
 
 DPDA EQUIV results: Murawski, Walukiewicz + Ong (submitted).
 
-\subsection{Further work: program analysis}
 
-Two orthogonal directions of extension:
-Fragments of IA Is observational equivalence decidable?
-IA2 Yes. (Ghica+McCusker ICALP’00)
-IA2 + while Yes (Ghica+McCusker ICALP’00)
-IA2 + Y1 No. (Ong LICS’02)
-IA3 Yes: Reduction to DPDA Equivalence. (Ong LICS’02)
-IAi; i ¸ 4 No. (Murawski LICS’03)
-IA3 + while Yes. (Murawski + Walukiewicz FOSSACS’05)
-(Ong MFPS’04)
-What about IAi + Y0, for i = 1; 2; 3? Complexity?
+
+Two orthogonal directions of extension: Fragments of IA Is
+observational equivalence decidable? IA2 Yes. (Ghica+McCusker
+ICALP’00) IA2 + while Yes (Ghica+McCusker ICALP’00) IA2 + Y1 No.
+(Ong LICS’02) IA3 Yes: Reduction to DPDA Equivalence. (Ong LICS’02)
+IAi; i ¸ 4 No. (Murawski LICS’03) IA3 + while Yes. (Murawski +
+Walukiewicz FOSSACS’05) (Ong MFPS’04) What about IAi + Y0, for i =
+1; 2; 3? Complexity?
+
+\subsection{Further work: program analysis}
 
 Application to program analysis: abstraction refinement,
 data-abstraction refinement, modular abstraction, inter-procedural

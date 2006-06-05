@@ -9,9 +9,10 @@ Finally we show how games are used to define a syntax-independent
 model of programming languages like PCF and Idealized Algol (IA).
 
 This chapter is largely based on the tutorial by Samson Abramsky
-tutorial on Game Semantics \cite{AM98a}. Many details and proofs
-will be omitted and we refer the reader to \cite{hylandong_pcf,
-abramsky94full} for a complete description of game semantics.
+tutorial on Game Semantics \cite{abramsky:game-semantics-tutorial}.
+Many details and proofs will be omitted and we refer the reader to
+\cite{hylandong_pcf, abramsky94full} for a complete description of
+game semantics.
 
 \section{History}
 
@@ -142,7 +143,8 @@ fully abstract model of the corresponding language.
 We now introduce formally the notion of game that will be used in
 the following section to give a model of the programming languages
 PCF and Idealized Algol. The definitions are taken from
-\cite{abramsky:game-semantics, hylandong_pcf, abramsky94full}.
+\cite{abramsky:game-semantics-tutorial, hylandong_pcf,
+abramsky94full}.
 
 
 \subsection{Arenas and Games}
@@ -366,6 +368,16 @@ The game $A \otimes B$ is defined as follows:
   \vdash_{A\multimap B} & = & \vdash_{A}\ \union\ \vdash_{B}\ \union\  \{ (m,n) \ |\ m \mbox{ initial in } B \wedge n \mbox{ initial in } A \} \\
   P_{A\otimes B} & = & \{ s \in L_{A\otimes B} | s \upharpoonright A \in P_A \wedge s \ \upharpoonright B \in P_B  \}.
 \end{eqnarray*}
+
+Graphically if we draw a triangle to represent an arena $A$ then the
+arena for $A \multimap B$ is represented as follows:
+\begin{center}
+\psset{xunit=.5pt,yunit=.5pt,runit=.5pt}
+\begin{pspicture}(150,80)
+\rput[tr](150,80){ \pnode(27,40){b} \pstribox{B} } \rput[bl](0,0){
+\pnode(27,40){a} \pstribox{A} } \ncline{->}{a}{b}
+\end{pspicture}
+\end{center}
 
 \subsubsection{Cartesian product}
 The game $A \& B$ is defined as follows:
@@ -599,7 +611,7 @@ history of the moves in order to decide which move to make.
 
 \item \emph{Innocence:} a strategy is innocent if it determines Proponent's moves based on a restricted view of the history of the play, mainly the P-view
 at that point. Such strategies can be specified by a partial
-function mapping P-views to P-moves. However not every partial
+function mapping P-views to P-moves called the \emph{view function}. However not every partial
 function from P-views to P-moves gives rise to an innocent strategy
 (a sufficient condition is given in \cite{hylandong_pcf}).
 \end{itemize}
@@ -1006,9 +1018,10 @@ uniquely reconstructed from any non justified sequence of moves
 satisfying the visibility and well-bracketing condition.
 
 At level 3 however, pointers cannot be omitted in general. Here is
-an example taken from \cite{abramsky:game-semantics} illustrating
-this. Consider the following two terms, called the Kierstead terms,
-of type $((\nat \typar \nat) \typar \nat) \typar \nat$:
+an example taken from \cite{abramsky:game-semantics-tutorial}
+illustrating this. Consider the following two terms, called the
+Kierstead terms, of type $((\nat \typar \nat) \typar \nat) \typar
+\nat$:
 
 $$M_1 = \lambda f . f (\lambda x . f (\lambda y .y ))$$
 $$M_2 = \lambda f . f (\lambda x . f (\lambda y .x ))$$
@@ -1049,8 +1062,13 @@ y . x$. And the entire play is part of the strategy $\sem{M_2}$.
 Similarly, if the link points to the second occurrence of $q^2$ then
 the play belongs to the strategy $\sem{M_1}$.
 
-\section{Game model for PCF}
-\subsection{Syntax of the PCF language}
+\section{The fully abstract game model for PCF}
+
+In this section we introduce the functional languages PCF. We then
+describe the game model introduced in \cite{abramsky94full} and
+finally we will state the full abstraction result.
+
+\subsection{The syntax of PCF}
 PCF is a simply-type $\lambda$-calculus with the following
 additions: integer constants  (of ground type), first-order
 arithmetic operators, if-then-else branching, and the recursion
@@ -1059,7 +1077,7 @@ combinator $Y_A : (A\rightarrow A)\rightarrow A$ for any type $A$.
 The types of PCF are given by the following grammar:
 $$ T ::= \texttt{exp}\ |\ T \rightarrow T$$
 
-The following grammar gives the structure of terms:
+and the structure of terms is given by:
 \begin{eqnarray*}
  M ::= x\ |\ \lambda x :A . M \ |\ M M \ |\ \\
 \ |\ n \ |\ \texttt{succ } M \ |\  \texttt{pred } M \\
@@ -1097,15 +1115,15 @@ grammar:
 $$V ::= n\ |\ \lambda x. M$$
 In other word, a canonical form is either a number or a function.
 
-The operational semantics is given for closed terms therefore the context $\Gamma$ is not present in
-the evaluation rules.
-
-The full operational semantics is given in table \ref{tab:bigstep_pcf}.
+The full operational semantics is given in table
+\ref{tab:bigstep_pcf}. The evaluation rules are defined for closed
+terms only therefore the context $\Gamma$ is not present in the
+rules. We write $M \eval$ if $M \eval V$ for some value $V$.
 
 \begin{table}[htbp]
 $$\rulef{}{V \eval V} \quad \mbox{ provided that $V$ is in canonical form.} $$
 
-$$ \rulef{M \eval \lambda x. M' \quad M'\subst{x}{N}}{M N \eval V}$$
+$$ \rulef{M \eval \lambda x. M' \quad M'\subst{x}{N} \eval V}{M N \eval V}$$
 
 $$\rulef{M \eval n}{\texttt{succ}\ M \eval n+1}
 \qquad \rulef{M \eval n+1}{\texttt{pred}\ M \eval n}
@@ -1122,24 +1140,388 @@ $$\rulef{M (\mathrm{Y} M) \eval V }{\texttt{Y} M \eval V}$$
 
 
 
-\section{Idealized Algol (IA)}
-\label{sec:ia}
+\subsection{Game model of PCF}
 
-\subsection{The syntax of IA}
+As we have seen in section \ref{sec:catgames}, games and strategies
+form a cartesian closed category, therefore games can model the
+simply-typed $\lambda$-calculus. We are now about to make this
+connection concrete by explicitly giving the strategy corresponding
+to a given $\lambda$-term. We will then extend the game model to PCF
+and IA.
+
+\subsubsection{Simply-typed $\lambda$-calculus fragment}
+
+In the games that we are considering, the Opponent represents the
+environment and the Proponent represents the lambda term. Opponent
+opens the game by asking a question such as ``What is the output of
+the function?'', the proponent then may then ask further information
+such that ``What is the input of the function?'' O can then provide
+$P$ with an answer (the value of the input) or can pursue with
+another question. The dialog goes on until O gets the answer to his
+initial question.
+
+O represents the environment, he is responsible for proving input
+values while P plays from the term's point of view: he is
+responsible for performing the computation and returning the output
+to O. P plays according to the strategy that is associated to the
+$\lambda$-term being modeled.
+
+We recall that in the cartesian closed category $\mathcal{C}$, the
+objects are the arenas and the morphisms are the strategies. Given a
+simple type $A$, we will model it as an arena $\sem{A}$. A context
+$\Gamma = x_1 :A_1, \ldots x_n:A_n$ will be mapped to the arena
+$\sem{\Gamma} = \sem{A_1} \times \ldots \times \sem{A_n}$ and a term
+$\Gamma \vdash M : A$ will be modeled by a strategy on the arena
+$\sem{\Gamma} \rightarrow \sem{A}$. Since $\mathcal{C}$ is cartesian
+closed, there is is a terminal object $\textbf{1}$ (the empty arena)
+that models the empty context ($\sem{\Gamma} = \textbf{1}$).
+
+
+Let $\omega$ denotes the set of natural numbers. Consider the
+following flat arena over $\omega$:
+$$  \pstree[levelsep=6ex]
+    {\TR[name=R]{q}}
+    { \TR{1} \TR{2} \TR{\ldots}
+    }
+$$
+Then the base type \texttt{exp} is interpreted by the flat game
+$\nat$ over the previous arena where the set of valid position is:
+$$P_N = \{ \epsilon, q \} \union \{ qn \ | \ n \in \omega \}$$
+
+
+In this arena, there is only one question: the initial O-question, P
+can then answer by playing a natural number $i \in \omega$. There
+are only two kinds strategy on this arena:
+\begin{itemize}
+\item the empty strategy where P never answer the initial question. This corresponds to a non terminating computation;
+\item the strategies where P answers by playing a number $n$. This models the numerical constants of the language.
+\end{itemize}
+
+Given the interpretation of base types, we define the interpretation
+of $A\rightarrow B$ by induction:
+$$\sem{A \rightarrow B} = \sem{A} \Rightarrow \sem{B}$$
+
+where the operator $\Rightarrow$ denotes the arena construction $!A
+\multimap B$, the exponential object of the cartesian closed
+category $\mathcal{C}$.
+
+
+
+Variables are interpreted by projection:
+$$\sem{x_1 : A_1, \ldots, x_n:A_n \vdash x_i : A_i} = \pi_i : \sem{A_i} \times \ldots \times \sem{A_i} \times \ldots \times \sem{A_n} \rightarrow  \sem{A_i}$$
+
+The abstraction $\Gamma \vdash \lambda x :A.M : A \rightarrow B$ is
+modeled by a strategy on the arena $\sem{\Gamma} \rightarrow
+(\sem{A}\Rightarrow\sem{B})$. This strategy is obtain by using the
+currying operator of the cartesian closed category:
+$$\sem{\Gamma \vdash \lambda x :A.M : A \rightarrow B} = \Lambda( \sem{\Gamma, x :A \vdash M : B})$$
+
+The application $\Gamma \vdash M N$ is modeled using the evaluation
+map $ev_{A,B} : (A\Rightarrow B)\times A \rightarrow B$:
+
+$$\sem{\Gamma \vdash M N} = \langle \sem{\Gamma \vdash M, \Gamma \vdash N} \rangle; ev_{A,B}$$
+
+
+\subsubsection{PCF fragment}
+
+We now show how to model PCF constructs in the game semantics
+setting. In the following, the sub-arena of a game are tagged in
+order to distinguish identical arenas present in different
+components of the game. Moves are also tagged in the exponent in
+order to identify the sub-arena in which moves are played. We will
+omit the pointers in the play when there is no ambiguity.
+
+The successor arithmetic operator is modeled by the following
+strategy on the arena $\nat^1 \Rightarrow \nat^0$:
+$$\sem{\texttt{succ}} = \{q^0 \cdot q^1 \cdot n^1 \cdot (n+1)^0\ |\ n \in \nat \}$$
+
+The predecessor arithmetic operator is denoted by the strategy
+$$\sem{\texttt{pred}} = \{q^0 \cdot q^1 \cdot n^1 \cdot (n-1)^0\ |\ n >0 \} \union \{ q^0 \cdot q^1 \cdot 0^1 \cdot 0^0 \} $$
+
+Then given a term $\Gamma \vdash \texttt{succ} M : \texttt{exp}$ we
+define:
+$$\sem{\Gamma \vdash \texttt{succ } M : \texttt{exp}} = \sem{\Gamma \vdash M} ; \sem{\texttt{succ}} $$
+$$\sem{\Gamma \vdash \texttt{pred } M : \texttt{exp}} = \sem{\Gamma \vdash M} ; \sem{\texttt{pred}} $$
+
+
+The conditional operator is denoted by the following strategy on the
+arena $\nat^3 \times \nat^2 \times \nat ^1 \Rightarrow \nat^0$:
+$$\sem{\texttt{cond}} =
+    \{ q^0 \cdot q^3 \cdot 0 \cdot q^2 \cdot n^2 \cdot n^0 \ | \ n \in \nat \}
+    \union
+    \{ q^0 \cdot q^3 \cdot m \cdot q^2 \cdot n^2 \cdot n^0 \ | \ m >0, n \in \nat \}
+    $$
+
+
+Given a term $\Gamma \vdash \texttt{cond}\ M\ N_1\ N_2$ we define:
+$$\sem{\Gamma \vdash \texttt{cond}\ M\ N_1\ N_2} =
+\langle \sem{\Gamma \vdash M}, \sem{\Gamma \vdash N_1}, \sem{\Gamma
+\vdash N_2} \rangle ; \sem{\texttt{cond}}$$
+
+
+The interpretation of the \texttt{Y} combinator is a bit more
+complicated.
+
+Consider the term $\Gamma \vdash M : A \rightarrow A$, its semantics
+$f$ is a strategy on $\sem{\Gamma} \times \sem{A} \rightarrow
+\sem{A}$. We define the chain $g_n$ of strategies on the arena
+$\sem{\Gamma} \rightarrow \sem{A}$ as follows:
+\begin{eqnarray*}
+g_0 &=& \perp \\
+g_{n+1} &=&  F(g_n) = \langle id_{\sem{\Gamma}}, g_n\rangle ; f
+\end{eqnarray*}
+
+where $\perp$ denotes the empty strategy $\{ \epsilon \}$.
+
+It is easy to see that the $g_n$ forms a chain. We define
+$\sem{\texttt{Y } M}$ to be the least upper bound of the chain $g_n$
+(i.e. the  least fixed point of $F$). Its existence is guaranteed by
+the fact that the category of games is cpo-enriched.
+
+Since all the strategies that we have given are innocent and
+well-bracketed, the game model of PCF can be interpreted in any of
+the four categories $\mathcal{C}$, $\mathcal{C}_i$, $\mathcal{C}_b$,
+$\mathcal{C}_{ib}$.
+
+
+
+\subsection{Full-abstraction of PCF}
+In this section we state the full abstraction result proved in
+\cite{abramsky94full} and \cite{hylandong_pcf}.
+
+
+\subsubsection{Observational preorder}
+
+A context noted $C[-]$ is a term containing a hole denoted by $-$.
+If $C[-]$ is a context then $C[A]$ denotes the term obtained after
+replacing the hole by the term $A$.
+
+If $M$ is a PCF term then we write $C[M]$ to denote the term
+obtained after replacing the hole by the term $M$. $C[M]$ is
+well-formed provided that $M$ has the appropriate type. Remark: this
+capture permitting substitution must be distinguished from the
+capture-free substitution which is noted $M[N/x]$ for any two terms
+$M$ and $N$.
+
+
+\begin{dfn}[Observational preorder]
+We define the relation on terms $\obspre$ as follows: suppose $M$
+and $N$ are two closed terms of the same type then:
+\begin{eqnarray*}
+M \obspre N &\iff& \parbox{10cm}{for all context $C[-]$ such that
+                $C[M]$ and $C[N]$ are well-formed closed term of type \texttt{exp},
+                    $C[M] \eval$ implies $C[N] \eval$}
+\end{eqnarray*}
+Observational equivalence is defined as the reflexive closure of
+$\obspre$ noted $\obseq$.
+\end{dfn}
+
+Said informally, two programs are observationally equivalent if then
+can be safely interchanged in any program context.
+
+\subsubsection{Soundness and adequacy}
+A model of a programming language is said to be \emph{sound} or
+\emph{inequationally sound} if whenever the denotation of two
+programs are equal then the two programs are observationally
+equivalent, or more formally if for any closed terms $M$ and $N$ of
+the same type:
+$$ \sem{M} \subseteq \sem{N} \imp M \obspre N.$$
+
+In a way, soundness is the minimum one can require for a model of
+programming language: it guarantees that we can reason about the
+program by manipulating the object of the denotational model.
+
+It can be shown that the game model of PCF is sound for evaluation
+and computationally adequate. These two properties imply the
+soundness of the game model:
+
+We said that the evaluation relation $\eval$ is sound if the
+denotation is preserved by evaluation:
+\begin{lem}[Soundness of evaluation] Let $M$ be a PCF term then
+$$M \eval V \quad \imp \quad \sem{M} = \sem{V}.$$
+\end{lem}
+We said that a term $M$ is \emph{computable} if $\sem{M} \neq \bot$
+implies $M \eval$. A model is \emph{computationally adequate} if all
+terms are computable:
+\begin{lem}[Computational adequacy] The game model is
+computationally adequate: for all term $M$,
+$$\sem{M} \neq \perp \implies M \eval.$$
+\end{lem}
+We refer the reader to \cite{abramsky:game-semantics-tutorial} for
+the proofs.
+
+Inequational soundness follows from the last two lemmas:
+\begin{prop}[Inequational soundness]
+\label{prop:ineqsoundness} Let $M$ and $N$ be two closed terms then
+$$\sem{M} \subseteq \sem{N} \implies  M \sqsubseteq N $$
+\end{prop}
+
+
+\subsubsection{Definability}
+
+We will now consider only strategies that are innocent and
+well-bracketed (i.e. we work in the category $\mathcal{C}_{ib}$).
+
+The definability result says that every compact element of the model
+is the denotation of some term.
+The compact morphisms of the category $\mathcal{C}_{ib}$ are those
+with finite view-function.
+
+The economical syntax of PCF prevents us from stating this
+result directly: we need to consider an extension of PCF with some additional
+constants. Indeed, there are strategies that are not the denotation of any term
+in PCF, for instance the ternary conditional strategy : this
+strategy denotes the computation that tests the value of its first
+parameter, if its equal to zero or one then it returns the value of
+the second or third parameter respectively, otherwise it returns the
+value of the fourth parameter. This strategy is illustrated by the
+following diagram:
+$$
+\begin{array}{ccccccccc}
+!\bf N & \otimes & !\bf N & \otimes & !\bf N & \otimes & !\bf N & \multimap & !\bf N \\
+&&&&&&&&q \\
+q \\
+0 \\
+&& q \\
+&& n \\
+&&&&&&&&n \\
+\hline
+&&&&&&&&q \\
+q \\
+1 \\
+&&&& q \\
+&&&& n \\
+&&&&&&&&n \\
+\hline
+&&&&&&&&q \\
+q \\
+m>1 \\
+&&&&&& q \\
+&&&&&& n \\
+&&&&&&&&n \\
+\end{array}
+$$
+
+It is possible to simulate this computation in PCF using the conditional operator, for instance the following term is a potential candidate:
+$$ T = \texttt{cond}\ M\  N_1 (\texttt{cond}\  (\texttt{pred } M)\  N_2\  N_3)$$
+
+Unfortunately the game semantics of $T$ is not given by the strategy that we have just defined, it is instead the following one:
+$$
+\begin{array}{ccccccccc}
+!\bf N & \otimes & !\bf N & \otimes & !\bf N & \otimes & !\bf N & \multimap & !\bf N \\
+&&&&&&&&q \\
+q \\
+0 \\
+&& q \\
+&& n \\
+&&&&&&&&n \\
+\hline
+&&&&&&&&q \\
+q \\
+1 \\
+q \\
+0 \\
+&&&& q \\
+&&&& n \\
+&&&&&&&&n \\
+\hline
+&&&&&&&&q \\
+q \\
+m>1 \\
+q \\
+m-1>0 \\
+&&&&&& q \\
+&&&&&& n \\
+&&&&&&&&n \\
+\end{array}
+$$
+
+To make up for this deficiency we add a family of terms to PCF: the $k$-ary conditionals:
+$$ \texttt{case}_k\ N\ N_1\ N_2\ \ldots\ N_k$$
+with the desired operational semantics:
+$$ \rulef{M \eval i \quad N_{i+1} \eval V}{\texttt{case}_k\ N\ N_1\ N_2\ \ldots\ N_k\ \eval V}\ i \in \{0, \ldots,k-1\}.$$
+The denotation of this term is given by the first strategy illustrated above.
+The extended language is called PCF'.
+
+We can now prove the definability result:
+\begin{prop}[Definability]
+\label{prop:definability} Let $A$ be a PCF type and $\sigma$ be a compact innocent and well-bracketed
+strategy on $A$. There exists a PCF' term $M$ such that $\sem{M} = \sigma$.
+\end{prop}
+
+Note that definability is proved for PCF' and not for PCF.
+Nevertheless, PCF' is a conservative extension of PCF: if $M$ and $N$ are terms such that for any PCF-context $C[-]$,
+$C[M] \eval \imp C[N] \eval$ then the same is true for any PCF'-context. This is because $\texttt{case}_k$ constructs can be ``simulated''
+in PCF, for instance $\texttt{case}_3$ can be replaced by the PCF term $T$ which shares the same operational semantics.
+
+This observation will allow us to use definability in PCF' to
+prove the full-abstraction of PCF.
+
+
+\subsubsection{Full abstraction}
+\todomargin{to finish}
+\begin{dfn}[Intrinsic preorder]
+\end{dfn}
+
+The full abstraction of the game model is a consequence of
+proposition \ref{prop:ineqsoundness} and \ref{prop:definability}:
+\begin{thm}[Full abstraction]
+Let $M$ and $N$ be two closed IA-terms.
+$$\sem{M} \precsim_b \sem{N} \ \iff \ M \sqsubseteq N$$
+\end{thm}
+
+where $\precsim_b$ denotes the intrinsic preorder of the category
+$\mathcal{C}_b$.
+
+
+\section{The fully abstract game model for Idealized Algol (\ialgol)}
+
+We now extend the work of the previous section to the language
+\ialgol, an imperative extension of PCF. We start by giving the
+syntax and operational semantics of the language, we then describe
+the game model which was introduced in \cite{abramsky99full}.
+Finally we will state the full abstraction result for the game
+model.
+
+\subsection{The syntax of \ialgol}
 IA is an extension of PCF introduced by J.C. Reynold in
-\cite{Reynolds81}. It adds imperative features such as local variables and sequential composition.
-
-The description of the language that we give here follows the one of \cite{abramsky:game-semantics}.
+\cite{Reynolds81}. It adds imperative features such as local
+variables and sequential composition.
 
 On top of \texttt{exp}, PCF has the following two new types:
- \texttt{com} for commands and \texttt{var} for variables.
+\texttt{com} for commands and \texttt{var} for variables. There is a
+constant \texttt{skip} of type \texttt{com} which corresponds to the
+command that do nothing. Commands can be composed using the
+sequential composition operator \texttt{seq}. Local variable are
+declared using the \texttt{new} operator, variable content is
+written using \texttt{assign} and retrieved using \texttt{deref}.
 
-There is a constant \texttt{skip} of type \texttt{com} which corresponds to the command that do
-nothing. Commands can be composed using the sequential composition operator \texttt{seq}.
-Local variable are declared using the \texttt{new} operator, variable content is written
-using \texttt{assign} and retrieved using \texttt{deref}.
+In addition IA has the constant \texttt{mkvar} that can be used to
+create a particular kind of variables. The \texttt{mkvar} operator
+works in an object oriented fashion: it takes two arguments, the
+first one is a function (called the acceptor) that affects a value
+to the variable and the second argument is an expression that
+returns a value from the variable. This mechanism is very much like
+the ``set/get'' object programming paradigm used by C++ programmers.
 
-The new formations rules are given in table \ref{tab:ia_formrules}.
+Variables created with \texttt{mkvar} are less constraint than the
+variables created with \texttt{new}. Indeed, variables created with
+\texttt{new} follow the following particular rule: the value read
+from the variable is always the last value that has been assigned to
+it. This rule does not apply to variables created with
+\texttt{mkvar}. For instance the variable:
+$$\texttt{mkvar}\ (\lambda v.\texttt{skip})\ 0$$
+will always return $0$ even if another number has been assigned it.
+
+
+One may think that this addition to the language is artificial,
+however the full abstraction result of the game model of IA relies
+upon this addition. At present, it is still an open problem to find
+a fully abstract model of IA deprived of \texttt{mkvar}.
+
+
+The set of additional formations rules completing those of PCF are
+given in table \ref{tab:ia_formrules}.
 
 \begin{table}[htbp]
 $$ \rulef{\Gamma \vdash M : \texttt{com} \quad \Gamma \vdash N :A}
@@ -1161,39 +1543,45 @@ $$ \rulef{\Gamma \vdash M_1 : \texttt{exp} \rightarrow \texttt{com} \quad \Gamma
 \label{tab:ia_formrules}
 \end{table}
 
-If $\vdash M : A$ (i.e. $M$ can be formed with an empty context), we say that $M$ is a close term.
+If the judgement $\emptyset \vdash M : A$ is valid , we say that $M$
+is a closed term.
 
-\subsection{Operational semantics}
+\subsection{Operational semantics of \ialgol}
 
-In IA the semantics is given in a slightly different form from PCF.
-In PCF, the evaluation rules were given for closed terms only. Suppose that we
-proceed the same way for IA and consider the evaluation rule for the $\texttt{new}$ construct:
-the conclusion is $\texttt{new } x:=0 \texttt{ in } M$ and the premise
-is an evaluation for a certain term constructed from $M$, more precisely the term $M$
-where \emph{some} occurrences of $x$ are replaced by the value $0$.
-Because of the presence of the \texttt{assign} operator, we cannot simply replace all
-the occurrences of $x$ in $M$ (the required substitution is  more complicated
-than the substitution used for beta-reduction).
+In IA the semantics is given in a form slightly different from PCF.
+Instead of giving the semantics for closed terms we consider terms
+whose free variables are all of type \texttt{var}. These terms are
+``closed'' by mean of stores. A store is a function mapping free
+variables of type \texttt{var} to natural numbers. Suppose $\Gamma$
+is a context containing only variables of type \texttt{var}, then we
+say that $\Gamma$ is a \texttt{var}-context. A store with domain
+$\Gamma$ is called a $\Gamma$-store. The notation $s\ |\ x \mapsto
+n$ refers to the store that maps $x$ to $n$ and otherwise maps
+variables according to the store $s$.
 
-
-Therefore, instead of giving the semantics for closed term we consider terms
-whose free variables are all of type \texttt{var}. These free variables are ``closed'' by mean of
-stores. A store is a function mapping free variables of type \texttt{var} to natural numbers.
-Suppose $\Gamma$ is a context containing only variable of type \texttt{var}, then we say that
-$\Gamma$ is a \texttt{var}-context. A store whose domain $\Gamma$ is called a $\Gamma$-store.
-
-The notation $s\ |\ x \mapsto n$ refers to the store that maps $x$ to $n$
-and otherwise maps variables according to the store $s$.
+%%%% The following is poorly written:
+%
+%In PCF, the evaluation rules were given for closed terms only.
+%Suppose that we proceed the same way for IA and consider the
+%evaluation rule for the $\texttt{new}$ construct: the conclusion is
+%$\texttt{new } x:=0 \texttt{ in } M$ and the premise is an
+%evaluation for a certain term constructed from $M$, more precisely
+%the term $M$ where \emph{some} occurrences of $x$ are replaced by
+%the value $0$. Because of the presence of the \texttt{assign}
+%operator, we cannot simply replace all the occurrences of $x$ in $M$
+%(the required substitution is  more complicated than the
+%substitution used for beta-reduction).
 
 
 The canonical forms for IA are given by the grammar:
-$$ V ::= n\ |\ \lambda x. M\ |\ x\ |\  \texttt{mkvar} M N$$
+$$ V ::= \texttt{skip}\ |\ n\ |\ \lambda x. M\ |\ x\ |\  \texttt{mkvar}\ M\ N$$
 
-where $n \in \nat$ and $x:var$.
+where $n \in \nat$ and $x: \texttt{var}$.
 
 
-A program is now defined by a term together with a $\Gamma$-store such that $\Gamma \vdash M : A$.
-The evaluation semantics is expressed by the judgment form
+In \ialgol, a program is a term together with a $\Gamma$-store such
+that $\Gamma \vdash M : A$. The evaluation semantics is expressed by
+the judgment form
 $$s,M \eval s', V$$
 where $s$ and $s'$ are $\Gamma$-stores,
 $\Gamma \vdash M : A$ and $\Gamma \vdash V : A$ where $V$ is in canonical form.
@@ -1216,7 +1604,7 @@ $$\mbox{\textbf{Variables }}
     \rulef{s,M \eval s',x }{s, \deref\ M \eval s',s'(x)}$$
 
 $$\mbox{\texttt{\textbf{mkvar}}}
-    \rulef{N \eval n \quad M \eval \texttt{mkvar } M_1\ M_2 \quad M_1\ n \eval \iaskip}
+    \rulef{N \eval n \quad M \eval \texttt{mkvar}\ M_1\ M_2 \quad M_1\ n \eval \iaskip}
     {\assign\ M\ N \eval \iaskip}
 \qquad
     \rulef{N \eval \texttt{mkvar } M_1\ M_2 \quad M_2\ \eval n}
@@ -1232,196 +1620,55 @@ $$
 \caption{Big-step operational semantics of IA}
 \end{table}
 
-\subsection{Game semantics}
 
-As we have seen in section \ref{sec:catgames}, games and strategies
-form a cartesian closed category, therefore games can model the simply-typed $\lambda$-calculus.
-We are now about to make this connection concrete by explicitly giving the strategies corresponding
-to a given $\lambda$-term. We will then extend the game model to PCF and IA.
+\subsection{Game model of \ialgol}
 
-\subsubsection{Simply-typed $\lambda$-calculus}
+All the strategies used to model PCF are well-bracketed and
+innocent. From now on, we will only require well-bracketing and we
+will introduce strategies that are not innocent. This is a necessity
+if we want to give a model of memory cells that correspond to
+variables. The intuition behind this fact is that a cell needs to
+remember what was the last value written in it in order to be able
+to return it when it is read, and this can only be done by looking
+at the whole history of moves, not only those present in the P-view.
 
-In the games that we are considering, the Opponent represents the environment and
-the Proponent represents the lambda term. Opponent opens the game by asking a question
-such as ``What is the output of the function?'', the proponent then may then ask further information such that ``What is the input of the function?''
-O can then provide $P$ with an answer (the value of the input) or can pursue with another question. The dialog goes on until O gets the answer to his
-initial question.
-
-O represents the environment, he is responsible for proving input values while P plays from the term's point of view: he is responsible for performing
-the computation and returning the output to O. P plays according to the strategy that is associated to the $\lambda$-term being modeled.
-
-We recall that in the cartesian closed category $\mathcal{C}$, the objects are the arenas and the morphisms are the strategies.
-Given a simple type $A$, we will model it as an arena $\sem{A}$.
-A context $\Gamma = x_1 :A_1, \ldots x_n:A_n$ will be mapped to the arena
-$\sem{\Gamma} = \sem{A_1} \times \ldots \times \sem{A_n}$ and a term $\Gamma \vdash M : A$
-will be modeled by a strategy on the arena $\sem{\Gamma} \rightarrow \sem{A}$.
-Since $\mathcal{C}$ is cartesian closed, there is is a terminal object $\textbf{1}$ (the empty arena) that
-models the empty context ($\sem{\Gamma} = \textbf{1}$).
-
-
-The base type \texttt{exp} is interpreted by the following flat arena of natural numbers noted $\nat$:
-$$  \pstree[levelsep=6ex]
-    {\TR[name=R]{q}}
-    { \TR{1} \TR{2} \TR{\ldots}
-    }
-$$
-In this arena, there is only one question: the initial O-question, P can then answer it by playing a natural number $i \in \nat$.
-There are only two kinds strategy on this arena:
-\begin{itemize}
-\item the empty strategy where P never answer the initial question. This corresponds to a non terminating computation;
-\item the strategies where P answers by playing a number $n$. This models the constants of the language.
-\end{itemize}
-
-Given the interpretation of base types, we define the interpretation of $A\rightarrow B$ by induction:
-$$\sem{A \rightarrow B} = \sem{A} \Rightarrow \sem{B}$$
-
-where the operator $\Rightarrow$ denotes the arena construction $!A
-\multimap B$ which exists because $\mathcal{C}$ is cartesian closed.
-
-Graphically if we represent the arena $A$ and $B$ by two triangles, the arena for $A \rightarrow B$ would be represented by:
-\begin{center}
-\psset{xunit=.5pt,yunit=.5pt,runit=.5pt}
-\begin{pspicture}(150,80)
-\rput[tr](150,80){ \pnode(27,40){a} \pstribox{A} }
-\rput[bl](0,0){ \pnode(27,40){b} \pstribox{B} }
-\ncline{->}{a}{b}
-\end{pspicture}
-\end{center}
-
-
-Variables are interpreted by projection:
-$$\sem{x_1 : A_1, \ldots, x_n:A_n \vdash x_i : A_i} = \pi_i : \sem{A_i} \times \ldots \times \sem{A_i} \times \ldots \times \sem{A_n} \rightarrow  \sem{A_i}$$
-
-The abstraction $\Gamma \vdash \lambda x :A.M : A \rightarrow B$ is modeled by a strategy on the arena
-$\sem{\Gamma} \rightarrow (\sem{A}\Rightarrow\sem{B})$. This strategy is obtain by using the currying operator of the
-cartesian closed category:
-$$\sem{\Gamma \vdash \lambda x :A.M : A \rightarrow B} = \Lambda( \sem{\Gamma, x :A \vdash M : B})$$
-
-The application $\Gamma \vdash M N$ is modeled using the evaluation map $ev_{A,B} : (A\Rightarrow B)\times A \rightarrow B$:
-
-$$\sem{\Gamma \vdash M N} = \langle \sem{\Gamma \vdash M, \Gamma \vdash N} \rangle; ev_{A,B}$$
-
-
-\subsubsection{PCF}
-
-We now show how to model PCF constructs in the game semantics
-setting. In the following, the sub-arena of a game are tagged in
-order to distinguish identical arenas that are present in different
-components of the game. Moves are also tagged in the exponent in
-order to identify the sub-arena in which moves are played. We will
-omit the pointers in the play when they are not essential for the
-understanding of the model (moreover we will see later on that under
-certain assumptions up to order 2, pointers can be recovered
-uniquely).
-
-The successor arithmetic operator is modeled by the following strategy on the arena $\nat^1 \Rightarrow \nat^0$:
-$$\sem{\texttt{succ}} = \{q^0 \cdot q^1 \cdot n^1 \cdot (n+1)^0\ |\ n \in \nat \}$$
-
-The predecessor arithmetic operator is denoted by the strategy
-$$\sem{\texttt{pred}} = \{q^0 \cdot q^1 \cdot n^1 \cdot (n-1)^0\ |\ n >0 \} \union \{ q^0 \cdot q^1 \cdot 0^1 \cdot 0^0 \} $$
-
-Then given a term $\Gamma \vdash \texttt{succ} M : \texttt{exp}$ we define:
-$$\sem{\Gamma \vdash \texttt{succ } M : \texttt{exp}} = \sem{\Gamma \vdash M} ; \sem{\texttt{succ}} $$
-$$\sem{\Gamma \vdash \texttt{pred } M : \texttt{exp}} = \sem{\Gamma \vdash M} ; \sem{\texttt{pred}} $$
-
-
-The conditional operator is denoted by the following strategy on the arena $\nat^3 \times \nat^2 \times \nat ^1 \Rightarrow \nat^0$:
-$$\sem{\texttt{cond}} =
-    \{ q^0 \cdot q^3 \cdot 0 \cdot q^2 \cdot n^2 \cdot n^0 \ | \ n \in \nat \}
-    \union
-    \{ q^0 \cdot q^3 \cdot m \cdot q^2 \cdot n^2 \cdot n^0 \ | \ m >0, n \in \nat \}
-    $$
-
-
-Given a term $\Gamma \vdash \texttt{cond} M\ N_1\ N_2$ we define:
-$$\sem{\Gamma \vdash \texttt{cond} M\ N_1\ N_2} =
-\langle \sem{\Gamma \vdash M}, \sem{\Gamma \vdash N_1}, \sem{\Gamma \vdash N_2} \rangle ; \sem{\texttt{cond}}$$
-
-
-The interpretation of the \texttt{Y} combinator is a bit more complicated.
-
-Consider the term $\Gamma \vdash M : A \rightarrow A$, its semantics $f$ is a strategy on $\sem{\Gamma} \times \sem{A} \rightarrow \sem{A}$.
-We define the chain $g_n$ of strategies on the arena $\sem{\Gamma} \rightarrow \sem{A}$ as follows:
-\begin{eqnarray*}
-g_0 &=& \perp \\
-g_{n+1} &=&  F(g_n) = \langle id_{\sem{\Gamma}}, g_n\rangle ; f
-\end{eqnarray*}
-
-where $\perp$ denotes the empty strategy $\{ \epsilon \}$.
-
-It is easy to see that indeed the $g_n$ forms a chain.
-We define $\sem{\texttt{Y } M}$ to be the least upper bound of the chain $g_n$
-(i.e. the  least fixed point of $F$). Its existence is guaranteed by the fact that
-the category of games is cpo-enriched.
-
-\subsubsection{IA}
-
-It is easy to check that all the strategies given until now are well-bracketed and innocent.
-From now on, we will only require well-bracketing and we will introduce strategies that are
-not innocent. This is a necessity if we want to give a model of memory cells that correspond
-to variables. The intuition behind this fact is that a cell needs to remember what was the last value written in it
-in order to be able to return it when it is read, and this can only be done by looking at the whole history of moves,
-not only those present in the P-view.
-
-
-
-
-
-\subsection{Full-abstraction}
-In this section we recall the standard full abstraction result proved in  \cite{abramsky94full}
-and \cite{hylandong_pcf}.
-
-A context noted $C[-]$ is a term containing a hole denoted by $-$. If $C[-]$ is a context then $C[A]$ denotes the term obtained
-after replacing the hole by the term $A$.
-
-\begin{dfn}[Observational preorder]
-Let $\vdash M : A$ and $\vdash N : A$ be two closed terms. We define the relation $\sqsubseteq$ as follows:
-
-
-$M \sqsubseteq N$ if and only if for all context $C[-]$ such that $C[M]$ and $C[M]$ are well-formed terms if
-$C[M] \eval$ then $C[N] \eval$.
-\end{dfn}
-
-
-\begin{lem}[Soundness for PCF terms] Let $M$ be a PCF term.
-If $M \eval V$ then $\sem{M} = \sem{V}$.
-\end{lem}
+\subsection{Full abstraction of \ialgol}
 
 \begin{lem}[Soundness for IA terms] Let $\Gamma \vdash M : A$ be an IA term and a $\Gamma$ store $s$.
-If $s,M \eval s',V$ then the plays of $\sem{s,M} : I \multimap A \otimes !\Gamma$ which begin
-with a move of $A$ are identical to those of $\sem{s',V}$.
-\end{lem}
-
-
-\begin{lem}[Computational adequacy for PCF terms]
-All PCF terms are computable. (i.e. $\sem{M} \neq \perp$ implies $M \eval$)
+If $s,M \eval s',V$ then the plays of $\sem{s,M} : I \multimap A
+\otimes !\Gamma$ which begin with a move of $A$ are identical to
+those of $\sem{s',V}$.
 \end{lem}
 
 \begin{lem}[Computational adequacy for IA terms]
-All IA terms are computable. (i.e. $\sem{M} \neq \perp$ implies $M \eval$)
+All IA terms are computable. (i.e. $\sem{M} \neq \perp$ implies $M
+\eval$)
 \end{lem}
 
 
-The following result follows from soundness and computational adequacy of the model.
+The following result follows from soundness and computational
+adequacy of the model.
 \begin{prop}[Inequational soundness]
-\label{prop:ineqsoundness}
-Let $M$ and $N$ be two closed terms then
+\label{prop:ineqsoundness} Let $M$ and $N$ be two closed terms then
 $$\sem{M} \subseteq \sem{N} \implies  M \sqsubseteq N $$
 \end{prop}
 
 \begin{prop}[Definability]
-\label{prop:definability}
-Let $\sigma$ be a compact well-bracketed on a game $A$ denoting a IA type. Then there is
-an IA-term $M$ such that $\sem{M} = \sigma$.
+\label{prop:definability} Let $\sigma$ be a compact well-bracketed
+on a game $A$ denoting a IA type. Then there is an IA-term $M$ such
+that $\sem{M} = \sigma$.
 \end{prop}
 
-The final standard result of game semantics can then be proved using proposition \ref{prop:ineqsoundness} and \ref{prop:definability}:
+The final standard result of game semantics can then be proved using
+proposition \ref{prop:ineqsoundness} and \ref{prop:definability}:
 \begin{thm}[Full abstraction]
 Let $M$ and $N$ be two closed IA-terms.
 $$\sem{M} \precsim_b \sem{N} \ \iff \ M \sqsubseteq N$$
 \end{thm}
 
-where $\precsim_b$ denotes the intrinsic preorder of the category $\mathcal{C}_b$.
+where $\precsim_b$ denotes the intrinsic preorder of the category
+$\mathcal{C}_b$.
+
 
 
 \section{Algorithmic game semantics}
@@ -1439,8 +1686,7 @@ becomes decidable. Consequently, numbers of interesting verification
 problem become solvable. This development opened up a new direction
 of research called \emph{Algorithmic game semantics}.
 
-\subsection{Program verification}
-
+\subsection{Characterization of observational equivalence}
 
 In \citep{AM97a} it is shown that observational equivalence of IA is
 characterized by complete plays.
@@ -1458,20 +1704,20 @@ $$\sigma \leq \tau \iff \textsf{comp}(\sigma) = \textsf{comp}(\tau)$$
 Therefore terms in IA are fully described by the complete plays of
 the corresponding strategies.
 
-\subsubsection{Finitary fragments of Idealized algol}
-We introduce some fragments of the language \ialgol. Firstly,
-\emph{Finitary Idealized Algol} denotes the recursion-free
-sub-fragment of \ialgol\ over finite ground types. A term $\Gamma
-\vdash M:T$ of finitary Idealized algol is an $i^{th}$-order term if
-$T$ is of order $i$ at most and the variables in $\Gamma$ are of
-order strictly less than $i$. $\ialgol_i$ denotes the fragment of
-finitary Idealized Algol consisting of terms of $i^{th}$-order
-terms. $\ialgol_i + \textsf{while}$ denotes the fragment $\ialgol_i$
-augmented with primitive recursion. Finally $\ialgol_i +
-\textsf{Y}_j$ where $j \leq i$ denotes the fragment $\ialgol_i$
-augmented with a set of fixed-point iterators $\textsf{Y}_A :
-(A\rightarrow A ) \rightarrow A$ for any type $A$ of order $j$ at
-most.
+\subsection{Finitary fragments of Idealized algol}
+We introduce
+some fragments of the language \ialgol. Firstly, \emph{Finitary
+Idealized Algol} denotes the recursion-free sub-fragment of \ialgol\
+over finite ground types. A term $\Gamma \vdash M:T$ of finitary
+Idealized algol is an $i^{th}$-order term if $T$ is of order $i$ at
+most and the variables in $\Gamma$ are of order strictly less than
+$i$. $\ialgol_i$ denotes the fragment of finitary Idealized Algol
+consisting of terms of $i^{th}$-order terms. $\ialgol_i +
+\textsf{while}$ denotes the fragment $\ialgol_i$ augmented with
+primitive recursion. Finally $\ialgol_i + \textsf{Y}_j$ where $j
+\leq i$ denotes the fragment $\ialgol_i$ augmented with a set of
+fixed-point iterators $\textsf{Y}_A : (A\rightarrow A ) \rightarrow
+A$ for any type $A$ of order $j$ at most.
 
 We recall the observational equivalence decision problem: given two
 $\beta$-normal forms $M$ and $N$ in a given fragment of \ialgol,
@@ -1536,117 +1782,4 @@ The $\times$ symbol denotes undefined \ialgol\ fragments.
 
 The coNP and PSPACE results are due to Murawski \citep{Mur04b}.
 
-\subsection{Further work: program analysis}
-
-Application to program analysis: abstraction refinement,
-data-abstraction refinement, modular abstraction, inter-procedural
-data flow analysis, predicate abstraction.
-
-Recently \citeauthor{DBLP:conf/sas/DimovskiGL05} presented a new
-technique for data-abstraction refinement based on game semantics
-\citep{DBLP:conf/sas/DimovskiGL05} .
-
-\subsubsection{Abstraction refinement}
-
-Abstraction refinement is a technique aiming at solving the
-following problem: does the safety property $\varphi$ holds for a
-given infinite model $M$.
-
-In general the problem is undecidable. The difficulty lies in the
-non-finiteness of the model. Indeed, the problem becomes decidable
-for finite models. Abstraction refinement makes use of this remark:
-it tries to reduces the problem to finite models. The idea is to
-produce an abstraction of the model which is finite. Using model
-checking techniques, one can check whether a particular property
-holds or not for that abstracted model. If it does not hold, then a
-counter-example can be produced. If this counter-example is not
-spurious (it is a valid trace in the model $M$) then we know that
-$M$ does not verify the safety property. If the counter-example is
-spurious then we use it to produced a new abstraction, finer that
-the previous one. The process is then repeated.
-
-The abstraction produced must be a conservative over-abstraction:
-its safety implies the safety of the original model. Therefore the
-abstraction refinement algorithm can be stated as follows:
-
-\begin{algo}[Abstraction refinement]
-The input: $M$ an infinite model, $\varphi$ a safety property. The
-question: does $M \models \varphi$ hold?
-\begin{enumerate}
-\item[step 1] Build a (finite) abstraction $A$ of model $M$.
-\item[step 2] Check whether $A \models \varphi$ using a model
-checker. If the answer is yes then \textbf{return} $M \models
-\varphi$ otherwise continue to step 3.
-
-\item[step 3] Check whether the counter-example proving that $A \not \models
-\varphi$ is not spurious (i.e. is also a counter-example for $M$).
-If yes then \textbf{return} $M \not\models \varphi$ otherwise
-continue to step 4
-
-\item[step 4] Use the counter-example to refine $A$. Goto step 2.
-\end{enumerate}
-\end{algo}
-
-Note that the refinement process may loop forever.
-
-
-\subsubsection{Game semantics and abstraction refinement} In
-\citep{DBLP:conf/sas/DimovskiGL05}, a data-refinement procedure is
-derived that is guaranteed to discover an error if it exists.
-
-The target language is Idealized Algol (introduced in section
-\ref{sec:ia}).
-
-Abstraction is done at the level of data. For that purpose they
-introduce AIA: Abstract Idealized Algol.
-
-The reduction rules of AIA are similar to those of IA, except that
-they introduce non determinism and the $abort$ operator.
-
-$abort$ reduces to the special value $\varepsilon$ and any program
-involving the evaluation of $abort$ reduces to $\varepsilon$.
-
-
-\subsubsection{Game semantics of EIA (Erratic Idealized Algol)} \todo
-
-\subsubsection{Game semantics of AIA} Abstraction are equivalence
-classes on $\zset$ noted $\pi$. We suppose that the abstractions
-$\pi$ are computable.
-
-- Basics types + abstract data types $exp_\pi$ where $\pi$ is an
-abstraction:
-
-$$ \tau ::= int_\pi\ |\ bool$$
-
-The abstraction used in \cite{DBLP:conf/sas/DimovskiGL05} are:
-$$ [] = \{ \zset \} \qquad [n,m] = \{ \{ i | i<n \}, \{ n \}, \{n+1\},
-\ldots \{ m-1\}, \{ m\}, \{ i | i > m \} \} \mbox{where } n \leq 0
-\leq m$$
-
-
-- new operators defined on these new types
-
-- For simplicity we only consider abstraction of the base type
-$expint$.
-
-- reduction rules: .non determinism
-
-. $abort$ operator.
-
-
-\subsubsection{the algorithm} \todo -identify counter-example
--analyse it by uncovering the hidden moves.
-
-Strategy represented using CSP process algebra verification done
-with FDR.
-
-
-
-Advantage of the approach:
-
-the game semantics approach gives compositionality for free. small
-size of the model (due to hiding of unobservable internal moves)
-
-
-
-Possible extension: recusion concurrency higher-order fragment
+%\input dataref

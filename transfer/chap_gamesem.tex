@@ -799,6 +799,28 @@ This significant characteristic will prove to be extremely useful
 when it comes to model programming languages with recursion such as
 PCF.
 
+
+\subsubsection{Intrinsic preoder}
+
+We now define a pre-ordering on strategies. We assume that we are working in one of the categories
+$\mathcal{C}$, $\mathcal{C}_i$, $\mathcal{C}_b$, $\mathcal{C}_{ib}$.
+
+Let $\Sigma$ be the game with a single question $q$ and single answer $a$. There are only two strategies on $\Sigma$:
+$\bot = \{ \epsilon \}$ and $\top = \{ \epsilon, q a \}$ which are both innocent and well-bracketed. These strategies are used
+to test strategies: for any strategy $\sigma : {\bf 1} \rightarrow A$ and for any test strategy $\alpha : A \rightarrow \Sigma$ we say that $\sigma$
+passes the test $\alpha$ if $\sigma ; \alpha = \top$.
+
+The intrinsic preorder noted $\lesssim$ is then defined as follows:
+for any strategy $\sigma,\tau$ on the game $A$, $\sigma \lesssim \tau$ if $\tau$ passes all the test passed by $\sigma$. Formally:
+$$ \sigma \lesssim \tau \quad \iff \quad \forall \alpha : A \rightarrow \Sigma. \sigma ; \tau = \top \imp \tau ; \alpha = \top$$
+
+One can check that the relation $\lesssim$ is indeed a preorder on the set of strategies of the considered category.
+This preorder defines classes of equivalence: two strategies are in the same equivalence class if no test can distinguish them.
+The quotiented category is written $\bf C/\lesssim$ where $\bf C$ ranges over $\{ \mathcal{C}_i, \mathcal{C}_i, \mathcal{C}_b, \mathcal{C}_{ib} \}$.
+
+Later on we will state the full abstraction of the game semantics model of PCF. This result will
+be proved in the quotiented category.
+
 \subsection{Special case of arenas of order 2 at most}
 In this section, we consider a restricted class of arena and prove a
 property on the games played on these arenas.
@@ -1337,15 +1359,28 @@ soundness of the game model:
 
 We said that the evaluation relation $\eval$ is sound if the
 denotation is preserved by evaluation:
-\begin{lem}[Soundness of evaluation] Let $M$ be a PCF term then
+\begin{lem}[Soundness of evaluation]
+\label{lem:evalsoundness}
+ Let $M$ be a PCF term then
 $$M \eval V \quad \imp \quad \sem{M} = \sem{V}.$$
 \end{lem}
-We said that a term $M$ is \emph{computable} if $\sem{M} \neq \bot$
-implies $M \eval$. A model is \emph{computationally adequate} if all
-terms are computable:
-\begin{lem}[Computational adequacy] The game model is
-computationally adequate: for all term $M$,
-$$\sem{M} \neq \perp \implies M \eval.$$
+
+\begin{dfn}[Computable terms] \
+\begin{itemize}
+\item A closed term $\vdash M$ of base type is computable if $\sem{M} \neq \bot$
+implies $M \eval$.
+\item A higher-order closed term $\vdash M : A\rightarrow B$ is computable if $M N$ is computable for any computable closed term $\vdash  N:A$.
+\item An open term $x_1 : A_1, \ldots, x_n : A_n \vdash M : A\rightarrow B$ is computable if $\vdash M [N_1/x_1, \ldots N_n/x_n]$ is computable
+for all computable closed terms $N_1:A_1, \ldots, N_n:A_n$.
+\end{itemize}
+\end{dfn}
+
+A model is \emph{computationally adequate} if all
+terms are computable.
+\begin{lem}[Computational adequacy]
+\label{lem:computadequacy}
+The game model of PCF is
+computationally adequate.
 \end{lem}
 We refer the reader to \cite{abramsky:game-semantics-tutorial} for
 the proofs.
@@ -1353,9 +1388,15 @@ the proofs.
 Inequational soundness follows from the last two lemmas:
 \begin{prop}[Inequational soundness]
 \label{prop:ineqsoundness} Let $M$ and $N$ be two closed terms then
-$$\sem{M} \subseteq \sem{N} \implies  M \sqsubseteq N $$
+$$\sem{M} \subseteq \sem{N} \implies  M \obspre N $$
 \end{prop}
-
+\begin{proof}
+  Suppose that $\sem{M} \subseteq \sem{N}$ and $C[M] \eval$ for some context $C[-]$. Then by compositionality of game semantics we also have
+  $C[\sem{M}] \subseteq C[\sem{N}]$.
+  Lemma \ref{lem:evalsoundness} gives $\sem{C[M]} \neq \bot$, therefore $\sem{C[N]} \neq \bot$.
+  Lemma \ref{lem:computadequacy} then implies that $C[N] \eval$.
+  Hence $M \obspre N$.
+\end{proof}
 
 \subsubsection{Definability}
 
@@ -1459,20 +1500,23 @@ prove the full-abstraction of PCF.
 
 
 \subsubsection{Full abstraction}
-\todomargin{to finish}
-\begin{dfn}[Intrinsic preorder]
-\end{dfn}
 
-The full abstraction of the game model is a consequence of
+Full abstraction of PCF cannot be stated directly in the category $\mathcal{C}_{ib}$. Instead we need to consider the quotiented category
+$\mathcal{C}_{ib}/\lesssim_{ib}$.
+
+First we need to show that $\mathcal{C}_{ib}/\lesssim_{ib}$ is a model of PCF.
+$\mathcal{C}_{ib}/\lesssim_{ib}$ is a posset-enriched cartesian closed category. The game semantics of the basic types and constants of PCF
+can be transposed from $\mathcal{C}_{ib}$ to $\mathcal{C}_{ib}/\lesssim_{ib}$. Unfortunately it is not know whether $\mathcal{C}_{ib}/\lesssim_{ib}$
+is enriched over the category of CPOs. However it can be proved that it is a rational category \citep{abramsky94full}
+and this suffices to ensure that $\mathcal{C}_{ib}/\lesssim_{ib}$ is indeed a model of PCF.
+
+The full abstraction of the game model then follows from
 proposition \ref{prop:ineqsoundness} and \ref{prop:definability}:
 \begin{thm}[Full abstraction]
 Let $M$ and $N$ be two closed IA-terms.
-$$\sem{M} \precsim_b \sem{N} \ \iff \ M \sqsubseteq N$$
+$$\sem{M} \precsim_{ib} \sem{N} \ \iff \ M \obspre N$$
+where $\precsim_{ib}$ denotes the intrinsic preorder of the category $\mathcal{C}_{ib}$.
 \end{thm}
-
-where $\precsim_b$ denotes the intrinsic preorder of the category
-$\mathcal{C}_b$.
-
 
 \section{The fully abstract game model for Idealized Algol (\ialgol)}
 
@@ -1491,10 +1535,21 @@ variables and sequential composition.
 On top of \texttt{exp}, PCF has the following two new types:
 \texttt{com} for commands and \texttt{var} for variables. There is a
 constant \texttt{skip} of type \texttt{com} which corresponds to the
-command that do nothing. Commands can be composed using the
-sequential composition operator \texttt{seq}. Local variable are
-declared using the \texttt{new} operator, variable content is
-written using \texttt{assign} and retrieved using \texttt{deref}.
+command that do nothing.
+
+Commands can be composed using the
+sequential composition operator $\texttt{seq}_A$: suppose that $M$ and $N$ are of type
+\texttt{com} and $A$ respectively then they can be composed to form the term
+$S = \texttt{seq}_A M N : \texttt{com}$. $S$ denotes program that executes $M$ until it terminates and then
+behave like $N:A$. If $A = \texttt{exp}$ then the expression is allowed to have a side-effect and $S$ returns the expression computed by $N$, if
+$A = \texttt{com}$ then the command $N$ is executed after $M$.
+We say that the language has \emph{active expressions} to indicate the presence of the
+sequential operator $\texttt{seq}_{exp}$ in the language.
+
+
+Local variable are
+declared using the \texttt{new} operator, variable content is altered
+using \texttt{assign} and retrieved using \texttt{deref}.
 
 In addition IA has the constant \texttt{mkvar} that can be used to
 create a particular kind of variables. The \texttt{mkvar} operator
@@ -1506,7 +1561,7 @@ the ``set/get'' object programming paradigm used by C++ programmers.
 
 Variables created with \texttt{mkvar} are less constraint than the
 variables created with \texttt{new}. Indeed, variables created with
-\texttt{new} follow the following particular rule: the value read
+\texttt{new} act like memory cells, they obey the following rule: the value read
 from the variable is always the last value that has been assigned to
 it. This rule does not apply to variables created with
 \texttt{mkvar}. For instance the variable:
@@ -1519,7 +1574,8 @@ however the full abstraction result of the game model of IA relies
 upon this addition. At present, it is still an open problem to find
 a fully abstract model of IA deprived of \texttt{mkvar}.
 
-
+Judgement are of the form $\Gamma \vdash M : A$.
+If the judgement $\Gamma = \emptyset$ we say that $M$ is a closed term.
 The set of additional formations rules completing those of PCF are
 given in table \ref{tab:ia_formrules}.
 
@@ -1543,14 +1599,12 @@ $$ \rulef{\Gamma \vdash M_1 : \texttt{exp} \rightarrow \texttt{com} \quad \Gamma
 \label{tab:ia_formrules}
 \end{table}
 
-If the judgement $\emptyset \vdash M : A$ is valid , we say that $M$
-is a closed term.
 
 \subsection{Operational semantics of \ialgol}
 
-In IA the semantics is given in a form slightly different from PCF.
+The operational semantics of IA is given in a slightly different form compared to PCF.
 Instead of giving the semantics for closed terms we consider terms
-whose free variables are all of type \texttt{var}. These terms are
+whose free variables are all of type \texttt{var}. Terms are
 ``closed'' by mean of stores. A store is a function mapping free
 variables of type \texttt{var} to natural numbers. Suppose $\Gamma$
 is a context containing only variables of type \texttt{var}, then we
@@ -1581,10 +1635,9 @@ where $n \in \nat$ and $x: \texttt{var}$.
 
 In \ialgol, a program is a term together with a $\Gamma$-store such
 that $\Gamma \vdash M : A$. The evaluation semantics is expressed by
-the judgment form
+the judgment form:
 $$s,M \eval s', V$$
-where $s$ and $s'$ are $\Gamma$-stores,
-$\Gamma \vdash M : A$ and $\Gamma \vdash V : A$ where $V$ is in canonical form.
+where $s$ and $s'$ are $\Gamma$-stores, $V$ is a canonical form and $\Gamma \vdash V : A$.
 
 The operational semantics for IA is given by the rule of PCF (table \ref{tab:bigstep_pcf})
 together with the rules of table \ref{tab:bigstep_ia} where the following abbreviation is used:
@@ -1599,16 +1652,16 @@ $$\mbox{\textbf{Sequencing }}
 $$
 
 $$\mbox{\textbf{Variables }}
-    \rulef{s,N \eval s',n \quad s',M \eval s'',x}{s, \assign\ M\ N \eval (s''\ |\ x \mapsto n),\iaskip}
+    \rulef{s,N \eval s',n \quad s',M \eval s'',x}{s, \iaassign\ M\ N \eval (s''\ |\ x \mapsto n),\iaskip}
 \qquad
-    \rulef{s,M \eval s',x }{s, \deref\ M \eval s',s'(x)}$$
+    \rulef{s,M \eval s',x }{s, \iaderef\ M \eval s',s'(x)}$$
 
 $$\mbox{\texttt{\textbf{mkvar}}}
     \rulef{N \eval n \quad M \eval \texttt{mkvar}\ M_1\ M_2 \quad M_1\ n \eval \iaskip}
-    {\assign\ M\ N \eval \iaskip}
+    {\iaassign\ M\ N \eval \iaskip}
 \qquad
     \rulef{N \eval \texttt{mkvar } M_1\ M_2 \quad M_2\ \eval n}
-    {\deref\ M \eval n}
+    {\iaderef\ M \eval n}
 $$
 
 $$\mbox{\textbf{Block}}
@@ -1624,13 +1677,77 @@ $$
 \subsection{Game model of \ialgol}
 
 All the strategies used to model PCF are well-bracketed and
-innocent. From now on, we will only require well-bracketing and we
-will introduce strategies that are not innocent. This is a necessity
-if we want to give a model of memory cells that correspond to
-variables. The intuition behind this fact is that a cell needs to
+innocent. On the other hand, to obtain a model of IA we need to
+introduce strategies that are not innocent.
+This is necessary to model memory cell variable created with the \texttt{new} operator.
+The intuition is that a cell needs to
 remember what was the last value written in it in order to be able
 to return it when it is read, and this can only be done by looking
 at the whole history of moves, not only those present in the P-view.
+
+Hence we now consider the categories $\mathcal{C}$ and $\mathcal{C}_b$.
+
+\subsubsection{Base types}
+
+The type \texttt{com} is modeled by the flat game with a single initial question \texttt{run} and a single answer
+\texttt{done}. The idea is that O can request the execution of a command by playing \texttt{run}, P then execute the command
+and if it terminates acknowledge it by playing \texttt{done}.
+
+The variable type \texttt{var} is modeled by the game $\mathtt{com^{\bf N} \times exp}$ illustrated below:
+\begin{center}
+\begin{pspicture}(10cm,1.7cm)
+$\rput[b]{0}(3cm,0){
+\pstree[treemode=U,levelsep=8ex,nodesep=2pt]
+    {\TR[name=R]{\mathtt{ok}}}
+    { \TR{\mathtt{write}_0} \TR{\mathtt{write}_1} \TR{\mathtt{write}_2} \TR{\ldots}
+    }
+}
+\rput[b]{0}(8cm,0){
+\pstree[levelsep=8ex,nodesep=2pt]
+    { \TR[name=R]{\mathtt{read}} }
+    { \TR{0} \TR{1} \TR{2} \TR{\ldots} }
+    }$
+\end{pspicture}
+\end{center}
+
+\subsubsection{Constants}
+
+\texttt{skip} is interpreted by the strategy $\{ \epsilon, \iarun \cdot \iadone \}$.
+The sequential composition $\mathtt{seq_{exp}}$ is interpreted by the following strategy:
+$$
+\begin{array}{ccccc}
+!\mathtt{com} & \times & ! \mathtt{exp} & \multimap & \mathtt{exp}\\
+&&&&q\\
+\iarun\\
+\iadone\\
+&&q\\
+&&n\\
+&&&&n
+\end{array}
+$$
+
+Assignment and dereferencing are denoted  by the following strategies (left and right respectively):
+$$
+\begin{array}{ccccc}
+!\mathtt{var} & \times & ! \mathtt{exp} & \multimap & \mathtt{com}\\
+&&&&q\\
+&&q\\
+&&n\\
+\iawrite_n\\
+\iadone\\
+&&&&\iadone
+\end{array}
+\hspace{3cm}
+\begin{array}{ccccc}
+!\mathtt{var} & \multimap & \mathtt{exp}\\
+&&q\\
+\iaread\\
+n\\
+&&n
+\end{array}
+$$
+
+\todomargin{to finish}
 
 \subsection{Full abstraction of \ialgol}
 
@@ -1650,7 +1767,7 @@ The following result follows from soundness and computational
 adequacy of the model.
 \begin{prop}[Inequational soundness]
 \label{prop:ineqsoundness} Let $M$ and $N$ be two closed terms then
-$$\sem{M} \subseteq \sem{N} \implies  M \sqsubseteq N $$
+$$\sem{M} \subseteq \sem{N} \implies  M \obspre N $$
 \end{prop}
 
 \begin{prop}[Definability]
@@ -1663,7 +1780,7 @@ The final standard result of game semantics can then be proved using
 proposition \ref{prop:ineqsoundness} and \ref{prop:definability}:
 \begin{thm}[Full abstraction]
 Let $M$ and $N$ be two closed IA-terms.
-$$\sem{M} \precsim_b \sem{N} \ \iff \ M \sqsubseteq N$$
+$$\sem{M} \precsim_b \sem{N} \ \iff \ M \obspre N$$
 \end{thm}
 
 where $\precsim_b$ denotes the intrinsic preorder of the category

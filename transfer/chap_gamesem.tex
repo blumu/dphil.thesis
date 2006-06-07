@@ -1716,7 +1716,7 @@ $\rput[b]{0}(3cm,0){
 The sequential composition $\mathtt{seq_{exp}}$ is interpreted by the following strategy:
 $$
 \begin{array}{ccccc}
-!\mathtt{com} & \times & ! \mathtt{exp} & \multimap & \mathtt{exp}\\
+!\mathtt{com} & \otimes & ! \mathtt{exp} & \multimap & \mathtt{exp}\\
 &&&&q\\
 \iarun\\
 \iadone\\
@@ -1726,15 +1726,16 @@ $$
 \end{array}
 $$
 
-Assignment and dereferencing are denoted  by the following strategies (left and right respectively):
+Assignment \iaassign and dereferencing \iaderef are denoted  by the
+following strategies (left and right respectively):
 $$
 \begin{array}{ccccc}
-!\mathtt{var} & \times & ! \mathtt{exp} & \multimap & \mathtt{com}\\
+!\mathtt{var} & \otimes & ! \mathtt{exp} & \multimap & \mathtt{com}\\
 &&&&q\\
 &&q\\
 &&n\\
 \iawrite_n\\
-\iadone\\
+\iaok\\
 &&&&\iadone
 \end{array}
 \hspace{3cm}
@@ -1747,45 +1748,85 @@ n\\
 \end{array}
 $$
 
-\todomargin{to finish}
+\iamkvar is modeled by the paired strategy $\langle \iamkvar_{acc} , \iamkvar_{exp}
+\rangle$ where $\iamkvar_{acc}$ and $\iamkvar_{exp}$ are the following strategies:
+$$
+\begin{array}{ccccccc}
+(\mathtt{!exp} & \multimap & \mathtt{com}) & \otimes & !\mathtt{exp} & \multimap & \mathtt{com}^\omega\\
+&&&&&&\iawrite_n\\
+&&\iarun\\
+q\\
+n\\
+&&\iadone \\
+&&&&&&\iaok
+\end{array}
+\hspace{2cm}
+\begin{array}{ccccccc}
+(\mathtt{!exp} & \multimap & \mathtt{com}) & \otimes & !\mathtt{exp} & \multimap & \mathtt{exp}\\
+&&&&&&\iaread\\
+&&&&\iaread\\
+&&&&n\\
+&&&&&&n
+\end{array}
+$$
+
+
+The strategies used until now are all innocent. In order to model the \ianew operator, we need to introduce non-innocent strategies, sometimes called
+\emph{knowing strategies}. We define the knowing well-bracketed strategy $cell : I \multimap !\mathtt{var}$ that models a storage cell: it responds to \iawrite\
+with \iaok\ and responds
+to \iaread\ with the last value written or $0$ if no value has yet been written.
+
+Consider the term $\Gamma,x:\mathtt{var} \vdash M : A$ modeled by $\sem{M}$ then the term
+ $\Gamma \vdash \ianew\ x \texttt{ in } M : A$  will be modeled by the strategy $(id_{\sem{\Gamma}} \otimes cell) ; \sem{M}$ on the game
+ $!\Gamma \multimap \iacom$.
 
 \subsection{Full abstraction of \ialgol}
 
-\begin{lem}[Soundness for IA terms] Let $\Gamma \vdash M : A$ be an IA term and a $\Gamma$ store $s$.
-If $s,M \eval s',V$ then the plays of $\sem{s,M} : I \multimap A
-\otimes !\Gamma$ which begin with a move of $A$ are identical to
-those of $\sem{s',V}$.
-\end{lem}
+We now state the full abstraction result. All the details are omitted, the reader is refered
+to \cite{abramsky:game-semantics-tutorial,AM97a} for the proofs.
 
-\begin{lem}[Computational adequacy for IA terms]
-All IA terms are computable. (i.e. $\sem{M} \neq \perp$ implies $M
-\eval$)
-\end{lem}
+\subsubsection{Inequational soundness}
 
+The inequational soundness result can be also proved for \ialgol.
+Proving soundness of the evaluation requires a bit more work than in the PCF case because
+the store needs to be made explicit. Also, an appropriate notion of \emph{computable term} must be defined
+that takes into account the presence of stores in the evaluation semantics.
+Again it is possible to prove that the model is computational adequate.
+The inequational soundness then follows from evaluation soundness and computational adequacy:
 
-The following result follows from soundness and computational
-adequacy of the model.
+%\begin{lem}[Soundness for IA terms] Let $\Gamma \vdash M : A$ be an IA term and a $\Gamma$ store $s$.
+%If $s,M \eval s',V$ then the plays of $\sem{s,M} : I \multimap A
+%\otimes !\Gamma$ which begin with a move of $A$ are identical to
+%those of $\sem{s',V}$.
+%\end{lem}
+
 \begin{prop}[Inequational soundness]
-\label{prop:ineqsoundness} Let $M$ and $N$ be two closed terms then
+\label{prop:ia_ineqsoundness} Let $M$ and $N$ be two \ialgol\ closed terms then
 $$\sem{M} \subseteq \sem{N} \implies  M \obspre N $$
 \end{prop}
 
+\subsubsection{Definability}
+
+The proof of definability is based on a factoring argument: strategies in
+$\mathcal{G}_b$ can all be obtained by composing the non-innocent strategy $cell$ with an innocent strategy.
+The strategy $cell$ can therefore be viewed as a generic non-innocent strategy. Using this factorization argument,
+it is possible to prove the definability result:
 \begin{prop}[Definability]
-\label{prop:definability} Let $\sigma$ be a compact well-bracketed
-on a game $A$ denoting a IA type. Then there is an IA-term $M$ such
+\label{prop:ia_definability} Let $\sigma$ be a compact well-bracketed
+strategy on a game $A$ denoting a IA type. There is an IA-term $M$ such
 that $\sem{M} = \sigma$.
 \end{prop}
 
-The final standard result of game semantics can then be proved using
-proposition \ref{prop:ineqsoundness} and \ref{prop:definability}:
-\begin{thm}[Full abstraction]
-Let $M$ and $N$ be two closed IA-terms.
-$$\sem{M} \precsim_b \sem{N} \ \iff \ M \obspre N$$
-\end{thm}
+\subsubsection{Full abstraction}
 
+Full abstraction for the model $\mathcal{C}_b$ is a consequence of proposition
+\ref{prop:ia_ineqsoundness} and \ref{prop:ia_definability}:
+\begin{thm}[Full abstraction]
+Let $M$ and $N$ be two closed \ialgol-terms.
+$$\sem{M} \precsim_b \sem{N} \ \iff \ M \obspre N$$
 where $\precsim_b$ denotes the intrinsic preorder of the category
 $\mathcal{C}_b$.
-
+\end{thm}
 
 
 \section{Algorithmic game semantics}

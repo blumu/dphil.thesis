@@ -253,8 +253,8 @@ With the following conventions:
 \end{itemize}
 \end{dfn}
 
-Note that justified sequences are also defined for non closed terms
-(a nodes occurring in a justified sequence and labelled by a variable free in $M$ has no pointer).
+Note that justified sequences are also defined for opened terms:
+a variable nodes labelled $x$ where $x$ is free in $M$ has no pointer.
 
 We say that a node $n_0$ of a justified sequence is hereditarily justified by $n_p$ if there are nodes $n_1, n_2, \ldots n_{p-1}$ in
 the sequence such that for all $i\in 0..p-1$, $n_i$ points to $n_{i+1}$.
@@ -456,8 +456,10 @@ preceding $\lambda \overline{x}$ in the traversal: $t \cdot x_i = t'
     \end{itemize}
 \end{itemize}
 
-We note $\mathcal{TRAV}(M)$ for the set of traversals of $\tau(M)$ and $\mathcal{TRAV}(M)_{max}$ to denote
-the set of maximal traversals of $\tau(M)$. Clearly $\mathcal{TRAV}(M)_{max} \subset \mathcal{TRAV}(M)$.
+We write $\mathcal{TRAV}(M)$ for the set of traversals of $\tau(M)$
+and $\mathcal{TRAV}(M)_{max}$ to denote the set of maximal
+traversals of $\tau(M)$. Clearly $\mathcal{TRAV}(M)_{max} \subset
+\mathcal{TRAV}(M)$.
 \end{dfn}
 
 
@@ -1034,24 +1036,20 @@ If $s = u\upharpoonright A,B$ then clearly $\tilde{s} = \tilde{u} \upharpoonrigh
 
 \subsubsection{Correspondence between interaction semantics and traversals}
 
-We now consider the pure simply-typed $\lambda$-calculus without constants ($\Sigma = \emptyset$).
-We use the cartesian closed category of games $\mathcal{C}$ defined in the first chapter as a model
-of the simply-typed lambda calculus. We note $\sem{\Gamma \vdash M :
-A}$ for the strategy denoting the simply-type term $\Gamma \vdash M
-: A$ (defined in section \ref{subsec:pcfgamemodel} of
-the first chapter).
+We now consider the pure simply-typed $\lambda$-calculus without
+constants ($\Sigma = \emptyset$). We use the cartesian closed
+category of games $\mathcal{C}$ defined in the first chapter as a
+model of the simply-typed lambda calculus. We write $\sem{\Gamma
+\vdash M : A}$ for the strategy denoting the simply-type term
+$\Gamma \vdash M : A$ (defined in section \ref{subsec:pcfgamemodel}
+of the first chapter).
 
 
 
 
 In game semantics, strategy composition is achieved by performing a CSP-like ``composition + hiding''.
 It is possible to define an alternative semantics where the internal moves are not hidden when performing composition.
-This semantics, named \emph{interaction} semantics, is introduced in \cite{DBLP:conf/sas/DimovskiGL05}.
-
-For any term $\Gamma \vdash M : T$, we write $\intersem{\Gamma \vdash M : T}$ to denote the interaction semantics of $M$.
-The standard semantics can be recovered from the interaction semantics by filtering the moves, keeping only those played
-in the arena $\Gamma$ or $T$:
-$$ \sem{\Gamma \vdash M : T} = \intersem{\Gamma \vdash M : T} \upharpoonright \Gamma, T$$
+This semantics has been named \emph{interaction} semantics in \cite{DBLP:conf/sas/DimovskiGL05}.
 
 In addition to the moves of the standard semantics, the interaction semantics contains all
 the internal moves of the computation.
@@ -1066,7 +1064,8 @@ moves that are produced when composing two sub-terms of the computation tree tha
 This means that when computing the strategy of
 $y N_1 \ldots N_p$ where $y$ is a variable, we keep the internal moves of $N_1$, \ldots, $N_p$, but
 we omit the internal moves produced by the copy-cat projection strategy denoting $y$.
-From now on, we write $\intersem{\Gamma \vdash M : T}$ to denote this semantics.
+
+For any term $\Gamma \vdash M : T$, we write $\intersem{\Gamma \vdash M : T}$ to denote the interaction semantics of $M$.
 
 It is possible to define a category $\mathcal{C'}$ to model this interaction semantics. The objects of
 the category are interaction-arenas: interaction arenas
@@ -1121,11 +1120,24 @@ In an interacting play, the moves are implicitly tagged so that it is possible t
 which arena-node and which component of the arena the move belongs to. The internal moves are those
 belonging to an arena different from the root arena.
 
-Composition of interaction strategies noted $\sigma \fatsemi \fatsemi \tau$ proceeds like $\fatsemi$ in the standard semantics
-except that the internal moves of $\sigma$ and $\tau$ are just copied without being interpreted during composition
-and the internal moves ``produced'' by the composition are preserved instead of being hidden. The identity map on a
-given tree arena is obtained by taking the identity map of the leaves-arena and composing them together (the order
-in which they are composed is imposed by the structure of the binary tree arena).
+Composition of interaction strategies noted $\sigma \fatsemi \tau$
+proceeds like composition in the standard semantics except that the
+internal moves of $\sigma$ and $\tau$ are just copied without being
+interpreted during composition and the internal moves ``produced''
+by the composition are preserved instead of being hidden. The
+identity map on a given tree arena is obtained by taking the
+identity map of the leaves-arena and composing them together (the
+order in which they are composed is imposed by the structure of the
+binary tree arena).
+
+For any interaction sequence $s$ on $\sigma : A \rightarrow B$ where
+$A$ and $B$ are interaction arenas, we define the filtering operator
+$s\upharpoonright A , B$ to be the sequence of moves obtained from
+$s$ by keeping only the moves belonging to a node-arena or a
+leaf-arena of the tree of arenas $A$ or $B$.
+
+All the construction of the category $\mathcal{C}$ can then be constructed similarly in $\mathcal{C'}$ and consequently
+$\mathcal{C'}$ inherits the cartesian closure structure from $\mathcal{C}$.
 
 
 In the standard semantics, given two strategies $\sigma : A \rightarrow B$, $\tau : B \rightarrow C$ and
@@ -1136,6 +1148,13 @@ Given a term $M$, we can completely uncover the internal moves of a sequence $s\
 by performing the uncovering recursively at every $@$ nodes of the computation tree.
 This operation is called \emph{full-uncovering with respect to $M$}.
 Consequently, the interaction semantics can be computed from the standard semantics.
+
+
+Conversely, the standard semantics can be recovered from the interaction semantics by filtering the moves, keeping only those played
+in the arena $\Gamma$ or $T$:
+$$ \sem{\Gamma \vdash M : T} = \intersem{\Gamma \vdash M : T} \upharpoonright root(\Gamma), root(T)$$
+where $root(A)$ denotes the root arena of the interaction arena $A$.
+
 
 
 Before being able to to reveal the correspondence between the interaction game
@@ -1157,10 +1176,10 @@ $\intersem{\Gamma\vdash M:T}_{max}$ are defined similarly.
 \begin{dfn}[$@$-hiding of traversals]
 Let $t$ be a traversal of $\tau(M)$.
 
-We note $t-@$ the sequence sequence of nodes with pointers (i.e. not
-a proper justified sequence of nodes) obtained by removing from $t$
-all the nodes $@$ and replacing any link pointing to an $@$ node by
-a link pointing to the predecessor node of $@$ in $t$.
+We write $t-@$ for the sequence sequence of nodes with pointers
+(i.e. not a proper justified sequence of nodes) obtained by removing
+from $t$ all the nodes $@$ and replacing any link pointing to an $@$
+node by a link pointing to the predecessor node of $@$ in $t$.
 
 Suppose $s = t-@$ is as sequence of nodes obtained by applying the
 previously defined transformation on the traversal $t$, then $t$ can
@@ -1171,7 +1190,7 @@ by $n_1 \cdot @ \cdot n_2$ where $@$ denotes the parent node of
 $n_2$ which is also the child node of $n_1$ in the computation tree.
 \item replace any link in $j$ pointing from a $\lambda$-node to $n_1$ by a link pointing to the inserted $@$ node.
 \end{itemize}
-We note $s+@$ this second transformation.
+We write $s+@$ for this second transformation.
 \end{dfn}
 These transformations are well-defined since in a traversal, the node
 $@$ always occurs in-between nodes $n_1$ and $n_2$ where in the computation tree $n_1$ is the parent node of $@$
@@ -1189,7 +1208,7 @@ $$
 
 The following lemma follows directly from the definition:
 \begin{lem}
-For any traversal $t$, $(t-@)+@=t$.
+\label{lem:minus_at_plus_at} For any traversal $t$, $(t-@)+@=t$.
 \end{lem}
 
 We introduce the following notation:
@@ -1210,22 +1229,30 @@ This is because the computation tree of a term in $\beta$-normal does not contai
 and therefore all the nodes are hereditarily justified by the root.
 \end{proof}
 
-
+\begin{lem}
+\label{lem:determ_trav}
+In the pure simply-typed $\lambda$-calculus with no constant ($\Sigma = \emptyset$), traversals of the computation tree grow
+deterministically therefore for any two traversals $t$ and $t'$:
+$$t \sqsubseteq t' \quad \vee \quad t' \sqsubseteq t$$
+\end{lem}
 
 
 \begin{prop}[Relation between game semantics and reduced-traversals]
 \label{prop:rel_gamesem_redtrav_closed} Let $\Gamma \vdash M : T$ be
 a term of the pure simply-typed $\lambda$-calculus and $r$ be
 the root of $\tau(M)$.
-
 Consider a play $s$ on the game $\sem{T}$ such that $s \in \sem{\Gamma \vdash M:T}$
-and $u \in \intersem{\Gamma \vdash M:T}$ its full uncovering relatively to $M$.
+and $u \in \intersem{\Gamma \vdash M:T}$ the full uncovering of $s$ relatively to $M$.
 
-There is a unique \emph{constructible} traversal $t$ of $\tau(M)$ such that:
-\begin{eqnarray*}
-\tilde{s} &\jseq&  \varphi_M (t \upharpoonright r ) \\
-\tilde{u} &\jseq&  \varphi_M (t - @)
-\end{eqnarray*}
+There is a \emph{constructible} traversal $t$ of $\tau(M)$ such that:
+\begin{itemize}
+\item[(i)] $\tilde{s} \jseq  \varphi_M (t \upharpoonright r ) $
+\item[(ii)] for any traversal $t'$ if $\varphi_M (t' \upharpoonright r ) = \tilde{s}$ then $t\upharpoonright r = t'\upharpoonright r$.
+\item[(iii)] $\tilde{u} \jseq  \varphi_M (t - @)$
+\item[(iv)] for any traversal $t'$ if $\varphi_M (t' - @ ) = \tilde{u}$ then $t-@ =t' -@$.
+\end{itemize}
+
+
 In other words, $\varphi_M$ defines a bijection from $\mathcal{TRAV}(M)^{\upharpoonright r}$ to $\sem{M}^\sim$ and
 a bijection from $\mathcal{TRAV}(M)^{-@}$ to $\intersem{M}^\sim$:
 \begin{eqnarray*}
@@ -1233,13 +1260,13 @@ a bijection from $\mathcal{TRAV}(M)^{-@}$ to $\intersem{M}^\sim$:
  \varphi_M  &:& \mathcal{TRAV}(M)^{-@} \stackrel{\cong}{\longrightarrow} \intersem{M}^\sim
 \end{eqnarray*}
 
-Moreover if $M$ is in $\beta$-normal form and $s$ is a \emph{maximal} play then the traversal $t$ is
-\emph{maximal}.
+Moreover if $M$ is in $\beta$-normal form and $s$ is a \emph{maximal} play then  $t$ is
+a \emph{maximal} traversal.
 \end{prop}
 
 
 \begin{proof}
-Let us assume that $M$ is already in $\eta$-long normal form.
+(iii) Let us assume that $M$ is already in $\eta$-long normal form.
 We proceed by induction on the height of of the tree $\tau(M)$.
 
 Suppose $\Gamma = \xi_1:X_1,\ldots \xi_n:X_n$.
@@ -1372,7 +1399,7 @@ We proceed by case analysis on the structure of the computation tree:
         u \upharpoonright !B,C & \in & ev_{B_1,\ldots,B_p,o} \nonumber
     \end{eqnarray}
 
-    For any initial move $m$ in $w$ we note $w_m = w \upharpoonright
+    For any initial move $m$ in $w$ we write $w_m = w \upharpoonright
     m$. Since $w \in \sigma^\dagger$, for all initial $m$ in $w$, $w_m \in \sigma$. Hence for
     all initial $m$ in $w$ there is $j \in 1..p$ such that:
     \begin{eqnarray}
@@ -1427,7 +1454,7 @@ We proceed by case analysis on the structure of the computation tree:
     the traversal of $N_0$ resumes. The exact node in $\tau(N_0)$ where the traversal should resume is again determined by the (Var) rule.
     This schema is repeated until the traversal of $\tau(N_0)$ is completed.
 
-    It becomes clear that the trajectory of the traversal $t$ behave like the composition of the strategy $\sigma$
+    It becomes clear that the traversal $t$ follows a pattern that resembles the composition of the strategy $\sigma$
     with the copycat strategy evaluation map $ev$.
 
     However we need to construct a traversal $t$ verifying $\varphi_M(t \upharpoonright \lambda \overline{\xi}) =
@@ -1492,6 +1519,32 @@ We proceed by case analysis on the structure of the computation tree:
     by the root correspond exactly to the question moves of the arena $A = \sem{X_1} \times \ldots \times \sem{X_n}$ and $C = \sem{o}$ :
     the moves that have been copied by the strategy $\sigma$ and the copy-cat evaluation strategy respectively. Moreover for each node $\alpha$ in $t$, this corresponding question move is given by
     $\varphi_M(\alpha)$. Hence $\varphi_M(t \upharpoonright r) = \tilde{u} \upharpoonright !A, C = s$ by equation \ref{eq:def_s}.
+
+(i)
+\begin{align*}
+\tilde{s} &= \tilde{u} \upharpoonright \Gamma, T \\
+&= \varphi_M(t-@) \upharpoonright \Gamma, T  \quad \mbox{ for some traversal $t$}      & \mbox{(iii)}\\
+&= \varphi_M((t-@+@)\upharpoonright r) \\
+&= \varphi_M(t\upharpoonright r)                   & \mbox{(lemma \ref{lem:minus_at_plus_at}).}
+\end{align*}
+
+(ii) From lemma \ref{lem:determ_trav} we must have $t
+\upharpoonright r \sqsubseteq t'\upharpoonright r$ or $t
+\upharpoonright r \sqsubseteq t'\upharpoonright r$. Moreover since
+$\varphi(t \upharpoonright r) = \varphi(t' \upharpoonright r)$ we
+have $|t \upharpoonright r|=|t' \upharpoonright r|$.
+
+(iv) same as (ii).
+
+\vspace{12pt}
+
+Finally, if $M$ is in $\beta$-normal form then
+$\mathcal{TRAV}(M)^{\upharpoonright r} = \mathcal{TRAV}(M)$
+therefore $\varphi$ is a bijection from $\mathcal{TRAV}(M)$ to
+$\sem{M}$. Suppose $s$ is a maximal play and suppose $t' \sqsubseteq
+t$ then $\tilde{s} = \varphi(t) \sqsubseteq \varphi(t')$. But $s$ is
+maximal therefore $\tilde{s} = \varphi(t')$. Since $\varphi$ is a
+bijection we have $t'=t$.
 
 \end{itemize}
 \end{proof}

@@ -4,20 +4,18 @@
 
 \section{Game semantics of safe $\lambda$-terms}
 
-In this section we will prove that the safety condition
-of section \ref{sec:safe_homog} leads to an economy of pointer in the game
-semantics: for safe $\lambda$-terms the pointers from the game semantics can be reconstructed uniquely from the moves of
-the play.
+In this section we introduce the concepts of computation tree and
+traversals of the computation tree. We will prove a theorem
+revealing a correspondence between traversals of the computation
+tree and the game semantics of a simply-typed term.
 
-The example of section \ref{subsec:pointer_necessary} gives the
-intuition. Remember that in order to distinguish the terms $M_1$ and
-$M_2$, we introduced pointers in strategies. In the safe
-$\lambda$-calculus this ambiguity disappears because $M_2$ is not a
-safe term. Indeed, in the sub-term $f (\lambda y . x)$, the free
-variable $x$ has the same order as $y$ but $x$ is not abstracted
-together with $y$.
+We will then apply this result to the analysis of the game semantics
+of safe term. We will prove that safety leads to an economy of
+pointers: for safe $\lambda$-terms the pointers from the game
+semantics can be reconstructed uniquely from the moves of the play.
 
-We fix $\Sigma$, a set of constants of order at most 1.
+In the following we assume that a set of constants of order $1$ at
+most and noted $\Sigma$ is fixed.
 %\begin{enumerate}
 %\item
 %Is there any unsafe term whose game semantics is a strategy where
@@ -36,11 +34,6 @@ We fix $\Sigma$, a set of constants of order at most 1.
 %strategy where pointers can be recovered?
 %\end{enumerate}
 
-
-
-
-
-
 \subsection{$\eta$-long normal form and computation tree}
 
 The $\eta$-expansion of $M: A\typear B$ is defined to be the term $\lambda x . M x : A\typear B$ where $x:A$ is a fresh variable.
@@ -48,10 +41,9 @@ It is easy to check that if $M$ is safe then $\lambda x . M x$ is also safe.
 
 A term $M : (A_1,\ldots,A_n,o)$ can be expanded in several steps
 into $\lambda \varphi_1 \ldots \varphi_l . M \varphi_1 \ldots
-\varphi_l$ where the $\varphi_i:A_i$ are fresh variables.
-
-The $\eta$-normal form of a term is obtained by hereditarily $\eta$-expanding every sub-term occurring
-at an operand position:
+\varphi_l$ where the $\varphi_i:A_i$ are fresh variables. The
+$\eta$-normal form of a term is obtained by hereditarily
+$\eta$-expanding every sub-term occurring at an operand position:
 
 \begin{dfn}[$\eta$-long normal form]
 A term is either an abstraction or it can be written uniquely as
@@ -542,10 +534,10 @@ preceding $\lambda \overline{x}$ in the traversal: $t \cdot x_i = t'
     \end{itemize}
 \end{itemize}
 
-We write $\mathcal{TRAV}(M)$ for the set of traversals of $\tau(M)$
-and $\mathcal{TRAV}(M)_{max}$ to denote the set of maximal
-traversals of $\tau(M)$. Clearly $\mathcal{TRAV}(M)_{max} \subset
-\mathcal{TRAV}(M)$.
+We write $\travset(M)$ for the set of traversals of $\tau(M)$
+and $\travset(M)_{max}$ to denote the set of maximal
+traversals of $\tau(M)$. Clearly $\travset(M)_{max} \subset
+\travset(M)$.
 \end{dfn}
 
 \begin{lem}
@@ -813,6 +805,15 @@ model of the simply-typed lambda calculus. We write $\sem{\Gamma
 $\Gamma \vdash M : A$ (defined in section \ref{subsec:pcfgamemodel}
 of the first chapter).
 
+However, we will use the alternative definition of strategy (see
+remark \ref{rem:atlern_strategy}), which means that we represent a
+strategy using a prefix-closed set instead of an ``even length
+prefix''-close set. In practice this means that we replace the set
+of plays $\sigma$ by $\sigma \union \textsf{dom}(\sigma)$. This
+permits to avoid considerations on the parity of the length of
+traversals when we show the correspondence between traversals and
+game semantics. We write $\textsf{Pref}(S)$ to denote the
+prefix-closure of the set $S$.
 
 \subsubsection{Correspondence between the computation tree and the arena }
 
@@ -1112,6 +1113,16 @@ $t$. It is straightforward to check that the sequence obtained is a
 valid justified sequence of moves.
 
 
+A justified sequence can be regarded as a sequence of pairs. Each pair encodes an element of the sequence together
+with an index indicating the position where the element points to. Hence the set of justified sequence nodes is isomorphic
+to the free monoid $P^*$ where $P = N \times \nat$. Similarly, the set of justified sequence of moves is isomorphic to
+the free monoid ${M_{\sem{A}}}^*$. From the definition of $\varphi$ we have:
+\begin{lem}
+\label{lem:varphi_monoidhomom}
+$\varphi : P^* \rightarrow {M_{\sem{A}}}^*$ is a monoid homomorphism.
+\end{lem}
+
+
 \begin{property}
 \label{proper:phi_pview} Suppose $\varphi(t) \jseq s$ where $s$ is a
 justified sequence of moves and $t$ is a justified sequence of nodes
@@ -1268,7 +1279,10 @@ Consequently, the interaction semantics can be computed from the standard semant
 
 Conversely, the standard semantics can be recovered from the interaction semantics by filtering the moves, keeping only those played
 in the arena $\Gamma$ or $T$:
-$$ \sem{\Gamma \vdash M : T} = \intersem{\Gamma \vdash M : T} \upharpoonright root(\Gamma), root(T)$$
+\begin{eqnarray}
+ \sem{\Gamma \vdash M : T} = \intersem{\Gamma \vdash M : T} \upharpoonright root(\Gamma),
+ root(T) \label{eqn:int_std_gamsem}
+\end{eqnarray}
 where $root(A)$ denotes the root arena of the interaction arena $A$.
 
 \vspace{18pt}
@@ -1341,7 +1355,7 @@ The following lemma follows directly from the definition:
 
 \begin{lem}
 Let $M$ be a term in $\beta$-normal form and $t \in
-\mathcal{TRAV}(M)$. Then
+\travset(M)$. Then
 $$t = t \upharpoonright r = t - @$$
 \end{lem}
 \begin{proof}
@@ -1353,9 +1367,24 @@ hereditarily justified by the root.
 
 We introduce the following notation:
 \begin{eqnarray*}
-\mathcal{TRAV}(M)^{-@} &=& \{ t - @ \ | \  t \in \mathcal{TRAV}(M) \} \\
-\mathcal{TRAV}(M)^{\upharpoonright r} &=& \{ t  \upharpoonright r \ | \  t  \in \mathcal{TRAV}(M) \} .
+\travset(M)^{-@} &=& \{ t - @ \ | \  t \in \travset(M) \} \\
+\travset(M)^{\upharpoonright r} &=& \{ t  \upharpoonright r \ | \  t  \in \travset(M) \} .
 \end{eqnarray*}
+
+
+\begin{lem}[Filtering lemma] \
+\label{lem:varphi_filter}
+$$ \varphi_M(\travset^{-@}) \upharpoonright root(\Gamma), root(T) = \varphi_M(\travset^{\upharpoonright r}) $$
+In other words, for any traversal $t$ of the computation tree of $\Gamma \vdash M :T$ we have:
+$$\varphi_M(t-@) \upharpoonright root(\Gamma), root(T) = \varphi_M(t\upharpoonright r)$$
+\end{lem}
+\begin{proof}
+    Let $r$ denotes the root of $\tau(M)$.
+    It is easy to check from the definition of $\varphi_M$ that the nodes of the computation tree that are mapped by $\varphi_M$
+    to moves belonging to the root of the interaction arenas $\intersem{\Gamma}$ and $\intersem{T}$ are
+    exactly the nodes hereditarily justified by $r$.
+    Since $@$ is not hereditarily justified by $r$ the result follows immediately.
+\end{proof}
 
 
 \begin{lem}[$\varphi_M$ is injective]
@@ -1368,7 +1397,7 @@ justified sequence of nodes. For any two traversal $t$ and $t'$:
 \end{lem}
 \begin{proof}
 (i) We just need to prove that the restriction defines an injection
-from $\mathcal{TRAV}(M)^{-@}$ to $\mathcal{TRAV}(M)^{-@}$. Suppose
+from $\travset(M)^{-@}$ to $\travset(M)^{-@}$. Suppose
 that it is not the case then there are two traversals $t,t'$ such
 that $t-@ \neq t'-@$
 
@@ -1379,10 +1408,10 @@ Consequently:
 \begin{cor} \
 \label{cor:varphi_bij}
 \begin{itemize}
-\item[(i)] $\varphi_M$ defines a bijection from $\mathcal{TRAV}(M)^{-@}$
-to $\varphi_M(\mathcal{TRAV}(M)^{-@})$;
-\item[(ii)] $\varphi_M$ defines a bijection from $\mathcal{TRAV}(M)^{\upharpoonright r}$ to
-$\varphi_M(\mathcal{TRAV}(M)^{\upharpoonright r})$.
+\item[(i)] $\varphi_M$ defines a bijection from $\travset(M)^{-@}$
+to $\varphi_M(\travset(M)^{-@})$;
+\item[(ii)] $\varphi_M$ defines a bijection from $\travset(M)^{\upharpoonright r}$ to
+$\varphi_M(\travset(M)^{\upharpoonright r})$.
 \end{itemize}
 \end{cor}
 
@@ -1391,80 +1420,37 @@ $\varphi_M(\mathcal{TRAV}(M)^{\upharpoonright r})$.
 
 
 
-\begin{prop}[Relation between game semantics and traversals]
-\label{prop:rel_gamesem_redtrav_closed} Let $\Gamma \vdash M : T$ be
-a term of the pure simply-typed $\lambda$-calculus and $r$ be the
-root of $\tau(M)$. Then:
+\begin{prop}
+\label{prop:rel_gamesem_trav_closed} Let $\Gamma \vdash M : T$ be a
+term of the pure simply-typed $\lambda$-calculus and $r$ be the root
+of $\tau(M)$. Then:
 \begin{itemize}
-\item[(i)]  $\varphi_M(\mathcal{TRAV}(M)^{-@}) = \intersem{M}$
-\item[(ii)] $\varphi_M(\mathcal{TRAV}(M)^{\upharpoonright r}) = \sem{M}$
+\item[(i)]  $\varphi_M(\travset(M)^{-@}) = \intersem{M}$
+\item[(ii)] $\varphi_M(\travset(M)^{\upharpoonright r}) = \sem{M}$
 \end{itemize}
-
-Consequently, by corollary \ref{cor:varphi_bij}, $\varphi_M$ defines
-a bijection from $\mathcal{TRAV}(M)^{\upharpoonright r}$ to
-$\sem{M}$ and a bijection from $\mathcal{TRAV}(M)^{-@}$ to
-$\intersem{M}$:
-\begin{eqnarray*}
- \varphi_M  &:& \mathcal{TRAV}(M)^{\upharpoonright r} \stackrel{\cong}{\longrightarrow} \sem{M} \\
- \varphi_M  &:& \mathcal{TRAV}(M)^{-@} \stackrel{\cong}{\longrightarrow} \intersem{M}
-\end{eqnarray*}
-
-Moreover if $M$ is in $\beta$-normal form and $s$ is a \emph{maximal} play then  $t$ is
-a \emph{maximal} traversal.
 \end{prop}
 
 
 \begin{proof}
-Unraveling (i) and (ii) we need to prove the following:
-\begin{itemize}
-\item[(i.a)] $\forall u \in \intersem{\Gamma \vdash M:T} \cdot \exists t \in \mathcal{TRAV}(M) \ | \  u \jseq  \varphi_M (t - @)$
-\item[(i.b)]
-\item[(ii.a)] $\forall s \in \sem{\Gamma \vdash M:T}  \cdot \exists t \in \mathcal{TRAV}(M) \ | \ s \jseq  \varphi_M (t \upharpoonright r ) $
-\item[(ii.b)]
-\end{itemize}
-
-
-(i) Let us assume that $M$ is already in $\eta$-long normal form. We
-proceed by induction on the height of of the tree $\tau(M)$.
-
-Suppose $\Gamma = \xi_1:X_1,\ldots \xi_n:X_n$.
-Then we have:
+(i) Suppose $\Gamma = \xi_1:X_1,\ldots \xi_n:X_n$. Then we have:
 \begin{eqnarray*}
 \intersem{\Gamma \vdash M:T} &=& \Lambda^n( \intersem{\emptyset \vdash \lambda \xi_1\ldots \xi_n . M: (X_1,\ldots,X_n,T) } ) \\
         &\simeq& \intersem{\emptyset \vdash \lambda \xi_1\ldots \xi_n . M: (X_1,\ldots,X_n,T) }.
 \end{eqnarray*}
 Similarly the computation tree $\tau(M)$ is isomorphic to
-$\tau(\lambda \xi_1\ldots \xi_n . M)$ (up to a renaming of the root of the computation tree) therefore
-$\mathcal{TRAV}(M)$, the set of traversal of $\tau(M)$, is also isomorphic to $\mathcal{TRAV}(\lambda \xi_1\ldots \xi_n . M)$.
-Hence we can make the assumption that $M$ is a closed term. If we prove that the property is true for
-closed terms of a given height then it will be automatically true for any open term of the same height.
+$\tau(\lambda \xi_1\ldots \xi_n . M)$ (up to a renaming of the root
+of the computation tree) therefore $\travset(M)$, the set of
+traversal of $\tau(M)$, is also isomorphic to
+$\travset(\lambda \xi_1\ldots \xi_n . M)$. Hence we can make
+the assumption that $M$ is a closed term. If we prove that the
+property is true for all closed terms of a given height then it will
+be automatically true for any open term of the same height.
 
-Let $s$ be a play in $\intersem{\Gamma \vdash M:T}$.
 
-We proceed by case analysis on the structure of the computation tree:
+Let us assume that $M$ is already in $\eta$-long normal form. We
+proceed by induction on the height of of the tree $\tau(M)$ and by
+case analysis on the structure of the computation tree:
 \begin{itemize}
-
-%  \item[(application)] The term $M$ is of the form $\emptyset \vdash N_0 N_1 \ldots N_p : o$ where $N_0$ is not
-%    a variable (since $M$ is closed) and:
-%    \begin{eqnarray*}
-%    \emptyset &\vdash& N_0 : (A_1,\ldots,A_p,o)\\
-%    \emptyset &\vdash& N_i : A_i \mbox{ for } i \in 1..p
-%    \end{eqnarray*}
-%
-%    The tree $\tau(M)$ has the following form:
-%    $$ \tree[levelsep=6ex]{\lambda}
-%        { \tree[levelsep=6ex]{@^{[1]}}
-%            {   \TR{\tau(N_0)} \TR{\ldots} \TR{\tau(N_p)}}}
-%    $$
-%
-%    The arena is the flat arena $\sem{o}$ with only one question move
-%    $q$. Hence $\tilde{s} \in \{ \epsilon, q \}$.
-%    We just need to take $t = \epsilon$ if $\tilde{s} = \epsilon$
-%    and $t = \lambda$ if $\tilde{s} = q$.
-%
-%    In both cases, the sequence $t$ is a traversal of the tree $\tau(M)$
-%    and by definition of $\varphi_{M}$ we have:
-%    $$ \varphi_{M} (t \upharpoonright \lambda) \jseq \varphi_{M} (t) \jseq  \tilde{s}$$
 
 %  \item[(order 0 constant)] $M = f \in \Sigma$. The tree $\tau(M)$ has the following form:
 %  $$ \tree[levelsep=6ex]{\lambda}{ \TR{f} }$$
@@ -1489,122 +1475,124 @@ We proceed by case analysis on the structure of the computation tree:
         }$$
         where $q'$ denotes the root of the flat arena $\sem{o}$.
 
-        Since $M$ is in $\beta$-normal we have $\varphi_M (t - @) =  \varphi_M (t)$
-        therefore we just need to prove
-        that there is a traversal $t$ such that $\tilde{s} = \varphi(t)$.
+        Let $\pi_i$ denotes the $ith$ projection of the interaction game
+        semantics. We have:
+        \begin{align*}
+        \intersem{M} &= \intersem{\emptyset \vdash \lambda \overline{\xi} . \xi_i} \\
+                     &= \Lambda^n(\intersem{\overline{\xi} \vdash  \xi_i}) \\
+                     &= \Lambda^n(\pi_i) \\
+                     &\cong \pi_i \\
+                     &= \textsf{Pref}(\{ q \cdot q_0 \cdot q^v \cdot q_0^v \ | \ v\in \mathcal{D} \})
+        \end{align*}
 
-        We have:
-        $$ \intersem{M} = \intersem{\emptyset \vdash \lambda \overline{\xi} . \xi_i} = \Lambda^n(\intersem{\overline{\xi} \vdash  \xi_i}) = \Lambda^n(\pi_i)$$
-        where $\pi_i$ denotes the $i$-th projection.
+        Since $M$ is in $\beta$-normal we have $\travset(M)^{-@} = \travset(M)$.
+        One can check that the set of traversals of $M$ is the set of prefix of
+        the traversal $\lambda \overline{\xi} \cdot \xi_i \cdot \xi_i^v \cdot \lambda
+        \overline{\xi}^v$. Therefore:
+        $$ \travset^{-@}(M) = \travset(M) = \textsf{Pref}( \lambda \overline{\xi} \cdot \xi_i \cdot \xi_i^v \cdot \lambda \overline{\xi}^v)
+        $$
 
-        The only question-moves occurring in $s \in \pi_i$ are the initial question $q_0$ (which occurs only once)
-        and $q'$.
-        For any question move $q$ in $\{ q_0, q' \}$  there is a unique node in the computation tree
-        such that $\varphi(t) = q$: $\varphi^{-1}(q_0) = \lambda \overline{\xi}$ and $\varphi^{-1}(q') = \xi_i$.
-
-        We therefore take the sequence of nodes $t = \varphi^{-1}(\tilde{s})$ verifying $\varphi(t) = \tilde{s}$.
-        $t$ is a valid justified sequence of nodes since the node $\xi_i$ is bound by the root node $\lambda \overline{\xi}$ and
-        $t$ is also a valid traversal.
+        The pointers of the traversal $\lambda \overline{\xi} \cdot \xi_i \cdot \xi_i^v \cdot \lambda
+        \overline{\xi}^v$ are the same as the play $q \cdot q_0 \cdot q^v \cdot
+        q_0^v$. Therefore since $\varphi_M(\lambda \overline{\xi}) = q_0$ and $\varphi_M(\xi_i) =
+        q'$ we have:
+        $$ \varphi_M(\travset^{-@}(M)) = \intersem{M}$$
 
 
-    \item (abstraction of an application): $M = \lambda \overline{\xi} . N_0 N_1 \ldots N_p$ where
-    \begin{eqnarray*}
-    \emptyset &\vdash& M : (X_1,\ldots,X_n,o) \\
-    \Gamma &\vdash& N_0 N_1 \ldots N_p : o \\
-    \Gamma &\vdash& N_i : B_i \mbox{ for } i \in 0..p \\
-    && B_0 = (B_1,\ldots,B_p,o) \\
-    \Gamma &=& \overline{\xi} : \overline{X}
-    \end{eqnarray*}
+    \item (abstraction of an application): we have $M = \lambda \overline{\xi} . N_0 N_1 \ldots N_p$. Let $\Gamma$ be the context
+    $\Gamma = \overline{\xi} : \overline{X}$. Then we have the following sequents:
+    $\emptyset \vdash M : (X_1,\ldots,X_n,o)$,
+    $\Gamma \vdash N_0 N_1 \ldots N_p : o$,
+    $\Gamma \vdash N_i : B_i$ for $i\in 0..p$ with $B_0 = (B_1,\ldots,B_p,o)$ and $p\geq 1$.
 
-    In the case $N_0 \equiv \xi_i$ where $\alpha$ is a variable in $\overline{\xi}$, the tree has the following form:
+    There are two subcases, either $N_0 \equiv \xi_i$ where $\alpha$ is a variable in $\overline{\xi}$ and the tree has the following form:
     $$ \tree[levelsep=6ex]{\lambda \overline{\xi}^{[0]}}
         { \tree[levelsep=6ex]{\xi_i^{[1]}}
             {   \TR{\tau(N_1)} \TR{\ldots} \TR{\tau(N_p)}}}
     $$
-    Otherwise $N_0$ is not a variable and the tree $\tau(M)$ has the following form:
+    or $N_0$ is not a variable and the tree $\tau(M)$ has the following form:
     $$ \tree[levelsep=6ex]{\lambda \overline{\xi}^{[0]}}
         { \tree[levelsep=6ex]{@^{[1]}}
             {   \TR{\tau(N_0)} \TR{\ldots} \TR{\tau(N_p)}}}
     $$
-    Let us consider the second case, the first one can
-    be treated identically.
-
+    We only consider the second case, the first one can be treated
+    similarly. Moreover we make the assumption that $p=1$. It is
+    straightforward to generalize to any $p\geq1$.
 \begin{align*}
-  \intersem{M} &=
-      \langle \intersem{N_0}, \intersem{N_1} \rangle \fatsemi ev
-           & \\
-    &=  \langle \varphi_{N_0} (\mathcal{TRAV}(N_0)), \varphi_{N_1}(\mathcal{TRAV}(N_1) \rangle \fatsemi ev
-           & \\
-    &=  \langle \varphi_{M} (\mathcal{TRAV}(N_0)), \varphi_{M}(\mathcal{TRAV}(N_1)) \rangle \fatsemi ev
-           & \\
-    &=  \varphi_{M}( \langle \mathcal{TRAV}(N_0), \mathcal{TRAV}(N_1) \rangle \fatsemi ev
-           & \\
-    &=  \varphi_{M}( \mathcal{TRAV}(M) )
+  \intersem{M}
+    &=  \Lambda^n( \intersem{\Gamma \vdash N_0 N_1 : o} )
+           & \mbox{(game semantics for abstraction)}\\
+    &\cong  \intersem{\Gamma \vdash N_0 N_1 : o}
+           & \mbox{(isomorphism up to a retagging of the moves)}\\
+    &=  \langle \intersem{\Gamma \vdash N_0}, \intersem{\Gamma \vdash N_1} \rangle \fatsemi ev
+           & \mbox{(game semantics for application)}\\
+    &=  \langle \varphi_{N_0} (\travset^{-@}(N_0)), \varphi_{N_1}(\travset^{-@}(N_1) \rangle \fatsemi ev
+           & \mbox{(by the induction hypothesis)}\\
+    &=  \langle \varphi_{M} (\travset^{-@}(N_0)), \varphi_{M}(\travset^{-@}(N_1)) \rangle \fatsemi ev
+           & \mbox{(by the inducitve defintion of $\varphi$)}\\
+    &=  \varphi_{M}( \langle \travset^{-@}(N_0), \travset^{-@}(N_1) \rangle \fatsemi
+    ev )
+           & \mbox{($\varphi$ is a monoid homomorphism, lemma \ref{lem:varphi_monoidhomom})}\\
+    &=  \varphi_{M}( \travset^{-@}(M) )
            &
 \end{align*}
 
-    We have:
-    \begin{eqnarray*}
-    \sem{ \emptyset \vdash M} &=& \Lambda^n( \sem{\Gamma \vdash N_0 N_1 \ldots N_p : o} ) \\
-    \sem{\Gamma \vdash N_0  N_1 \ldots N_p : o} &=& \overbrace{\langle \sem{\Gamma \vdash N_0}, \sem{\Gamma \vdash N_1}, \ldots, \sem{\Gamma \vdash N_p} \rangle}^\sigma \fatsemi\ ev_{B_1,\ldots,B_p,o}
-    \end{eqnarray*}
-
-    with $\sigma : !A \multimap B$ and $ev_{B_1,\ldots,B_p,o} : !B \multimap C$, the arena $A,B,C$ being defined as follows:
+    with $\sigma : !A \multimap B$ and $ev_{B_1,o} : !B \multimap C$, the arena $A,B,C$ being defined as follows:
     \begin{eqnarray*}
         A &=& \sem{\Gamma} = \sem{X_1} \times \ldots \times \sem{X_n}\\
-        B &=& \sem{(B_1,\ldots,B_p,o)} \times \sem{B_1} \times \ldots \times \sem{B_p} \\
+        B &=& \sem{B_1 \rightarrow o} \times \sem{B_1} \\
         C &=& \sem{o}
     \end{eqnarray*}
 
 
 
 
-    We have $s \in \sem{M} \cong \sem{\Gamma \vdash N_0 N_1 \ldots N_p : o} = \sigma \fatsemi ev_{B_1,\ldots,B_p,o}$ therefore:
-    \begin{equation}
-        s = u \upharpoonright !A, C   \quad \mbox{ for some } u \in \sigma^{\dag} \parallel ev_{B_1,\ldots,B_p,o}
-    \end{equation}
-    In other words for some $u \in int(!A,!B,C)$:
-    \begin{eqnarray}
-        s &=& u \upharpoonright !A, C    \label{eq:def_s} \\
-        w \defeq u \upharpoonright !A,!B & \in& \sigma^\dagger       \label{eq:def_w}\\
-        u \upharpoonright !B,C & \in & ev_{B_1,\ldots,B_p,o} \nonumber
-    \end{eqnarray}
-
-    For any initial move $m$ in $w$ we write $w_m = w \upharpoonright
-    m$. Since $w \in \sigma^\dagger$, for all initial $m$ in $w$, $w_m \in \sigma$. Hence for
-    all initial $m$ in $w$ there is $j \in 1..p$ such that:
-    \begin{eqnarray}
-        z_m \defeq w_m \upharpoonright !A, B_j &\in& \sem{\Gamma \vdash N_j}  \label{eq:def_z} \\
-        \mbox{ and for every } k\neq j &:& w_m \upharpoonright B_k = \epsilon \label{eq:b}
-    \end{eqnarray}
-
-    We write $\lambda \overline{y_i}$ to denote the root of the tree $\tau(N_i)$ for $i \in 1..p$.
-    From equation \ref{eq:def_z} we have $z_m \in \sem{N_j}$. Since the term $N_j$ is a closed term of height strictly smaller than the height
-    of $M$, we can apply the induction hypothesis:
-    there is a traversal $t^j_m$ of the tree $\tau(N_j)$
-    such that $\varphi_{N_j}(t^j_m \upharpoonright \lambda \overline{y_j} ) \jseq \widetilde{z_m}$.
-
-
-
-    Equation \ref{eq:def_w} gives:
-    \begin{eqnarray}
-        \tilde{w} &=& \tilde{u} \upharpoonright !A,!B  \nonumber \\
-        \widetilde{w_m} &=& \tilde{w}\upharpoonright m  = \tilde{u} \upharpoonright !A,!B,m
-        \label{eq:def_wtilde}
-    \end{eqnarray}
-
-    From equation \ref{eq:b}, for $k\neq j : w_m \upharpoonright B_k = \epsilon$. Since $B =
-    B_0 \times B_1 \times \ldots \times B_p$ this implies that moves in $w_m$ hereditarily justified by moves in $B$ are in fact all
-    hereditarily justified by moves in $B_j$.  Hence $z_m = w_m \upharpoonright !A, B_j = w_m \upharpoonright !A, B$ and:
-    \begin{eqnarray*}
-            \widetilde{z_m} =& \widetilde{w_m} \upharpoonright !A,B \\
-            =& (\tilde{u} \upharpoonright !A,!B,m) \upharpoonright !A,B &\mbox{(by eq \ref{eq:def_wtilde})} \\
-            =& \tilde{u} \upharpoonright !A,B,m \\
-            =& \widetilde{w_m}  & \mbox{(by eq \ref{eq:def_wtilde})}
-    \end{eqnarray*}
-
-
-    Hence $\varphi_{N_j}(t^j_m \upharpoonright \lambda \overline{y_j} ) \jseq \widetilde{w_m}$.
+%    We have $s \in \sem{M} \cong \sem{\Gamma \vdash N_0 N_1 \ldots N_p : o} = \sigma \fatsemi ev_{B_1,\ldots,B_p,o}$ therefore:
+%    \begin{equation}
+%        s = u \upharpoonright !A, C   \quad \mbox{ for some } u \in \sigma^{\dag} \parallel ev_{B_1,\ldots,B_p,o}
+%    \end{equation}
+%    In other words for some $u \in int(!A,!B,C)$:
+%    \begin{eqnarray}
+%        s &=& u \upharpoonright !A, C    \label{eq:def_s} \\
+%        w \defeq u \upharpoonright !A,!B & \in& \sigma^\dagger       \label{eq:def_w}\\
+%        u \upharpoonright !B,C & \in & ev_{B_1,\ldots,B_p,o} \nonumber
+%    \end{eqnarray}
+%
+%    For any initial move $m$ in $w$ we write $w_m = w \upharpoonright
+%    m$. Since $w \in \sigma^\dagger$, for all initial $m$ in $w$, $w_m \in \sigma$. Hence for
+%    all initial $m$ in $w$ there is $j \in 1..p$ such that:
+%    \begin{eqnarray}
+%        z_m \defeq w_m \upharpoonright !A, B_j &\in& \sem{\Gamma \vdash N_j}  \label{eq:def_z} \\
+%        \mbox{ and for every } k\neq j &:& w_m \upharpoonright B_k = \epsilon \label{eq:b}
+%    \end{eqnarray}
+%
+%    We write $\lambda \overline{y_i}$ to denote the root of the tree $\tau(N_i)$ for $i \in 1..p$.
+%    From equation \ref{eq:def_z} we have $z_m \in \sem{N_j}$. Since the term $N_j$ is a closed term of height strictly smaller than the height
+%    of $M$, we can apply the induction hypothesis:
+%    there is a traversal $t^j_m$ of the tree $\tau(N_j)$
+%    such that $\varphi_{N_j}(t^j_m \upharpoonright \lambda \overline{y_j} ) \jseq \widetilde{z_m}$.
+%
+%
+%
+%    Equation \ref{eq:def_w} gives:
+%    \begin{eqnarray}
+%        \tilde{w} &=& \tilde{u} \upharpoonright !A,!B  \nonumber \\
+%        \widetilde{w_m} &=& \tilde{w}\upharpoonright m  = \tilde{u} \upharpoonright !A,!B,m
+%        \label{eq:def_wtilde}
+%    \end{eqnarray}
+%
+%    From equation \ref{eq:b}, for $k\neq j : w_m \upharpoonright B_k = \epsilon$. Since $B =
+%    B_0 \times B_1 \times \ldots \times B_p$ this implies that moves in $w_m$ hereditarily justified by moves in $B$ are in fact all
+%    hereditarily justified by moves in $B_j$.  Hence $z_m = w_m \upharpoonright !A, B_j = w_m \upharpoonright !A, B$ and:
+%    \begin{eqnarray*}
+%            \widetilde{z_m} =& \widetilde{w_m} \upharpoonright !A,B \\
+%            =& (\tilde{u} \upharpoonright !A,!B,m) \upharpoonright !A,B &\mbox{(by eq \ref{eq:def_wtilde})} \\
+%            =& \tilde{u} \upharpoonright !A,B,m \\
+%            =& \widetilde{w_m}  & \mbox{(by eq \ref{eq:def_wtilde})}
+%    \end{eqnarray*}
+%
+%
+%    Hence $\varphi_{N_j}(t^j_m \upharpoonright \lambda \overline{y_j} ) \jseq \widetilde{w_m}$.
 
 
 
@@ -1684,38 +1672,14 @@ We proceed by case analysis on the structure of the computation tree:
     traversal $t^i_{m}$, we make the first node copied from $t^i_{m}$ point to the
     second node in $t$ (the application node $@$). This is indeed a valid justification pointer since the root of $\tau(N_i)$ is a child of $@$.
     \end{itemize}
-
-
-    By construction of  $t$, the nodes in $t$ that are hereditarily justified
-    by the root correspond exactly to the question moves of the arena $A = \sem{X_1} \times \ldots \times \sem{X_n}$ and $C = \sem{o}$ :
-    the moves that have been copied by the strategy $\sigma$ and the copy-cat evaluation strategy respectively. Moreover for each node $\alpha$ in $t$, this corresponding question move is given by
-    $\varphi_M(\alpha)$. Hence $\varphi_M(t \upharpoonright r) = \tilde{u} \upharpoonright !A, C = s$ by equation \ref{eq:def_s}.
 \end{itemize}
 
-(ii.a) Consider a play $s \in \sem{\Gamma \vdash M:T}$. Let $u \in
-\intersem{\Gamma \vdash M:T}$ be the full uncovering of $s$
-relatively to $M$. Then:
+(ii) is an immediate consequence of (i):
 \begin{align*}
-s &= u \upharpoonright \Gamma, T \\
-&= \varphi_M(t-@) \upharpoonright \Gamma, T  \quad \mbox{ for some traversal $t$}      & \mbox{(i.a)}\\
-&= \varphi_M((t-@+@)\upharpoonright r) \\
-&= \varphi_M(t\upharpoonright r)                   & \mbox{(lemma
-\ref{lem:minus_at_plus_at}).}
+\sem{M} &= \intersem{M} \upharpoonright root(\Gamma), root(T) & \mbox{(eq. \ref{eqn:int_std_gamsem})} \\
+        &= \varphi_M(\travset^{-@}(M)) \upharpoonright root(\Gamma), root(T) & \mbox{(by (i))}\\
+        &= \varphi_M(\travset^{\upharpoonright r}(M)) & \mbox{(lemma \ref{lem:varphi_filter})}\\
 \end{align*}
-
-\vspace{6pt}
-
-(ii.b) Similar to the previous case: it is a consequence of (i.b).
-
-\vspace{12pt}
-
-Finally, if $M$ is in $\beta$-normal form then
-$\mathcal{TRAV}(M)^{\upharpoonright r} = \mathcal{TRAV}(M)$
-therefore $\varphi$ is a bijection from $\mathcal{TRAV}(M)$ to
-$\sem{M}$. Suppose $s$ is a maximal play and suppose $t' \sqsubseteq
-t$ then since $\varphi$ is monotonous $s = \varphi(t) \sqsubseteq
-\varphi(t')$. But $s$ is maximal therefore $s = \varphi(t') =
-\varphi(t)$. Since $\varphi$ is injective we have $t'=t$.
 \end{proof}
 
 %\input corresp_proofbis.tex
@@ -1728,9 +1692,56 @@ t$ then since $\varphi$ is monotonous $s = \varphi(t) \sqsubseteq
 
 
 
-\subsection{Pointers in the game semantics of safe terms are uniquely recoverable}
+Putting corollary \ref{cor:varphi_bij} and proposition
+\ref{prop:rel_gamesem_trav_closed} together we obtain the following
+theorem:
 
-The computation tree of safe terms verifies a property called regularity:
+\begin{thm}[Correspondence between game semantics and traversals]
+For any simply-typed term $M$, $\varphi_M$ defines a bijection from
+$\travset(M)^{\upharpoonright r}$ to $\sem{M}$ and a bijection
+from $\travset(M)^{-@}$ to $\intersem{M}$:
+\begin{eqnarray*}
+ \varphi_M  &:& \travset(M)^{\upharpoonright r} \stackrel{\cong}{\longrightarrow} \sem{M} \\
+ \varphi_M  &:& \travset(M)^{-@} \stackrel{\cong}{\longrightarrow} \intersem{M}
+\end{eqnarray*}
+
+Moreover if $M$ is in $\beta$-normal form and $s$ is a
+\emph{maximal} play then  $t$ is a \emph{maximal} traversal.
+\end{thm}
+
+\begin{proof}
+The first part is an immediate consequence of corollary
+\ref{cor:varphi_bij} and proposition
+\ref{prop:rel_gamesem_trav_closed}.
+
+Finally, if $M$ is in $\beta$-normal form then
+$\travset(M)^{\upharpoonright r} = \travset(M)$
+therefore $\varphi$ is a bijection from $\travset(M)$ to
+$\sem{M}$. Suppose $s$ is a maximal play and suppose $t' \sqsubseteq
+t$ then since $\varphi$ is monotonous $s = \varphi(t) \sqsubseteq
+\varphi(t')$. But $s$ is maximal therefore $s = \varphi(t') =
+\varphi(t)$. Since $\varphi$ is injective we have $t'=t$.
+\end{proof}
+
+
+
+
+\subsection{Pointers in the game semantics of safe terms are uniquely recoverable}
+We now use the correspondence theorem to study the game semantics of
+safe terms. We prove that pointers in the game semantics of safe
+terms can be uniquely recovered.
+
+The example of section \ref{subsec:pointer_necessary} gives a good
+intuition: remember that in order to distinguish the terms $M_1$ and
+$M_2$, we had to keep the pointers in the plays of strategies.
+However, if we limit ourself to the safe $\lambda$-calculus then the
+ambiguity disappears since $M_1$ is safe whereas $M_2$ is not (in
+the sub-term $f (\lambda y . x)$, the free variable $x$ has the same
+order as $y$ but $x$ is not abstracted together with $y$).
+
+
+First we prove that the computation tree of a safe term verifies a
+property called regularity:
 \begin{lem}[Computation tree of safe terms are regular]
 \label{lem:regularity}
 If $M$ is a safe term then any bound variable node $x$ of the computation tree $\tau(M)$ is bound
@@ -1775,8 +1786,8 @@ Consider the closed term $M'  = \lambda \overline{y} . M$.
 Up to a retagging of the moves, the justified sequence of moves $s$ belongs to the strategy
 $\sem{\vdash \lambda \overline{y} . M} = \Lambda^n(\sem{\Gamma \vdash M})$.
 
-Proposition \ref{prop:rel_gamesem_redtrav_closed} tells us that
-there is a reduced-traversal $r$ of $\tau(M')$ such that:
+Proposition \ref{prop:rel_gamesem_trav_closed} tells us that there
+is a reduced-traversal $r$ of $\tau(M')$ such that:
 $$\varphi_{M'}(r) \jseq s.$$
 
 Let us write $n$ for the last node in the sequence $r$

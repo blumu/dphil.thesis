@@ -1194,13 +1194,40 @@ we omit the internal moves produced by the copy-cat projection strategy denoting
 
 For any term $\Gamma \vdash M : T$, we write $\intersem{\Gamma \vdash M : T}$ to denote the interaction semantics of $M$.
 
-It is possible to define a category $\mathcal{C'}$ to model this interaction semantics. The objects of
-the category are interaction-arenas: interaction arenas
-are binary trees of arenas: each leaf or node of the interaction arena tree is an arena of the standard game semantics.
-Nodes of the interaction arena correspond to $@$ nodes of the computation tree. The arena associated to a $@$ node must
-the composition of its two children arena. A leaf corresponds to the arena of a sub-term of $M$ in $\beta$-normal form.
 
-For example consider the term $\lambda x . (\lambda f . f x) (\lambda y . y)$ then its computation tree and
+\paragraph{Category of interaction game semantics}
+
+We call \emph{type-tree} a binary tree labelled with simple types : each nodes and leaves is labelled with a simple type such that the type
+associated to a node is equal to the composition of type of its two children.
+
+Let $T$ be type-tree. We define an \emph{interaction arena} of type $T$ to be
+a binary tree of arenas isomorphic to $T$ such that each leaf or node of the interaction arena tree is the arena (in the sense of the standard game semantics)
+of the type of the corresponding node in the tree $T$.
+The interaction tree of a type-tree $T$ is written $\intersem{T}$.
+We write $root(\intersem{T})$ to denote the arena located at the root of the interaction arena $\intersem{T}$.
+
+\begin{dfn}[Function space construction]
+Let $\intersem{T_1}$ and $\intersem{T_2}$ be two interaction arenas. Then the function space interaction arena
+$\intersem{T_1 \rightarrow T_2}$ is obtained by replacing every node-arena or leaf-arena $\sem{A}$ of the tree $\intersem{T_2}$ by
+the arena $\sem{root(\intersem{T_1}) \rightarrow A}$.
+\end{dfn}
+
+\begin{dfn}[Tree-type of a term]
+Let $M$ be a term. The \emph{tree-type of $M$} is a binary tree isomorphic to the tree obtained by collapsing
+every maximal sub-term of the computation tree that is in $\beta$-normal form to a single leaf.
+The nodes of the tree-type of $M$ correspond to $@$-nodes in the computation tree
+of $M$, leaves correspond to maximal sub-terms in $\beta$-normal form.
+Suppose that $n$ denotes an $@$-node in the computation tree then the corresponding node in the type-tree is
+labelled with $type(\kappa(p))$ where $p$ denotes the parent node of $n$ in the computation tree.
+\end{dfn}
+The tree-type of $M$ is a well-defined tree-type (the type of a node is equal to the type composition of its two children nodes).
+
+The interaction arena of a term $\Gamma \vdash M:A$ noted $\intersem{\Gamma \rightarrow A}_M$
+is defined to be $\intersem{T}$ where $T$ denotes the tree-type of $M$.
+
+
+\begin{exmp}
+Consider the term $\lambda x . (\lambda f . f x) (\lambda y . y)$. Its computation tree and
 interaction arena are represented below:
 $$
 \tree{\lambda x}
@@ -1238,14 +1265,31 @@ $$ \tree{ q_{\lambda x} }
     }
 \hspace{2cm}
      \tree{ q_{\lambda y} }
-        { \TR{q_y} }
+        { \TR{q_y} \TR{q_x}}
 $$
-The morphisms of the category are the interaction strategies. An interaction strategy is a composition of
-several standard strategies where the internal moves are not hidden. A play
-of the interaction semantics containing internal moves is called \emph{interaction play}.
+\end{exmp}
+
+
+An \emph{interaction strategy} $\Sigma$ on the interaction arena $\intersem{T}$ is a composition of several
+standard strategies where the internal moves are not hidden. Suppose that the list of leaves of $T$ obtained by
+depth-first search (i.e. appearing from left to right on in the tree) is: $A_1$, \ldots $A_p$ then
+$\Sigma$ must be the composition of strategies $\sigma_1$, \ldots $\sigma_p$ on the games $\sem{A_1}$, \ldots $\sem{A_p}$ respectively.
+
+by is the composition $\
+
+An interaction strategy on the interaction arena $\intersem{T}$ is obtained by composing
+
+
+A play of the interaction semantics is called \emph{interaction play}.
 In an interacting play, the moves are implicitly tagged so that it is possible to retrieve
-which arena-node and which component of the arena the move belongs to. The internal moves are those
-belonging to an arena different from the root arena.
+which arena-node and which component of the arena the move belongs to.
+The internal moves of an interaction play are those
+which do not belong to the root arena of $\intersem{T_1 \rightarrow T_2}$.
+
+We define the category $\mathcal{I}$ corresponding to the interaction game semantics. The objects of
+$\mathcal{I}$ are \emph{interaction-arenas}.
+The morphisms of the category are the interaction strategies: a morphism from $T_1$ to $T_2$ is an interaction strategy on
+the interaction arena $\intersem{T_1 \rightarrow T_2}$.
 
 Composition of interaction strategies noted $\sigma \fatsemi \tau$
 proceeds like composition in the standard semantics except that the
@@ -1255,7 +1299,8 @@ by the composition are preserved instead of being hidden. The
 identity map on a given tree arena is obtained by taking the
 identity map of the leaves-arena and composing them together (the
 order in which they are composed is imposed by the structure of the
-binary tree arena).
+binary tree interaction arena).
+
 
 For any interaction sequence $s$ on $\sigma : A \rightarrow B$ where
 $A$ and $B$ are interaction arenas, we define the filtering operator
@@ -1263,8 +1308,8 @@ $s\upharpoonright A , B$ to be the sequence of moves obtained from
 $s$ by keeping only the moves belonging to a node-arena or a
 leaf-arena of the tree of arenas $A$ or $B$.
 
-All the construction of the category $\mathcal{C}$ can then be constructed similarly in $\mathcal{C'}$ and consequently
-$\mathcal{C'}$ inherits the cartesian closure structure from $\mathcal{C}$.
+Most of the construction of the category $\mathcal{C}$ can then be constructed similarly in $\mathcal{I}$ and consequently
+$\mathcal{I}$ is a cartesian close category.
 
 
 In the standard semantics, given two strategies $\sigma : A \rightarrow B$, $\tau : B \rightarrow C$ and
@@ -1278,12 +1323,10 @@ Consequently, the interaction semantics can be computed from the standard semant
 
 
 Conversely, the standard semantics can be recovered from the interaction semantics by filtering the moves, keeping only those played
-in the arena $\Gamma$ or $T$:
+in the root arena:
 \begin{eqnarray}
- \sem{\Gamma \vdash M : T} = \intersem{\Gamma \vdash M : T} \upharpoonright root(\Gamma),
- root(T) \label{eqn:int_std_gamsem}
+ \sem{\Gamma \vdash M : T} = \intersem{\Gamma \vdash M : T} \upharpoonright root(\intersem{\Gamma \rightarrow T}_M) \label{eqn:int_std_gamsem}
 \end{eqnarray}
-where $root(A)$ denotes the root arena of the interaction arena $A$.
 
 \vspace{18pt}
 
@@ -1374,9 +1417,9 @@ We introduce the following notation:
 
 \begin{lem}[Filtering lemma] \
 \label{lem:varphi_filter}
-$$ \varphi_M(\travset^{-@}) \upharpoonright root(\Gamma), root(T) = \varphi_M(\travset^{\upharpoonright r}) $$
+$$ \varphi_M(\travset^{-@}) \upharpoonright root(\intersem{\Gamma \rightarrow T}) = \varphi_M(\travset^{\upharpoonright r}) $$
 In other words, for any traversal $t$ of the computation tree of $\Gamma \vdash M :T$ we have:
-$$\varphi_M(t-@) \upharpoonright root(\Gamma), root(T) = \varphi_M(t\upharpoonright r)$$
+$$\varphi_M(t-@) \upharpoonright root(\intersem{\Gamma \rightarrow T}) = \varphi_M(t\upharpoonright r)$$
 \end{lem}
 \begin{proof}
     Let $r$ denotes the root of $\tau(M)$.
@@ -1676,8 +1719,8 @@ case analysis on the structure of the computation tree:
 
 (ii) is an immediate consequence of (i):
 \begin{align*}
-\sem{M} &= \intersem{M} \upharpoonright root(\Gamma), root(T) & \mbox{(eq. \ref{eqn:int_std_gamsem})} \\
-        &= \varphi_M(\travset^{-@}(M)) \upharpoonright root(\Gamma), root(T) & \mbox{(by (i))}\\
+\sem{M} &= \intersem{M} \upharpoonright root(\intersem{\Gamma \rightarrow T}) & \mbox{(eq. \ref{eqn:int_std_gamsem})} \\
+        &= \varphi_M(\travset^{-@}(M)) \upharpoonright root(\intersem{\Gamma \rightarrow T}) & \mbox{(by (i))}\\
         &= \varphi_M(\travset^{\upharpoonright r}(M)) & \mbox{(lemma \ref{lem:varphi_filter})}\\
 \end{align*}
 \end{proof}

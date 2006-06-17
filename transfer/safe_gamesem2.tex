@@ -1084,17 +1084,65 @@ We write $q^0_A$ to denote the single initial question of arena $A$.
 This is well-defined since the arenas involved in the game semantics
 of pure simply-typed $\lambda$-calculus have only one root.
 
-
+Let $N\setminus \{@\}$ be the subset of $N$ constituted of the nodes that are not labelled by $@$.
 \begin{dfn}[Total mapping from nodes to moves]
 Let $\Gamma \vdash M : A$ be a simply-typed term. We define the
-total function $\varphi_M : N \rightarrow M_\sem{\Gamma \rightarrow
-A} \union \Union_{n \in N | E(n, @)} M_{\sem{type(\kappa(n))}}$ as
+total function $\varphi_M : N\setminus \{@\} \rightarrow M_\sem{\Gamma \rightarrow
+A} \union \Union_{n \in N | E(@,n)} M_{\sem{type(\kappa(n))}}$ as
 follows:
-$$\varphi_M = f(r, q^0_{\sem{\Gamma \rightarrow A}}) \union \Union_{n \in N | E(n, @)}  f(n, q^0_{\sem{type(\kappa(n))}} ) $$
+$$\varphi_M = f(r, q^0_{\sem{\Gamma \rightarrow A}}) \union \Union_{n \in N | E(@,n)}  f(n, q^0_{\sem{type(\kappa(n))}} ) $$
 \end{dfn}
 
-By definition of procedure $f$, the following properties follow
-immediately:
+\begin{exmp}
+Consider the term $\lambda x . (\lambda g . g x) (\lambda y . y)$ with $x,y:o$ and $g:(o,o)$.
+The diagram below represents the computation tree (middle), the arenas
+$\sem{\vdash o\rightarrow o}$ (rightmost), $\sem{x:o \vdash (o,o)\rightarrow o}$ (left), $\sem{x:o \vdash o \rightarrow o}$ (right)
+and the function $\varphi_M = f(\lambda x, q_{\lambda x}) \union f(\lambda g, q_{\lambda g}) \union f(\lambda y, q_{\lambda y})$
+(dashed-lines).
+$$
+\psset{levelsep=4ex}
+\pstree{\TR[name=root]{\lambda x}}
+{
+    \pstree{\TR[name=App]{@}}
+    {
+            \pstree{\TR[name=lg]{\lambda g}}
+                { \pstree{\TR[name=lgg]{g}}{
+                        \pstree{\TR[name=lgg1]{\lambda}}
+                        { \TR[name=lgg1x]{x}  } } }
+            \pstree{\TR[name=ly]{\lambda y}}
+                    {\TR[name=lyy]{y}}
+    }
+}
+%\ncbox[linearc=.3,boxsize=.3,linestyle=dashed]{L}{Lg}
+%\ncbox[linearc=.3,boxsize=.3,linestyle=dashed]{R}{Rg} \hspace{3cm}
+\rput(5cm,-1cm){
+  \pstree{\TR[name=A1lx]{q_{\lambda x}}}
+        { \TR[name=A1x]{q_x} }
+}
+\rput(-6cm,-1.5cm){
+    \pstree{\TR[name=A2lg]{q_{\lambda g}}}
+    {
+        \pstree{\TR[name=A2g]{q_g}}
+        {  \TR[name=A2g1]{q_{g_1}}   }
+        \TR[name=A2x]{q_x}
+    }}
+\rput(2.5cm,-1.5cm){
+    \pstree{\TR[name=A3ly]{q_{\lambda y}}}
+        { \TR[name=A3y]{q_y} \TR[name=A3x]{q_x}}
+}
+\psset{nodesep=1pt,arrows=->,arcangle=-20,arrowsize=2pt 1,linestyle=dashed,linewidth=0.3pt}
+\ncline{->}{root}{A1lx} \mput*{f(\lambda x, q_{\lambda x})}
+\ncarc{->}{lgg1x}{A1x}
+\ncline{->}{lg}{A2lg} \mput*{f(\lambda g, q_{\lambda g})}
+\ncline{->}{lgg}{A2g}
+\ncline{->}{lgg1}{A2g1}
+\ncline{->}{ly}{A3ly} \mput*{f(\lambda y, q_{\lambda y})}
+\ncline{->}{lyy}{A3y}
+$$
+\end{exmp}
+
+
+The following properties follow immediately from the definition of procedure $f$:
 \begin{property} \
 \label{proper:phi_conserve_order}
 \begin{itemize}
@@ -1152,17 +1200,17 @@ nodes follow the same steps.
 \end{proof}
 
 
-Let us fix some notation: we write $s\upharpoonright A,B$ for the
-sequence obtained from $s$ by keeping only the moves that are in $A$ or $B$ and by removing any link pointing to a move that
-has been removed.
-
-If $m$ is an initial move, we write $s \upharpoonright m$ to
-denote the thread of $s$ initiated by $m$, i.e. the sequence obtained from $s$ by keeping all the moves
-hereditarily justified by $m$.
-
-We also write $s \upharpoonright A,B,m$ where $m$ is an initial move
-for the sequence obtained from $s \upharpoonright A,B$ by keeping
-all moves hereditarily justified by $m$.
+%Let us fix some notation: we write $s\upharpoonright A,B$ for the
+%sequence obtained from $s$ by keeping only the moves that are in $A$ or $B$ and by removing any link pointing to a move that
+%has been removed.
+%
+%If $m$ is an initial move, we write $s \upharpoonright m$ to
+%denote the thread of $s$ initiated by $m$, i.e. the sequence obtained from $s$ by keeping all the moves
+%hereditarily justified by $m$.
+%
+%We also write $s \upharpoonright A,B,m$ where $m$ is an initial move
+%for the sequence obtained from $s \upharpoonright A,B$ by keeping
+%all moves hereditarily justified by $m$.
 
 
 %\begin{property} Let $s$ be a justified sequence of moves. Then
@@ -1177,8 +1225,8 @@ In game semantics, strategy composition is achieved by performing a CSP-like ``c
 It is possible to define an alternative semantics where the internal moves are not hidden when performing composition.
 This semantics has been named \emph{interaction} semantics in \cite{DBLP:conf/sas/DimovskiGL05}.
 
-In addition to the moves of the standard semantics, the interaction semantics contains all
-the internal moves of the computation.
+In addition to the moves of the standard semantics, the interaction semantics contains certain
+internal moves of the computation.
 Consequently, the interaction semantics depends on the syntactical structure of the term and therefore cannot
 lead to a full abstraction result. However this semantics will prove to be useful to identify
 a correspondence between the game semantics
@@ -1192,87 +1240,75 @@ $y N_1 \ldots N_p$ where $y$ is a variable, we keep the internal moves of $N_1$,
 we omit the internal moves produced by the copy-cat projection strategy denoting $y$.
 
 \begin{dfn}[Type-tree]
-We call \emph{type-tree} or \emph{type decomposition-tree}, a tree whose leaves are labelled with linear simple types
-and nodes are labelled with symbol in  $\{ \fatsemi, \times, !, \otimes \}$.
+We call \emph{type decomposition tree} or just \emph{type-tree}, a tree whose leaves are labelled with linear simple types
+and nodes are labelled with symbol in
+%%$\{ \fatsemi, \times, !, \otimes \} \union \{ @_k \ | k \geq 2 \} $.
+$\{ \fatsemi, \times, !, \otimes, \Lambda \} $.
 
-Nodes labelled $\fatsemi$, $\times$ or $\otimes$ are binary nodes, nodes labelled $!$ are unary nodes.
+Nodes labelled $\fatsemi$, $\times$ or $\otimes$ are binary nodes, nodes labelled $!$ or $\Lambda$ are unary nodes.
+%%and nodes labelled $@_k$ are $k$-ary nodes.
 
-A (linear) simple-type is associated to every node or leaf of the tree, this type is determined by the
+
+Every node or leaf of the tree has a linear type, this type is determined by the
 structure of the tree as follows:
 \begin{itemize}
-\item a leaf represents the type of its label;
-\item a $\fatsemi$-node with two children nodes $T_1$ and $T_2$ representing the types $!A\multimap B$
-and $!B \multimap C$ for some arena $A$, $B$ and $C$, represents the type $!A \multimap C$;
+\item a leaf has the type of its label;
 
-\item a $\times$-node with two children nodes $T_1$ and $T_2$ representing the type $A$
-and $B$ respectively, represents the type $A \times B$;
+\item a $\times$-node with two children nodes of type $A$
+and $B$ is of type $A \times B$;
 
-\item a $\otimes$-node with two children nodes $T_1$ and $T_2$ representing the type $A$
-and $B$ respectively, represents the type $A\otimes B$;
+\item a $\otimes$-node with two children nodes of type $A$
+and $B$ is of type $A\otimes B$;
 
-\item a $!$-node with the child node $T$ representing a type $A$ represents the type $!A$.
+\item a $!$-node with a child node of type $A$ is of type $!A$;
+
+\item a $\Lambda$-node with the child node of type $A \otimes B \multimap C$ is of type $!A \multimap (!A \multimap C)$;
+
+\item a $\fatsemi$-node with two children nodes of type $!A\multimap B$
+and $!B \multimap C$ is of type $!A \multimap C$;
+
+%%\item a $@_k$-node with children nodes $T_0, T_1, \ldots, T_{k-1}$ representing the types
+%%$(A_1, \ldots A_{k-1}, B)$, $A_1$, \ldots, $A_{k-1}$ respectively represents the type $B$.
 \end{itemize}
-For a type-tree to be well-defined, the children nodes of a $\fatsemi$-node must have a compatible type (i.e. of the form
-$!A\rightarrow B$ and $!B\rightarrow C$).
+
+For a type-tree to be well-defined, the children nodes's type must be compatible with the meaning of the node, for instance
+the two children nodes of a $\fatsemi$-node must be of type $!A\rightarrow B$ and $!B\rightarrow C$.
+%%and for $@_k$-node the type of the children nodes must be of the form $(A_1, \ldots A_{k-1}, B)$, $A_1$, \ldots, $A_{k-1}$.
 
 We write $type(T)$ to denote the type represented by the root of the tree $T$. An we say that $T$ is a \emph{valid
 tree decomposition} of $type(T)$.
 
 If $T_1$ and $T_2$ are type-tree we write $T_1 \times T_2$ to denotes the tree obtained by attaching $T_1$ and $T_2$ to a $\times$-node.
-Similarly we use the notation $T_1 \otimes T_2$, $T_1 \fatsemi T_2$ and $!T_1$.
+Similarly we use the notations $T_1 \otimes T_2$, $T_1 \fatsemi T_2$, $\Lambda(T_1)$ and $!T_1$.
+%%, $@_k(T_0, \ldots , T_{k-1})$
 \end{dfn}
 
 
-Let $T$ be a type-tree. Each leaf $A$ of this tree can be mapped to the
-arena (in the standard sense) $\sem{A}$. Similarly, each node of the tree representing a type $A$ can be mapped to
-the arena $\sem{A}$. By taking the image of $T$ across this mapping we obtain a tree whose leaves and nodes are labelled by arenas.
+Let $T$ be a type-tree. Each leaf or node of type $A$ in $T$ can be mapped to the
+(standard) arena $\sem{A}$. By taking the image of $T$ across this mapping we obtain a tree whose leaves and nodes are labelled by arenas.
 This tree written $\intersem{T}$ is called the \emph{interaction arena} of type $T$.
 We write $root(\intersem{T})$ to denote the arena located at the root of the interaction arena $\intersem{T}$.
 
-%\begin{dfn}[Interaction arena construction]
-%Let $\intersem{T_1}$ and $\intersem{T_2}$ be two interaction arenas
-%where $T_1$ and $T_2$ represent the types $A$ and $B$ respectively. We can construct new interaction arenas
-%as follows:
-%\begin{itemize}
-%\item \emph{Composition} $\intersem{T_1 \rightarrow T_2}$ denotes the interaction arena obtained by attaching the trees
-%$\intersem{T_1}$ and $\intersem{T_2}$ to a $\rightarrow$-node.
-%\item \emph{Product interaction}: $\intersem{T_1 \times T_2}$ denotes the interaction arena obtained by attaching the trees
-%$\intersem{T_1}$ and $\intersem{T_2}$ to a $\times$-node.
-%\item \emph{Tensor product}: $\intersem{T_1 \otimes T_2}$ denotes the interaction arena obtained by attaching the trees
-%$\intersem{T_1}$ and $\intersem{T_2}$ to a $\otimes$-node.
-%\item \emph{Exponential}: $\intersem{!T_1}$ denotes the interaction arena obtained by attaching the trees
-%$\intersem{T}$ to a $!$-node.
-%\end{itemize}
-%\end{dfn}
-
-
-
 An \emph{interaction strategy} $\Sigma$ on the interaction arena
 $\intersem{T}$ is a composition of several standard strategies where
-the internal moves are not hidden. Formally this can be defined as
+certain internal moves are not hidden. Formally this can be defined as
 follows:
 \begin{dfn}[Interaction strategy]
 An interaction strategy $\Sigma$ on a game $\intersem{T}$ noted
-$\Sigma: \intersem{T}$ is a tree type $T$ where each leaf $\sem{A}$ of
+$\Sigma: \intersem{T}$ is a tree type $T$ where
+\begin{itemize}
+\item each leaf $\sem{A}$ of
 $\intersem{T}$ is annotated with a (standard) strategy $\sigma$ on the
-game $\sem{A}$.
+game $\sem{A}$;
+\item each $\fatsemi$-node is annotated with a set of index $U \subseteq \nat$.
+\end{itemize}
 \end{dfn}
-
-
-\begin{dfn}[Composition of interaction strategies]
-Suppose $\Sigma_1 : \intersem{T_1}$ and $\Sigma_2 :
-\intersem{T_2}$ are interaction strategies where $type(T_1) = A \rightarrow B$
-and $type(T_2) = B \rightarrow C$ then we
-can define the strategy $\Sigma_1 \intercomp \Sigma_2$ on the interaction arena $\intersem{T_1 \fatsemi T_2}$.
-$\Sigma_1 \intercomp \Sigma_2$ is obtained just by copying the annotation of the leaves in $\Sigma_1$ and $\Sigma_2$
-to the leaves of the tree-type $T_1 \fatsemi T_2$.
-
-$\Sigma_1 \intercomp \Sigma_2$  is called the \emph{interaction composition} of $\Sigma_1$ and $\Sigma_2$.
-\end{dfn}
+For a $\fatsemi$-node with children of type $!A\multimap B$ and $!B\multimap C$, the annotation $U$ is used to determine which components
+of $B$ should be uncovered when performing composition.
 
 \begin{exmp}
-The diagram below represents a tree-type $T$ (left) the corresponding interaction arena $\intersem{T}$ (middle) and the
-interaction strategy $\Sigma = (\sigma_1 \intercomp \sigma_2) \intercomp \sigma_3$ (right):
+The diagrams below represent a type-tree $T$ (left) the corresponding interaction arena $\intersem{T}$ (middle) and an
+interaction strategy $\Sigma$ (right):
 $$
 \pstree[levelsep=6ex]{\TR{\fatsemi}}
         {
@@ -1292,9 +1328,9 @@ $$
             \TR{\sem{!C\multimap D}}
         }
 \hspace{1cm}
-\pstree[levelsep=6ex]{\TR{\fatsemi}}
+\pstree[levelsep=6ex]{\TR{\fatsemi^{\{0\}}}}
         {
-            \pstree[levelsep=6ex]{\TR{\fatsemi}}
+            \pstree[levelsep=6ex]{\TR{\fatsemi^{\{0\}}}}
             { \TR{!A\multimap B^{\sigma_1}}
               \TR{!B\multimap C^{\sigma_2}}
             }
@@ -1302,39 +1338,54 @@ $$
         }
 $$
 \end{exmp}
+The tree of an interaction strategy can be translated into an expression. For instance the strategy $\Sigma$ represented above is given
+by the expression $\Sigma = (\sigma_1 \fatsemi^{\{0\}} \sigma_2) \fatsemi^{\{0\}} \sigma_3$.
+
+\begin{dfn}[Composition of interaction strategies]
+Suppose $\Sigma_1 : \intersem{T_1}$ and $\Sigma_2 :
+\intersem{T_2}$ are interaction strategies where $type(T_1) = A \rightarrow B$
+and $type(T_2) = B \rightarrow C$ then
+the \emph{interaction composition} of $\Sigma_1$ and $\Sigma_2$ written $\Sigma_1 \fatsemi \Sigma_2$
+is the interaction strategy on $\intersem{T_1 \fatsemi T_2}$ obtained by copying the annotation of the leaves and nodes from $\Sigma_1$ and $\Sigma_2$
+to the corresponding leaves and nodes of the type-tree $T_1 \fatsemi T_2$ and by annotating the root node with $\emptyset$.
+\end{dfn}
 
 A play of the interaction semantics is called an \emph{uncovered
-play}. It is a play containing internal moves.
+play}, it is a play containing internal moves.
 The moves are implicitly tagged so that it is possible to retrieve in which component
-of which node/leaf-arena the move is situated. The internal moves of an
-interaction play on the game $\intersem{T}$ are those which do not
+of which node/leaf-arenas the move belongs to. Note that a same move can belong to different node/leaf-arenas.
+The internal moves of an interaction play on the game $\intersem{T}$ are those which do not
 belong to the arena $root(\intersem{T})$.
 
 For any uncovered play $s$ and any interaction arena $\intersem{T}$
 we can define the filtering operator $s\upharpoonright \intersem{T}$ to be the
 sequence of moves obtained from $s$ by keeping only the moves
-belonging to a node-arena or a leaf-arena of $\intersem{T}$.
+belonging to a node/leaf-arena of $\intersem{T}$.
 
 
-An interaction strategy can alternatively be represented by a set of
-uncovered plays instead of an annotated tree-type.
-It can be defined inductively on the structure of the annotated tree-type $\Sigma$ as follows:
-the interaction strategy for a leaf $\sem{A}$ of
-$\Sigma$ annotated by $\sigma :\sem{A}$ is just the the standard strategy $\sigma$.
-For a node of $\Sigma$ with two sub-trees $T_1$, $T_2$ where $\Sigma_1$ is the interaction associated to $T_1$
-and $\Sigma_2$ is the interaction associated to $T_2$:
+Interaction strategies can alternatively be represented by mean of sets of
+uncovered plays instead of annotated type-trees. This set is defined
+inductively on the structure of the annotated type-tree $\Sigma$ as follows:
 \begin{itemize}
-\item if it is a $\fatsemi$-node then the interaction strategy is the
-``uncovered-composition'' of $\Sigma_1$ and $\Sigma_2$ noted $\Sigma_1
-\intercomp \Sigma_1$ and defined to be the a set of uncovered plays
-obtained by performing the usual composition while ignoring and
-copying the internal moves of arenas in $\intersem{T_1}$ and $\intersem{T_2}$
-and preserving the internal moves in $root(\intersem{T_1})$ and $root(\intersem{T_2})$
-``produced'' during the composition;
-
-\item for a $\otimes$-node, it is the tensor product noted $\Sigma_1 \otimes \Sigma_2$;
+\item for a leaf $\sem{A}$ of $\Sigma$ annotated by $\sigma :\sem{A}$, it is just the set of plays of the standard strategy $\sigma$.
+\item for a $\otimes$-node with two children strategies $\Sigma_1$ and $\Sigma_2$, it is the tensor product noted $\Sigma_1 \otimes \Sigma_2$;
 \item for a $\times$-node, it is the pairing noted $\langle \Sigma_1, \Sigma_2 \rangle$;
-\item for a $!$-node, it is the promotion noted $\Sigma_1^\dagger$;
+\item for a $!$-node with a child strategy $\Sigma$, it is the promotion noted $\Sigma^\dagger$;
+\item for a $\Lambda$-node with a child strategy $\Sigma$, it is the same set of plays but with the moves retagged;
+
+\item for a $\fatsemi^U$-node, it is the ``uncovered-composition'' of $\Sigma_1 : \intersem{T_1}$ and $\Sigma_2 :\intersem{T_2}$ noted $\Sigma_1
+\fatsemi^U \Sigma_1$. Suppose that $type(T_1) = !A \multimap B_0 \times \ldots B_l$ and $type(T_2) = !(B_0 \times \ldots B_l) \multimap C$
+then $\Sigma_1
+\fatsemi^U \Sigma_1$ is the set of uncovered plays
+obtained by performing the usual composition, while ignoring and
+copying the internal moves from arenas in $\intersem{T_1}$ or $\intersem{T_2}$
+and preserving any internal move played during the composition in a component $B_k$ for some $k \in U$.
+
+%\item for a $@_k$-node, it is the
+%``uncovered-evaluation'' of its children's strategies $\Sigma_0$, $\Sigma_{k-1}$. It is noted
+%$\langle \Sigma_0, \Sigma_1, \ldots, \Sigma_{k-1} \rangle \intercomp ev_k$ and defined to be the a set of uncovered plays
+%obtained by performing the ``uncovered-composition'' of $\langle \Sigma_0, \Sigma_1, \ldots, \Sigma_{k-1} \rangle$
+%with the usual standard evaluation strategy with $k-1$ parameters;
 \end{itemize}
 where the tensor product, pairing and promotion are defined similarly as in the standard game semantics.
 
@@ -1342,44 +1393,89 @@ where the tensor product, pairing and promotion are defined similarly as in the 
 We can now define the category $\mathcal{I}$ of interaction games:
 \begin{dfn}[Category of interaction games]
 The category of interaction games is noted $\mathcal{I}$. The
-objects of $\mathcal{I}$ are the same as $\mathcal{C}$ : the arenas $\sem{A}$ for any linear type $A$. The morphisms of
+objects of $\mathcal{I}$ are those of $\mathcal{C}$ : the arenas $\sem{A}$ for some linear type $A$. The morphisms of
 the category are the interaction strategies: a morphism from $A$
 to $B$ is an interaction strategy $\Sigma$ on some interaction arena
 $\intersem{T}$ such that $root(\intersem{T}) = \sem{A\rightarrow B}$.
 
-The composition of morphisms is given by the interaction strategy
-composition $\intercomp$.
-
+The composition of morphisms is given by the interaction strategy composition $\fatsemi$.
 The identity on $A$ is the single leaf interaction arena $\sem{A}$ annotated with $id_A$.
 \end{dfn}
 
-It can be check that this indeed define a category.
-
-Most of the construction of the category $\mathcal{C}$ can then be constructed similarly in $\mathcal{I}$ and consequently
-$\mathcal{I}$ is a cartesian closed category.
+It can be check that this indeed define a category. The constructions of the category $\mathcal{C}$ can be transposed to $\mathcal{I}$
+making $\mathcal{I}$ a cartesian closed category.
 
 
 \begin{dfn}[Valid strategy]
 Consider a term $\Gamma \vdash M : A$ and $\Sigma : \intersem{T}$ an interaction strategy.
-We say that $\Sigma$ is a valid interaction strategies for $M$ if $root(\intersem{T}) = \sem{\Gamma \rightarrow A}$.
+We say that $\Sigma$ is a valid interaction strategies for $M$ if $root(\intersem{T}) = \sem{\Gamma \rightarrow A}$
+or equivalently if $type(T) = \Gamma \rightarrow A$.
 \end{dfn}
 
+
+\subsubsection{Modeling the $\lambda$-calculus in $\mathcal{I}$}
+
 We would like to use the category $\mathcal{I}$ to model terms of the
-simply-typed lambda calculus. However there may be several valid tree-type decomposition for a given term $M$ and therefore
+simply-typed lambda calculus. However there may be several valid type decomposition tree for a given term $M$ and therefore
 several strategies denoting $M$!
 
-To fix this problem, we will compute a tree-type decomposition and the associated strategy from the
+To fix this problem, we will compute the interaction strategy from the
 the computation tree of $M$. Since the computation tree is unique it will be possible to uniquely define
 the interaction strategy of a term.
 
 
+\begin{dfn}[Interaction strategy of a term]
+Let $\Gamma \vdash M : A$ be a term with $\Gamma = x_1:X_1, \ldots, x_k:X_k$.
+Let $\pi_i : \sem{\Gamma} \rightarrow \sem{X_i}$ denotes the $ith$ projection copycat strategy
+and $ev^p$ denotes the evaluation strategy with $p$ parameters.
+
+The \emph{interaction strategy of $M$} written $\intersem{\Gamma \vdash M : A}$ is defined by structural induction on the
+computation tree $\tau(M)$:
+
+\begin{tabularx}{14cm}{lX}
+$\tree[levelsep=6ex]{\lambda \xi_1\ldots \xi_n}{\TR{x_i}}$ &
+       $\intersem{\Gamma \vdash M : T} = \Lambda^n(\pi_i)$ \\ \hline
+$ \tree[levelsep=6ex]{\lambda \xi_1\ldots \xi_n}
+        { \tree[levelsep=6ex]{x_i}
+            {   \TR{\tau(N_1)} \TR{\ldots} \TR{\tau(N_p)}}}
+    $
+&    where $\Gamma \vdash x_i : (A_1,\ldots,A_p,B)$ and $\Gamma \vdash N_j : A_j$ for $j\in 1..p$
+    $$\intersem{\Gamma \vdash M : T} = \Lambda^n(\langle \pi_i, \intersem{\Gamma \vdash N_1 : A_1}, \ldots, \intersem{\Gamma \vdash N_p : A_p}  \rangle
+    \fatsemi^{1..p} ev^p)$$
+\\ \hline
+$ \tree[levelsep=6ex]{\lambda \xi_1\ldots \xi_n}
+        { \tree[levelsep=6ex]{@}
+            {   \TR{\tau(N_0)} \TR{\ldots} \TR{\tau(N_p)}}}
+    $ &
+    where $\Gamma \vdash N_0 : (A_1,\ldots,A_p,B)$ and $\Gamma \vdash N_j : A_j$ for $j\in 1..p$
+    $$\intersem{\Gamma \vdash M : T} = \Lambda^n(\langle \intersem{\Gamma \vdash N_0 : A_0}, \ldots, \intersem{\Gamma \vdash N_p : A_p}  \rangle
+    \fatsemi^{0..p} ev^p)$$
+\end{tabularx}
+\vspace{10pt}
+
+The interaction arena of the strategy $\intersem{\Gamma \vdash M : T}$ is noted
+$\intersem{\Gamma \rightarrow A}_M$.
+\end{dfn}
 
 
 
+\begin{exmp}
+Consider the term $\lambda x . (\lambda f . f x) (\lambda y . y)$.
+Its computation tree is:
+$$
+\tree{\lambda x} {
+    \pstree[levelsep=4ex]{\TR{@}}
+    {       \pstree[levelsep=4ex]{\TR{\lambda f}}
+                { \tree{f}{  \tree{\lambda}{ \TR{x}  } } }
+            \pstree[levelsep=4ex]{\TR{\lambda y}}
+                    {\TR{y}}
+    } }
+$$
+and its interaction strategy is $\langle \sem{ x:X \vdash \lambda f . f x} , \sem{ x:X \vdash \lambda y . y} \rangle \fatsemi^{\{0,1\}} ev_2$.
+\end{exmp}
 
-We write $\intersem{\Gamma \vdash M : T}$ to denote the interaction semantics of $M$ and $\intersem{\Gamma \rightarrow T}_M$
-to denote the unique interaction arena obtained from the computation tree of $M$.
 
+\subsubsection{From interaction semantics to standard semantics and vice-versa}
 
 In the standard semantics, given two strategies $\sigma : A \rightarrow B$, $\tau : B \rightarrow C$ and
 a sequence $s \in \sigma \fatsemi \tau$, it is possible to (uniquely) recover the internal moves. The uncovered sequence is noted
@@ -1390,94 +1486,36 @@ by performing the uncovering recursively at every $@$ nodes of the computation t
 This operation is called \emph{full-uncovering with respect to $M$}.
 Consequently, the interaction semantics can be computed from the standard semantics.
 
-Conversely, the standard semantics can be recovered from the interaction semantics by filtering the moves, keeping only those played
+Conversely, the standard semantics can be recovered from the interaction semantics by filtering the moves, keeping only the ones played
 in the root arena:
 \begin{eqnarray}
  \sem{\Gamma \vdash M : T} = \intersem{\Gamma \vdash M : T} \upharpoonright root(\intersem{\Gamma \rightarrow T}_M) \label{eqn:int_std_gamsem}
 \end{eqnarray}
 
-Hence we have the following lemma:
+
+\subsubsection{Full abstraction}
+
+Let $\mathcal{I'}$ denotes lluf sub-category of $\mathcal{I}$ obtained by conserving only strategies $\Sigma$ with a single
+annotated leaf and no nodes. We have the following lemma:
 \begin{lem}[$\mathcal{I'}$ is isomorphic to $\mathcal{C}$]
 $\mathcal{I'} \cong \mathcal{C}$
 \end{lem}
 \begin{proof}
 We define the functor $F:\mathcal{I'} \rightarrow \mathcal{C}$
-by $F(A) = A$ and for $\Sigma \in \mathcal{I'}(A,B)$,
-$F(\Sigma) = \Sigma \upharpoonright \sem{A\rightarrow B}$
-and the functor $G:\mathcal{C} \rightarrow \mathcal{I'}$ by
-by $G(A) = A$ and for $\Sigma \in \mathcal{I'}(A,B)$,
-$F(\Sigma) = \Sigma \upharpoonright \sem{A\rightarrow B}$
-
+by $F(A) = A$ for any object $A\in \mathcal{I'}$ and for $\Sigma \in \mathcal{I'}(A,B)$,
+$F(\Sigma)$ is defined to be the annotation $\sigma$ of the only leaf in $\Sigma$.
+The functor $G:\mathcal{C} \rightarrow \mathcal{I'}$ is defined by
+by $G(A) = A$ for any object $A\in \mathcal{C}$ and for $\sigma \in \mathcal{C}(A,B)$,
+$G(\sigma)$ is the tree formed with the single annotated leaf $\sem{A}^\sigma$.
+Then $F;G =id_{\mathcal{I'}}$ and $G;F =id_{\mathcal{C}}$.
 \end{proof}
 
-Consequently the lluf sub-category $\mathcal{I'}$ of $\mathcal{I}$ is fully abstract for the simply-typed lambda calculus.
+Consequently the lluf sub-category $\mathcal{I'}$ is fully abstract for the simply-typed lambda calculus.
 Note that this is a major difference with $\mathcal{I}$ which is not fully-abstract since there may be several maps denoting a given
 term.
 
 
 
-\begin{dfn}[Intrinsic tree-type of a term]
-Let $M$ be a term. The \emph{tree-type of $M$} is a binary tree
-isomorphic to the tree obtained by collapsing every maximal sub-term
-of the computation tree that is in $\beta$-normal form to a single
-leaf. The nodes of the tree-type of $M$ correspond to $@$-nodes in
-the computation tree of $M$, leaves correspond to maximal sub-terms
-in $\beta$-normal form. Suppose that $n$ denotes an $@$-node in the
-computation tree then the corresponding node in the type-tree is
-labelled with $type(\kappa(p))$ where $p$ denotes the parent node of
-$n$ in the computation tree.
-\end{dfn}
-The tree-type of $M$ is a well-defined tree-type (the type of a node
-is equal to the type composition of its two children nodes).
-
-The interaction arena of a term $\Gamma \vdash M:A$ noted
-$\intersem{\Gamma \rightarrow A}_M$ is defined to be $\intersem{T}$
-where $T$ denotes the tree-type of $M$.
-
-
-\begin{exmp}
-Consider the term $\lambda x . (\lambda f . f x) (\lambda y . y)$.
-Its computation tree and interaction arena are represented below:
-$$
-\tree{\lambda x} {
-    \pstree[levelsep=4ex]{\TR[name=App]{@}}
-    {
-            \pstree[levelsep=4ex]{\TR[name=L]{\lambda f}}
-                { \tree{f}{  \tree{\lambda}{ \TR[name=Lf]{x}  } } }
-            \pstree[levelsep=4ex]{\TR[name=R]{\lambda y}}
-                    {\TR[name=Rf]{y}}
-    }
-} \ncbox[linearc=.3,boxsize=.3,linestyle=dashed]{L}{Lf}
-\ncbox[linearc=.3,boxsize=.3,linestyle=dashed]{R}{Rf} \hspace{3cm}
-    \pstree[levelsep=8ex]{\TR[name=A1]{A_1}}
-        {
-            \TR[name=A2]{A_2}
-            \TR[name=A3]{A_3}
-        }
-\psset{nodesep=1pt,arrows=->,arcangle=-20,arrowsize=2pt
-1,linestyle=dashed,linewidth=0.3pt} \ncline{->}{App}{A1}
-\ncarc{->}{L}{A2} \ncline{->}{R}{A3}
-$$
-where the arena $A_1$,$A_2$ and $A_3$ are given below (the answer
-moves are omitted):
-$$ \tree{ q_{\lambda x} }
-        { \TR{q_x} }
-\hspace{2cm}
-    \tree{ q_{\lambda f} }
-    {
-        \tree{ q_f }
-        {  \TR{q_{f_1}}   }
-        \TR{q_x}
-    }
-\hspace{2cm}
-     \tree{ q_{\lambda y} }
-        { \TR{q_y} \TR{q_x}}
-$$
-\end{exmp}
-
-
-
-\vspace{18pt}
 
 \subsection{Correspondence between interaction semantics and traversals}
 
@@ -1514,8 +1552,8 @@ Let $t$ be a traversal of $\tau(M)$.
 
 We write $t-@$ for the sequence sequence of nodes with pointers
 (i.e. not a proper justified sequence of nodes) obtained by removing
-from $t$ all the nodes $@$ and replacing any link pointing to an $@$
-node by a link pointing to the predecessor node of $@$ in $t$.
+from $t$ all $@$-nodes and replacing any link pointing to an $@$-node
+by a link pointing to the predecessor node of $@$ in $t$.
 
 Suppose $u = t-@$ is as sequence of nodes obtained by applying the
 previously defined transformation on the traversal $t$, then $t$ can
@@ -1565,12 +1603,13 @@ We introduce the following notation:
 \travset(M)^{\upharpoonright r} &=& \{ t  \upharpoonright r \ | \  t  \in \travset(M) \} .
 \end{eqnarray*}
 
+We then have $\travset(M)^{-@} \cong \travset(M)$ because of lemma \ref{lem:minus_at_plus_at}.
 
 \begin{lem}[Filtering lemma] \
 \label{lem:varphi_filter}
-$$ \varphi_M(\travset^{-@}) \upharpoonright root(\intersem{\Gamma \rightarrow T}) = \varphi_M(\travset^{\upharpoonright r}) $$
+$$ \varphi_M(\travset^{-@}) \upharpoonright root(\intersem{\Gamma \rightarrow T}_M) = \varphi_M(\travset^{\upharpoonright r}) $$
 In other words, for any traversal $t$ of the computation tree of $\Gamma \vdash M :T$ we have:
-$$\varphi_M(t-@) \upharpoonright root(\intersem{\Gamma \rightarrow T}) = \varphi_M(t\upharpoonright r)$$
+$$\varphi_M(t-@) \upharpoonright root(\intersem{\Gamma \rightarrow T}_M) = \varphi_M(t\upharpoonright r)$$
 \end{lem}
 \begin{proof}
     Let $r$ denotes the root of $\tau(M)$.
@@ -1590,10 +1629,7 @@ justified sequence of nodes. For any two traversal $t$ and $t'$:
 \end{itemize}
 \end{lem}
 \begin{proof}
-(i) We just need to prove that the restriction defines an injection
-from $\travset(M)^{-@}$ to $\travset(M)^{-@}$. Suppose
-that it is not the case then there are two traversals $t,t'$ such
-that $t-@ \neq t'-@$
+(ii) Suppose that $t-@ \neq t'-@$ then $t\neq t'$ since
 
 
 \end{proof}

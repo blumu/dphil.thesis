@@ -1218,18 +1218,17 @@ nodes follow the same steps.
 \end{proof}
 
 
-%Let us fix some notation: we write $s\upharpoonright A,B$ for the
-%sequence obtained from $s$ by keeping only the moves that are in $A$ or $B$ and by removing any link pointing to a move that
-%has been removed.
-%
-%If $m$ is an initial move, we write $s \upharpoonright m$ to
-%denote the thread of $s$ initiated by $m$, i.e. the sequence obtained from $s$ by keeping all the moves
-%hereditarily justified by $m$.
-%
-%We also write $s \upharpoonright A,B,m$ where $m$ is an initial move
-%for the sequence obtained from $s \upharpoonright A,B$ by keeping
-%all moves hereditarily justified by $m$.
+Let us fix some notation: we write $s\upharpoonright A,B$ for the
+sequence obtained from $s$ by keeping only the moves that are in $A$ or $B$ and by removing any link pointing to a move that
+has been removed.
 
+If $m$ is an initial move, we write $s \upharpoonright m$ to
+denote the thread of $s$ initiated by $m$, i.e. the sequence obtained from $s$ by keeping all the moves
+hereditarily justified by $m$.
+
+We also write $s \upharpoonright A,B,m$ where $m$ is an initial move
+for the sequence obtained from $s \upharpoonright A,B$ by keeping
+all moves hereditarily justified by $m$.
 
 %\begin{property} Let $s$ be a justified sequence of moves. Then
 %\label{proper:tildepview}
@@ -1559,7 +1558,6 @@ need to introduce some definitions and lemmas.
 %$\tilde{s}$ is also a justified sequence of move (there is no dangling pointer since questions-moves points to other question-moves).
 %If $s = u\upharpoonright A,B$ then clearly $\tilde{s} = \tilde{u} \upharpoonright A,B$.
 %\end{dfn}
-
 %\begin{dfn}
 %\begin{eqnarray*}
 %\sem{\Gamma\vdash M:T}^{\sim} &=& \{ \tilde{s} \ | \ s \in \sem{\Gamma\vdash M:T} \} \\
@@ -1795,11 +1793,11 @@ case analysis on the structure of the computation tree:
             \TR{\tau(N_1)} \TR{\ldots} \TR{\tau(N_p)}}}
     $$
 
-    Let $q_o$ be the initial question of the arena $\sem{M}$.
-
     We only consider the second case, the first one can be treated
     similarly. Moreover we make the assumption that $p=1$. It is
     straightforward to generalize to any $p\geq1$.
+    We write $\lambda \overline{z}$ to denote the root of the tree $\tau(N_1)$.
+
 \begin{align*}
   \intersem{M}
     &=  \Lambda^n( \intersem{\Gamma \vdash N_0 N_1 : o} )
@@ -1811,7 +1809,9 @@ case analysis on the structure of the computation tree:
     &=  \langle \varphi_{N_0} (\travset^{-@}(N_0)), \varphi_{N_1}(\travset^{-@}(N_1) \rangle \fatsemi^{0..1} ev
            & \mbox{(induction hypothesis)}\\
     &=  \langle \varphi_{M} (\travset^{-@}(N_0)), \varphi_{M}(\travset^{-@}(N_1)) \rangle \fatsemi^{0..1} ev
-           & \mbox{($\varphi_M = f(0,q_0) \union \varphi_{N_0} \union \varphi_{N_1}$)}
+           & \mbox{($\varphi_M = f(0,q_0) \union \varphi_{N_0} \union \varphi_{N_1}$)} \\
+    &=  \underbrace{\underbrace{\langle \varphi_{M} (\travset^{-@}(N_0)), \varphi_{M}(\travset^{-@}(N_1)) \rangle}_{\sigma} \parallel ev}_L
+           & \mbox{($\fatsemi^{0..1}$ and $\parallel$ are the same operator)}
 %    &=  \varphi_{M}( \langle \travset^{-@}(N_0), \travset^{-@}(N_1) \rangle \fatsemi^{0..1}
 %    ev )
 %           & \mbox{($\varphi$ is a monoid homomorphism, lemma \ref{lem:varphi_monoidhomom})}\\
@@ -1821,124 +1821,118 @@ case analysis on the structure of the computation tree:
 
 
 
+We now prove that
+$\L = \overbrace{\varphi_{M}( \travset^{-@}(M) )}^{R}$.
+
+It is enough to consider only maximal sequences.
+Let $q_o$ be the initial question of the arena $\sem{M}$ and $q_1$ the initial question of $\sem{N_0}$.
+
+The maximal sequences in $L$ all starts with $q_0 \cdot q_1$. The move $q_0$ is the initial move in $C$ and
+$q_1$ is the copy of $q_0$ replicated by $ev$ in the component $o'$.
+
+In $R$, the maximal sequences all starts with $t_p = \lambda \overline{\xi} \cdot @ \cdot \lambda y_1\ldots y_p$
+and we have $\varphi_M(t_p-@) = q_0 \cdot q_1$.
 
 
 
-We first prove that $\langle \varphi_{M} (\travset^{-@}(N_0)), \varphi_{M}(\travset^{-@}(N_1)) \rangle \fatsemi^{0..1} ev \subseteq \varphi_{M}( \travset^{-@}(M) )$.
-Suppose $ u \in \langle \varphi_{M} (\travset^{-@}(N_0)), \varphi_{M}(\travset^{-@}(N_1)) \rangle \fatsemi^{0..1} ev$
-we prove by induction on the size of $u$ that $u \in \varphi_{M}( \travset^{-@}(M)$.
-Base cases:
-\begin{itemize}
-\item $u=\epsilon$ then $\varphi(\epsilon) = u$.
-\item $u=m$ then $m=q_0$ is the initial move in $C$ and $\varphi(\lambda \overline{\xi}) = u$.
-\item $u=q_0 \cdot m$ then since $u \upharpoonright B, C \in ev$, $m$ must be the copy of $q_0$ replicated by $ev$ in the $B_1$ component of $B$.
-$m$ is therefore the initial question of the arena $\sem{N_0}$. Hence $\varphi(\lambda \overline{\xi} \cdot \lambda y_1\ldots y_p ) = u$.
-\end{itemize}
-Step cases, if $u = u' \cdot m$ with $u' = \varphi(t')$ for some traversal $t'$ of $\tau(M)$:
-\begin{enumerate}
 
-\item If $m \not\in A \union B \union C$ then $m$ is an internal move. Suppose that $m$ belongs to an internal arena
-of the interaction strategy $\intersem{N_0}$, then $m$ does not play any role during the composition of $\sigma$ with $ev$.
-$m$ must be hereditarily justified by an initial node $m^0$ in $\sem{B_1'\rightarrow o}$. We have
-$(u \upharpoonright m^0) \upharpoonright \Gamma, (B_1'\rightarrow o) = \varphi_{N_0}(t_0-@)$ for some traversal $t_0$ of $N_0$.
-$m$ is the last node in $u$ therefore it is also the last node in $\varphi_{N_0}(t_0-@)$.
+%%
+%%We first prove that $\langle \varphi_{M} (\travset^{-@}(N_0)), \varphi_{M}(\travset^{-@}(N_1)) \rangle \fatsemi^{0..1} ev \subseteq \varphi_{M}( \travset^{-@}(M) )$.
+%%Suppose $ u \in \langle \varphi_{M} (\travset^{-@}(N_0)), \varphi_{M}(\travset^{-@}(N_1)) \rangle \fatsemi^{0..1} ev$
+%%we prove by induction on the size of $u$ that $u \in \varphi_{M}( \travset^{-@}(M)$.
+%%Base cases:
+%%\begin{itemize}
+%%\item $u=\epsilon$ then $\varphi(\epsilon) = u$.
+%%\item $u=m$ then $m=q_0$ is the initial move in $C$ and $\varphi(\lambda \overline{\xi}) = u$.
+%%\item $u=q_0 \cdot m$ then since $u \upharpoonright B, C \in ev$, $m$ must be the copy of $q_0$ replicated by $ev$ in the $B_1$ component of $B$.
+%%$m$ is therefore the initial question of the arena $\sem{N_0}$. Hence $\varphi(\lambda \overline{\xi} \cdot \lambda y_1\ldots y_p ) = u$.
+%%\end{itemize}
+%%Step cases, if $u = u' \cdot m$ with $u' = \varphi(t')$ for some traversal $t'$ of $\tau(M)$:
+%%\begin{enumerate}
+%%
+%%\item If $m \not\in A \union B \union C$ then $m$ is an internal move. Suppose that $m$ belongs to an internal arena
+%%of the interaction strategy $\intersem{N_0}$, then $m$ does not play any role during the composition of $\sigma$ with $ev$.
+%%$m$ must be hereditarily justified by an initial node $m^0$ in $\sem{B_1'\rightarrow o}$. We have
+%%$(u \upharpoonright m^0) \upharpoonright \Gamma, (B_1'\rightarrow o) = \varphi_{N_0}(t_0-@)$ for some traversal $t_0$ of $N_0$.
+%%$m$ is the last node in $u$ therefore it is also the last node in $\varphi_{N_0}(t_0-@)$.
+%%
+%%Take the traversal $t = t' \cdot n$ where $n$ is the last node in $t_0-@$.
+%%
+%%Since $m$ is an internal move of $\intersem{N_0}$, the move preceding $m$ which is also the last move of $u'$ must belong to an arena
+%%of $\intersem{N_0}$ but not to $\sem{N_0}$, otherwise the evaluation.
+%%
+%%It is indeed a traversal of $\tau(M)$ since the last node in $t$.
+%%
+%%
+%%
+%%The proof is the similar if $m$ belongs to an internal arena of the interaction strategy $\intersem{N_1}$.
+%%
+%%\item $m \in C$. If $m = q_0$ then this is the second base case.
+%%If $m = q_0^v$ for some value $v\in \mathcal{D}$ then take $t=t'\cdot \lambda \overline{\xi}^v$ where $\lambda \overline{\xi}$ points to the first node in $t$.
+%%
+%%\item $m \in B_1$. Let us write $u = \ldots \cdot m'' \cdot m' \cdot \ldots \cdot m_l \cdot m$ and
+%%$t' = \ldots \cdot n'' \cdot n' \cdot \ldots \cdot n_l$.
+%%
+%%    \begin{itemize}
+%%    \item If $m_l$ is an O-move then $m$ is a P-move and therefore $m$ is the copy of $m_l$ duplicated in $B_1$ by the evaluation strategy.
+%%    Consequently, $m_l$ points to $m'$ and $m$ points to $m''$.
+%%
+%%    $m_l$ is hereditarily justified by some initial move $m_l^0$ in $B_1'$
+%%    \end{itemize}
+%%
+%%\end{enumerate}
+%%    For the converse, we proceed by induction on the structure of the traversal and case analysis on the rule used:
+%%    $s =\varphi_M(t-@)$
+%%
+%%    \begin{itemize}
+%%    \item The base case, rule ($\epsilon$), is trivial : $t = s = \epsilon$.
+%%    \item Rule (Root), $t=r$ then $s = q_0 \sem{M}$.
+%%    \item Rule (App) then $t=t' \cdot @$ and $t-@=t'-@$ the induction hypothesis permits to conclude
+%%    \item Rule (Lmd) then $t= t' \cdot \lambda \overline{\xi} \cdot n$
+%%    \end{itemize}
 
-Take the traversal $t = t' \cdot n$ where $n$ is the last node in $t_0-@$.
-
-Since $m$ is an internal move of $\intersem{N_0}$, the move preceding $m$ which is also the last move of $u'$ must belong to an arena
-of $\intersem{N_0}$ but not to \sem{N_0}, otherwise the evaluation. Therefore the
-las mnode
-preceding
-
-It is indeed a traversal of $\tau(M)$ since the last node in $t$
-
-we can therefore just copy
-
-The proof is the similar if $m$ belongs to an internal arena of the interaction strategy $\intersem{N_1}$.
-
-\item $m \in C$. If $m = q_0$ then this is the second base case.
-If $m = q_0^v$ for some value $v\in \mathcal{D}$ then take $t=t'\cdot \lambda \overline{\xi}^v$ where $\lambda \overline{\xi}$ points to the first node in $t$.
-
-\item $m \in B_1$. Let us write $u = \ldots \cdot m'' \cdot m' \cdot \ldots \cdot m_l \cdot m$ and
-$t' = \ldots \cdot n'' \cdot n' \cdot \ldots \cdot n_l$.
-
-    \begin{itemize}
-    \item If $m_l$ is an O-move then $m$ is a P-move and therefore $m$ is the copy of $m_l$ duplicated in $B_1$ by the evaluation strategy.
-    Consequently, $m_l$ points to $m'$ and $m$ points to $m''$.
-
-    $m_l$ is hereditarily justified by some initial move $m_l^0$ in $B_1'$
-    \end{itemize}
-
-\end{enumerate}
-
-
-
-    For the converser, we proceed by induction on the structure of the traversal and case analysis on the rule used:
-    $s =\varphi_M(t-@)$
-
-    \begin{itemize}
-    \item The base case, rule ($\epsilon$), is trivial : $t = s = \epsilon$.
-    \item Rule (Root), $t=r$ then $s = q_0 \sem{M}$.
-    \item Rule (App) then $t=t' \cdot @$ and $t-@=t'-@$ the induction hypothesis permits to conclude
-    \item Rule (Lmd) then $t= t' \cdot \lambda \overline{\xi} \cdot n$
-    \end{itemize}
-
-    with $\sigma : !A \multimap B$ and $ev_{B_1,o} : !B \multimap C$, the arena $A,B,C$ being defined as follows:
+    We have $\sigma : !A \multimap B$ and $ev : !B \multimap C$, the arena $A,B,C$ being defined as follows:
     \begin{eqnarray*}
-        A &=& \sem{\Gamma} = \sem{X_1} \times \ldots \times \sem{X_n}\\
-        B &=& \sem{B_1 \rightarrow o} \times \sem{B_1} \\
-        C &=& \sem{o}
+        A &=& \intersem{\Gamma} = \intersem{X_1} \times \ldots \times \intersem{X_n}\\
+        B &=& \intersem{B_0} \times \intersem{B_1} = \intersem{B_1' \rightarrow o'} \times \intersem{B_1} \\
+        C &=& \intersem{o}
     \end{eqnarray*}
 
+    $u \in \intersem{M} \cong \sigma^{\dag} \parallel ev$ if and only if
+    $$
+        \left\{
+          \begin{array}{ll}
+            u \in int(!A,!B,C)\\
+            w \defeq u \upharpoonright !A,!B  \in \sigma^\dagger \\
+            u \upharpoonright !B,C  \in  ev
+          \end{array}
+        \right.
+    $$
+
+    Because of this there must be a sequence of nodes $t$ in $N\setminus\{@\}$ such that $\varphi_M{t} = u$.
+
+    Suppose $u=u_0 u_1 \ldots$.
 
 
+    Therefore for any $u \in \intersem{M}$,
 
-    We have $s \in \sem{M} \cong \sem{\Gamma \vdash N_0 N_1 \ldots N_p : o} = \sigma \fatsemi ev_{B_1,\ldots,B_p,o}$ therefore:
-    \begin{equation}
-        s = u \upharpoonright !A, C   \quad \mbox{ for some } u \in \sigma^{\dag} \parallel ev_{B_1,\ldots,B_p,o}
-    \end{equation}
-    In other words for some $u \in int(!A,!B,C)$:
+
+    $w \in \sigma^\dagger$ means that $(w \upharpoonright m) \in \sigma$ for any initial $m$ in $w$. In other words for any
+    initial $m$ in $w$ there is $j \in 0..p$ such that:
     \begin{eqnarray}
-        s &=& u \upharpoonright !A, C    \label{eq:def_s} \\
-        w \defeq u \upharpoonright !A,!B & \in& \sigma^\dagger       \label{eq:def_w}\\
-        u \upharpoonright !B,C & \in & ev_{B_1,\ldots,B_p,o} \nonumber
+        z_m \defeq w \upharpoonright !A, B_j, m &\in& \varphi_{M} (\travset^{-@}(N_0)) \label{eq:def_z} \\ % \intersem{\Gamma \vdash N_j}  \label{eq:def_z} \\
+        (w \upharpoonright m) \upharpoonright B_k &=& \epsilon \quad \mbox{ for every } k\neq j \label{eq:b}
     \end{eqnarray}
 
-    For any initial move $m$ in $w$ we write $w_m = w \upharpoonright
-    m$. Since $w \in \sigma^\dagger$, for all initial $m$ in $w$, $w_m \in \sigma$. Hence for
-    all initial $m$ in $w$ there is $j \in 1..p$ such that:
-    \begin{eqnarray}
-        z_m \defeq w_m \upharpoonright !A, B_j &\in& \sem{\Gamma \vdash N_j}  \label{eq:def_z} \\
-        \mbox{ and for every } k\neq j &:& w_m \upharpoonright B_k = \epsilon \label{eq:b}
-    \end{eqnarray}
+%    From equation \ref{eq:def_z} we have $z_m \in \intersem{N_j}$. Since the term $N_j$ is a closed term of height strictly smaller than the height
+%    of $M$, we can apply the induction hypothesis:
+%    there is a traversal $t^j_m$ of the tree $\tau(N_j)$
+%    such that $\varphi_{N_j}(t^j_m - @) \jseq z_m$.
 
-    We write $\lambda \overline{y_i}$ to denote the root of the tree $\tau(N_i)$ for $i \in 1..p$.
-    From equation \ref{eq:def_z} we have $z_m \in \sem{N_j}$. Since the term $N_j$ is a closed term of height strictly smaller than the height
-    of $M$, we can apply the induction hypothesis:
-    there is a traversal $t^j_m$ of the tree $\tau(N_j)$
-    such that $\varphi_{N_j}(t^j_m \upharpoonright \lambda \overline{y_j} ) \jseq \widetilde{z_m}$.
-
-
-
-    Equation \ref{eq:def_w} gives:
-    \begin{eqnarray}
-        \tilde{w} &=& \tilde{u} \upharpoonright !A,!B  \nonumber \\
-        \widetilde{w_m} &=& \tilde{w}\upharpoonright m  = \tilde{u} \upharpoonright !A,!B,m
-        \label{eq:def_wtilde}
-    \end{eqnarray}
-
-    From equation \ref{eq:b}, for $k\neq j : w_m \upharpoonright B_k = \epsilon$. Since $B =
-    B_0 \times B_1 \times \ldots \times B_p$ this implies that moves in $w_m$ hereditarily justified by moves in $B$ are in fact all
-    hereditarily justified by moves in $B_j$.  Hence $z_m = w_m \upharpoonright !A, B_j = w_m \upharpoonright !A, B$ and:
-    \begin{eqnarray*}
-            \widetilde{z_m} =& \widetilde{w_m} \upharpoonright !A,B \\
-            =& (\tilde{u} \upharpoonright !A,!B,m) \upharpoonright !A,B &\mbox{(by eq \ref{eq:def_wtilde})} \\
-            =& \tilde{u} \upharpoonright !A,B,m \\
-            =& \widetilde{w_m}  & \mbox{(by eq \ref{eq:def_wtilde})}
-    \end{eqnarray*}
-
-
-    Hence $\varphi_{N_j}(t^j_m \upharpoonright \lambda \overline{y_j} ) \jseq \widetilde{w_m}$.
+    From equation \ref{eq:b}, for $k\neq j : (w \upharpoonright m) \upharpoonright B_k = \epsilon$. Since $B =
+    B_0 \times B_1$ this implies that moves in $(w \upharpoonright m)$ hereditarily justified by moves in $B$ are in fact all
+    hereditarily justified by moves in $B_j$.  Hence $z_m = (w \upharpoonright m) \upharpoonright !A, B_j = (w \upharpoonright m) \upharpoonright !A, B = w \upharpoonright !A, B, m$ and
+    $\varphi_{N_j}(t^j_m - @) \jseq w \upharpoonright !A, B, m$.
 
 
 
@@ -1971,8 +1965,6 @@ $t' = \ldots \cdot n'' \cdot n' \cdot \ldots \cdot n_l$.
     composition. The algorithm to obtain this unique uncovering of $u$ is given in part II of \cite{hylandong_pcf}).
 
     The moves in $u$ are read one by one. As we progress in the reading of $u$, we insert
- We describe in parallel how the traversal progresses.
-
 
     We initialize $t = \lambda \xi \cdot @$ : the first node of $t$ is the
     root of the tree $\tau(M)$ which corresponds to the initial move

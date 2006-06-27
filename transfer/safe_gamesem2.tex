@@ -16,8 +16,7 @@ semantics can be reconstructed uniquely from the moves of the play.
 
 In the following we assume that a set of constants of order $1$ at
 most and noted $\Sigma$ is fixed.
-%\begin{enumerate}
-%\item
+
 %Is there any unsafe term whose game semantics is a strategy where
 %pointers can be recovered?
 %
@@ -28,10 +27,6 @@ most and noted $\Sigma$ is fixed.
 %unsafe. Since it is possible to recover the pointer from the game
 %semantics of $S$, it is as well possible to recover the pointer from
 %the semantics of $T_2$ which is unsafe.
-%
-%\item
-%Is there any unsafe $\beta$-normal form whose game semantics is a
-%strategy where pointers can be recovered?
 %\end{enumerate}
 
 \subsection{$\eta$-long normal form and computation tree}
@@ -200,7 +195,8 @@ The enabling relation $\vdash$ is defined on the set of nodes of the
 computation tree. We write $m \vdash n$ and we say that the node $n$
 is enabled by $m$ or that $m$ enables $n$ if and only if
 \begin{itemize}
-\item $n$ is a bound variable node and $m$ is the binder of $n$;
+\item $n$ is a bound variable node and $m$ is the binder of $n$,
+\item or $n$ is a free variable node and $r$ is the root of the computation tree,
 \item or $n$ is a lambda node labelled and $m$ is the parent node of $n$.
 \end{itemize}
 \end{dfn}
@@ -210,11 +206,9 @@ is enabled by $m$ or that $m$ enables $n$ if and only if
 \begin{dfn}[Justified sequence of nodes]
 A \emph{justified sequence of nodes} is an alternating sequence of
 lambda and non lambda nodes from the computation tree $\tau(M)$
-together with pointers. Any node $n$ in the sequence that is either
-a lambda-node different from the root of computation tree or a
-variable node labeled $x$ where $x$ is bound in $M$ must have a
-pointer to a previous node $m$ in the sequence such that $m \vdash
-n$.
+together with pointers. A node $n$ in the sequence
+that is either a variable node or a lambda-node different from the root of the computation tree
+has a pointer to a node $m$ occurring before $n$ in the sequence such that $m \vdash n$.
 
 If $n$ points to $m$ we say that $m$ justifies $n$ and we write:
 $$\rnode{m}{m} \cdot \ldots \cdot \rnode{n}{n} \bkptra[nodesep=1pt]{40}{n}{m}$$
@@ -224,18 +218,20 @@ We sometimes add a label to the edge to specify that either node $n$
 is labelled by the $i$th variable abstracted in the lambda node
 $m$ or that $n$ is the $i$th child of the non-lambda node $m$.
 Hence the pointers in a justified sequence of nodes must be of one
-of the following four forms: \vspace{2pt}
+of the following forms: \vspace{2pt}
 $$
-\rnode{m}{\lambda \overline{\xi}} \cdot \ldots \cdot
-\rnode{n}{\xi_i} \bkptra[nodesep=1pt]{40}{n}{m} \bklabel{i}
-\hspace{2cm}
+\rnode{m}{r} \cdot \ldots \cdot \rnode{n}{z} \bkptra[nodesep=1pt]{40}{n}{m}
+\hspace{1.5cm}
+\rnode{m}{\lambda \overline{\xi}} \cdot \ldots \cdot \rnode{n}{\xi_i} \bkptra[nodesep=1pt]{40}{n}{m} \bklabel{i}
+\hspace{1.5cm}
 \rnode{m}{@ } \cdot \ldots \cdot \rnode{n}{\lambda \overline{\xi}} \bkptra[nodesep=1pt]{40}{n}{m} \bklabel{j}
-\hspace{2cm}
+\hspace{1.5cm}
 \rnode{m}{x} \cdot \ldots \cdot \rnode{n}{\lambda \overline{\xi}} \bkptra[nodesep=1pt]{40}{n}{m} \bklabel{k}
-\hspace{2cm}
+\hspace{1.5cm}
 \rnode{m}{f } \cdot \ldots \cdot \rnode{n}{\lambda \overline{\xi}} \bkptra[nodesep=1pt]{40}{n}{m} \bklabel{k}
 $$
-for some variables $x,\xi_1, \ldots \xi_n$, $\Sigma$-constant $f$, integer $i \in 1..n$, $j \in 0..1$ and $k \in 1 ..arity(m)$.
+for some variables $x,\xi_1, \ldots \xi_n$, $\Sigma$-constant $f$, $i \in 1..n$, $j \in 0..1$, $k \in 1 ..arity(m)$,
+variable $z$ free in $M$ and where $r$ denotes the root of $\tau(M)$.
 
 With the following conventions:
 \begin{itemize}
@@ -246,24 +242,20 @@ With the following conventions:
 \end{dfn}
 
 Note that justified sequences are also defined for open terms:
-a variable nodes labelled $x$ where $x$ is free in $M$ has no pointer.
+a node labelled $x$ where $x$ is a variable free in $M$ must point to the root of the computation tree.
 
 We say that a node $n_0$ of a justified sequence is hereditarily justified by $n_p$ if there are nodes $n_1, n_2, \ldots n_{p-1}$ in
 the sequence such that for all $i\in 0..p-1$, $n_i$ points to $n_{i+1}$.
 
 If $N$ is a set of nodes and $s$ a justified sequence of nodes then
 we write $s \upharpoonright N$ to denote the subsequence of $s$
-obtained after removing the nodes that are not hereditarily
+obtained by keeping only the nodes that are hereditarily
 justified by nodes in $N$. This subsequence is also a justified
-sequence of nodes. If $r$ denotes the root of the tree $\tau(M)$ we
-abbreviate $s \upharpoonright \{ r \}$ into $ s\upharpoonright r $.
-
-Remark: all the variable nodes in the justified sequence $s
-\upharpoonright r $ are variable bound in $M$.
-
+sequence of nodes. If $n$ denotes a node of $\tau(M)$ we
+abbreviate $s \upharpoonright \{ n \}$ into $ s\upharpoonright n$.
 
 \begin{dfn}[Equality of justified sequence]
-We write $s \jseq t$ to denote that the two justified sequences $t$ and $s$ are the equal
+We write $s \jseq t$ to denote that the two justified sequences $t$ and $s$ are equal
 (having same nodes and same pointers).
 \end{dfn}
 
@@ -293,14 +285,13 @@ The O-view of a justified sequence of nodes $t$ of $\tau(M)$ noted $\oview{t}$ i
 \begin{eqnarray*}
  \oview{\epsilon} &=&  \epsilon \\
  \oview{s \cdot \lambda \overline{\xi} }  &=&  \oview{s} \cdot \lambda \overline{\xi} \\
- \oview{s \cdot \rnode{m}{m} \cdot \ldots \cdot \rnode{n}{n}} &=& \oview{s} \cdot \rnode{m2}{m} \cdot \rnode{n2}{n} \\
-   \bkptra[nodesep=1pt]{30}{n}{m}
+ \oview{s \cdot \rnode{m}{m} \cdot \ldots \cdot \rnode{x}{x}} &=& \oview{s} \cdot \rnode{m2}{m} \cdot \rnode{n2}{x} \\
+   \bkptra[nodesep=1pt]{30}{x}{m}
    \bkptra[nodesep=1pt]{60}{n2}{m2}
- \oview{s \cdot n' }  &=&  n'
+ \oview{s \cdot n }  &=&  n
 \end{eqnarray*}
-where $n$ ranges over non-lambda nodes $x$ where $x$ is a variable bound in $M$.
-and  $n'$ ranges over non-lambda nodes with no pointer (either $@$, $f$, $x$ for some
-$\Sigma$-constant $f$ or variable $x$ \emph{free} in $M$).
+where $x$ ranges over variable nodes and  $n$ ranges over non-lambda nodes without pointer (either $@$ or $f$ for some
+$\Sigma$-constant $f$).
 
 The pointer associated to $\lambda \overline{\xi}$ in the second equality
 as well as the pointer associated to $m$ in the third equality are preserved from the left-hand side to the right-hand side of the equalities.
@@ -324,23 +315,24 @@ This is proved by an easy induction.
 \subsubsection{Adding value leaves to the computation tree}
 \label{sec:adding_value_leaves}
 
-We are now going to alter the definition of computation tree. For every node and leaf of the computation tree which is not labelled by $@$ ,
-we add a set of leaves called \emph{value-leaves}. Each value leaf corresponds to a value of the base type $o$. We write $\mathcal{D}$
-to denote the set of values of the base type $o$.
+We now add leaves to the computation tree. These leaves called
+\emph{value-leaves} are attached to the nodes of the current computation tree.
+Each value-leaf corresponds to a possible value of the base type $o$.
 
-The values leaves are added as follows: for each node or leaf $n \in \tau(M)$ which is not labelled by $@$
-and for each value $v \in \mathcal{D}$ we attach a child leaf $n^v$ to the node $n$.
+We write $\mathcal{D}$ to denote the set of values of the base type $o$.
+The values leaves are added as follows: for each node $n \in \tau(M)$ which is not labelled by $@$
+and for each value $v \in \mathcal{D}$ we attach a child leaf labelled $n^v$ to the node $n$.
 
-Everything that is been defined for computation tree can be extended to these new computation tree:
-The node order of these leaves is defined to be $0$. The enabling relation $\vdash$ is extended so that every leaf is enabled
+Everything that has been defined for computation tree can be extended to this new version of computation tree.
+The node order of a value-leaf is defined to be $0$. The enabling relation $\vdash$ is extended so that every leaf is enabled
 by its parent node. The definition of justified sequence does not change.
 For the definition of P-view, O-view and visibility, value leaves are treated as $\lambda$ nodes if they are at odd level in the computation tree and
 as variable nodes if there at a even level.
 
 From now the term ``computation tree'' refers to this extended definition.
 
-In a justified sequence of nodes, we call \emph{pending nodes} nodes of the
-computation tree that are not value-leaf and not labelled $@$ and
+In a justified sequence of nodes, the expression \emph{pending nodes} refers to
+the nodes that are neither value-leaf nor application node $@$ and
 that are not pointed to by any value-leaf in the sequence. We say
 that a node $n$ is \emph{answered} by a value-leaf
 $n^v$ if $n^v$ points to $n$ in the traversal. We say that a
@@ -350,7 +342,7 @@ pending node is always the first one to be answered.
 If $t$ is a traversal then we write $?(t)$ to denote the sequence
 obtained from $t$ by conserving only pending nodes. $?(t)$ does not contain any $@$-node.
 
-We call \emph{input variable} a variable that is either free in $M$ or bound by the root of $\tau(M)$.
+We call \emph{input variable} a variable that is justified by the root of $\tau(M)$ (i.e. either free in $M$ or bound by the root of $\tau(M)$).
 
 \subsubsection{Traversal of the computation tree}
 The evaluation of term is performed by traversing the computation tree in a particular way called
@@ -583,8 +575,8 @@ Let $t$ be a traversal. Then:
 The proof of this proposition is an adaptation of the proof of proposition 6 of \cite{OngHoMchecking2006} to handle the value-leaves.
 
 \begin{dfn}[Reduced-traversal]
-Let $r$ be the root of the computation tree. A \emph{reduced-traversal} is a justified sequence of nodes $s$ such that for some traversal $t$,
-$ s \jseq t \upharpoonright r  $. $s$ is called the reduction of $t$.
+Let $r$ be the root of the computation tree. A \emph{reduced-traversal} is a justified sequence of nodes $s$ such that
+$s \jseq t \upharpoonright r$ for some traversal $t$. $s$ is called the reduction of $t$.
 \end{dfn}
 
 \begin{rem}
@@ -592,20 +584,13 @@ $ s \jseq t \upharpoonright r  $. $s$ is called the reduction of $t$.
 there is a traversal $t$ verifying $s \jseq t \upharpoonright r$ such that the last node of $t$ is justified by $r$.
 \end{rem}
 
-In a reduced-traversal, non-lambda nodes are all labelled
-$x$ for some variable $x$ \emph{bound} in $M$. There cannot be nodes
-labelled by either $@$, a free variable in $M$ nor a
-$\Sigma$-constant since such nodes are pointer-less.
+Since $@$-nodes and $\Sigma$-constant have no pointer, the non-lambda nodes of a reduced-traversal
+are all variable nodes.
 
-%\begin{dfn}[Set substraction operator]
-%Suppose $s$ is a justified sequence of nodes and $N$ is a set of nodes then $s \setminus N$ is the justified sequence of nodes
-%obtained by removing from $s$ all the nodes that belongs to $N$.
-%The links of $s \setminus N$ are the links of $s$ minus all the links pointing from or to nodes in $N$.
-%\end{dfn}
 
-\begin{property}[Traversal of closed terms in $\beta$-normal form]
+\begin{property}[Traversal of terms in $\beta$-normal form]
 \label{proper:betaeta_trav}
-Suppose $M$ is a closed term in $\beta$-normal form then
+Suppose $M$ is a term in $\beta$-normal form then
 for any traversal $t$ of $\tau(M)$ and any node $n$ in $t$:
 \begin{eqnarray*}
 n \mbox{ is not hereditarily justified by } r  \  \iff \   n \mbox{
@@ -615,19 +600,17 @@ where $r$ denotes the root of the tree
 $\tau(M)$ and $N_\Sigma$ denotes the set of nodes labelled by $\Sigma$-constants.
 \end{property}
 \begin{proof}
-In a computation tree, the only nodes with no justification pointer are:
-the root node $r$, the application nodes $@$ and nodes $\alpha$ where $\alpha$ is a $\Sigma$ constant or a free variable.
-
-Here the term $M$ is in $\beta$-normal form therefore there is no node of type $@$ in the computation tree.
-Moreover $M$ is closed therefore there is no variable node $x$ where $x$ is a
-free variable. Hence the only nodes of the computation tree of $M$ without pointer are the root and the nodes in $N_\Sigma$
-and therefore the tree nodes are hereditarily justified either by the root $r$ or by a node in $N_\Sigma$. Moreover $r$ is not in
+In a computation tree, the only nodes that do not have justification pointer are:
+the root $r$, application nodes $@$ and nodes labelled with $\Sigma$ constant.
+Since $M$ is in $\beta$-normal form there is no node of type $@$ in the computation tree.
+Hence nodes are either hereditarily justified by $r$ or
+hereditarily justified  by a node in $N_\Sigma$. Moreover $r$ is not in
 $N_\Sigma$ therefore the ``or'' is exclusive : a node cannot be hereditarily justified both by $r$ and some $f$ in $N_\Sigma$.
 \end{proof}
 
 \begin{lem}[Reduced-traversal and traversal]
-\label{lem:redtrav_trav} Suppose $M$ is a closed term in $\beta$-normal form and
-let $r$ denotes the the root of $\tau(M)$.
+\label{lem:redtrav_trav} Let $M$ be a term in $\beta$-normal form and
+$r$ denote the root of $\tau(M)$.
 \begin{itemize}
 \item[(i)] For any traversal $t$ we have:
 $$ \pview{?(t) \upharpoonright  r } \jseq \pview{?(t)} \upharpoonright r ,$$
@@ -929,37 +912,28 @@ corresponding to the value $v$, where $v$ ranges in $\mathcal{D}$.
 Similarly, if $q$ is a question in $\sem{A}$ then the answer moves
 enabled by $q$ are written $q^v$ where $v$ ranges in $\mathcal{D}$.
 
-We define two preliminary procedures:
-\begin{dfn}[Relation between moves and nodes of the computation tree]
-\label{def:phi_procedure} The procedure $f$ takes two parameters:
-$nd$, the index number of a $\lambda$-node in the computation tree
-and $q$, a question move of the arena of $\Gamma \vdash M : A$ such
-that $q$ and $\kappa(nd)$ have the same type.
+\begin{dfn}[Relation between moves of the arena and nodes of the computation tree]
+\label{def:phi_procedure}
+If $m$ denotes a moves in an arena $A$ we write $A_m$ to denote the sub-arena
+of $A$ rooted at $m$.
 
-Similarly we define the procedure $g$ that takes two parameters:
-$nd$, the index number of a variable node in the computation tree labelled $x$ and $q$, a question move of the arena
-of $\Gamma \vdash M : A$ such that $q$ and $x$ have the same type.
-
-$f$ and $g$ both return a partial function from the set of nodes and
-value-leaves of the computation tree to moves of the arena.
-
+We consider the computation tree of a simply typed-term.
+For any arena $A$, we define a function $f_A(n,q)$ taking two parameters:
+a node $n$ of the computation tree and a question move $q$ of the arena $A$
+such that $q$ and $n$ have the same type.
+$f_A(n,q)$ returns a partial function from $N$ to $A$. It is defined as follows:
 \noindent
-\begin{description}
-\item[\textbf{Procedure} $f(nd,q)$]
-    where $nd$ is a $\lambda$-node.
+\begin{itemize}
+\item[case 1] If $n$ is an order $0$ $\lambda$-node (labelled $\lambda$) or a ground type variable node then
+        $$f_A(n,q) \leftarrow \{ n \mapsto q \} \union \{ n^v \mapsto q^v \ | \ v \in \mathcal{D} \}$$
 
-    \begin{itemize}
-    \item If $\ord{\kappa(nd)} = 0$ then the term is of ground type therefore
-    the game for $M$ is played on the flat arena
-    with only one question $q$. Moreover the node $nd$ of the computation tree is labelled with $\lambda$.\\
-    \textbf{return} $\{ nd \mapsto q \} \union \{ nd^v \mapsto q^v \ | \ v \in \mathcal{D} \}$.
-
-    \item $\ord{\kappa(nd)} > 0$. The computation tree and the arena
-    have the following form (value leaves and answer moves are not represented for simplicity):
-    $$ \tree[levelsep=6ex]{ \Rnode{r}\lambda \overline{\xi}  ^{[nd]}}
+\item[case 2] If $n$ is a $\lambda$-node labelled $\lambda \overline{\xi} = \lambda \xi_1 \ldots \xi_p$ with $p\geq 1$ then
+    the computation tree and the arena $A_q$ have the following form
+    (value leaves and answer moves are not represented for simplicity):
+    $$ \tree[levelsep=6ex]{ \Rnode{r}\lambda \overline{\xi}  ^{[n]}}
         {
-            \tree[levelsep=6ex]{x^{[nd+1]}}
-            {   \TR{\lambda^{[\ldots]}} \TR{\ldots} \TR{\lambda^{[\ldots]}}
+            \tree[levelsep=6ex]{x}
+            {   \TR{\ldots} \TR{\ldots} \TR{\ldots}
             }
         }
     \hspace{3cm}
@@ -968,7 +942,7 @@ value-leaves of the computation tree to moves of the arena.
             \tree[linestyle=dotted]{q^1}{\TR{} \TR{} }
             \tree[linestyle=dotted]{q^2}{\TR{} \TR{} }
             \TR{\ldots}
-            \tree[linestyle=dotted]{q^n}{\TR{} \TR{} }
+            \tree[linestyle=dotted]{q^p}{\TR{} \TR{} }
         }
     \psset{nodesep=1pt,arrows=->,arcangle=-20,arrowsize=2pt 1,linestyle=dashed,linewidth=0.3pt}
     \ncline{->}{r}{q0}
@@ -979,34 +953,18 @@ value-leaves of the computation tree to moves of the arena.
     \ncline{->}{q4}{lmd2}
     $$
 
-    such that $\Gamma, \overline{\xi} \vdash \kappa(x^{[nd+1]}) : o$.
+    For each of the abstracted variable $\xi_i$ there exists a corresponding question move $q_i$ of the same order
+    in the arena.  $f_A(n,q)$ maps each free occurrence of a variable $\xi_i$ to the corresponding move $q_i$:
+    $$
+    f_A(n,q) \leftarrow  \{ n \mapsto q \} \quad  \union \quad  \{ n^v \mapsto q^v \ | \ v \in \mathcal{D} \}
+                      \quad \union \quad  \Union_{\stackrel{i=1..p}{\xi_i \in E^+(n)}} f_A( \xi_i, q_i)
+    $$
 
-    For each of the abstracted variable $\xi_i$ there is a corresponding question move $q_i$ of the same order
-    in the arena.  Each free occurrence of the variable $\xi_i$ is mapped to the move $q_i$
-    by the procedure $g$.
-    \begin{align*}
-    \mathbf{return}\  & \{ nd \mapsto q \} \quad  \union \quad  \{ nd^v \mapsto q^v \ | \ v \in \mathcal{D} \} \\
-                      & \union  \Union_{\stackrel{i=1..n}{E^+(nd,\xi_i^{[k]})}} g ( k, q_i)
-                        \quad \union \quad \Union_{\stackrel{i=1..n}{E^+(nd,@\xi_i^{[k]})}} g ( k, q_i)
-    \end{align*}
-
-    \end{itemize}
-
-\item[\textbf{Procedure} $g(nd,q)$]\  \\
-The procedure is not defined on $\lambda$-nodes or $@$ nodes. This
-is ok since all the calls to $g(nd,q)$ in $f$ are such that $nd$
-denotes a variable node.
-Suppose that $nd$ is labelled by the variable $x$ then:
-\begin{itemize}
-\item[case 1] if $\ord{x} = 0$ then \textbf{return} $\{ nd \mapsto q \} \union \{ nd^v \mapsto q^v \ | \ v \in \mathcal{D} \}$;
-
-\item[case 2] if $\ord{x}>0$ then $x:(A_1|\ldots|A_m|o)$.
-The computation tree and the arena  have the following form:
-
-
-    $$\tree[levelsep=6ex]{\Rnode{r}{x^{[nd]}}}
-        {   \tree{\TR{\lambda^{[k_1]}}}{\vdots} \TR{\ldots}
-        \tree{\TR{\lambda^{[k_m]}}}{\vdots}
+\item[case 3] If $n$ is a variable node labelled $x$ with $\ord{x}>0$ and $x:(A_1|\ldots|A_m|o)$ then
+the computation tree and the arena $A_q$ have the following form:
+    $$\tree[levelsep=6ex]{\Rnode{r}{x^{[n]}}}
+        {   \tree{\TR{\lambda \overline{\eta}_1}}{\vdots} \TR{\ldots}
+        \tree{\TR{\lambda \overline{\eta}_m }}{\vdots}
         }
     \hspace{3cm}
     \tree{ \Rnode{q0}q }
@@ -1025,45 +983,49 @@ The computation tree and the arena  have the following form:
     \ncline{->}{q4}{lmd2}
     $$
 
-    such that $\Gamma, \overline{\xi} \vdash \kappa(x^{[nd]}) : o$.
-
-    For each of the children node of $nd$
-    there is a corresponding question move $q_i$ of the same type
-    in the arena.
-    $$\mathbf{return} \ \{ nd \mapsto q \} \union \{ nd^v \mapsto q^v \ | \ v \in \mathcal{D}
-    \} \union
-    \Union_{i=1..m} f ( k_i, q_i)
+    $f_A(n,q)$ maps each child node of $n$ to the corresponding question move $q_i$ of the same type
+    in the arena $A_q$:
+    $$f_A(n,q) \leftarrow
+         \{ n \mapsto q \} \quad \union\quad \{ n^v \mapsto q^v \ | \ v \in \mathcal{D}   \} \quad\union\quad     \Union_{i=1..m} f_A( \lambda \overline{\eta}_i, q_i)
     $$
 \end{itemize}
-\end{description}
 
-Note that $f(n,q)$ returns a total function from the set of nodes
-hereditarily justified by $n$ to the set of moves in the arena.
+Note that $f_A(n,q)$ is only a partial function from $N$ to $A$ since it is not defined on
+nodes that are hereditarily justified by variables free in $M$ or hereditarily justified by application nodes $@$.
 \end{dfn}
 
-In the pure simply-type $\lambda$-calculus, there are no constants, therefore the only node that are not hereditarily justified
-by the root must be hereditarily justified by a $@$ nodes. Therefore, by doing the union of the partial functions $f(n,q)$
-for all nodes $n$ parent of a $@$ node, we obtain a total function from the set of nodes of $\tau(M)$ to question moves in different arenas:
-
-We write $q^0_A$ to denote the single initial question of arena $A$.
-This is well-defined since the arenas involved in the game semantics
-of pure simply-typed $\lambda$-calculus have only one root.
-
-Let $N\setminus \{@\}$ be the subset of $N$ constituted of the nodes that are not labelled by $@$.
-We write $\mathcal{M}_M = \sem{\Gamma \rightarrow A} \union \Union_{n \in N | E(@,n)} \sem{type(\kappa(n))}$.
-\begin{dfn}[Total mapping from nodes to moves]
-Let $\Gamma \vdash M : A$ be a simply-typed term. We define the
-total function $\varphi_M : N\setminus \{@\} \rightarrow \mathcal{M}_M$ as
-follows:
-$$\varphi_M = f(r, q^0_{\sem{\Gamma \rightarrow A}}) \union \Union_{n \in N | E(@,n)}  f(n, q^0_{\sem{type(\kappa(n))}} ) $$
-\end{dfn}
+Suppose $\Gamma \vdash M  : T$ is a simply typed term and $N$ denotes the set of nodes of the computation tree.
+We write $\mathcal{M}_M$ to denote the following disjoint union of arenas:
+$$\mathcal{M}_M = \sem{\Gamma} \quad \uplus \quad  \sem{T} \quad \uplus \quad  \biguplus_{n \in N | E(@,n)} \sem{type(\kappa(n))}.$$
 
 Moves in $\mathcal{M}_M$ are implicitly tagged so it is possible to recover which arena they belong to.
+
+
+Let $N\setminus \{@\}$ be the subset of $N$ constituted of the nodes that are not labelled by $@$.
+\begin{dfn}[Total mapping from nodes to moves]
+Let $\Gamma \vdash M : T$ be a simply-typed term
+with $\Gamma = x_1:X_1 \ldots x_p : X_p$.
+We write $q_{\sem{\Gamma}}^1$, \ldots, $q_{\sem{\Gamma}}^p$ to denotes the initial question moves of the arena $\sem{\Gamma}$ and $q^0_\sem{T}$ to denote the single initial question of $\sem{T}$ (arenas involved in the game semantics of pure simply-typed $\lambda$-calculus have a single root).
+$r$ denotes the root of the computation tree.
+
+We define the total function $\varphi_M : N\setminus \{@\} \rightarrow \mathcal{M}_M$ as follows:
+$$\varphi_M =  \Union_{n \in N | n \mbox{ labelled } x_i }  f(n, q^i_{\sem{\Gamma}} )
+    \quad  \union \quad
+        f(r, q^0_{\sem{T}})
+    \quad  \union \quad
+        \Union_{n \in N | E(@,n)}  f(n, q^0_{\sem{type(\kappa(n))}} )
+$$
+\end{dfn}
 When there is no ambiguity we just write $\varphi$ instead of $\varphi_M$.
+
+Since there are no constants in the pure simply-type $\lambda$-calculus, nodes that are not hereditarily justified
+by the root must be hereditarily justified by a $@$ nodes. Therefore, by doing the union of the partial functions $f(n,q)$
+for all nodes $n$ whose parent is an $@$ node, we obtain a function defined on $N\setminus \{@\}$.
+
 \begin{exmp}
 Consider the term $\lambda x . (\lambda g . g x) (\lambda y . y)$ with $x,y:o$ and $g:(o,o)$.
 The diagram below represents the computation tree (middle), the arenas
-$\sem{\vdash o\rightarrow o}$ (rightmost), $\sem{x:o \vdash (o,o)\rightarrow o}$ (left), $\sem{x:o \vdash o \rightarrow o}$ (right)
+$\sem{(o,o)\rightarrow o}$ (left), $\sem{o \rightarrow o}$ (right), $\sem{o\rightarrow o}$ (rightmost)
 and the function $\varphi = f(\lambda x, q_{\lambda x}) \union f(\lambda g, q_{\lambda g}) \union f(\lambda y, q_{\lambda y})$
 (dashed-lines).
 $$
@@ -1089,11 +1051,12 @@ $$
     {
         \pstree{\TR[name=A2g]{q_g}}
         {  \TR[name=A2g1]{q_{g_1}}   }
-        \TR[name=A2x]{q_x}
+        %\TR[name=A2x]{q_x}
     }}
 \rput(2.5cm,-1.5cm){
     \pstree{\TR[name=A3ly]{q_{\lambda y}}}
-        { \TR[name=A3y]{q_y} \TR[name=A3x]{q_x}}
+        { \TR[name=A3y]{q_y} %\TR[name=A3x]{q_x}
+        }
 }
 \psset{nodesep=1pt,arrows=->,arcangle=-20,arrowsize=2pt 1,linestyle=dashed,linewidth=0.3pt}
 \ncline{->}{root}{A1lx} \mput*{f(\lambda x, q_{\lambda x})}
@@ -1105,11 +1068,11 @@ $$
 \ncline{->}{lyy}{A3y}
 $$
 \end{exmp}
-
-Remark: In the example above the three question moves $q_x$ appearing in the three different arenas are consider to be the same move.
-Similarly, the answer moves of $q_x$ (not shown on the diagram) are identified.
-In general, we identify moves in the arena of two different subterms if they correspond to the same input variable
-(i.e. a free variable or a variable bound at the root).
+%
+%Remark: We identify moves in the arena of two different subterms if they correspond to the same input variable
+%(i.e. a free variable or a variable bound at the root).
+%For instance, in the example above the three question moves $q_x$ appearing in three different arenas are
+%consider to be the same move. Similarly, the answer moves (not shown on the diagram) of the three questions $q_x$ are identified.
 
 The following properties follow immediately from the definition of procedure $f$:
 \begin{property} \
@@ -1136,13 +1099,8 @@ where the pointers of the justified sequence of move $\varphi(t)$
 are defined to be exactly those of the justified sequences of nodes
 $t$. It is straightforward to check that the sequence obtained is a
 valid justified sequence of moves.
-This definition implies that $\varphi$ regarded as a function from sequences of nodes without
-pointers to sequences of moves without pointers is a monoid homomorphism:
-\begin{lem}
-\label{lem:varphi_monoidhomom}
-$\varphi : (N\setminus\{@\})^* \rightarrow \mathcal{M}^*$ is a monoid homomorphism.
-\end{lem}
-
+This definition implies that $\varphi : (N\setminus\{@\})^* \rightarrow \mathcal{M}^*$ regarded as a function
+from pointer-less sequences of nodes to pointer-less sequences of moves is a monoid homomorphism.
 
 \begin{property}
 \label{proper:phi_pview} Suppose $\varphi(t) \jseq s$ where $s$ is a
@@ -1192,11 +1150,11 @@ we omit the internal moves produced by the copy-cat projection strategy denoting
 \begin{dfn}[Type-tree]
 We call \emph{type decomposition tree} or just \emph{type-tree}, a tree whose leaves are labelled with linear simple types
 and nodes are labelled with symbol in
-%%$\{ \fatsemi, \times, !, \otimes \} \union \{ @_k \ | k \geq 2 \} $.
+%$\{ \fatsemi, \times, !, \otimes \} \union \{ @_k \ | k \geq 2 \} $.
 $\{ ;, \times, !, \otimes, \Lambda \} $.
 
 Nodes labelled $;$, $\times$ or $\otimes$ are binary nodes, nodes labelled $!$, $\dagger$ or $\Lambda$ are unary nodes.
-%%and nodes labelled $@_k$ are $k$-ary nodes.
+%and nodes labelled $@_k$ are $k$-ary nodes.
 
 
 Every node or leaf of the tree has a linear type, this type is determined by the
@@ -1217,20 +1175,20 @@ and $B$ is of type $A\otimes B$;
 \item a $;$-node with two children nodes of type $!A\multimap B$
 and $!B \multimap C$ is of type $!A \multimap C$;
 
-%%\item a $@_k$-node with children nodes $T_0, T_1, \ldots, T_{k-1}$ representing the types
-%%$(A_1, \ldots A_{k-1}, B)$, $A_1$, \ldots, $A_{k-1}$ respectively represents the type $B$.
+%\item a $@_k$-node with children nodes $T_0, T_1, \ldots, T_{k-1}$ representing the types
+%$(A_1, \ldots A_{k-1}, B)$, $A_1$, \ldots, $A_{k-1}$ respectively represents the type $B$.
 \end{itemize}
 
 For a type-tree to be well-defined, the children nodes's type must be compatible with the meaning of the node, for instance
 the two children nodes of a $\fatsemi$-node must be of type $!A\rightarrow B$ and $!B\rightarrow C$.
-%%and for $@_k$-node the type of the children nodes must be of the form $(A_1, \ldots A_{k-1}, B)$, $A_1$, \ldots, $A_{k-1}$.
+%and for $@_k$-node the type of the children nodes must be of the form $(A_1, \ldots A_{k-1}, B)$, $A_1$, \ldots, $A_{k-1}$.
 
 We write $type(T)$ to denote the type represented by the root of the tree $T$. An we say that $T$ is a \emph{valid
 tree decomposition} of $type(T)$.
 
 If $T_1$ and $T_2$ are type-tree we write $T_1 \times T_2$ to denotes the tree obtained by attaching $T_1$ and $T_2$ to a $\times$-node.
 Similarly we use the notations $T_1 \otimes T_2$, $T_1 ; T_2$, $\Lambda(T_1)$ and $!T_1$.
-%%, $@_k(T_0, \ldots , T_{k-1})$
+%, $@_k(T_0, \ldots , T_{k-1})$
 \end{dfn}
 
 
@@ -1488,23 +1446,9 @@ has been removed.
 If $m$ is an initial move, we write $s \upharpoonright m$ to
 denote the thread of $s$ initiated by $m$, i.e. the sequence obtained from $s$ by keeping all the moves
 hereditarily justified by $m$.
-
 We also write $s \upharpoonright A,B,m$ where $m$ is an initial move
 for the sequence obtained from $s \upharpoonright A,B$ by keeping
 all moves hereditarily justified by $m$.
-
-%\begin{dfn}[Question-move filtering]
-%Suppose $s$ is a justified sequence of moves then we write $\tilde{s}$
-%the subsequence of $s$ consisting of question-moves only:
-%\begin{eqnarray*}
-%\tilde{} &: L_A &\longrightarrow (M^Q)^* \\
-%& s &\longmapsto \tilde{s} = s \upharpoonright M^Q
-%\end{eqnarray*}
-%where $M^Q$ denotes the set of question-moves.
-%$\tilde{s}$ is also a justified sequence of move (there is no dangling pointer since questions-moves points to question-moves).
-%If $s = u\upharpoonright A,B$ then clearly $\tilde{s} = \tilde{u} \upharpoonright A,B$.
-%\end{dfn}
-
 
 \begin{dfn}[$@$-hiding of traversals]
 Let $t$ be a traversal of $\tau(M)$.
@@ -2060,8 +2004,8 @@ order strictly greater than $\ord{x}$.
 A strategy $\sigma : A$ is said to be \emph{regular} if for any sequence of moves $s q \in P_A$
 where $q$ is a question move in $M_A$ we have:
 \begin{eqnarray*}
-s q \in \sigma \wedge |s| \mbox{ even } &\implies& \parbox{10cm}{$q$ points to the last P-move in $\oview{?(s)}$ with order greater or equal to $\ord{q}$} \\
-s q \in \sigma \wedge |s| \mbox{ odd } &\implies& \parbox{10cm}{$q$  points to the last O-move in $\pview{?(s)}$ with order greater or equal to $\ord{q}$}
+s q \in \sigma \wedge |s| \mbox{ even } &\implies& \parbox{10cm}{$q$ points to the last P-move in $\oview{?(s)}$ with order strictly greater than $\ord{q}$} \\
+s q \in \sigma \wedge |s| \mbox{ odd } &\implies& \parbox{10cm}{$q$  points to the last O-move in $\pview{?(s)}$ with order strictly greater than $\ord{q}$}
 \end{eqnarray*}
 \end{dfn}
 
@@ -2076,9 +2020,9 @@ Suppose $\sigma$ is a regular strategy. We prove that pointers in a play $s\in \
 thanks to the well-bracketing condition $m$ points to the last pending question in $s$.
 Suppose $m$ is a question move.
 If $m$ is a P-move then $|s|$ is odd and by regularity
-$m$ points to the last O-move in $\pview{?(s)}$ with order greater or equal to $\ord{q}$.
+$m$ points to the last O-move in $\pview{?(s)}$ with order strictly greater than $\ord{q}$.
 Similarly, if $m$ is an O-move then $|s|$ is even and by regularity
-$m$ points to the last P-move in $\oview{?(s)}$ with order greater or equal to $\ord{q}$.
+$m$ points to the last P-move in $\oview{?(s)}$ with order strictly greater than $\ord{q}$.
 By the induction hypothesis the pointers in $s$ are recoverable, this ensures that the
 P-view $\pview{?(s)}$ and the O-view $\oview{?(s)}$ can be computed. Consequently the pointer for $m$ can be (uniquely) recovered.
 \end{proof}
@@ -2090,46 +2034,45 @@ The computation tree of a simply-type term in $\beta$-normal form is regular if 
 
 \begin{proof}
 Let $\Gamma \vdash M : A$ be a simply-typed term in $\beta$-normal form.
+Let $r$ denotes the root of $\tau(M)$.
 
 \noindent \emph{`If' part:} Suppose that $\tau(M)$ is regular.
 Consider a justified sequence of move $s \in \sem{\Gamma \vdash M}$
-and let $q$ denotes the last move in $s$.
+ending with a question move $q$. $q$ is also the last question in $?(s)$.
 Proposition \ref{prop:rel_gamesem_trav} tells us that there
-is a reduced-traversal $r$ of $\tau(M)$ such that $\varphi_{M}(r) \jseq s.$
-Let us write $n$ for the last node in the sequence $r$
-and $root$ to denote the root of $\tau(M)$.
-By remark \ref{rem:redtrav}, $ r \jseq t \upharpoonright root$
-for some traversal $t$ whose last node $n$ is hereditarily justified by $root$.
+is a reduced-traversal $tr$ of $\tau(M)$ such that $\varphi_{M}(tr) \jseq s.$
+
+By remark \ref{rem:redtrav}, $ tr \jseq t \upharpoonright r$
+for some traversal $t$ whose last node $n$ is hereditarily justified by $r$. Then $n$ is also the last node in $?(tr)$ and $tr$.
 
 \begin{itemize}
 \item Suppose $|s|$ is even then $q$ is a P-move.
 
-Since $r$ is a reduced-traversal of $\tau(M)$ and $M$ is in $\beta
-\eta$-long normal form, lemma \ref{lem:redtrav_trav} (i) gives:
-\begin{equation}
- \pview{?(r)} \jseq \pview{?(t)} \upharpoonright  root  \label{eq:pre_pview_r}
-\end{equation}
+Since $tr$ is a reduced-traversal of $\tau(M)$ and $M$ is in $\beta$-normal form, lemma \ref{lem:redtrav_trav} (i) gives:
+\begin{equation*}
+ \pview{?(tr)} \jseq \pview{?(t)} \upharpoonright  r
+\end{equation*}
 
-Proposition \ref{prop:pviewtrav_is_path} gives us that $\pview{?(t)}$ is
+By proposition \ref{prop:pviewtrav_is_path}, $\pview{?(t)}$ is
 the path in $\tau(M)$ from the root to the node $n$.
-Therefore by regularity of $\tau(M)$ (lemma \ref{lem:regularity}) $n$ points to the
+Since $\tau(M)$ is regular, $n$ points to the
 last $\lambda$-node in $\pview{?(t)}$ of order strictly greater than $\ord{n}$.
 
-Since $n$ is the last node of $\pview{?(t)} \upharpoonright root$,
+Since $n$ is the last node of $\pview{?(t)} \upharpoonright r$,
 it is hereditarily justified by the root and it must point to a node
 $m$ in $\pview{?(t)}$ that is also hereditarily justified by the
-root. Therefore $m$ also occurs in $\pview{?(r)}$. But $m$ is the
+root. Therefore $m$ also occurs in $\pview{?(tr)}$. But $m$ is the
 last $\lambda$-node in $\pview{?(t)}$ that has order strictly
-greater than $\ord{n}$, therefore since $\pview{?(r)}$ is a
+greater than $\ord{n}$, therefore since $\pview{?(tr)}$ is a
 subsequence of $\pview{?(t)}$, $m$ is also the last $\lambda$-node
-in $\pview{?(r)}$ that has order greater strictly greater than
+in $\pview{?(tr)}$ that has order strictly greater than
 $\ord{n}$.
 
 
-By property \ref{proper:phi_pview} (ii), the P-view of $?(s)$ and the P-view of $?(r)$ are computed
+By property \ref{proper:phi_pview} (ii), the P-view of $?(s)$ and the P-view of $?(tr)$ are computed
 similarly and have the same pointers. This means that
 node $n$ and  move $q$ both point to the same position in
-the justified sequence $\pview{?(r)}$ and $\pview{?(s)}$ respectively.
+the justified sequence $\pview{?(tr)}$ and $\pview{?(s)}$ respectively.
 
 Finally, since $\varphi$ maps nodes of a given order to moves of the same order (property \ref{proper:phi_conserve_order}),
 $q$ also points to the last O-move in $\pview{?(s)}$ whose
@@ -2137,10 +2080,10 @@ order is strictly greater than $\ord{q}$.
 
 \item Suppose $|s|$ is odd then $q$ is an O-move.
 
-$M$ is in $\beta\eta$-long normal form and $t$ is a traversal of $\tau(M)$
+$M$ is in $\beta$-normal form and $t$ is a traversal of $\tau(M)$
 whose last node $n$ is hereditarily justified by $root$. Therefore  by lemma \ref{lem:redtrav_trav} (ii):
 \begin{equation}
- \oview{?(r)} \jseq \oview{?(t)} \label{eq:oview_r}
+ \oview{?(tr)} \jseq \oview{?(t)} \label{eq:oview_r}
 \end{equation}
 
 
@@ -2148,8 +2091,8 @@ A lambda-nodes always points to its parent node in the computation
 tree. For terms in $\beta$-normal form, this parent node must be a
 variable node of order strictly greater than $\ord{n}$.
 
-By inspecting the formation rules of traversals (definition
-\ref{def:traversal}) one can check that a lambda-node occurring in a
+By inspecting the formation rules for traversals (definition
+\ref{def:traversal}) we remark that a lambda-node occurring in a
 traversal always points to the last node with order strictly greater
 that $\ord{n}$ in the O-view of the sequence of pending nodes at
 that point (there are just two cases, $n$ points either to the
@@ -2161,7 +2104,25 @@ $\ord{q}$.
 \end{itemize}
 
 \noindent  \emph{`Only-if' part:}
+Suppose $x$ is a variable node of the computation tree $\tau(M)$.
 
+We remark that for terms in $\beta$-normal form, every variable node occurring in the computation tree can be visited by some traversal.
+Moreover, all the variables nodes are hereditarily justified by the root of the computation tree.
+Therefore there is a traversal $t \cdot x$ of $\tau(M)$ for some traversal $t$.
+The correspondence theorem gives $\varphi((t \upharpoonright r) \cdot x) \in \sem{M}$.
+
+Since $\sem{M}$ is regular, $\varphi(x)$ must point to the last move in $\pview{?(\varphi(t \upharpoonright r))}$ with
+order strictly greater than $\ord{\varphi(x)}$.
+Consequently node $x$ points to the last node in $\pview{?(t \upharpoonright r)}$ with
+order strictly greater than $\ord{x}$.
+By lemma \ref{lem:redtrav_trav}, $\pview{?(t \upharpoonright r)} \jseq \pview{?(t)} \upharpoonright r$
+and by proposition \ref{prop:pviewtrav_is_path}, $\pview{?(t)}$ is
+the path in $\tau(M)$ from the $x$ to the root $r$.
+
+Let $b$ be a $\lambda$-nodes in $\pview{?(t)}$ that is not hereditarily justified by the root.
+Since $M$ is in $\beta$-normal form, $b$ must be hereditarily justified by a $\Sigma$-constant.
+But since $\Sigma$-constants are of order $1$, $b$ must be a child node of a $\Sigma$-node and therefore must be a $0$ order node labelled $\lambda$.
+Therefore $x$ points to the last node in the path to the root that has order strictly greater than $\ord{x}$.
 \end{proof}
 
 
@@ -2180,7 +2141,8 @@ for each lambda node $\lambda \overline{\xi}$, any variable $x$ occurring free i
 has order greater or equal to $\ord{\lambda \overline{\xi}}$. Reciprocally, if a lambda node $\lambda \overline{\xi}$
 binds a variable node $x$ then $\ord{\lambda \overline{\xi}} = \max_{z\in\overline{\xi}} \ord{z} > \ord{x}$.
 
-Hence $x$ must be bound by the first $\lambda$ node occurring in the path the root of the computation tree.
+Hence $x$ must be bound by the first $\lambda$ node occurring in the path the root of the computation tree
+that has order strictly greater than $\ord{x}$.
 \end{proof}
 
 \begin{thm}[Pointers are superfluous for safe terms]

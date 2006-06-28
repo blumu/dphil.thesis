@@ -1,7 +1,3 @@
-\def\cmptre#1{\tau(#1)}
-\def\aux#1{\lceil #1\rceil}
-\def\nf#1{\eta_{\sf nf}(#1)}
-
 \section{Game semantics of safe $\lambda$-terms}
 
 In this section we introduce the concepts of computation tree and
@@ -41,25 +37,26 @@ $\eta$-normal form of a term is obtained by hereditarily
 $\eta$-expanding every subterm occurring at an operand position:
 
 \begin{dfn}[$\eta$-long normal form]
-A term is either an abstraction or it can be written uniquely as
+A simply-type term is either an abstraction or it can be written uniquely as
 $s_0 s_1 \ldots s_m$ where $m\geq0$ and $s_0$ is a variable, a
 constant or an abstraction.
-
-The $\eta$-long normal form of a term $M$ is denoted $\aux{M}$ and
+The $\eta$-long normal form of a term $M$ denoted $\aux{M}$ or sometimes $\etanf{M}$
 is defined as follows:
-\begin{eqnarray*}
-\aux{x s_1 \ldots s_m : (A_1,\ldots,A_n,o)} &=& \lambda \overline{\varphi} . x \aux{s_1} \aux{s_2} \ldots \aux{s_m} \aux{\varphi_1} \ldots \aux{\varphi_n} \\
-\aux{(\lambda x . s_0) s_1 \ldots s_m } &=& (\lambda x . \aux{s_0}) \aux{s_1} \aux{s_2} \ldots \aux{s_m}
-\end{eqnarray*}
-where $m,n \geq 0$ and $x$ is either a variable or a constant.
+\begin{align*}
+\aux{\alpha s_1 \ldots s_m : (A_1,\ldots,A_n,o)} &= \lambda \overline{\varphi} . \alpha \aux{s_1} \aux{s_2} \ldots \aux{s_m} \aux{\varphi_1} \ldots \aux{\varphi_n}
+& \mbox{with $m,n\geq0$}\\
+%\aux{(\lambda x . s_0) s_1 \ldots s_m } &=& (\lambda x . \aux{s_0}) \aux{s_1} \aux{s_2} \ldots \aux{s_m}
+\aux{\lambda x . s } &= \lambda x . \aux{s} \\
+\aux{(\lambda x . s_0) s_1 \ldots s_m : (A_1,\ldots,A_n,o) } &= \lambda \overline{\varphi} . (\lambda x . \aux{s_0}) \aux{s_1} \aux{s_2} \ldots \aux{s_m} \aux{\varphi_1} \ldots \aux{\varphi_n}
+& \mbox{with $m\geq 1,n\geq0$}
+\end{align*}
+where $x$ is a variable and $\alpha$ is either a variable or a constant.
 \end{dfn}
 
-For $n=0$, the first clause in the definition gives:
-$$\aux{x s_1 \ldots s_m : o} = \lambda . x \aux{s_1} \aux{s_2} \ldots \aux{s_m} $$
-
-and in that case, the symbol $\lambda$ is called \textsl{dummy} lambda. We do not omit it since it
+For $n=0$, the first clause in the definition becomes:
+$$\aux{x s_1 \ldots s_m : o} = \lambda . x \aux{s_1} \aux{s_2} \ldots \aux{s_m}.$$
+We deliberately keep the \textsl{dummy} lambda in the right-hand side of the equation since it
 plays an important role in the correspondence with game semantics.
-
 
 The $\eta$-long normal form appeared in \citep{DBLP:journals/tcs/JensenP76}
 under the name \emph{long reduced form}
@@ -67,73 +64,92 @@ and in \citep{DBLP:journals/tcs/Huet75}
 under the name \emph{$\eta$-normal form}. It was then investigated in \citep{huet76}
 under the name \emph{extensional form}.
 
+Note that our version of the $\eta$-long normal form is defined for any simply-typed term, and not only $\beta$-normal terms.
+Moreover it is defined in such a way that $\beta$-normality is preserved:
+\begin{lem}
+The $\eta$-long normal form of a term in $\beta$-normal form is also in $\beta$-normal form.
+\end{lem}
+\begin{proof}
+By induction on the structure of the term and the order of its type.
+\emph{Base case}:
+If $M=x:0$ then $\aux{x} = \lambda . x$ is also in $\beta$-nf.
+\emph{Step case}:
+The case $M = \aux{(\lambda x . s_0) s_1 \ldots s_m : (A_1,\ldots,A_n,o)}$ with $m>0$ is not possible since $M$ is in
+$\beta$-normal form.
+Suppose $M = \lambda x . s$ then $s$ is in $\beta$-nf. By the induction hypothesis $\aux{s}$ is also in $\beta$-nf and therefore
+so is $\aux{M} = \lambda x . \aux{s}$.
 
-A term can be represented by a tree defined formally by induction on the structure
-of its $\eta$-long normal form as follows:
+Suppose $M= \alpha s_1 \ldots s_m : (A_1,\ldots,A_n,o)$. Let $i,j$ range over $1..n$ and $1..m$ respectively.
+The $s_j$ are in $\beta$-nf and the $\varphi_i$ are variables of order smaller than $M$. Hence by the induction hypothesis,
+the $\aux{\varphi_i}$ and the $\aux{s_j}$ are in $\beta$-nf.
+Hence $\aux{M}$ is also in $\beta$-nf.
+\end{proof}
 
+
+We now give a representation of a term by a tree defined
+by induction on the structure of the $\eta$-long normal form:
 \begin{dfn}[Computation tree]
-The computation tree associated to the term $s$ is noted
-$\cmptre{s}$. It is obtained by applying the following rules
-inductively \emph{on the $\eta$-long normal form} of $s$. In the
-following $x$ is either a variable or a constant.
+For any term $M$ in $\eta$-normal form we define the tree $\tau(M)$ by induction
+on the structure of the term.
+Since $M$ is in $\eta$-normal form, there are only two cases:
+$M$ is either an abstraction or it is of ground type and can be written uniquely as
+$s_0 s_1 \ldots s_m : 0$ where $m\geq0$,  $s_0$ is a variable, a
+constant or an abstraction and each of the $s_j$ for $j\in 1..m$ is in $\eta$-normal form.
+
 \begin{itemize}
-\item for $n\geq0$, the tree for $\lambda x_1 \ldots x_n. M$ where $M$ is not an abstraction is:
-$$ \cmptre{\lambda x_1 \ldots x_n . M} =
-  \pstree[levelsep=4ex]
-    { \TR{\lambda x_1 \ldots x_n} }
-    { \SubTree{\cmptre{M}}
-    }
+\item for $n\geq0$, the tree for $\lambda x_1 \ldots x_n. N$ where $N$ is not an abstraction is:
+$$ \tau(\lambda x_1 \ldots x_n . N) =
+      \pstree[levelsep=4ex]
+        { \TR{\lambda x_1 \ldots x_n} }
+        { \SubTree{\tau(N)^{-}} }
 $$
+where $\tau(N)^{-}$ denotes the tree obtained after deleting the root of $\tau(N)$.
 
 
-\item for $n\geq0$, the tree for $x s_1 \ldots s_n$ is:
-$$ \cmptre{ x s_1 \ldots s_n} =
-  \pstree[levelsep=4ex]
-    { \TR{x} }
-    { \SubTree{\cmptre{s_1}} \SubTree[linestyle=none]{\ldots} \SubTree{\cmptre{s_n}}
+\item for $m\geq0$ and a variable or constant $\alpha$, the tree for $\alpha s_1 \ldots s_m$ is:
+$$ \tau( \alpha s_1 \ldots s_m) =
+    \tree{\lambda}
+    {
+        \pstree[levelsep=4ex]
+            { \TR{\alpha} }
+            { \SubTree{\tau(s_1)} \SubTree[linestyle=none]{\ldots} \SubTree{\tau(s_m)}
+            }
     }
 $$
 
 
 \item the tree for $(\lambda x.s_0) s_1 \ldots s_n$ is:
-$$ \cmptre{(\lambda x.s_0) s_1 \ldots s_n} =
-  \pstree[levelsep=4ex]
-    { \TR{@} }
+$$ \tau((\lambda x.s_0) s_1 \ldots s_n) =
+    \tree{\lambda}
     {
-    \SubTree{\cmptre{\lambda x.s_0}}    \SubTree{\cmptre{s_1}} \SubTree[linestyle=none]{\ldots} \SubTree{\cmptre{s_n}}
+        \pstree[levelsep=4ex]
+            { \TR{@} }
+            {
+            \SubTree{\tau(\lambda x.s_0)}    \SubTree{\tau(s_1)} \SubTree[linestyle=none]{\ldots} \SubTree{\tau(s_n)}
+            }
     }
 $$
 \end{itemize}
+
+The \emph{computation tree} of a simply-type term $M$ whether or note in $\eta$-normal form is noted $\tau(M)$
+and defined to be $\tau(M) = \tau(\etanf{M})$.
 \end{dfn}
-
-
-For example, for any order $0$ variable or constant $x$: $
-\cmptre{\lambda . x} =  \pstree[levelsep=3ex]
-    { \TR{\lambda } }
-    { \TR{x}
-    }$
-
 The nodes (and leaves) of the tree are of three kinds:
 \begin{itemize}
-\item $\lambda$-node labeled $\lambda \overline{x}$ (note that a $\lambda$-node represents several consecutive abstractions of
-variables),
+\item $\lambda$-node labeled $\lambda \overline{x}$ (note that a $\lambda$-node represents several consecutive variable abstractions),
 \item application node labeled $@$,
-\item variable or constant nodes labeled $x$.
+\item variable or constant nodes labelled $\alpha$ for some constant or variable $\alpha$.
 \end{itemize}
 
-A sub-tree of the computation tree represents a $\lambda$-term. We
-define the map $\kappa : N \rightarrow \mathcal{T}$ where $N$
-denotes the set of nodes and leaves of the computation tree
-$\tau(s)$ and $\mathcal{T}$ denotes the set of $\lambda$-terms.
-$\kappa$ associates to a node $n$ of the tree the $\lambda$-term
-$\kappa(n)$ (the term represented by the sub-tree of $\tau(s)$
-rooted at $n$). In particular if $r$ is the root of the tree
-$\tau(s)$ then $\kappa(r) = \aux{s}$.
+
+Let $N$ denotes the set of nodes of $\tau(M)$ and $\mathcal{T}$ denotes the set of $\lambda$-terms.
+Each subtree of the computation tree $\tau(M)$ represents a subterm of $M$.
+The function $\kappa : N \rightarrow \mathcal{T}$ maps a node $n \in N$ to the subterm of $M$
+represented by the subtree of $\tau(M)$ rooted at $n$.
+In particular if $r$ is the root of the tree $\tau(M)$ then $\kappa(r) = \aux{M}$.
 
 \begin{dfn}[Node order]
-
- The node-order function $\textsf{ord}$
-is defined on nodes as follows:
+The node-order function $\textsf{ord}$ is defined on nodes as follows:
 \begin{eqnarray*}
 \ord{n} = \left\{
   \begin{array}{ll}
@@ -146,35 +162,36 @@ is defined on nodes as follows:
 \end{eqnarray*}
 \end{dfn}
 
-
-Consider the computation tree $\tau(s)$ of a term $s$ in $\eta$-long normal form. Then:
+\noindent Some remarks:
+%Consider the computation tree $\tau(M)$ of a term $M$ in $\eta$-long normal form. Then:
 \begin{itemize}
-\item One can check that nodes at even level are abstraction
-node and nodes at odd level are either application nodes,
-operator-application nodes, variable or constant nodes (the root level being numbered $0$).
+\item In a computation tree, nodes at even level are abstraction node and nodes at odd level are either application nodes,
+variable or constant nodes;
 
-\item Suppose that a variable $x$ occurs in $s$. The corresponding node in the tree has of one of the two following forms:
-    \begin{itemize}
-    \item $ \pstree[levelsep=3ex]
-        { \TR{\lambda } }
-        { \TR{x}
-        }$ where $\ord{x} = 0$
+\item for any ground type variable or constant $\alpha$,
+$\tau(\alpha) = \tau(\lambda . \alpha) =  \pstree[levelsep=3ex]
+    { \TR{\lambda } }
+    { \TR{\alpha}
+    }$;
 
-    \item $ \pstree[levelsep=3ex]
+\item for any higher-order variable or constant $\alpha : (A_1,\ldots,A_p,o)$, the computation tree $\tau(\alpha)$ has following form:
+$ \pstree[levelsep=3ex]{\TR{\lambda}}
+        {\pstree[levelsep=3ex]
                 { \TR{x} }
-                { \TR{\lambda \overline{\xi_1}} \TR{\ldots} \TR{\lambda \overline{\xi_p}}}
-        $ where $\ord{x} > 0$ and $x:(A_1,\ldots,A_p,o)$
-    \end{itemize}
+                { \tree{\lambda \overline{\xi_1}}{\TR{\ldots}} \TR{\ldots} \tree{\lambda \overline{\xi_p}}{\TR{\ldots}}
+                }
+        }
+$;
 
-\item    Moreover for any abstraction node
+\item for any abstraction node
         $ \pstree[levelsep=4ex]
             { \TR{\lambda \overline{\varphi}} }
             { \pstree[levelsep=3ex]
                 {\TR{n}}
                 {\TR{\lambda \overline{\xi_1}} \TR{\ldots} \TR{\lambda \overline{\xi_p}}}
             }
-        $
-    we have $\ord{\kappa(n)}=0$
+        $,
+    we have $\ord{\kappa(n)}=0$.
 
 \end{itemize}
 
@@ -2129,33 +2146,57 @@ Therefore $x$ points to the last node in the path to the root that has order str
 
 \begin{lem}[Computation tree of safe terms are regular]
 \label{lem:regularity}
-If $M$ is a safe term then $\tau(M)$ is regular.
+Let $M$ be a simply-typed term.
+\begin{itemize}
+\item[(i)] If $M$ is a safe term then $\tau(M)$ is regular.
+\item[(ii)] Reciprocally, if $\tau(M)$ is regular then the $\eta$-normal form of $M$ is safe.
+\end{itemize}
 \end{lem}
 \begin{proof}
-If $M$ is safe then its $\eta$-normal form is also safe. Hence we can assume that $M$ is in $\eta$-normal form.
-First we remark that in the computation tree, the binder of a node $x$ always occurs in the path from $x$ to the root.
-In the safe $\lambda$-calculus when applying the abstraction rule the variables in the lowest partition of the context
-(smallest order) must all be abstracted together. Expressing this fact from point of view of the the computation tree
-(where consecutive abstractions are merged into a single node) we obtain:
+(i) The safety property is preserved after taking the $\eta$-normal form, therefore since
+$M$ is safe, the computation tree $\tau(M)$ is the tree representation of a safe term.
+
+In the safe $\lambda$-calculus when applying the abstraction rule the variables in the lowest partition (smallest order) of the context
+ must all be abstracted together.
+
+Expressing this fact from point of view of the the computation tree
+(in which consecutive abstractions are merged into a single node) we obtain:
 for each lambda node $\lambda \overline{\xi}$, any variable $x$ occurring free in $\kappa(\lambda \overline{\xi})$
 has order greater or equal to $\ord{\lambda \overline{\xi}}$. Reciprocally, if a lambda node $\lambda \overline{\xi}$
 binds a variable node $x$ then $\ord{\lambda \overline{\xi}} = \max_{z\in\overline{\xi}} \ord{z} > \ord{x}$.
-
-Hence $x$ must be bound by the first $\lambda$ node occurring in the path the root of the computation tree
+Moreover in a computation tree, the binder of a node $x$ always occurs in the path from $x$ to the root.
+Therefore $x$ must be bound by the first $\lambda$ node occurring in the path the root
 that has order strictly greater than $\ord{x}$.
+
+(ii) This is because in the $\eta$-normal form, all the application are total: any subterm of type $(A_1,\ldots,A_n,o)$
+must occur applied by $n$ parameters. This rules out any possible source of unsafety caused by an application.
+Moreover regularity of the computation tree implies that every abstraction in the
+$\etanf{M}$ must abstract all the variable of the lowest partition in the context.
+Hence $\etanf{M}$ is safe.
 \end{proof}
+
+Putting proposition \ref{prop:regular_comp_imp_regular_strat} and lemma \ref{lem:regularity} together we
+obtain a game semantics characterization of safe terms:
+\begin{cor}[Regular strategies characterize safe terms]
+Let $M$ be a  simply-typed term.
+$$ \sem{M} \mbox{ is regular if and only if $\etabetanf{M}$ is safe,} $$
+where $\etabetanf{M}$ denotes the $\eta$-normal form of the $\beta$-normal form of $M$.
+\end{cor}
+
+
 
 \begin{thm}[Pointers are superfluous for safe terms]
 Pointers in the game semantics of safe terms are uniquely recoverable.
 \end{thm}
 \begin{proof}
 Suppose that a safe simply-typed term $M$ is safe then its $\beta$-normal form $M'$ is also safe.
-By lemma \ref{lem:regularity}, $\tau(M')$ is regular.
-Consequently by proposition \ref{prop:regular_comp_imp_regular_strat},
+By lemma \ref{lem:regularity} (i), $\tau(M')$ is regular and
+by proposition \ref{prop:regular_comp_imp_regular_strat},
 $\sem{M'}$ is a regular strategy.
 The soundness of the game model ensures that $\sem{M} = \sem{M'}$ and lemma \ref{lem:regular_pointers_uniqu_recover} permits
 to conclude that the pointers in $\sem{M}$ are uniquely recoverable.
 \end{proof}
+
 
 
 \section{Safe Idealized Algol}
@@ -2182,7 +2223,7 @@ Let us recapitulates the main ingredients:
 \item define a unique computation tree associated to a given term;
 \item define a notion of traversal over a computation tree;
 \item prove that P-view of traversals are paths in the computation tree;
-\item prove a theorem showing correspondence between traversals of the computation tree and plays in some interaction game semantics;
+\item find a correspondence between traversals of the computation tree and plays in some interaction game semantics;
 \item define a ``reduction'' operation on traversals that eliminates the ``internal nodes'' of the computation. This leads to a
 correspondence between the standard game semantics and some set of sequences of nodes obtained from traversals;
 \item prove that the P-view of the reduction of a traversal is the reduction of the P-view

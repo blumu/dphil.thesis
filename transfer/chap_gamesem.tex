@@ -146,36 +146,32 @@ PCF and Idealized Algol. The definitions are taken from
 \cite{abramsky:game-semantics-tutorial, hylandong_pcf,
 abramsky94full}.
 
-
-\subsection{Arenas and Games}
-
 The games we are interested in are two-players games. The players are named O for Opponent and P for Proponent.
-
-The game played by O and P is constraint by something called
-\emph{arena}. The arena defines the possible moves of the game. By
+The game played by O and P is constraint by the \emph{arena}.
+The arena defines the possible moves of the game. By
 analogy with real board games, the arena represents the board
-together with the rules that tell how players can make their moves
-on the board. In fact the analogy with board game stops here. Our
-games can be thought as dialog games: one person O interviews
-another person P, P tries to answer the initial O-question by
-possibly asking O some precisions about its initial question.
-Moreover, the notion of winner and winning strategy will not be
-relevant in our setting.
+together with the rules that tell players how they can make their moves
+on the board. The analogy with board game will not go beyond that.
+It is better to regard our games as dialogs between two players instead: one player O
+interviews another person P. P's goal is to answer the initial question asked by O.
+P can also ask question to O if he needs some precision about O's initial question.
+Again O can then ask further question to P. This induces a flow of questions and answers between O and P that can goes on
+possibly forever. In Game semantics, the attention is given to the study of this flow of questions and answers
+and the notion of winner of the game is not a concern.
+
+\subsection{Arenas}
 
 
-More formally, the arena can be seen as a forest of trees whose nodes are possible questions and leaves are possible answers.
-The arena is partitioned into two kinds of moves: the moves that can be played by P and the ones that can be played by O.
-A move is either a question to the other player or an answer to a question previously asked by the other player.
-
-Each move of the game must be justified by another move that has already been played by the other player. This justification relation
-is induced by the edges of the forest arena. Moreover, an answer must always be justified by the question that it answers and a question
-is always justified by another question.
-
+Our games have two kind moves in our games: the questions and the answers.
+We also distinguish moves played by O and those played by P.
+An arena is represented by a directed acyclic graph (DAG) whose nodes correspond
+to questions moves and leaves correspond to answers moves.
+It is formally defined as follows:
 \begin{dfn}[Arena]
 An arena is a structure $\langle M, \lambda, \vdash \rangle$ where:
 \begin{itemize}
 \item $M$ is the set of possible moves;
-\item $(M,\vdash)$ is a forest of trees;
+\item $(M,\vdash)$ is a directed acyclic graph;
 
 \item $\lambda : M \rightarrow \{ O, P\} \times \{Q, A\}$ is a labeling functions indicating whether a given move
     is a question or an answer and whether it can be played by O or by P.
@@ -191,10 +187,10 @@ An arena is a structure $\langle M, \lambda, \vdash \rangle$ where:
     $n \in (M,\vdash)$, $\lambda^{QA} (n) = Q$.
     \end{itemize}
 
-\item The forest of tree $(M,\vdash)$ respect the following condition:
+\item The DAG $(M,\vdash)$ respects the following condition:
     \begin{itemize}
     \item[(e1)] The roots are O-moves: for any root $r$ of $(M,\vdash)$, $\lambda^{OP} (r) = O$.
-    \item[(e2)] Answers are enabled by questions: $m \vdash n  \zand \lambda^{QA}(n) = A \imp \lambda^{QA}(m) = Q$.
+    \item[(e2)] Enablers are all questions: $m \vdash n  \imp \lambda^{QA}(m) = Q$.
     % Or more succinctly, if we write $\dashv$ the relation $\vdash^-1$: $\lambda^{QA} \left( \dashv( (\lambda^{QA})^{-1}(\{A\}) ) \right) = \{ O \}$
     \item[(e3)] A player move must be justified by a move played by the other player:
          $m\vdash n \imp \lambda^{OP}(m) \neq \lambda^{OP}(n)$.
@@ -206,10 +202,10 @@ For commodity we write the set $\{O,P\} \times \{Q,A\}$ as $\{OQ,OA,PQ,PA\}$.
 $\overline{\lambda}$ denotes the labeling function $\lambda$ with the question and answer swapped. For instance:
 $$\overline{\lambda(m)} = OQ \iff \lambda(m) = PQ$$
 
-The roots of the forest of tree $(M,\vdash)$ are the \emph{initial moves}.
+The roots of the DAG $(M,\vdash)$ are called the \emph{initial moves}.
+Other moves must be enabled by some other question move. The edges of the DAG induces the enabling relation between moves.
 
-For example, the simplest possible arena is written $\mathbf{1}$ and
-denotes the arena which set of moves $M$ is empty.
+The simplest possible arena, written $\mathbf{1}$, is the arena with an empty set of moves.
 
 \begin{exmp}[The flat arena]
 \label{exmp:flatarena}
@@ -237,16 +233,17 @@ $\mathbf{int}$ and  $\mathbf{bool}$ respectively.
 
 Once the arena has been defined, the bases of the game are set and the players have something to play with.
 We now need to describe the state of the game, for that purpose
-we introduced \emph{justified sequences of moves}. Sequence of moves are used to record the history of all the moves that have been
-played.
-
+we introduce \emph{justified sequences of moves}:
 \begin{dfn}[Justified sequence of moves]
 A justified sequence is a sequence of moves $s$ together with an associated sequence of pointers. Any
 move $m$ in the sequence that is not initial has as pointer that points to a previous move $n$ that justifies it (i.e. $n \vdash m$).
 \end{dfn}
+The first move of a justified sequence must be an O-move since
+initial moves are all O-moves.
 
 A justified sequence can be encoded as a sequence of pairs: a pair encodes an element of the sequence together
 with an index indicating the position where the element points to.
+
 The pointers of a justified sequences are represented with arrows.
 This is an example of justified sequence of moves:
 $$\rnode{q4}{q}^4
@@ -254,19 +251,20 @@ $$\rnode{q4}{q}^4
 \rnode{q1}{q}^1 \bkptrc{q3}{q4} \bkptrc{q2}{q3}
 \bkptrc[ncurv=0.6]{q3b}{q4} \bkptrc{q2b}{q3b}$$
 
-The first move of a justified sequence must be an O-move since
-initial moves are all O-moves.
+Sequence of moves will be used to record the history of all the moves that have been played.
 
-Notation: we write $s t$ or sometimes $s \cdot t$ do denote the
+
+\vspace{18pt}
+\emph{Notation:} we write $s t$ or sometimes $s \cdot t$ do denote the
 sequences obtain by concatenating $s$ and $t$. The empty sequence is
 written $\epsilon$.
+Given a sequence $s = m_1 \cdot m_2 \ldots m_n$ we write $s_{\leq m_i}$ for $m_1 \cdot m_2 \ldots m_i$,
+the prefix sequence of $s$ up to the move $m_i$. We write $s_{< m_i}$ for $m_1 \cdot m_2 \ldots m_{i-1}$.
 
- A justified sequence has two particular subsequences which
-will be of particular interest later on when we introduce
-strategies. These subsequences are called the P-view and the O-view
+
+A justified sequence has two particular subsequences called the P-view and the O-view
 of the sequence. The idea is that a view describes the local context
 of the game. Here is the formal definition:
-
 \begin{dfn}[View]
 Given a justified sequence of moves $s$. We define the proponent view (P-view) noted $\pview{s}$ by induction:
 \begin{align*}
@@ -285,23 +283,25 @@ The O-view $\oview{s}$ is defined similarly:
 \end{align*}
 \end{dfn}
 
-In fact not all justified sequences will be of interest for the
-games that we will use. We call \emph{legal position} any justified
-sequence verifying two additional conditions: alternation and
+
+\subsection{Games}
+
+Not all justified sequences will be of interest for the
+games that we will use. We call \emph{legal position} justified
+sequences that verify two additional conditions: alternation and
 visibility. Alternation says that players O and P plays
 alternatively. Visibility expresses that each non-initial move is
 justified by a move situated in the local context at that point.
-Intuitively, the visibility condition gives some coherence to the
+The visibility condition gives some coherence to the
 justification pointers of the sequence.
 
 \begin{dfn}[Legal position]
-A legal position is a justified sequence of move $s$ respecting the following constraint:
+A legal position is a justified sequence of move $s$ respecting the following constraints:
 \begin{itemize}
-\item Alternation: For any subsequence $m \cdot n$ of $s$, $\lambda^{OP}(m) \neq \lambda^{OP}(n)$.
-\item Visibility: For any subsequence $t m$ of $s$ where $m$ is not initial, if $m$ is a P-move then $m$ points to a move in $\pview{s}$
+\item \emph{Alternation}: For any subsequence $m \cdot n$ of $s$, $\lambda^{OP}(m) \neq \lambda^{OP}(n)$.
+\item \emph{Visibility}: For any subsequence $t m$ of $s$ where $m$ is not initial, if $m$ is a P-move then $m$ points to a move in $\pview{s}$
 and if $m$ is a O-move then $m$ points to a move in $\oview{s}$.
 \end{itemize}
-
 The set of legal position of an arena $A$ is noted $L_A$.
 \end{dfn}
 
@@ -309,8 +309,7 @@ We say that a move $n$ is hereditarily justified by a move $m$ if there is a seq
 $m_1, \ldots, m_q$ such that:
 $$ m \vdash m_1 \vdash m_2 \vdash \ldots m_q \vdash n$$
 If a move has no justification pointer, we says that it is an
-\emph{initial move} (in that case it must be a root of the forest
-arena).
+\emph{initial move} (in that case it must be a root of the DAG of the arena).
 
 Suppose that $n$ is an occurrence of a move in the sequence $s$ then
 $s \upharpoonright n$ denotes the subsequence of $s$ containing all the moves hereditarily justified by $n$.
@@ -363,7 +362,7 @@ initial in A or B. And $m \vdash_{A\otimes B} n$  holds if and only if $m
 \vdash_{A} n$ or $m \vdash_{B} n$ holds.
 
 \subsubsection{Function space}
-The game $A \otimes B$ is defined as follows:
+The game $A \multimap B$ is defined as follows:
 \begin{eqnarray*}
   M_{A \multimap B} &=& M_A + M_B \\
   \lambda_{A\multimap B} &=& [\overline{\lambda_A},\lambda_B] \\
@@ -429,19 +428,14 @@ be shown on the diagram.
 
 \subsection{Strategy}
 
-\subsubsection{Definition}
-
 During a game, the player who has to play may have several choices
-for his next move. The move that he makes is chosen according to a
-given strategy.
+for his next move. A strategy is a guide telling the player which move to make when the
+game is in a given position. There is no notion of winning strategy since this is
+not relevant for the games that we are considering.
 
-A strategy is a rule telling the player which move to make when the
-game is in a given position.
-
-More abstractly, a strategy is a
-partial function mapping legal position where Proponent has to move
-to P-moves.
-
+\subsubsection{Definition}
+Formally, a strategy is a partial function mapping legal position where Proponent has to move
+to P-moves:
 \begin{dfn}[Strategy]
 \label{dfn:strategy}
 A strategy for player P on a given game $\langle M, \lambda, \vdash, P \rangle$ is a
@@ -613,12 +607,17 @@ Different classes of strategies will be considered depending on the
 features of the language that we want to model. Here is a list of
 common restrictions that we will consider:
 \begin{itemize}
-\item \emph{Well-bracketing:} In a well-bracketed strategies the players always answer the last unanswered question (called the pending question) first.
-If we represent Opponent's question as ``['', Proponent's answer as
-``]'', Proponent's question as ``('' and Opponent's answers as ``)''
-then requiring that the last pending question is answered first is
-the same as requiring that the string representing the play is a
-prefix of a well-bracketed sequence.
+\item \emph{Well-bracketing:}
+We call \emph{pending question} a question in a sequence that has not been answered.
+A strategy $\sigma$ is well-bracketed if for every play $s \cdot m \in \sigma$:
+\begin{itemize}
+\item if $m$ is an answer then it points to the last pending question in $s$;
+\item if $m$ is a question then it points to a pending question in $s$.
+\end{itemize}
+
+The second condition is usually omitted in the literature of game semantics. It is harmless to add it
+since the well-bracketed strategies involved in the game model of PCF satisfy this condition. Moreover it will
+be a necessary condition for some property that we are going to prove.
 
 \item \emph{History-free strategies:} A strategy is history-free if the Proponent's move at any position of the game where he has to play
 is determined by the last move of the Opponent. In other words, the
@@ -839,11 +838,42 @@ Later on we will state the full abstraction of the game semantics model of PCF. 
 be proved in the quotiented category.
 
 \subsection{Pointers are superfluous for games on arenas of order 2}
-The height of the arena is the length of the longest sequence of moves
-$m_1 \ldots m_h$ in $M$ such that $m_1 \vdash m_2 \vdash \ldots \vdash m_h$.
-The order of an arena $\langle M, \lambda, \vdash \rangle$ is defined to be
-$h-2$ where $h$ is the height of the forest of trees $(M, \vdash)$.
 
+For any legal justified sequence of moves $s$, we write $?(s)$ for the
+subsequence of $s$ obtain by keeping only the pending questions in $s$.
+
+\begin{rem}
+By definition of well-bracketing, for any well-bracketed sequence $s\cdot m$, the move $m$ points to a question in $?(s)$.
+Moreover if $s \cdot m$ satisfies visibility and $m$ is a P-move (resp. O-move) then $m$ points in $?(\pview{m})$ (resp. $?(\oview{m})$).
+\end{rem}
+
+\begin{lem}
+Let $s \cdot m$ be a legal well-bracketed sequence of moves.
+\begin{enumerate}
+\item If $m$ is not a P-answer then $?(\pview{s \cdot m}) = \pview{?(s \cdot m)}$;
+\item if $m$ is not an O-answer then $?(\oview{s \cdot m}) = \oview{?(s \cdot m)}$.
+\end{enumerate}
+\end{lem}
+\begin{proof}
+By induction on the length of $s$. The base case is trivial. Suppose $s = s' \cdot q \cdot s'' \cdot q_2$
+
+\end{proof}
+
+The previous remark and lemma gives the following corollary:
+\begin{cor}
+\label{cor:pendingview}
+Let $s \cdot m$ be a legal well-bracketed sequence of moves \emph{satisfying visibility}.
+\begin{enumerate}
+\item If $m$ is a P-move then it points in $?(\pview{s}) = \pview{?(s)}$;
+\item if $m$ is an O-move then it points in $?(\oview{s}) = \oview{?(s)}$.
+\end{enumerate}
+
+\end{cor}
+
+
+The height of an arena $\langle M, \lambda, \vdash \rangle$ is the length of the longest sequence of moves
+$m_1 \ldots m_h$ in $M$ such that $m_1 \vdash m_2 \vdash \ldots \vdash m_h$.
+The order of the arena is defined to be its height minus two.
 
 \begin{lem}[Pointers are superfluous up to order 2]
 Let $A$ be the arena of order at most 2. Let $s$ be a justified sequence of moves in the arena $A$ satisfying
@@ -858,27 +888,27 @@ We represent an arena graphically as a forest of trees. We choose to display the
 from left to right by decreasing order of the sub-arena order.
 
 Let $A$ be an arena of order 2.
-The case where $A$ is a forest arena with multiple roots can be reduced to the single root case as follows:
+The case where $A$ is a DAG with multiple roots can be reduced to the single root case as follows:
 since the justified sequence that we consider are well-opened, the first move in $s$ noted $m_0$ is the only initial move in the sequence.
-$m_0$ must be the root of some sub-arena $A'$ of $A$. Hence we just need to consider the arena $A'$ instead of $A$ and treat $s$ as a sequence
-of moves over $A'$. Hence we assume that $A$ has a single root.
+$m_0$ must be the root of some sub-arena $A'$ of $A$. Hence we just need to consider the arena $A'$ instead of $A$ and treat $s$ as a play
+of $A'$ instead of $A$. We now assume that $A$ has a single root.
 
 $A$ has the following shape:
 \begin{center}
   \pstree[levelsep=6ex]
     { \TR{$q$} }
     {
-\SubTree{$T_1$} \SubTree[linestyle=none]{$\ldots$} \SubTree{$T_n$}
+\SubTree{$A_1$} \SubTree[linestyle=none]{$\ldots$} \SubTree{$A_n$}
     \TR{$a_1$} \TR{$a_2$} \TR{\ldots} }
 \end{center}
 
-where each triangle $T_i$ represents an arena of order 0 or 1.
+where each triangle $A_i$ represents an arena of order 0 or 1.
 
 
-We write $I_k$, where $k=0$ or $1$, for the set of indices $i$ such that the arena $T_i$ has order $k$:
-$$I_k = \{ i \in 1.. n\ |\ \order{T_i} = k \}$$
+We write $I_k$, where $k=0$ or $1$, for the set of indices $i$ such that the arena $A_i$ has order $k$:
+$$I_k = \{ i \in 1.. n\ |\ \order{A_i} = k \}$$
 
-On the diagram below we represent an arena $T_i$ for $i \in I_0$ on the left and an arena $T_j$ for some $j \in I_1$ on the right:
+On the diagram below we represent an arena $A_i$ where $i \in I_0$ on the left and an arena $A_j$ where $j \in I_1$ on the right:
 \begin{center}
 \
   \pstree[levelsep=6ex]
@@ -897,65 +927,42 @@ On the diagram below we represent an arena $T_i$ for $i \in I_0$ on the left and
 
 
 
-For any justified sequence of moves $u$, we write $?(u)$ for the
-subsequence of $u$ consisting of the questions in the sequence $u$
-that are still pending at the end of the sequence.
-
 Let $L$ be the following language $L = \{\ p^j q^j\ | \ j \in I_1
 \}$. We consider the following cases:
 
 \begin{center}
 \begin{tabular}{c|c|l|l}
-Case & $\lambda_{OP}(m)$ & $?(u) \in$ & condition \\ \hline
+Case & $\lambda_{OP}(m)$ & $?(s) \in$ & for some ... \\ \hline
 0 & O & $\{ \epsilon \}$ \\
 A & P & $q$ \\
-B & O & $q \cdot L^* \cdot p^i$     & $i \in I_1$ \\
-C & P & $q \cdot L^* \cdot p^i q^i$ & $i \in I_1$ \\
+B & O & $q \cdot L^* \cdot p^j$     & $j \in I_1$ \\
+C & P & $q \cdot L^* \cdot p^j q^j$ & $j \in I_1$ \\
 D & O & $q \cdot L^* \cdot q^i$      & $i \in I_0$ \\
 \end{tabular}
 \end{center}
 
-We use the notation $\hat{s}$ to denote a legal and well-bracketed
-\emph{justified} sequence of moves and $s$ to denote the same
-sequence of moves with pointers removed.
-
-Note that the well-bracketing condition already tells us how to
-uniquely recover the pointers for P answer moves: a P-answers points
-to the last pending question having the same tag. However for O
-answers, we will see that the visibility condition already ensures
-the unique recoverability of the pointer and that the
-well-bracketing condition is not needed.
-
-
-We prove by induction on the sequence of moves $u$ that $?(u)$
+Let $s$ be a legal and well-bracketed \emph{justified} sequence of moves of the game $A$.
+We prove by induction on the length of $s$ that $?(s)$
 corresponds to either case 0, A, B, C or D and that the pointers in
-$u$ can be recovered uniquely.
+$s$ can be recovered uniquely.
 
 \noindent \textbf{Base cases:}
-
-If $u$ is the empty sequence $\epsilon$ then there is no pointer to
-recover and it corresponds to case 0.
-
-If $u$ is a singleton then it must be the initial question $q$ and
+If $s$ is the empty sequence $\epsilon$ then there is no pointer to
+recover and $s$ corresponds to case 0.
+If $s$ is a singleton then it must be the initial question $q$ and
 there is not pointer to recover. This corresponds to case A.
 
 \noindent \textbf{Step case:}
-
-Consider a legal well-bracketed justified sequence $\hat{s}$ where
-$s = u \cdot m$ and $m \in M_A$. The induction hypothesis tells us
-that the pointers of $u$ can be recovered (and therefore the P-view
-or O-view at that point can be computed) and that $u$ corresponds to
-one of the cases 0,A,B,C or D.
-
-We proceed by case analysis on $u$:
-
+If $s = u \cdot m$ with $m \in M_A$
+for some non empty legal well-bracketed justified sequence $u$.
+By the induction hypothesis, $u$ corresponds to one of the cases 0,A,B,C or D.
+We proceed by case analysis:
 \begin{description}
-
 \item[case 0] This case cannot happen because $?(u) = \epsilon$ ($u$ is a complete play) implies that there cannot be any further move $m$.
 
 Indeed the visibility condition implies that $m$ must point to a
 P-question in the O-view at that point. But since $u$ is a complete
-play, the O-view is $\oview{\hat{u}} = q a$ which does not contain
+play, the O-view is $\oview{u} = q a$ which does not contain
 any P-question. Hence the move $m$ cannot be justified and is not
 valid.
 
@@ -964,12 +971,10 @@ valid.
     There are several cases:
     \begin{itemize}
     \item $m$ is an answer $a_k$ to the initial question
-    $q$ for some $k$, then $m$ points to $q$:
-    $\hat{s} =\justseq{ q & \ldots & m \pointto{ll}}$
-    and $?(s) = \epsilon$ therefore $s$ is a complete play, which falls in the case 0.
+    $q$ for some $k$, then $m$ points to $q$
+    therefore $s$ is a complete play and $?(s) = \epsilon$, which corresponds to case 0.
 
-    \item $m = q^i$ is an order 0 question ($i \in I_0$).
-    Then $q^i$ points to the initial question $q$ and $s$ falls into category D.
+    \item $m = q^i$ is an order 0 question ($i \in I_0$) then  $q^i$ points to the initial question $q$ and $s$ falls into category D.
 
     \item $m = p^i$ is a first order question, then $p^i$ points to $q$,
     $?(s)= q p^i$ and it is O's turn to play after $s$ therefore $s$ falls into category B.
@@ -978,33 +983,13 @@ valid.
 
 
 \item[case B] $?(u) \in q \cdot L^* \cdot p^i$ where $i \in I_1$ and O plays the move $m$.
-The are two possibilities:
-\begin{itemize}
-\item Suppose that O gives the (tagged) answer $b^j$ for some $j \in I_1$ then
-the visibility condition constraints it to point to a question in
-the O-view at that point.
 
-We remark that the last move in $\hat{u}$ must be $p^i$. Indeed,
-suppose that there is a move $x \in M_A$ such that $\hat{u} =
-\justseq{q & \ldots & p^i\ x \pointto{ll}}$ then by visibility, the
-O-move $x$ should point to a move in the O-view a that point. The
-O-view is $q p^i$, therefore $x$ can only point to $p^i$. But then,
-$p^i$ is not a pending question in $s$ which is a contradiction.
+By corollary \ref{cor:pendingview}, $m$ points in $\pview{?(u)} = q p^i$. Since $m$ is an O-move it must points to $p^i$.
 
+In the arena $A_i$, $p^i$ enables two kind of moves:
+if $m =b^j$ for some $j \in I_1$ then $?(s) = ?(u \cdot b^i) \in q \cdot L^*$ which is covered by case A and C.
+If $m = q^i$ then have $?(s) = ?(u \cdot q^i) \in q \cdot L^* \cdot p^i q^i$ and $s$ falls into category C.
 
-Therefore $\oview{\hat{u}} = \oview{ \justseq{ q & \ldots & p^i
-\pointto{ll}} } = q p^i$.
-
-Hence $b^j$ can only point to $p^i$ (and therefore $i=j$).
-
-We then have $?(s) = ?(u \cdot b^i) \in  q \cdot L^*$ which is
-covered by case A and C.
-
-\item The only other possible O-move is $q^i$ which, again by the visibility condition, points necessarily
-to the previous move $p^i$. We then have $?(s) = ?(u \cdot q^i) \in
-q \cdot L^* \cdot p^i q^i$. This falls into category C.
-
-\end{itemize}
 
 \item[case C] $?(u) \in q \cdot L^* \cdot p^i q^i$ where $i \in I_1$ and the move $m$ is played by $P$.
 
@@ -1013,18 +998,21 @@ $q^i$ being answered first. The move $m$ is therefore an integer $a^i$
 pointing to $q^i$. We then have $?(s) = ?(u \cdot a^i) \in  q \cdot
 L^* \cdot p^i$. This corresponds to case B.
 
-Suppose $m$ is a question then there are two sub-cases:
-if $m = q^j$ with $j \in I_0$ then the pointer goes to the initial question $q$ and $s$ falls into category D.
-If $m = p^j$ with $j \in I_1$ then the pointer goes to the initial question $q$ and $s$ falls into category B.
+Suppose $m$ is a question then it cannot point to $p^i$ since it is a P-move. It does not point to $q^i$ neither since $q^i$ does not enable
+any move in the arena. Similarly $m$ does not point to any move in $L^*$. Hence $m$ must point to the initial question $q$.
+
+There are two sub-cases, either $m = q^j$ for some $j \in I_0$ and then $s$ falls into category D
+or $m = p^j$ for some $j \in I_1$ and $s$ falls into category B.
 
 
 \item[case D] $?(u) \in q \cdot L^* \cdot q^i$ where $i \in I_0$ and the move $m$ is played by $O$.
 
-    The same argument as in case B holds. However there is now another possible move:
-    the answer $m = a^i_k$ for some $k$.  This moves can only points to
-    $q^i$ (this is the only pending question tagged by $i \in I_0$).
+    The same argument as in case B holds with an additional subcase:
+    if $m$ is the answer $a^i_k$ for some $k$ then $m$ must point to
+    $q^i$ since this is the only pending occurrence of its enabler.
 
-    Then $?(\hat{s}) = ?(\hat{u}\cdot a^i_k) = ?(\justseq{ q & \ldots & q^i \pointto{ll} & \ldots & a^i_k \pointto{ll}}) \in q \cdot L^* $ therefore $s$ falls either into category A or C.
+    Then $?(s) = ?(u\cdot a^i_k) \in q \cdot L^* $ and
+    $s$ falls either into category A or C.
 
 \end{description}
 

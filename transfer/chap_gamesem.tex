@@ -608,18 +608,10 @@ features of the language that we want to model. Here is a list of
 common restrictions that we will consider:
 \begin{itemize}
 \item \emph{Well-bracketing:}
-We call \emph{pending question} a question in a sequence that has not been answered.
-A strategy $\sigma$ is well-bracketed if for every play $s \cdot m \in \sigma$:
-\begin{itemize}
-\item if $m$ is an answer then it points to the last pending question in $s$;
-\item if $m$ is a question then it points to a pending question in $s$.
-\end{itemize}
+We call \emph{pending question} the last question in a sequence that has not been answered.
+A strategy $\sigma$ is well-bracketed if for every play $s \cdot m \in \sigma$ where $m$ is an answer, $m$ points to the pending question in $s$.
 
-The second condition is usually omitted in the literature of game semantics. It is harmless to add it
-since the well-bracketed strategies involved in the game model of PCF satisfy this condition. Moreover it will
-be a necessary condition for some property that we are going to prove.
-
-\item \emph{History-free strategies:} A strategy is history-free if the Proponent's move at any position of the game where he has to play
+\item \emph{History-free strategies:} a strategy is history-free if the Proponent's move at any position of the game where he has to play
 is determined by the last move of the Opponent. In other words, the
 history prior to the last move is ignored by the Proponent when
 deciding how to respond.
@@ -840,38 +832,97 @@ be proved in the quotiented category.
 \subsection{Pointers are superfluous for games on arenas of order 2}
 
 For any legal justified sequence of moves $s$, we write $?(s)$ for the
-subsequence of $s$ obtain by keeping only the pending questions in $s$.
-
-\begin{rem}
-By definition of well-bracketing, for any well-bracketed sequence $s\cdot m$, the move $m$ points to a question in $?(s)$.
-Moreover if $s \cdot m$ satisfies visibility and $m$ is a P-move (resp. O-move) then $m$ points in $?(\pview{m})$ (resp. $?(\oview{m})$).
-\end{rem}
+subsequence of $s$ obtain by keeping only the unanswered questions in $s$. It is easy to check that if $s$ satisfies alternation then $?(s)$ also
+satisfies alternation.
 
 \begin{lem}
-Let $s \cdot m$ be a legal well-bracketed sequence of moves.
+  If $s\cdot q$ is a legal position (i.e. justified sequence satisfying visibility and alternation) satisfying
+    well-bracketing where $q$ is a non-initial question then $q$ points in $?(s)$.
+\end{lem}
+\begin{proof}
+    By induction on the length of $s \cdot q$. The base case $s=\epsilon$ is trivial.
+    Let $s = s\cdot q$, where $q$ is not initial.
+
+    Suppose $q$ is a P-move. We prove that $q$ cannot point to an O-question that has been answered.
+    Suppose that an O-move $q'$ occurs before $q$ and is answered by the move $a$ also occurring before $q$.
+    Then we have $s = s_1 \cdot q'^O \cdot s_2 \cdot a^P \cdot s_3 \cdot q^P$ where $a$ is justified by $q'$.
+    $a$ is not in the P-view $\pview{s_{<q}}$. Indeed this would imply that some O-move occurring in $s_3$ points to $a$, but this is impossible
+    since answer moves are not enablers. Hence the move $a$ must be situated underneath an O-to-P link. Let us note $m$ the origin of this link,
+    the P-view of $s$ has the following form: $\pview{s} = \pview{s_1\cdot q'^O \cdot s_2 \cdot a^P \ldots m^O} \ldots q^P$ where $m$ is an O-move pointing before $a$.
+
+    If $m$ is an answer move then it must point to the last unanswered move that is to say the last move in $?(s_{<m})$.
+    If $m$ is a question move then it is not initial since there is a link going from $m$. Therefore by the induction hypothesis, $m$ must point
+    to a move in $?(s_{<m})$.
+
+    Since $s$ is well bracketed, all the question in the segment $q'\ldots a$ are answered.
+    Therefore since $m$ points to an unanswered question occurring before $a$, $m$ must
+    points to a move occurring strictly before $q'$. Consequently $q'$ does not occur in the P-view $\pview{s}$.
+    By visibility, $q$ must point in the P-view $\pview{s}$ therefore $q$ does not point to $q'$.
+
+    A similar argument holds if $q$ is an O-move.
+\end{proof}
+
+This means that in a well-bracketed legal position $s\cdot m$, if the move $m$ is not initial then $m$ must point to a question in $?(s)$
+whether $m$ is a question or an answer (of course if $m$ is an answer then it points precisely to the \emph{last} question in $?(s)$).
+Moreover if $m$ is a P-move then by visibility it should point in an unanswered question in $\pview{m}$ therefore
+it should also points in $?(\pview{m})$.
+Similarly, if $m$ is a non initial O-move then it points in $?(\oview{m})$.
+
+\begin{lem}
+Let $s$ be a legal well-bracketed position.
 \begin{enumerate}
-\item If $m$ is not a P-answer then $?(\pview{s \cdot m}) = \pview{?(s \cdot m)}$;
-\item if $m$ is not an O-answer then $?(\oview{s \cdot m}) = \oview{?(s \cdot m)}$.
+\item If $s=\epsilon$ or if the last move in $s$ is not a P-answer then $?(\pview{s}) = \pview{?(s)}$;
+\item If $s=\epsilon$ or if the last move in $s$ is not an O-answer then $?(\oview{s}) = \oview{?(s)}$.
 \end{enumerate}
 \end{lem}
 \begin{proof}
-By induction on the length of $s$. The base case is trivial. Suppose $s = s' \cdot q \cdot s'' \cdot q_2$
+(i) By induction on the length of $s$. The base case is trivial.
+Step case: suppose that $s \cdot m$ is a legal well-bracketed position.
 
+If $m$ is an initial O-question then $?(\pview{s \cdot m}) = ?(m) = m = \pview{?(s) \cdot m} = \pview{?(s \cdot m)}$.
+
+If $m$ is a non initial O-question then
+$s \cdot m^O = s' \cdot q^P \cdot s'' \cdot m^O$ where $m$ is justified by $q$.
+We have $?(\pview{s}) = ?(\pview{s'} \cdot q \cdot  m) = ?(\pview{s'}) \cdot q \cdot m$.
+If $s'$ is not empty then its last move must be an O-move (by alternation), therefore by the induction hypothesis
+$?(\pview{s'})= ?(\pview{?(s')})$.
+By the previous lemma, the move $m$ must point in $?(s)$ therefore we have
+$?(s \cdot m) = ?(s') \cdot q^P \cdot u \cdot m^O$ for some sequence $u$. And therefore
+$\pview{?(s \cdot m)} = \pview{?(s')} \cdot q^P \cdot m^O$.
+
+If $m$ is an O-answer then $s \cdot m = s' \cdot q^P \cdot s'' \cdot m^O$ where $m$ is justified by $q$.
+Then $?(\pview{s\cdot m}) = ?(\pview{s'} q a) = ?(\pview{s'})$.
+Moreover since $s$ is well-bracketed, we have $?(s) = ?(s')$.
+Again the induction hypothesis permits to conclude.
+
+If $m$ is a P-question then $\pview{s \cdot m} = \pview{s} \cdot m$ and $?(\pview{s \cdot m}) = ?(\pview{s}) \cdot m$.
+Moreover $\pview{?(s \cdot m)} = \pview{?(s) \cdot m} = \pview{?(s)} \cdot m$.
+By alternation if $s$ is not empty it must end with an O-move therefore the induction hypothesis permits to conclude.
+
+
+(ii) The argument is similar to (i).
 \end{proof}
 
-The previous remark and lemma gives the following corollary:
+Note that for (i), and similarly for (ii), it is important that $s$ does not ends with a P-answer. For instance consider the legal position:
+$s = \justseq{ q_0^O &  q_1^P \pointto{l} &  q_2^O \pointto{l} &  q_3^P \pointto{l} &  q_4^O \pointto{lll} & a^P \pointto{l} }$
+ending with a P-answer. We have $\pview{?(s)} = \pview{q_0 \cdot q_1 \cdot q_2 \cdot q_3} = q_0 \cdot q_1 \cdot q_2 \cdot q_3$
+but $?(\pview{s}) = ?(q_0 \cdot q_1 \cdot q_4 \cdot a) = q_0 \cdot q_1 \cdot q_4$.
+
+
+\vpsace{10pt}
+By the previous remark and lemma we obtain the following corollary:
 \begin{cor}
 \label{cor:pendingview}
-Let $s \cdot m$ be a legal well-bracketed sequence of moves \emph{satisfying visibility}.
+Let $s \cdot m$ be a legal well-bracketed position.
 \begin{enumerate}
 \item If $m$ is a P-move then it points in $?(\pview{s}) = \pview{?(s)}$;
-\item if $m$ is an O-move then it points in $?(\oview{s}) = \oview{?(s)}$.
+\item if $m$ is a non initial O-move then it points in $?(\oview{s}) = \oview{?(s)}$.
 \end{enumerate}
 
 \end{cor}
 
 
-The height of an arena $\langle M, \lambda, \vdash \rangle$ is the length of the longest sequence of moves
+We call height of an arena $\langle M, \lambda, \vdash \rangle$ the length of the longest sequence of moves
 $m_1 \ldots m_h$ in $M$ such that $m_1 \vdash m_2 \vdash \ldots \vdash m_h$.
 The order of the arena is defined to be its height minus two.
 
@@ -908,7 +959,8 @@ where each triangle $A_i$ represents an arena of order 0 or 1.
 We write $I_k$, where $k=0$ or $1$, for the set of indices $i$ such that the arena $A_i$ has order $k$:
 $$I_k = \{ i \in 1.. n\ |\ \order{A_i} = k \}$$
 
-On the diagram below we represent an arena $A_i$ where $i \in I_0$ on the left and an arena $A_j$ where $j \in I_1$ on the right:
+We assume that the arena $A_k$ are trees, it is easy to generalize to any DAG.
+The diagram below represents an arena $A_i$ where $i \in I_0$ on the left and an arena $A_j$ where $j \in I_1$ on the right:
 \begin{center}
 \
   \pstree[levelsep=6ex]
@@ -941,7 +993,7 @@ D & O & $q \cdot L^* \cdot q^i$      & $i \in I_0$ \\
 \end{tabular}
 \end{center}
 
-Let $s$ be a legal and well-bracketed \emph{justified} sequence of moves of the game $A$.
+Let $s$ be a legal well-bracketed position in $L_A$.
 We prove by induction on the length of $s$ that $?(s)$
 corresponds to either case 0, A, B, C or D and that the pointers in
 $s$ can be recovered uniquely.
@@ -953,9 +1005,9 @@ If $s$ is a singleton then it must be the initial question $q$ and
 there is not pointer to recover. This corresponds to case A.
 
 \noindent \textbf{Step case:}
-If $s = u \cdot m$ with $m \in M_A$
-for some non empty legal well-bracketed justified sequence $u$.
-By the induction hypothesis, $u$ corresponds to one of the cases 0,A,B,C or D.
+If $s = u \cdot m$ for some non empty legal well-bracketed position $u$ and move $m \in M_A$
+then by the induction hypothesis the pointers in $u$ can all be recovered and $u$ corresponds to one of the
+cases 0, A, B, C or D.
 We proceed by case analysis:
 \begin{description}
 \item[case 0] This case cannot happen because $?(u) = \epsilon$ ($u$ is a complete play) implies that there cannot be any further move $m$.
@@ -1009,7 +1061,7 @@ or $m = p^j$ for some $j \in I_1$ and $s$ falls into category B.
 
     The same argument as in case B holds with an additional subcase:
     if $m$ is the answer $a^i_k$ for some $k$ then $m$ must point to
-    $q^i$ since this is the only pending occurrence of its enabler.
+    $q^i$ since this is the only unanswered occurrence of its enabler.
 
     Then $?(s) = ?(u\cdot a^i_k) \in q \cdot L^* $ and
     $s$ falls either into category A or C.

@@ -13,14 +13,12 @@ Types \funto (L, \leq)$ where $(L, \leq)$ is any linearly ordered
 set. Possible candidates for the ranking function are:
 \begin{itemize}
 \item ${\sf ord} : Types \funto (\nat,\leq)$ with $\ord{o} = 0$
-and $\ord{A \funsp B} = \max(\ord{A}+1, \ord{B})$.
+and $\ord{A \funsp B} = \max(\ord{A}+1, \ord{B})$;
 \item ${\sf height} : Types \funto (\nat,\leq)$ with
-\begin{eqnarray*}
-     \slheight{o} &=& 0 \\
-     \slheight{A \funsp B} &=& 1 + \max(\slheight{A}, \slheight{B})
-\end{eqnarray*}
+$\slheight{A \funsp B} = 1 + \max(\slheight{A}, \slheight{B})$ and
+$\slheight{o} = 0$ ;
 \item ${\sf nparam} : Types \funto (\nat,\leq)$ with $\nparam{o} = 0$
-and $\nparam{A_1, \cdots, A_n} = n$.
+and $\nparam{A_1, \cdots, A_n} = n$;
 \item ${\sf ordernp} : Types \funto (\nat \times \nat,\leq)$ with $ {\sf ordernp} (t)  = (\order{t}, \nparam{t})$ for $t \in Types$.
 \end{itemize}
 
@@ -55,22 +53,38 @@ From now on, we only consider the rank function {\sf ord}. The term
 ``homogeneous'' will be used to refer to {\sf ord}-homogeneity.
 
 
-\subsection{Rules}
+\subsection{Safe recursion scheme}
+In \cite{KNU02}, safety is defined as a restriction for homogeneous recursion scheme.
+A recursion scheme is homogeneous if:
+\begin{itemize}
+    \item[(i)] the $\Sigma$ constants are of order 1 at most and therefore have homogeneous types;
+    \item[(ii)] the variables in the alphabet $\Delta$ have homogeneous types,
+    \item[(iii)] and every non-terminal in the recursion scheme has a homogeneous type.
+\end{itemize}
 
-We present here the definition of the safe $\lambda$-calculus given
-in \cite{Ong2005} (a corrected version of
-\cite{DBLP:conf/fossacs/AehligMO05}). In the following we shall
-consider terms-in-context $\seq{\Gamma}{M : A}$ of the simply-typed
-$\lambda$-calculus. Let $\Delta$ be a simply-typed alphabet i.e.,
-each symbol in $\Delta$ has a simple type. We write
-$\terms{A}{\Delta}$ for the set of terms of type $A$ built up from
-the set $\Delta$ understood as constant symbols, \emph{without}
-using $\lambda$-abstraction.
+The first and second restriction imposes that every applicative terms in $\mathcal{T}(\Delta)$ must be homogeneous.
 
+There is an obvious transformation mapping simply-typed terms to recursion schemes and reciprocally
+(the abstractions of the simply-typed terms correspond to the non-terminals of recursion schemes).
+
+The definition of the Safe $\lambda$-calculus that follows is an adaption of the safety restriction to the simply-typed $\lambda$-calculus.
+In \cite{demirandathesis}, it is proved that
+
+\todobox{Introduce safe grammars.}
+%In the following we shall consider terms-in-context $\seq{\Gamma}{M
+%: A}$ of the simply-typed $\lambda$-calculus.
+%Let $\Delta$ be a
+%simply-typed alphabet i.e., each symbol in $\Delta$ has a simple
+%type.
+%We write $\terms{A}{\Delta}$ for the set of terms of type $A$
+%built up from the set $\Delta$ understood as constant symbols,
+%\emph{without} using $\lambda$-abstraction.
+
+\subsection{Rules of the Safe $\lambda$-Calculus}
 
 The \textbf{Safe $\lambda$-Calculus} is a sub-system of the
 simply-typed $\lambda$-calculus. Typing judgements (or
-terms-in-context) are of the form
+terms-in-context) are of the form:
 \begin{equation}
 \nonumber \seq{\overline{x_1}:\overline{A_1} \, | \, \cdots \, | \,
 \overline{x_n} :  \overline{A_n}}{M : B}
@@ -79,9 +93,10 @@ which is shorthand for $\seq{x_{11} : A_{11}, \cdots, x_{1r}:
 A_{1r}, A_{21},\ldots }{M : B}$ such that the context variables are listed in decreasing type order and
  with the condition that $\ord{x_{ik}} < \ord{x_{jl}}$ for any $k, l$ and $i<j$.
 
-\emph{Valid typing judgements} of the
-system are defined by induction over the following rules, where
-$\Delta$ is a given homogeneously-typed alphabet:
+\emph{Valid typing judgements} of the system are defined by
+induction over the following rules, where $\Delta$ is a given
+homogeneously-typed alphabet and $\Sigma$ is a set of
+homogeneously-typed constant:
 
 $$ \rulename{wk}
     {   \rulef{ \seq{\Sigma}{M:B} \qquad {\Sigma \subset \Delta} }
@@ -95,8 +110,7 @@ $$ \rulename{wk}
     }
 $$
 
-
-$$ \rulename{\Sigma\mbox{\textbf{-const}}}  \rulef{b : o^r \rightarrow o \in \Sigma} {\seq{}{b : o^r \rightarrow o}}
+$$ \rulename{\Sigma\mbox{\textbf{-const}}}  \rulef{}{\seq{}{b : A}}\ b:A \in \Sigma
 \qquad
  \rulename{var} \rulef{}{\seq{x_{ij} : A_{ij}\, }{x_{ij} : A_{ij}}}
 $$
@@ -117,7 +131,6 @@ B_{1l}} \qquad l = |\overline{B_1}| }}
 \cdots N_{l} : (\overline{B_2} \, | \, \cdots \, | \,
 \overline{B_m} \, | \, o)}} $$
 
-
 $$ \rulename{app^+} \rulef
     {\seq{\Gamma}{M : (\overline{B_1} \, | \, \cdots \, | \, \overline{B_m} \, | \, o)} \qquad
     \seq{\Gamma}{N_1 : B_{11}} \quad \cdots \quad \seq{\Gamma}{N_{l} :
@@ -129,6 +142,14 @@ $$ \rulename{app^+} \rulef
 where $\overline{B_1} = B_{11}, \ldots, B_{1l},\overline{B}$ with
 the condition that every variable in $\Gamma$ has an order strictly greater
 than $\ord{\overline{B_1}}$.
+
+
+Rules for the safe $\lambda$-calculus have been first proposed in
+\cite{DBLP:conf/fossacs/AehligMO05} and a corrected version is given
+in \cite{Ong2005}. The definition that we have given here is
+slightly more general in the sense that we authorize the use of
+$\Sigma$-constants of any higher-order type whereas the original
+definition only allows first order constants.
 
 
 \begin{property}[Basic properties]
@@ -189,13 +210,15 @@ An easy proof by an induction on the structure of the safe term.
 
 
 
-With the traditional substitution, it is necessary to rename variables when performing substitution on an abstraction
-in order to avoid possible captures of variables. Hence in general implementing substitution requires to have
-access to an unbound number
-of variables names.
-An interesting property of the homogeneous safe $\lambda$-calculus is that
-variable capture never occurs when performing substitution.
-Consequently, the capture permitting substitution will produce the same terms as the traditional substitution:
+With the traditional substitution, it is necessary to rename
+variables when performing substitution on an abstraction in order to
+avoid possible captures of variables. Hence in general implementing
+substitution requires to have access to an unbound number of
+variables names. An interesting property of the homogeneous safe
+$\lambda$-calculus is that variable capture never occurs when
+performing substitution. In other words, the traditional
+substitution can be safely replaced by the capture permitting
+substitution:
 
 \begin{lem}[No variable capture lemma]
 \label{lem:homog_nocapture}
@@ -210,16 +233,17 @@ We prove the result by induction. The variable, constant and application cases a
 For the abstraction case, suppose $M = \lambda \overline{y} : \overline{A}. P$ where $\overline{y} = y_1 \ldots y_p$. The capture permitting
 simultaneous substitution gives:
 $$M \subst{\overline{N}}{\overline{x}} = \lambda \overline{y} . P
-\subst{\overline{N} \upharpoonright I}{\overline{x} \upharpoonright I}$$
-
-where $I  = \{ i \in 1..n \ | \ x_i \not \in \overline{y} \}$.
+\subst{\overline{N} \upharpoonright I}{\overline{x} \upharpoonright
+I} \mbox{ where } I  = \{ i \in 1..n \ | \ x_i \not \in \overline{y}
+\}. $$
 
 
 By the induction hypothesis there is no variable capture in $P
-\subst{\overline{N} \upharpoonright I}{\overline{x} \upharpoonright I}$.
-
-Hence the only possible case of variable capture happens when for some $i \in I$ and $j \in 1..p$ the variable $y_j$ occurs freely
-in $N_i$ and $x_i$ occurs freely in $P$. In that case, property \ref{proper:safe_basic_prop} (ii) gives:
+\subst{\overline{N} \upharpoonright I}{\overline{x} \upharpoonright
+I}$. Hence the only possible case of variable capture happens when
+for some $i \in I$ and $j \in 1..p$ the variable $y_j$ occurs freely
+in $N_i$ and $x_i$ occurs freely in $P$. In that case, property
+\ref{proper:safe_basic_prop} (ii) gives:
 $$ \ord{y_j} \geq \ord{N_i} = \ord{x_i}$$
 
 Moreover $i\in I$ therefore $x_i \not \in \overline{y}$ and since $x_i$ occurs freely in $P$, $x_i$ must also occur freely in the safe term
@@ -249,10 +273,12 @@ the multi-redex $(\lambda x_1 \ldots x_n . M) N_1 \ldots N_l$ is a safe redex if
 are abstracted altogether at once using the abstraction rule and if the terms $N_1 \ldots N_l$ are applied to the
 term $\lambda x_1 \ldots x_n . M$ at once using either the application rule $\rulename{app^+}$ or $\rulename{app}$.
 
-Note that there exist safe terms of the form $(\lambda x_1 \ldots x_n . M) N_1 \ldots N_l$
-such that $l>n$. For instance the following term:
+Note that there exist safe terms of the form $(\lambda x_1 \ldots
+x_n . M) N_1 \ldots N_l$ such that $l>n$. For instance the term:
 $$ (\lambda f g . ((\lambda h i . i) a) ) (\lambda x.x) (\lambda x.x) (\lambda x.x)$$
-where is $a$ constant, $x : o$ and $f,g,h,i,a:o \rightarrow o$ can be formed using the $\rulename{app}$ rule as follows:
+for some constant $a$ and variables $x : o$ and $f,g,h,i,a:o
+\rightarrow o$, can be formed using the $\rulename{app}$ rule as
+follows:
 $$ \rulef{
     \emptyset \vdash (\lambda f g . ((\lambda h i . i) a) )
         \quad \emptyset \vdash (\lambda x.x)
@@ -471,7 +497,7 @@ We only give the details for the application cases $\rulename{app}$ and $\rulena
 \begin{itemize}
 \item Case of the rule $\rulename{app}$:
 
-    \[ (\mathbf{app})
+    \[ (\mathbf{app}) \
     \rulef
         {\seq{\Gamma}{M : (\overline{B_1} \, | \, \cdots \, | \, \overline{B_m} \, | \, o)} \qquad
             \seq{\Gamma}{N_1 : B_{11}} \quad \cdots \quad \seq{\Gamma}{N_{l} :
@@ -566,7 +592,7 @@ $P_0$. The side-condition of the rule $\rulename{app^+}$ ensures that all the ot
 
 \item Rule $\rulename{app}$:
 
-$$ \rulename{app}
+$$ \rulename{app} \
     \rulef{
         { \Gamma \vdash M : (\overline{A} \, | B)
         \qquad
@@ -582,13 +608,13 @@ Applying lemma \ref{lem:restriction} to the first premise we obtain:
 \begin{equation}
  \Sigma \vdash^0 M : (\overline{A} \, | B) \label{eq:seq1}
 \end{equation}
-where $\Sigma = \{ z \in \Gamma \ | \ \ord{z} \geq \ord{(\overline{A} \, | B)} \} = \{ z \in \Gamma \ | \ \ord{z} \geq 1 + \ord{\overline{A}} \} $
+where $\Sigma = \{ z \in \Gamma \ | \ \ord{z} \geq \ord{(\overline{A} \, | B)} \} = \{ z \in \Gamma \ | \ \ord{z} \geq 1 + \ord{\overline{A}} \}.$
 
 Since $\ord{\overline{A}} = \ord{A_1} = \ldots = \ord{A_l}$ by applying lemma \ref{lem:restriction} to all the premises but the first we have
 for all $i \in 1..p$ :
 $$ \Sigma' \vdash^0 N_i : A_i $$
 where
-$\Sigma' = \{ z \in \Gamma \ | \ \ord{z} \geq \ord{\overline{A}} \} \supseteq \Sigma$
+$\Sigma' = \{ z \in \Gamma \ | \ \ord{z} \geq \ord{\overline{A}} \} \supseteq \Sigma.$
 
 If the inclusion $\Sigma \subseteq \Sigma'$ is strict then we apply the weakening rule to sequent (\ref{eq:seq1}):
 $$ \rulef{\Sigma \vdash^0 M : (\overline{A} \, | B)}{\Sigma' \vdash^{-1} M : (\overline{A} \, | B)} \rulename{wk} $$
@@ -631,11 +657,11 @@ Hence, we will assume by default that premises of the rules all satisfy $P_{-1}$
 some cases, some premise will actually satisfy $P_0$.
 
 First we define an additional rules expressing the fact that $P_0$ implies $P_{-1}$:
-$$ \rulename{seq} \quad \rulef{\Gamma \vdash^{0} M : A}{\Gamma \vdash^{-1} M : A} $$
+$$ \rulename{seq} \  \rulef{\Gamma \vdash^{0} M : A}{\Gamma \vdash^{-1} M : A} $$
 
 The weakening rule specializes into two rules:
-$$ \rulename{wk^{0}} \quad  \rulef{\Gamma \vdash^{0} M : A}{\Gamma , x : B \vdash^{0} M : A} \quad \ord{B} \geq \ord{A} $$
-$$ \rulename{wk^{-1}} \quad  \rulef{\Gamma \vdash^{-1} M : A}{\Gamma , x : B \vdash^{-1} M : A} \quad \ord{B} \geq \ord{A} -1$$
+$$ \rulename{wk^{0}} \   \rulef{\Gamma \vdash^{0} M : A}{\Gamma , x : B \vdash^{0} M : A} \quad \ord{B} \geq \ord{A} $$
+$$ \rulename{wk^{-1}} \   \rulef{\Gamma \vdash^{-1} M : A}{\Gamma , x : B \vdash^{-1} M : A} \quad \ord{B} \geq \ord{A} -1$$
 
 Because of the context reduction lemma, any sequent verifying $P_{-1}$ can be obtained
 by applying the weakening rule $\rulename{wk^{-1}}$ or the rule $\rulename{seq}$ to another sequent
@@ -644,27 +670,27 @@ whose conclusion sequents verify $P_0$:
 \begin{itemize}
 \item For the rules $\rulename{perm}$, $\rulename{const}$ and $\rulename{var}$, only the tagging of the sequents
 changes:
-$$ \rulename{var} \quad  \rulef{}{x : A\vdash^{0} x : A}
+$$ \rulename{var} \   \rulef{}{x : A\vdash^{0} x : A}
 \qquad
-  \rulename{perm} \rulef{
+\rulename{\Sigma\mbox{\textbf{-const}}}  \  \rulef{}{\vdash^0 b : A} \ b:A \in \Sigma
+$$
+
+$$
+  \rulename{perm} \  \rulef{
       { \Gamma \vdash^0 M:B \qquad \sigma(\Gamma)  } \hbox{ homogeneous}
     }
       { \sigma(\Gamma) \vdash^0 M : B }
 $$
 
-$$ \rulename{const}
-    \rulef{}{ \vdash^0 b : o^r \rightarrow o} \quad b : o^r \rightarrow o \in \Sigma
-$$
-
 \item $\rulename{abs}$ The definition of the abstraction rule has a side condition
 expressing the fact that the premise verifies $P_0$ or $P_{-1}$. Since this is always true for sequents
 generated by our new system of rules, we can drop the side condition:
-$$ \rulename{abs} \quad  \rulef{\Gamma | \overline{x} : \overline{A} \vdash^{-1} M : B}
+$$ \rulename{abs} \   \rulef{\Gamma | \overline{x} : \overline{A} \vdash^{-1} M : B}
                                    {\Gamma  \vdash^{0} \lambda \overline{x} : \overline{A} . M : (\overline{A},B)}$$
 
 
 \item $\rulename{app}$ The application rule has the following form:
-$$ \rulename{app}
+$$ \rulename{app} \
     \rulef{
         { \Gamma \vdash^{-1} M : (\overline{A} \, | B)
         \qquad
@@ -679,7 +705,7 @@ $$
 Since the first premise verifies $P_{-1}$, by property \ref{proper:safe_basic_prop}(ii) we have:
 $$\forall z \in \Gamma : \ord{z} \geq 1 + \ord{\overline{A}} -1 = \ord{\overline{A}} = \ord{\overline{N}}$$
 Hence, all the sequents of the premises but the first must verify $P_0$. The rule (app) is therefore given by:
-$$ \rulename{app}
+$$ \rulename{app} \
     \rulef{
         { \Gamma \vdash^{-1} M : (\overline{A} \, | B)
         \qquad
@@ -694,7 +720,7 @@ $$
 as the type of the conclusion premises, therefore since the conclusion verifies $P_0$, the first premise also verifies $P_0$.
 The side-condition implies that that all the other sequents in the premise verify $P_0$. Moreover the fact
 that the first premise verifies $P_0$ ensure that the side-condition always holds. Hence the rule becomes:
-$$ \rulename{app^+}
+$$ \rulename{app^+} \
     \rulef{
         \Gamma \vdash^0 M : (\overline{B_1} \, | \, \cdots \, | \, \overline{B_m} \, | \, o) \qquad
         \Gamma \vdash^0 N_1 : B_{11} \quad \cdots \quad \Gamma \vdash^0 N_{l} : B_{1l} \qquad l < |\overline{B_1}|
@@ -714,29 +740,27 @@ $$ \rulef{\Gamma \vdash^0 M : A\rightarrow B
 The full set of rules is given in table \ref{tab:homosafelmd_rules_refined}.
 
 \begin{table}[htbp]
-$$  \rulename{perm}
+$$  \rulename{perm} \
     \rulef{
       { \Gamma \vdash^0 M:B \qquad \sigma(\Gamma)  } \hbox{ homogeneous}
     }
     { \sigma(\Gamma) \vdash^0 M : B
     }
 \qquad
-\rulename{seq} \quad \rulef{\Gamma \vdash^{0} M : A}{\Gamma \vdash^{-1} M : A}
+\rulename{seq} \  \rulef{\Gamma \vdash^{0} M : A}{\Gamma \vdash^{-1} M : A}
 $$
 
 $$
- \rulename{const}
-    \rulef{}
-        { \vdash^0 b : o^r \rightarrow o} \quad b : o^r \rightarrow o \in \Sigma
+\rulename{\Sigma\mbox{\textbf{-const}}} \  \rulef{}{\vdash^0 b : A}\ b:A \in \Sigma
 \qquad
- \rulename{var} \quad  \rulef{}{x : A\vdash^{0} x : A} $$
+ \rulename{var} \   \rulef{}{x : A\vdash^{0} x : A} $$
 
-$$ \rulename{wk^{0}} \quad  \rulef{\Gamma \vdash^{0} M : A}{\Gamma , x : B \vdash^{0} M : A} \quad \ord{B} \geq \ord{A} $$
+$$ \rulename{wk^{0}} \   \rulef{\Gamma \vdash^{0} M : A}{\Gamma , x : B \vdash^{0} M : A} \quad \ord{B} \geq \ord{A} $$
 
-$$ \rulename{wk^{-1}} \quad  \rulef{\Gamma \vdash^{-1} M : A}{\Gamma , x : B \vdash^{-1} M : A} \quad \ord{B} \geq \ord{A} -1$$
+$$ \rulename{wk^{-1}} \   \rulef{\Gamma \vdash^{-1} M : A}{\Gamma , x : B \vdash^{-1} M : A} \quad \ord{B} \geq \ord{A} -1$$
 
 
-$$ \rulename{app}
+$$ \rulename{app} \
     \rulef
         {   \Gamma \vdash^{-1} M : (\overline{A} \, | B)
             \qquad
@@ -747,12 +771,12 @@ $$ \rulename{app}
         }
 $$
 
-$$ \rulename{app^+} \quad  \rulef{\Gamma \vdash^0 M : A\rightarrow B
+$$ \rulename{app^+} \   \rulef{\Gamma \vdash^0 M : A\rightarrow B
                                         \qquad \Gamma \vdash^{0} N : A
                                    }
                                    {\Gamma  \vdash^{0} M N : B}$$
 
-$$ \rulename{abs} \quad  \rulef{\Gamma| \overline{x} : \overline{A} \vdash^{-1} M : B}
+$$ \rulename{abs} \   \rulef{\Gamma| \overline{x} : \overline{A} \vdash^{-1} M : B}
                                    {\Gamma  \vdash^{0} \lambda \overline{x} : \overline{A} . M : (\overline{A}|B)}$$
 
 

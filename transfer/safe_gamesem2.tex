@@ -1,17 +1,14 @@
-\section{Game semantics of safe $\lambda$-terms}
+\section{Game semantics of simply-typed $\lambda$-terms}
 
 In this section we introduce the concepts of computation tree and
 traversals of the computation tree. We will prove a theorem
 revealing a correspondence between traversals of the computation
 tree and the game semantics of a simply-typed term.
-
 We will then apply this result to the analysis of the game semantics
-of safe term. We will prove that safety leads to an economy of
+of safe term and prove that safety leads to an economy of
 pointers: for safe $\lambda$-terms the pointers from the game
 semantics can be reconstructed uniquely from the moves of the play.
 
-In the following we assume that a set of constants of order $1$ at
-most and noted $\Sigma$ is fixed.
 
 %Is there any unsafe term whose game semantics is a strategy where
 %pointers can be recovered?
@@ -23,9 +20,11 @@ most and noted $\Sigma$ is fixed.
 %unsafe. Since it is possible to recover the pointer from the game
 %semantics of $S$, it is as well possible to recover the pointer from
 %the semantics of $T_2$ which is unsafe.
-%\end{enumerate}
 
-\subsection{$\eta$-long normal form and computation tree}
+\subsection{$\eta$-long normal form, computation tree and traversals}
+We work in the general setting of the simply-typed $\lambda$ calculus with
+a fixed set of higher-order constants noted $\Sigma$.
+
 
 The $\eta$-expansion of $M: A\typear B$ is defined to be the term $\lambda x . M x : A\typear B$ where $x:A$ is a fresh variable.
 It is easy to check that if $M$ is safe then $\lambda x . M x$ is also safe.
@@ -37,9 +36,8 @@ $\eta$-normal form of a term is obtained by hereditarily
 $\eta$-expanding every subterm occurring at an operand position:
 
 \begin{dfn}[$\eta$-long normal form]
-A simply-type term is either an abstraction or it can be written uniquely as
-$s_0 s_1 \ldots s_m$ where $m\geq0$ and $s_0$ is a variable, a
-constant or an abstraction.
+A simply-typed term is either an abstraction or it can be written uniquely as
+$s_0 s_1 \ldots s_m$ where $m\geq0$ and $s_0$ is a variable, a $\Sigma$-constant or an abstraction.
 The $\eta$-long normal form of a term $M$ denoted $\aux{M}$ or sometimes $\etanf{M}$
 is defined as follows:
 \begin{align*}
@@ -130,7 +128,7 @@ $$ \tau((\lambda x.s_0) s_1 \ldots s_n) =
 $$
 \end{itemize}
 
-The \emph{computation tree} of a simply-type term $M$ (whether or not in $\eta$-normal form) is noted $\tau(M)$
+The \emph{computation tree} of a simply-typed term $M$ (whether or not in $\eta$-normal form) is noted $\tau(M)$
 and defined to be $\tau(M) = \tau(\etanf{M})$.
 \end{dfn}
 The nodes (and leaves) of the tree are of three kinds:
@@ -361,17 +359,14 @@ obtained from $t$ by conserving only unmatched nodes. $?(t)$ does not contain an
 We call \emph{input variable} a variable that is justified by the root of $\tau(M)$ (i.e. either free in $M$ or bound by the root of $\tau(M)$).
 
 \subsubsection{Traversal of the computation tree}
-The evaluation of term is performed by traversing the computation tree in a particular way called
-\emph{traversal}. Intuitively, a \emph{traversal} is a justified sequence of nodes of the computation tree where each node
-of the sequence indicates the step that is taken during the evaluation of the term.
-
-It is formally defined as follows:
+Intuitively, a \emph{traversal} is a justified sequence of nodes of the computation tree where each node
+indicates a step that is taken during the evaluation of the term.
 
 \begin{dfn}[Traversal]
 \label{def:traversal} A traversal over a computation tree $\tau(M)$
 is a justified sequence of nodes defined by induction on the rules
-given below and a \emph{maximal-traversal} is a traversal that cannot be
-extended by visiting another node.
+given below. A \emph{maximal-traversal} is a traversal that cannot be
+extended by any rule.
 
 \emph{Initialization rules}
 \begin{itemize}
@@ -763,28 +758,36 @@ move. We have:
 (ii) By a straightforward induction similar to (i).
 \end{proof}
 
-\subsection{Correspondence between computation trees and arenas in game semantics}
 
-We now consider the pure simply-typed $\lambda$-calculus without
-constants ($\Sigma = \emptyset$). We use the cartesian closed
-category of games $\mathcal{C}$ defined in the first chapter as a
-model of the simply-typed lambda calculus. We write $\sem{\Gamma
-\vdash M : A}$ for the strategy denoting the simply-type term
-$\Gamma \vdash M : A$ (defined in section \ref{subsec:pcfgamemodel}
-of the first chapter).
+\subsection{Game semantics of simply-typed $\lambda$-calculus with $\Sigma$-constants}
 
-However, we will use the alternative definition of strategy (see
-remark \ref{rem:atlern_strategy}), which means that we represent a
-strategy using a prefix-closed set instead of an ``even length
+We are working in the general setting of an applied simply-typed $\lambda$-calculus with a given set of higher-order constants $\Sigma$.
+The operational semantics of these constants is given by certain reduction rules.
+
+We assume that a fully abstract model of the calculus is provided by mean of a category of games.
+We make the assumption that the constants are well-behaved in the sense that:
+\begin{enumerate}
+\item[(A1)] the reduction rules associated to $\Sigma$-constants preserve safety;
+\item[(A2)] the denotational game semantics of each constant is a well-bracketed strategy.
+\end{enumerate}
+
+For instance, if $\Sigma$ is the set of PCF constants then we work in the category $\mathcal{G}_{b}$
+of well-bracketed and well-opened games defined in section \ref{subsec:pcfgamemodel} of the first chapter.
+
+We will use the alternative representation of strategy defined in remark \ref{rem:atlern_strategy}: a
+strategy is given by a prefix-closed set instead of an ``even length
 prefix''-closed set. In practice this means that we replace the set
 of plays $\sigma$ by $\sigma \union \textsf{dom}(\sigma)$. This
 permits to avoid considerations on the parity of the length of
 traversals when we show the correspondence between traversals and
-game semantics. We write $\textsf{Pref}(S)$ to denote the
+game semantics. We write $\sem{\Gamma \vdash M : A}$ for the strategy denoting the simply-typed term
+$\Gamma \vdash M : A$ and $\textsf{Pref}(S)$ to denote the
 prefix-closure of the set $S$.
 
-\subsubsection{Example}
 
+\subsection{Correspondence between computation trees and arenas}
+
+\subsubsection{Example}
 By representing side-by-side the computation tree and the type arena of a term in $\eta$-normal form we observe
 that some nodes of the computation tree can be mapped to question moves of the arena.
 
@@ -824,8 +827,8 @@ $$
 
 The figure below represents the computation tree (left) and the arena (right). The dashed line defines a
 partial function $\varphi$ from the set of nodes in the computation
-tree to the set of moves. For simplicity, we now omit answers moves
-when representing arenas:
+tree to the set of moves (for simplicity, we now omit answers moves
+when representing arenas):
 $$
 \tree{ \Rnode{root} {\lambda f z w}^{[1]} }
      {  \tree{@^{[2]}}
@@ -1033,7 +1036,7 @@ $$
 \end{dfn}
 When there is no ambiguity we just write $\varphi$ instead of $\varphi_M$.
 
-Since there are no constants in the pure simply-type $\lambda$-calculus, nodes that are not hereditarily justified
+Since there are no constants in the pure simply-typed $\lambda$-calculus, nodes that are not hereditarily justified
 by the root must be hereditarily justified by a $@$ nodes. Therefore, by doing the union of the partial functions $f(n,q)$
 for all nodes $n$ whose parent is an $@$ node, we obtain a function defined on $N\setminus \{@\}$.
 
@@ -1447,23 +1450,11 @@ term.
 
 
 
-\subsection{Correspondence between interaction semantics and traversals}
+\subsection{Property of traversals}
 
 Before being able to to reveal the correspondence between the
 interaction game semantics and traversals of the computation tree we
 need to introduce some definitions and lemmas.
-
-
-Let us fix some notation: we write $s\upharpoonright A,B$ for the
-sequence obtained from $s$ by keeping only the moves that are in $A$ or $B$ and by removing any link pointing to a move that
-has been removed.
-
-If $m$ is an initial move, we write $s \upharpoonright m$ to
-denote the thread of $s$ initiated by $m$, i.e. the sequence obtained from $s$ by keeping all the moves
-hereditarily justified by $m$.
-We also write $s \upharpoonright A,B,m$ where $m$ is an initial move
-for the sequence obtained from $s \upharpoonright A,B$ by keeping
-all moves hereditarily justified by $m$.
 
 \begin{dfn}[$@$-hiding of traversals]
 Let $t$ be a traversal of $\tau(M)$.
@@ -1584,11 +1575,16 @@ $\varphi(\travset(M)^{\upharpoonright r})$.
 \end{itemize}
 \end{cor}
 
+\subsection{The correspondence theorem for the pure simply-typed $\lambda$-calculus}
+The correspondence theorem establishes a connection between
+the interaction semantics of a term and the traversals of its computation tree.
 
+We are now going to state and prove this theorem for the pure simply-typed $\lambda$-calculus without constants ($\Sigma = \emptyset$).
+The cartesian closed category of games $\mathcal{C}$ defined in the first chapter is used as a
+model of the simply-typed $\lambda$-calculus. We write $\sem{\Gamma \vdash M : A}$ for the strategy denoting the simply-typed term
+$\Gamma \vdash M : A$ (defined in section \ref{subsec:pcfgamemodel}
+of the first chapter).
 
-
-
-We now state the main proposition of this section:
 \begin{prop}
 \label{prop:rel_gamesem_trav} Let $\Gamma \vdash M : T$ be a
 term of the pure simply-typed $\lambda$-calculus and $r$ be the root
@@ -1616,7 +1612,7 @@ of $\tau(M)$. Then:
     of $N_0$ is interrupted and the traversal jumps (rule (Var)) to the root of $\tau(N_i)$ and goes on by traversing $\tau(N_i)$.
     When traversing $N_i$, if the traversal encounters a variable in $\overline{y_i}$ then the traversal of $N_i$ is interrupted and
     the traversal of $N_0$ resumes.  This schema is repeated until the traversal of $\tau(N_0)$ is completed\footnote{Since we are considering
-    simply-type terms, the traversal does indeed terminate. However this will not be true when we adapt this result to PCF.}.
+    simply-typed terms, the traversal does indeed terminate. However this will not be true when we adapt this result to PCF.}.
 
     The traversal of $M$ is therefore made of an initialization part followed by an interleaving of a traversal of $N_0$ and
     several traversals of $N_1$. This schema is reminiscent of the way the evaluation copycat map $ev$ works in game semantics.
@@ -1652,6 +1648,17 @@ of $\tau(M)$. Then:
 %    process goes continuously.
 
 \end{rem}
+
+Let us fix some notation: we write $s\upharpoonright A,B$ for the
+sequence obtained from $s$ by keeping only the moves that are in $A$ or $B$ and by removing any link pointing to a move that
+has been removed.
+If $m$ is an initial move, we write $s \upharpoonright m$ to
+denote the thread of $s$ initiated by $m$, i.e. the sequence obtained from $s$ by keeping all the moves
+hereditarily justified by $m$.
+We also write $s \upharpoonright A,B,m$ where $m$ is an initial move
+for the sequence obtained from $s \upharpoonright A,B$ by keeping
+all moves hereditarily justified by $m$.
+
 
 
 \begin{proof}
@@ -1955,7 +1962,7 @@ Putting corollary \ref{cor:varphi_bij} and proposition
 theorem:
 
 \begin{thm}[Correspondence between game semantics and traversals]
-For any simply-typed term $M$, $\varphi_M$ defines a bijection from
+For any pure simply-typed term $M$, $\varphi_M$ defines a bijection from
 $\travset(M)^{\upharpoonright r}$ to $\sem{M}$ and a bijection
 from $\travset(M)^{-@}$ to $\intersem{M}$:
 \begin{eqnarray*}
@@ -1992,14 +1999,15 @@ $$
 
 
 
-\subsection{Pointers in the game semantics of safe terms are uniquely recoverable}
+\subsection{Application: game semantics characterization of safe terms}
 We now use the correspondence theorem to study the game semantics of
 safe terms. We prove that pointers in the game semantics of
-safe terms (without constants) can be uniquely recovered.
+safe terms without constants can be uniquely recovered.
 
 The example of section \ref{subsec:pointer_necessary} gives a good
-intuition: remember that in order to distinguish the terms $M_1$ and
-$M_2$, we had to keep the pointers in the plays of strategies.
+intuition: remember that in order to distinguish the terms
+$M_1 = \lambda f . f (\lambda x . f (\lambda y .y ))$ and
+$M_2 = \lambda f . f (\lambda x . f (\lambda y .x ))$ we had to keep the pointers in the plays of strategies.
 However, if we limit ourself to the safe $\lambda$-calculus then the
 ambiguity disappears since $M_1$ is safe whereas $M_2$ is not (because
 in the subterm $f (\lambda y . x)$, the free variable $x$ has the same
@@ -2044,7 +2052,7 @@ P-view $\pview{?(s)}$ and the O-view $\oview{?(s)}$ can be computed. Consequentl
 
 \begin{prop}
 \label{prop:regular_comp_imp_regular_strat}
-The computation tree of a simply-type term in $\beta$-normal form is regular if and only if the strategy denoting it is regular.
+The computation tree of a simply-typed term in $\beta$-normal form is regular if and only if the strategy denoting it is regular.
 \end{prop}
 
 \begin{proof}
@@ -2417,4 +2425,8 @@ language allows multiple occurrences or uses of arguments, as long
 as they do not overlap in time. In the games of this language there
 is at most one pending occurrence of a question at any time, so that
 each move has a unique justifier and so justification pointers may
-be ignored. It would be interesting to know how does SRIA relates to Safe Idealized Algol.
+be ignored.
+Clearly the Serially Re-entrant and safety properties are not the same since for instance the Kierstead terms
+$\lambda f . f (\lambda x . f (\lambda y .y ))$ and
+$\lambda f . f (\lambda x . f (\lambda y .x ))$ are both not Serially Re-entrant whereas the first one is safe.
+However it would still be interesting to find out how SRIA relates to Safe Idealized Algol.

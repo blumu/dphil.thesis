@@ -131,19 +131,20 @@ $$
 The \emph{computation tree} of a simply-typed term $M$ (whether or not in $\eta$-normal form) is noted $\tau(M)$
 and defined to be $\tau(M) = \tau(\etanf{M})$.
 \end{dfn}
+
 The nodes (and leaves) of the tree are of three kinds:
 \begin{itemize}
 \item $\lambda$-node labeled $\lambda \overline{x}$ (note that a $\lambda$-node represents several consecutive variable abstractions),
 \item application node labeled $@$,
 \item variable or constant nodes labelled $\alpha$ for some constant or variable $\alpha$.
 \end{itemize}
+We write $N$ for the set of nodes of $\tau(M)$ and $N_\Sigma$ to denotes the subset of $N$ consisting of nodes labelled by $\Sigma$-constants.
 
-
-Let $N$ denotes the set of nodes of $\tau(M)$ and $\mathcal{T}$ denotes the set of $\lambda$-terms.
-Each subtree of the computation tree $\tau(M)$ represents a subterm of $M$.
-The function $\kappa : N \rightarrow \mathcal{T}$ maps a node $n \in N$ to the subterm of $M$
+Let $\mathcal{T}$ denotes the set of $\lambda$-terms.
+Each subtree of the computation tree $\tau(M)$ represents a subterm of $\aux{M}$.
+We define the function $\kappa : N \rightarrow \mathcal{T}$ that maps a node $n \in N$ to the subterm of $\aux{M}$
 represented by the subtree of $\tau(M)$ rooted at $n$.
-In particular if $r$ is the root of the tree $\tau(M)$ then $\kappa(r) = \aux{M}$.
+In particular if $r$ is the root of $\tau(M)$ then $\kappa(r) = \aux{M}$.
 
 \begin{dfn}[Node order]
 The node-order function $\textsf{ord}$ is defined on nodes as follows:
@@ -249,7 +250,7 @@ variable $z$ free in $M$ and where $r$ denotes the root of $\tau(M)$.
 
 With the following conventions:
 \begin{itemize}
-\item the first child of a $@$ node is numbered $0$,
+\item the first child of a $@$-node is numbered $0$,
 \item the first child of a variable or constant node is numbered $1$,
 \item the first variable in $\overline{\xi}$ is numbered $1$ ($\overline{\xi} = \xi_1, \ldots \xi_n$).
 \end{itemize}
@@ -257,6 +258,9 @@ With the following conventions:
 
 Note that justified sequences are also defined for open terms:
 a node labelled $x$ where $x$ is a variable free in $M$ must point to the root of the computation tree.
+
+We write $s \jseq t$ to denote that the two justified sequences $t$ and $s$ have
+the same nodes and same pointers.
 
 We say that a node $n_0$ of a justified sequence is hereditarily justified by $n_p$ if there are nodes $n_1, n_2, \ldots n_{p-1}$ in
 the sequence such that for all $i\in 0..p-1$, $n_i$ points to $n_{i+1}$.
@@ -268,10 +272,6 @@ justified by nodes in $N$. This subsequence is also a justified
 sequence of nodes. If $n$ denotes a node of $\tau(M)$ we
 abbreviate $s \upharpoonright \{ n \}$ into $ s\upharpoonright n$.
 
-\begin{dfn}[Equality of justified sequence]
-We write $s \jseq t$ to denote that the two justified sequences $t$ and $s$ are equal
-(having same nodes and same pointers).
-\end{dfn}
 
 \begin{dfn}[P-view of justified sequence of nodes]
 The P-view of a justified sequence of nodes $t$ of $\tau(M)$ noted $\pview{t}$ is defined as follows:
@@ -288,12 +288,12 @@ $n$ ranges over non-lambda nodes (i.e. labeled either $@$ or by a variable or $\
 
 In the second clause, the pointer associated to $n$ is preserved from the left-hand side to the right-hand side:
 if in the left-hand side, $n$ points to some node in $s$ that is also present in $\pview{s}$ then in the right-hand side,
-  $n$ points to that corresponding occurrence of the node in $\pview{s}$.
+  $n$ points to this occurrence of the node in $\pview{s}$.
 
-In the third equality, the pointer associated to $m$ is also preserved.
+Similarly, in the third clause the pointer associated to $m$ is preserved.
 \end{dfn}
 
-Similarly we define the O-view, the dual of the P-view:
+We also define O-view, the dual notion of P-view:
 \begin{dfn}[O-view of justified sequence of nodes]
 The O-view of a justified sequence of nodes $t$ of $\tau(M)$ noted $\oview{t}$ is defined as follows:
 \begin{eqnarray*}
@@ -311,12 +311,16 @@ The pointer associated to $\lambda \overline{\xi}$ in the second equality
 as well as the pointer associated to $m$ in the third equality are preserved from the left-hand side to the right-hand side of the equalities.
 \end{dfn}
 
-\begin{dfn}[Visibility] \ \\
-A justified sequence of nodes $s$ satisfies \emph{P-visibility} if every variable node with pointer
-points to a node occurring in the P-view a that point.
+\begin{dfn}[Alternation and Visibility] \ \\
+A justified sequence of nodes $s$ satisfies:
+\begin{itemize}
+\item \emph{alternation} if for any two consecutive nodes in $s$, one is a $\lambda$-node
+and the other is not;
 
-Dually, $s$ satisfies \emph{O-visibility} if every lambda node occurring in it that has a pointer
-points to a node in the O-view a that point.
+\item \emph{P-visibility} if every variable node in $s$ points to a node occurring in the P-view a that point;
+
+\item  \emph{O-visibility} if every lambda node in $s$ points to a node occurring in the O-view a that point.
+\end{itemize}
 \end{dfn}
 
 \begin{property}
@@ -362,8 +366,10 @@ We call \emph{input variable} a variable that is justified by the root of $\tau(
 Intuitively, a \emph{traversal} is a justified sequence of nodes of the computation tree where each node
 indicates a step that is taken during the evaluation of the term.
 
-\begin{dfn}[Traversal]
-\label{def:traversal} A traversal over a computation tree $\tau(M)$
+\begin{dfn}[Traversal for pure simply-typed $\lambda$-calculus]
+\label{def:traversal}
+In the simply-typed $\lambda$-calculus with no constants,
+a traversal over a computation tree $\tau(M)$
 is a justified sequence of nodes defined by induction on the rules
 given below. A \emph{maximal-traversal} is a traversal that cannot be
 extended by any rule.
@@ -394,31 +400,23 @@ i.e. the next visited node is the $0$th child node of $@$ : the
 node corresponding to the operator of the application.
 \end{itemize}
 
-\emph{Input variable and constant rules}
+\emph{Input variable rules}
 
-Suppose $t = t_1 \cdot p \cdot t_2$ is a traversal where $p$ is the pending $\lambda$-node in $t$ then:
+Suppose $t = t_1 \cdot p \cdot t_2$ is a traversal where $p$ is the pending $\lambda$-node in $t$ (i.e. $?(t_2)=\epsilon$) then:
 \begin{itemize}
-\item ($\mbox{InputVar}^0$) If $p = x$ is a ground-type input variable then for any $v \in \mathcal{D}$
+\item (InputVar$^0$) If $p = x$ is a ground-type input variable then for any $v \in \mathcal{D}$
 the following is a traversal
 $$t_1 \cdot \rnode{x}{x} \cdot t_2 \cdot \rnode{xv}{x^v}
 \bkptra[nodesep=1pt]{60}{xv}{x}$$
 
 
-\item ($\mbox{InputVar}^{\geq 1}$) If $p = x$ is a non-ground type input variable then the following is a traversal:
+\item (InputVar$^{\geq 1}$) If $p = x$ is a non-ground type input variable then the following is a traversal:
 $$t_1 \cdot \rnode{m}{x} \cdot t_2 \cdot
 \rnode{n}{n} \bkptra[nodesep=1pt]{80}{n}{m} \bklabelb{i} \qquad
 \mbox{ for } 1 \leq i \leq arity(x).$$
 and for any $v\in \mathcal{D}$ the following sequence is also a traversal:
 $$t_1 \cdot \rnode{x}{x} \cdot t_2 \cdot \rnode{xv}{x^v}
 \bkptra[nodesep=1pt]{60}{xv}{x}$$
-
-\item ($\mbox{Sig}^0$) If $t \cdot f$ is a traversal where $f$ is an order 0 $\Sigma$-constant then the traversal can be extended the same
-way as in rule ($\mbox{Var}^0$).
-
-
-\item ($\mbox{Sig}^{\geq 1}$) If $t \cdot f$ is a traversal where $f$ is a $\Sigma$-constant of order greater or equal to
-$1$ then the traversal can be extended the same
-way as in rule ($\mbox{Var}^{\geq 1}$).
 \end{itemize}
 
 \emph{Copy-cat rules}
@@ -517,24 +515,8 @@ preceding $\lambda \overline{x}$ in the traversal: $t \cdot x_i = t'
 
     \end{itemize}
 \end{itemize}
-
 We write $\travset(M)$ for the set of traversals of $\tau(M)$.
 \end{dfn}
-
-\begin{lem}
-Traversals are well-defined and well-bracketed.
-\end{lem}
-The proof is by induction.
-%In particular to prove that the copy-cat rules are well-defined, one needs to ensure that
-%\begin{itemize}
-%\item traversals are well-bracketed;
-%\item the subsequence obtained from a traversal by keeping only unmatched nodes is such that
-%        $\lambda$-nodes and non $\lambda$-nodes alternate;
-%\item if the last two unmatched nodes are $y$ and $\lambda \overline{\xi}$ in that order, for some non-input variable node $y$ then necessary
-%      $y$ and $\lambda \overline{\xi}$ are consecutive nodes in the traversal.
-%    This is because in a traversal, a non input variable $y$ is always followed by a lambda node and whenever this lambda node is answered
-%    there is only one way to extend the traversal : by using the copy cat rule to answer the $y$ node.
-%\end{itemize}
 
 \begin{exmp}
 Consider the following tree:
@@ -570,63 +552,107 @@ $$ \lambda \cdot
 \bkptra[ncurv=0.5]{50}{leta}{y}  \bklabel{i}
 \bkptra[ncurv=0.6,nodesep=0]{40}{y}{ly}  \bklabel{1}
 \bkptra[ncurv=0.5]{50}{lx}{app}  \bklabel{1}$$
-
 \end{exmp}
+
+
+\begin{dfn}[Well-behaved traversal rule]
+\label{def:wellbehaved_traversal}
+A traversal rule is \emph{well-behaved} if it can be stated under the following form:
+$$\rulef{t = t_1\cdot n \cdot t_2 \in \travset \quad ?(t_2) = \epsilon \quad P(t_2)}
+  { \stackrel{  \rule{0pt}{3pt} }{t' = t_1\cdot \rnode{n}{n} \cdot t_2 \cdot \rnode{m}{m} \in \travset} } \bkptra[nodesep=1pt]{35}{m}{n}$$
+such that:
+\begin{enumerate}
+  \item $n$ is not a $\lambda$-node;
+  \item $P$ expresses some property which must be verified by the segment of traversal $t_2$;
+  \item $m$ is uniquely determined by $t$ (i.e. the rule is deterministic).
+\end{enumerate}
+\end{dfn}
+For example, the rules (InputVar$^0$) and (InputVar$^{\geq1}$) verify all the condition of well-behaveness except determinism.
+
+We have the following immediate properties: $m$ must be a child node of $n$ and therefore $m$ must be a $\lambda$-node;
+if $t$ is well-bracketed then $t'$ is also well-bracketed
+and if $?(t)$ satisfies alternation (resp. visibility) then so does $?(t')$.
+
+
+
+In the presence of higher-order constants, there must be additional rules to take into account the
+constant nodes of the computation tree.
+From now on, we assume that some constant rules have been fixed and that they respect the following two conditions:
+\begin{itemize}
+  \item[C1] constant rules are well-behaved;
+  \item[C2] the system of constant traversal rules is deterministic.  In other words, the domain of application of the
+  constant rules do not overlap.
+\end{itemize}
 
 
 \begin{prop}
 \label{prop:pviewtrav_is_path}
 Let $t$ be a traversal. Then:
 \begin{itemize}
-\item[(i)] $?(t)$ is a justified sequence verifying P-visibility and O-visibility.
-\item[(ii)] $\pview{?(t)}$ is a path in the computation tree going from the root to the last node in $?(t)$.
+\item[(i)] $t$ is a well-defined and well-bracketed justified sequence;
+\item[(ii)] $?(t)$ is a well-defined justified sequence verifying alternation, P-visibility and O-visibility;
+\item[(iii)] $\pview{?(t)}$ is a path in the computation tree going from the root to the last node in $?(t)$.
 \end{itemize}
 \end{prop}
-The proof of this proposition is an adaptation of the proof of proposition 6 of \cite{OngHoMchecking2006} to handle the value-leaves.
+This is the counterpart of proposition 6 from \cite{OngHoMchecking2006} which is proved by induction on the traversal rules.
+This proof can be easily adapted to take into account the constant rules (since constants rules are required to be well-behaved)
+and the presence of value-leaves in the traversal.
+
+%In particular to prove that the copy-cat rules are well-defined, one needs to ensure that
+%if the last two unmatched nodes are $y$ and $\lambda \overline{\xi}$ in that order, for some non-input variable node $y$ then necessary
+%      $y$ and $\lambda \overline{\xi}$ are consecutive nodes in the traversal.
+%    This is because in a traversal, a non input variable $y$ is always followed by a lambda node and whenever this lambda node is answered
+%    there is only one way to extend the traversal : by using the copy cat rule to answer the $y$ node.
+
 
 \begin{dfn}[Reduced-traversal]
 Let $r$ be the root of the computation tree. A \emph{reduced-traversal} is a justified sequence of nodes $s$ such that
 $s \jseq t \upharpoonright r$ for some traversal $t$. $s$ is called the reduction of $t$.
 \end{dfn}
 
-\begin{rem}
-\label{rem:redtrav} Clearly, if $s$ is a reduced-traversal then
-there is a traversal $t$ verifying $s \jseq t \upharpoonright r$ such that the last node of $t$ is justified by $r$.
-\end{rem}
-
-Since $@$-nodes and $\Sigma$-constant have no pointer, the non-lambda nodes of a reduced-traversal
-are all variable nodes.
+Since $@$-nodes and $\Sigma$-constant do not have pointer, a reduced-traversal contains only
+non-lambda nodes and variable nodes.
 
 
-\begin{property}[Traversal of terms in $\beta$-normal form]
+\begin{property}[Traversal of $\beta$-normal forms]
 \label{proper:betaeta_trav}
 Suppose $M$ is a term in $\beta$-normal form then
 for any traversal $t$ of $\tau(M)$ and any node $n$ in $t$:
 \begin{eqnarray*}
-n \mbox{ is not hereditarily justified by } r  \  \iff \   n \mbox{
+r \mbox{ does not hereditarily justify } n  \  \iff \   n \mbox{
 is hereditarily justified by some node $m$ in } N_\Sigma
 \end{eqnarray*}
-where $r$ denotes the root of the tree
-$\tau(M)$ and $N_\Sigma$ denotes the set of nodes labelled by $\Sigma$-constants.
+where $r$ denotes the root of the tree $\tau(M)$.
 \end{property}
 \begin{proof}
 In a computation tree, the only nodes that do not have justification pointer are:
 the root $r$, application nodes $@$ and nodes labelled with $\Sigma$ constant.
-Since $M$ is in $\beta$-normal form there is no node of type $@$ in the computation tree.
+Since $M$ is in $\beta$-normal form there is no $@$-node in the computation tree.
 Hence nodes are either hereditarily justified by $r$ or
 hereditarily justified  by a node in $N_\Sigma$. Moreover $r$ is not in
 $N_\Sigma$ therefore the ``or'' is exclusive : a node cannot be hereditarily justified both by $r$ and some $f$ in $N_\Sigma$.
 \end{proof}
 
+
+\begin{lem}
+\label{lem:var_followedby_child}
+Let $M$ be a term in $\beta$-normal form and $t$ be a traversal of $\tau(M)$.
+If $?(t) = u_1 \cdot \rnode{m}{m} \cdot u_2 \cdot \rnode{n}{n} \bkptra[nodesep=1pt]{30}{n}{m}$ and $m$ is a not a $\lambda$-node then $u_2 = \epsilon$.
+\end{lem}
+\begin{proof}
+By induction on the traversal rules. The only relevant rules are (Var), (CCAnswer-var), (InputVar$^0$), (InputVar$^{\geq 1}$)
+and the constant rules.
+Since the term is in $\beta$-normal form, there is no $@$-node in $\tau(M)$ and therefore (Var) cannot be used.
+For the rules (CCAnswer-var), (InputVar$^0$) and (InputVar$^{\geq 1})$ we just use the well-bracketedness of traversals.
+For the constant rules, the result is a consequence of the well-behaviour of the rules.
+\end{proof}
+
 \begin{lem}[Reduced-traversal and traversal]
-\label{lem:redtrav_trav} Let $M$ be a term in $\beta$-normal form and
-$r$ denote the root of $\tau(M)$.
+\label{lem:redtrav_trav} Let $M$ be a term in $\beta$-normal form,
+$r$ denote the root of $\tau(M)$ and $t$ be a traversal of $\tau(M)$. We have
 \begin{itemize}
-\item[(i)] For any traversal $t$ we have:
-$$ \pview{?(t) \upharpoonright  r } \jseq \pview{?(t)} \upharpoonright r ,$$
-\item[(ii)] and for any traversal $t$ whose last node is hereditarily justified by
-$r$ we have:
-    $$ \oview{?(t) \upharpoonright r } \jseq \oview{?(t)}.$$
+\item[(i)] $ \pview{?(t) \upharpoonright  r } \jseq \pview{?(t)} \upharpoonright r$;
+\item[(ii)] if the last node in $t$ is hereditarily justified by $r$ then $ \oview{?(t) \upharpoonright r } \jseq \oview{?(t)}$.
 \end{itemize}
 \end{lem}
 
@@ -636,7 +662,7 @@ traversal $t = \epsilon$. Step case: consider a traversal $t$ and
 suppose that the property (i) is verified for all traversal smaller
 than $t$. There are three cases:
 \begin{itemize}
-\item Suppose $?(t) = t' \cdot n$ where $n = r$. We have:
+\item Suppose $?(t) = t' \cdot r$ then:
     \begin{align*}
     \pview{?(t)} \upharpoonright  r
         &\jseq  \pview{t' \cdot r } \upharpoonright  r       & (\mbox{definition of } ?(t))\\
@@ -652,10 +678,8 @@ move. We have:
     \begin{equation}
     \pview{?(t)} = \pview{t' \cdot n} = \pview{t'} \cdot n  \label{eq_tprime}
     \end{equation}
-
-    We consider the following two sub-cases:
     \begin{itemize}
-    \item Suppose that $n$ is not hereditarily justified by $r$ then:
+    \item If $n$ is not hereditarily justified by $r$ then:
     \begin{align*}
     \pview{?(t)} \upharpoonright  r
         &\jseq (\pview{t'} \cdot n) \upharpoonright  r  & (\mbox{equation \ref{eq_tprime}}) \\
@@ -665,7 +689,7 @@ move. We have:
         &\jseq \pview{?(t) \upharpoonright  r  }           & (\mbox{definition of } ?(t))
     \end{align*}
 
-    \item Suppose that $n$ is hereditarily justified by $r$ then:
+    \item If $n$ is hereditarily justified by $r$ then:
     \begin{align*}
     \pview{?(t)} \upharpoonright  r
     &\jseq (\pview{t'} \cdot n) \upharpoonright  r      & (\mbox{equation \ref{eq_tprime}}) \\
@@ -678,82 +702,22 @@ move. We have:
     \end{itemize}
 
 
-\item Suppose that:
-    $$  ?(t) =  t' \cdot \rnode{m}{m} \cdot  u \cdot \rnode{lmd}{n}
-    \bkptra[nodesep=1pt]{30}{lmd}{m}$$
-
-    where $n$ is a $\lambda$ node. Then we have:
-    \begin{equation}
-    \pview{?(t)} = \pview{t' \cdot \rnode{m}{m} \cdot u \cdot \rnode{n}{n}}
-            = \pview{t'} \cdot \rnode{m2}{m} \cdot \rnode{n2}{n}
-    \bkptra[nodesep=1pt]{60}{n}{m}
-    \bkptra[nodesep=1pt]{60}{n2}{m2}
-    \label{eq_tprime_2}
-    \end{equation}
-
-
-    \begin{itemize}
-    \item Suppose that $m$ is not hereditarily justified by $r$ then
-    neither is $n$.
-
-    Lambda nodes are justified by their parent node therefore $m$ is the parent of $n$.
-    By property \ref{proper:betaeta_trav}, nodes that are not hereditarily justified by the root are
-    exactly the nodes that are hereditarily justified by nodes in $N_\Sigma$.
-    Moreover, since $\Sigma$ contains only constant of order $1$ at most, the only nodes that are hereditarily justified by $N_\Sigma$
-    are the nodes in $N_\Sigma$ and their children which are all labelled $\lambda$.
-
-    Hence the only lambda nodes that are not hereditarily justified by the root
-    are the children of nodes in $N_{\Sigma}$, all labelled by $\lambda$.
-    Therefore we have $n = \lambda$ and $m \in N_{\Sigma}$:
-    $$  ?(t) =  t' \cdot \rnode{m}{m} \cdot  u \cdot \rnode{lmd}{\lambda}
-    \bkptra[nodesep=1pt]{30}{lmd}{m}$$
-    We remark that the rules defining traversals are such that any node labelled $\lambda$ is immediately preceded by its parent node in $?(t)$,
-    hence $m$ precedes immediately $\lambda$ and $u= \epsilon$. We then have:
+\item Suppose that $?(t) =  t' \cdot \rnode{m}{m} \cdot  u \cdot \rnode{lmd}{n}
+    \bkptra[nodesep=1pt]{30}{lmd}{m}$ where $n$ is a $\lambda$ node then by lemma
+    \ref{lem:var_followedby_child} we have $u = \epsilon$ and therefore:
         \begin{align*}
         \pview{?(t)} \upharpoonright  r
-        &\jseq (\pview{t'} \cdot \rnode{m}{m} \cdot \rnode{lmd}{\lambda} ) \upharpoonright  r
+        &= \pview{t' \cdot \rnode{m}{m} \cdot \rnode{n}{n}} \upharpoonright  r
+               \bkptra[nodesep=1pt]{60}{n}{m}                   & (u=\epsilon)\\
+        &\jseq (\pview{t'} \cdot \rnode{m}{m} \cdot \rnode{lmd}{n} ) \upharpoonright  r
                \bkptra[nodesep=1pt]{60}{lmd}{m}                 & \mbox{(equation \ref{eq_tprime_2})} \\
-        &\jseq \pview{t'} \upharpoonright  r                & (m, \lambda \mbox{ are not hereditarily justified by } r) \\
+        &\jseq \pview{t'} \upharpoonright  r                & (m, n \mbox{ are not hereditarily justified by } r) \\
         &\jseq \pview{t' \upharpoonright  r }               & \mbox{(induction hypothesis)} \\
-%
-%        &\jseq \pview{ (t' \cdot u ) \upharpoonright r }    & (u = \epsilon) \\
-%
-        &\jseq \pview{ (t' \cdot \rnode{m}{m} \cdot \rnode{lmd}{\lambda}) \upharpoonright r }
-                                                                & (\mbox{def. operator $\upharpoonright$ and } m, \lambda \mbox{ are not her. just. by } r)
-          \bkptra[nodesep=1pt,ncurv=0.7]{40}{lmd}{m} \\
-%
+        &\jseq \pview{ (t' \cdot \rnode{m}{m} \cdot \rnode{lmd}{n}) \upharpoonright r }
+                        \bkptra[nodesep=1pt,ncurv=0.7]{40}{lmd}{m}
+                                                            & (\mbox{def. operator $\upharpoonright$ and } m, \lambda \mbox{ are not her. just. by } r) \\
         &\jseq \pview{ ?(t) \upharpoonright r }                & \mbox{(def. of $?(t)$)}
         \end{align*}
-
-    \item Suppose that $m$ is hereditarily justified by $r$ then
-    so is $n$ and we have:
-     \begin{align*}
-        \pview{?(t)} \upharpoonright  r
-        &\jseq (\pview{t'} \cdot \rnode{m}{m} \cdot \rnode{lmd}{n} ) \upharpoonright  r
-                                                & \mbox{(equation \ref{eq_tprime_2})} \\
-       \bkptra[nodesep=1pt]{60}{lmd}{m}
-%
-        &\jseq \pview{t'} \upharpoonright  r  \cdot \rnode{m}{m} \cdot \rnode{lmd}{n}
-                                                & (m, n \mbox{ are hereditarily justified by } r)
-       \bkptra[nodesep=1pt]{60}{lmd}{m} \\
-%
-        &\jseq \pview{t' \upharpoonright  r } \cdot \rnode{m}{m} \cdot \rnode{lmd}{n}
-                                                & \mbox{(induction hypothesis)}
-       \bkptra[nodesep=1pt]{60}{lmd}{m} \\
-%
-        &\jseq \pview{ (t' \upharpoonright  r ) \cdot \rnode{m}{m} \cdot (u \upharpoonright r) \cdot \rnode{lmd}{n}}
-                                                & \mbox{(def. P-view)}
-          \bkptra[nodesep=1pt,ncurv=0.7]{30}{lmd}{m} \\
-%
-        &\jseq \pview{ (t' \cdot \rnode{m}{m} \cdot u \cdot \rnode{lmd}{n}) \upharpoonright r }
-                                                & \mbox{(def. operator $\upharpoonright$)}
-          \bkptra[nodesep=1pt,ncurv=0.7]{40}{lmd}{m} \\
-%
-        &\jseq \pview{ ?(t) \upharpoonright r }
-                                                & \mbox{(def. of $?(t)$)}
-        \end{align*}
-    \end{itemize}
-
 \end{itemize}
 (ii) By a straightforward induction similar to (i).
 \end{proof}
@@ -1166,7 +1130,7 @@ $y N_1 \ldots N_p$ where $y$ is a variable, we keep the internal moves of $N_1$,
 we omit the internal moves produced by the copy-cat projection strategy denoting $y$.
 
 \begin{dfn}[Type-tree]
-We call \emph{type decomposition tree} or just \emph{type-tree}, a tree whose leaves are labelled with linear simple types
+We call \emph{type decomposition tree} or \emph{type-tree}, a tree whose leaves are labelled with linear simple types
 and nodes are labelled with symbol in
 %$\{ \fatsemi, \times, !, \otimes \} \union \{ @_k \ | k \geq 2 \} $.
 $\{ ;, \times, !, \otimes, \Lambda \} $.
@@ -1265,7 +1229,7 @@ $$
         }
 $$
 \end{exmp}
-The tree of an interaction strategy can be translated into an expression. For instance the strategy $\Sigma$ represented above is given
+An interaction strategy can also be written as an expression, for instance the strategy represented above is given
 by the expression $\Sigma = (\sigma_1 ;^{\{0\}} \sigma_2) ;^{\{0\}} \sigma_3$.
 
 
@@ -1450,7 +1414,7 @@ term.
 
 
 
-\subsection{Property of traversals}
+\subsection{Some properties of $\varphi$}
 
 Before being able to to reveal the correspondence between the
 interaction game semantics and traversals of the computation tree we
@@ -1540,11 +1504,12 @@ sequences of nodes is injective in the sense that for any two traversal $t_1$ an
 (i) Suppose that $t_1-@\neq t_2-@$ then necessarily $t_1 \neq t_2$. Therefore
  $t_1 = t' \cdot n_1 \cdot u_1$ and $t_2 = t' \cdot n_2 \cdot u_2$ for some sequences $t'$, $u_1$, $u_2$
 and some nodes $n_1\neq n_2$.
-The rules defining traversals are mainly deterministic. In fact, the non-determinism only comes from the rules
+The rules defining traversals are almost all deterministic. For instance, the constant rules must be deterministic by assumption C1 and C2.
+In fact, the non-determinism only comes from the rules
 ($\mbox{InputVar}^0$) and ($\mbox{InputVar}^{\geq 1}$) which deal with input variables. Both rules permit to extend the traversal
-with an additional node. If we write $P$ for the set of possible nodes extending the traversal then the rules are such that
-$\varphi$ maps two different nodes in $P$ to two different moves in the same arena. Moreover $P$ does not contain any $@$-node.
-Therefore $\varphi(n_1) \neq \varphi(n_2)$, $n_1 \neq @$ and $n_2 \neq @$.
+with an additional node. Suppose that $E$ denotes the set of possible nodes extending the traversal then the rules are such that
+$\varphi$ maps two different nodes in $E$ to two different moves in the same arena. Since $E$ does not contain any $@$-node we have
+$\varphi(n_1) \neq \varphi(n_2)$, $n_1 \neq @$ and $n_2 \neq @$.
 
 If we regard sequences of nodes and moves as \emph{pointer-less} sequences then we are allowed to write the following:
 $$ (t' \cdot n_1 \cdot u_1) - @ = (t' - @) \cdot n_1 \cdot (u_1 -@)$$
@@ -1555,9 +1520,8 @@ where the equalities and inequalities denotes comparison of \emph{pointer-less} 
 
 (ii) Again, suppose that $t \upharpoonright r \neq t' \upharpoonright r$ then
  $t_1 = t'_1 \cdot n_1 \cdot u_1$ and $t_2 = t_2' \cdot n_2 \cdot u_2$ for some sequences $t_1'$, $t_2'$ $u_1$, $u_2$
- such that $t'_1 \upharpoonright r = t'_2 \upharpoonright r = $
+ such that $t'_1 \upharpoonright r = t'_2 \upharpoonright r $
 and some nodes $n_1 \neq n_2$ both hereditarily justified by the root.
-
 For the same reason as in (i), we must have $\varphi(n_1) \neq \varphi(n_2)$. Hence:
 $$ \varphi(t_1\upharpoonright r) =
         \varphi(t'_1\upharpoonright r) \cdot \varphi(n_1) \cdot \varphi(u_1 \upharpoonright r)
@@ -1580,10 +1544,9 @@ The correspondence theorem establishes a connection between
 the interaction semantics of a term and the traversals of its computation tree.
 
 We are now going to state and prove this theorem for the pure simply-typed $\lambda$-calculus without constants ($\Sigma = \emptyset$).
-The cartesian closed category of games $\mathcal{C}$ defined in the first chapter is used as a
+The cartesian closed category of games $\mathcal{C}$ defined in section \ref{subsec:pcfgamemodel} of the first chapter is used as a
 model of the simply-typed $\lambda$-calculus. We write $\sem{\Gamma \vdash M : A}$ for the strategy denoting the simply-typed term
-$\Gamma \vdash M : A$ (defined in section \ref{subsec:pcfgamemodel}
-of the first chapter).
+$\Gamma \vdash M : A$.
 
 \begin{prop}
 \label{prop:rel_gamesem_trav} Let $\Gamma \vdash M : T$ be a
@@ -2061,12 +2024,12 @@ Let $r$ denotes the root of $\tau(M)$.
 
 \noindent \emph{`If' part:} Suppose that $\tau(M)$ is regular.
 Consider a justified sequence of move $s \in \sem{\Gamma \vdash M}$
-ending with a question move $q$. $q$ is also the last question in $?(s)$.
-Proposition \ref{prop:rel_gamesem_trav} tells us that there
+ending with a question move $q$ (note that $q$ is also the last question in $?(s)$).
+By proposition \ref{prop:rel_gamesem_trav}, there
 is a reduced-traversal $tr$ of $\tau(M)$ such that $\varphi_{M}(tr) \jseq s.$
-
-By remark \ref{rem:redtrav}, $ tr \jseq t \upharpoonright r$
-for some traversal $t$ whose last node $n$ is hereditarily justified by $r$. Then $n$ is also the last node in $?(tr)$ and $tr$.
+Hence $ tr \jseq t \upharpoonright r$ for some traversal $t$. We can assume that the last node $n$ of $t$
+is hereditarily justified by $r$ (otherwise we replace $t$ by an appropriate prefix verifying this condition).
+Then $n$ is also the last node in $?(tr)$ and $tr$.
 
 \begin{itemize}
 \item Suppose $|s|$ is even then $q$ is a P-move.
@@ -2138,7 +2101,7 @@ Since $\sem{M}$ is regular, $\varphi(x)$ must point to the last move in $\pview{
 order strictly greater than $\ord{\varphi(x)}$.
 Consequently node $x$ points to the last node in $\pview{?(t \upharpoonright r)}$ with
 order strictly greater than $\ord{x}$.
-By lemma \ref{lem:redtrav_trav}, $\pview{?(t \upharpoonright r)} \jseq \pview{?(t)} \upharpoonright r$
+By lemma \ref{lem:redtrav_trav}, $\pview{?(t \upharpoonright r)} = \pview{?(t) \upharpoonright r} = \pview{?(t)} \upharpoonright r$
 and by proposition \ref{prop:pviewtrav_is_path}, $\pview{?(t)}$ is
 the path in $\tau(M)$ from the $x$ to the root $r$.
 
@@ -2247,7 +2210,7 @@ In the following sections we give more details about each of these steps.
 The definition of the $\eta$-long normal form needs to be adapted to take into account the $Y_A$ combinators. The solution consists in
 expanding the recursion infinitely. For instance the term $Y (\lambda f x. f x)$ is replaced by the infinite term
 $(\lambda f x. f x) ((\lambda f x. f x) ((\lambda f x. f x)  ( \ldots$.
-The corresponding (possibly infinite) computation tree is:
+The corresponding infinite computation tree is:
 $$ \tau(M) =
 \tree{\lambda}{
 \tree{@}
@@ -2257,7 +2220,7 @@ $$ \tau(M) =
         }}}
 $$
 
-The other operators of \ialgol\ are treated as constants when computing the $\eta$-normal form and constructing the computation tree.
+The other operators of \ialgol\ are just treated as constants when computing the $\eta$-normal form and constructing the computation tree.
 For instance the computation tree of $\pcfcond\ b\ x\ y$ is:
 $$
 \tree{\lambda b x y}
@@ -2268,7 +2231,7 @@ $$
         }
     }
 $$
-Similarly the natural number constant are treated as ordinary constants. For instance, the computation tree associated
+Similarly the numeral constants are treated as ordinary constants. For instance, the computation tree associated
 for $\lambda x . 5$ is:
 $$\tree{\lambda x}{  \TR{5} }$$
 The node labelled $5$ has, like any other node, children value-leaves (not represented above for simplicity).
@@ -2291,7 +2254,7 @@ New traversal rules must accompany the additional constants of \ialgol.
 
 The rule for natural number constant is:
 \begin{itemize}
-\item (Nat) If $t \cdot m$ is a traversal where $m$ denotes a node labelled with some natural number $i\in\nat$ then
+\item (Nat) If $t \cdot m$ is a traversal where $m$ denotes a node labelled with some numeral constant $i\in \nat$ then
             $t \cdot \rnode{m}{m} \cdot \rnode{mv}{m^i} \bkptra[nodesep=1pt]{60}{mv}{m}$
             is also a traversal where $m^i$ denotes the value leaf of $m$ corresponding to the value $i\in \nat$.
 \end{itemize}

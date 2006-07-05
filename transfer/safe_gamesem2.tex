@@ -1976,16 +1976,6 @@ ambiguity disappears since $M_1$ is safe whereas $M_2$ is not (because
 in the subterm $f (\lambda y . x)$, the free variable $x$ has the same
 order as $y$ but $x$ is not abstracted together with $y$).
 
-First we prove that the computation tree of a safe term verifies a
-property called regularity:
-
-\begin{dfn}[Regular computation tree]
-A computation tree is said to be \emph{regular} if any bound variable node $x$ in the computation tree is bound
-by the first $\lambda$-node in the path to the root that has
-order strictly greater than $\ord{x}$.
-\end{dfn}
-
-
 \begin{dfn}[Regular strategy]
 A strategy $\sigma : A$ is said to be \emph{regular} if for any sequence of moves $s q \in P_A$
 where $q$ is a question move in $M_A$ we have:
@@ -2013,6 +2003,12 @@ By the induction hypothesis the pointers in $s$ are recoverable, this ensures th
 P-view $\pview{?(s)}$ and the O-view $\oview{?(s)}$ can be computed. Consequently the pointer for $m$ can be (uniquely) recovered.
 \end{proof}
 
+\begin{dfn}[Regular computation tree]
+A computation tree is said to be \emph{regular} if any bound variable node $x$ in the computation tree is bound
+by the first $\lambda$-node in the path to the root that has
+order strictly greater than $\ord{x}$.
+\end{dfn}
+
 \begin{prop}
 \label{prop:regular_comp_imp_regular_strat}
 The computation tree of a simply-typed term in $\beta$-normal form is regular if and only if the strategy denoting it is regular.
@@ -2026,50 +2022,48 @@ Let $r$ denotes the root of $\tau(M)$.
 Consider a justified sequence of move $s \in \sem{\Gamma \vdash M}$
 ending with a question move $q$ (note that $q$ is also the last question in $?(s)$).
 By proposition \ref{prop:rel_gamesem_trav}, there
-is a reduced-traversal $tr$ of $\tau(M)$ such that $\varphi_{M}(tr) \jseq s.$
-Hence $ tr \jseq t \upharpoonright r$ for some traversal $t$. We can assume that the last node $n$ of $t$
-is hereditarily justified by $r$ (otherwise we replace $t$ by an appropriate prefix verifying this condition).
-Then $n$ is also the last node in $?(tr)$ and $tr$.
+is a reduced-traversal $t \upharpoonright r$ of $\tau(M)$ such that $\varphi_{M}(t \upharpoonright r) \jseq s$.
+We assume that the last node $n$ of $t$ is hereditarily justified by $r$ (otherwise we replace $t$ by its longest prefix verifying this condition).
+Then $n$ is also the last node in $?(t \upharpoonright r)$ and $t \upharpoonright r$.
 
 \begin{itemize}
 \item Suppose $|s|$ is even then $q$ is a P-move.
 
-Since $tr$ is a reduced-traversal of $\tau(M)$ and $M$ is in $\beta$-normal form, lemma \ref{lem:redtrav_trav} (i) gives:
+If $n$ is labelled with a free variable $x$ then $n$ points to $r$, the first node of the traversal.
+Therefore by definition of $\varphi$, $\varphi(n) = x$ is a child node of some root $q_0 = \varphi(r)$ of the arena $\sem{\Gamma \rightarrow A}$
+and $\ord{x} = \ord{q_0} - 1$. The game $\sem{\Gamma \rightarrow A}$ is well-opened therefore $x$ is the only move in $s$ that
+has order strictly greater than $\ord{x}$.
+
+
+If $n$ is labelled with a variable $x$ bound by a node $m$ occuring in $t$ then
+since $t \upharpoonright r$ is a reduced-traversal of $\tau(M)$ and $M$ is in $\beta$-normal form,
+lemma \ref{lem:redtrav_trav} (i) gives:
 \begin{equation*}
- \pview{?(tr)} \jseq \pview{?(t)} \upharpoonright  r
+ \pview{?(t \upharpoonright r)} \jseq \pview{?(t)} \upharpoonright  r
 \end{equation*}
 
 By proposition \ref{prop:pviewtrav_is_path}, $\pview{?(t)}$ is
-the path in $\tau(M)$ from the root to the node $n$.
-Since $\tau(M)$ is regular, $n$ points to the
-last $\lambda$-node in $\pview{?(t)}$ of order strictly greater than $\ord{n}$.
+the path in $\tau(M)$ from the root to the node $n$ and since
+$\tau(M)$ is regular, $m$ is the last $\lambda$-node in $\pview{?(t)}$ of order strictly greater than $\ord{n}$.
+Since $n$ is hereditarily justified by the root, so is $m$ and therefore $m$ occurs in $\pview{?(t \upharpoonright r)}$.
+But $\pview{?(t \upharpoonright r)}$ is a subsequence of $\pview{?(t)}$ therefore $m$ is also be the last $\lambda$-node
+in $\pview{?(t \upharpoonright  r)}$ that has order strictly greater than $\ord{n}$.
 
-Since $n$ is the last node of $\pview{?(t)} \upharpoonright r$,
-it is hereditarily justified by the root and it must point to a node
-$m$ in $\pview{?(t)}$ that is also hereditarily justified by the
-root. Therefore $m$ also occurs in $\pview{?(tr)}$. But $m$ is the
-last $\lambda$-node in $\pview{?(t)}$ that has order strictly
-greater than $\ord{n}$, therefore since $\pview{?(tr)}$ is a
-subsequence of $\pview{?(t)}$, $m$ is also the last $\lambda$-node
-in $\pview{?(tr)}$ that has order strictly greater than
-$\ord{n}$.
-
-
-By property \ref{proper:phi_pview} (ii), the P-view of $?(s)$ and the P-view of $?(tr)$ are computed
+By property \ref{proper:phi_pview} (ii), the P-view of $?(s)$ and the P-view of $?(t \upharpoonright r)$ are computed
 similarly and have the same pointers. This means that
 node $n$ and  move $q$ both point to the same position in
-the justified sequence $\pview{?(tr)}$ and $\pview{?(s)}$ respectively.
+the justified sequence $\pview{?(t\upharpoonright r)}$ and $\pview{?(s)}$ respectively.
 
 Finally, since $\varphi$ maps nodes of a given order to moves of the same order (property \ref{proper:phi_conserve_order}),
-$q$ also points to the last O-move in $\pview{?(s)}$ whose
+$q$ must point to the last O-move in $\pview{?(s)}$ whose
 order is strictly greater than $\ord{q}$.
 
 \item Suppose $|s|$ is odd then $q$ is an O-move.
 
 $M$ is in $\beta$-normal form and $t$ is a traversal of $\tau(M)$
-whose last node $n$ is hereditarily justified by $root$. Therefore  by lemma \ref{lem:redtrav_trav} (ii):
+whose last node $n$ is hereditarily justified by $r$. Therefore by lemma \ref{lem:redtrav_trav} (ii):
 \begin{equation}
- \oview{?(tr)} \jseq \oview{?(t)} \label{eq:oview_r}
+ \oview{?(t \upharpoonright r)} \jseq \oview{?(t)} \label{eq:oview_r}
 \end{equation}
 
 

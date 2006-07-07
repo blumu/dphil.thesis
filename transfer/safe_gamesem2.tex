@@ -134,11 +134,13 @@ and defined to be $\tau(M) = \tau(\etanf{M})$.
 
 The nodes (and leaves) of the tree are of three kinds:
 \begin{itemize}
-\item $\lambda$-node labeled $\lambda \overline{x}$ (note that a $\lambda$-node represents several consecutive variable abstractions),
-\item application node labeled $@$,
+\item $\lambda$-node labelled $\lambda \overline{x}$ (note that a $\lambda$-node represents several consecutive variable abstractions),
+\item application node labelled $@$,
 \item variable or constant nodes labelled $\alpha$ for some constant or variable $\alpha$.
 \end{itemize}
-We write $N$ for the set of nodes of $\tau(M)$ and $N_\Sigma$ to denotes the subset of $N$ consisting of nodes labelled by $\Sigma$-constants.
+We write $N$ for the set of nodes of $\tau(M)$, $N_\Sigma$ to denotes the subset of $\Sigma$-labelled nodes
+and $N_@$ to denote the subset of $@$-labelled nodes.
+
 
 Let $\mathcal{T}$ denotes the set of $\lambda$-terms.
 Each subtree of the computation tree $\tau(M)$ represents a subterm of $\aux{M}$.
@@ -147,14 +149,16 @@ represented by the subtree of $\tau(M)$ rooted at $n$.
 In particular if $r$ is the root of $\tau(M)$ then $\kappa(r) = \aux{M}$.
 
 \begin{dfn}[Node order]
+\label{def:nodeorder}
 The node-order function $\textsf{ord}$ is defined on nodes as follows:
 \begin{eqnarray*}
 \ord{n} = \left\{
   \begin{array}{ll}
-    \ord{\alpha}, & \hbox{if $n$ is a variable or constant node labeled $\alpha $;} \\
-    1 + \max_{i=1..n} \ord{\xi_i}, & \hbox{if $n$ is labeled $\lambda \overline{\xi}$;} \\
-    0, & \hbox{if $n$ is labeled $\lambda$;} \\
-    0, & \hbox{if $n$ is labeled $@$.}
+    \ord{T}, & \hbox{if $n$ is a variable or constant node labelled $\alpha$ of type $T$;} \\
+    1 + \max_{z\in \overline{\xi}\union fv(M)} \ord{z}, & \hbox{if $n$ is the root of $\tau(M)$;} \\
+    1 + \max_{z\in \overline{\xi}} \ord{z}, & \hbox{if $n$ is labelled $\lambda \overline{\xi}$ and is not the root;} \\
+    1, & \hbox{if $n$ is labelled $\lambda$ and is not the root;} \\
+    0, & \hbox{if $n$ is labelled $@$.}
   \end{array}
 \right.
 \end{eqnarray*}
@@ -212,7 +216,7 @@ is enabled by $m$ or that $m$ enables $n$ if and only if
 \begin{itemize}
 \item $n$ is a bound variable node and $m$ is the binder of $n$,
 \item or $n$ is a free variable node and $r$ is the root of the computation tree,
-\item or $n$ is a lambda node labelled and $m$ is the parent node of $n$.
+\item or $n$ is a $\lambda$-node and $m$ is the parent node of $n$.
 \end{itemize}
 \end{dfn}
 
@@ -284,7 +288,7 @@ The P-view of a justified sequence of nodes $t$ of $\tau(M)$ noted $\pview{t}$ i
  \pview{s \cdot r }  &=&  r
 \end{eqnarray*}
 where $r$ is the root of the tree $\tau(M)$ and
-$n$ ranges over non-lambda nodes (i.e. labeled either $@$ or by a variable or $\Sigma$-constant).
+$n$ ranges over non-lambda nodes (i.e. labelled either $@$ or by a variable or $\Sigma$-constant).
 
 In the second clause, the pointer associated to $n$ is preserved from the left-hand side to the right-hand side:
 if in the left-hand side, $n$ points to some node in $s$ that is also present in $\pview{s}$ then in the right-hand side,
@@ -385,11 +389,12 @@ is a traversal.
 
 \emph{Structural rules}
 \begin{itemize}
-\item (Lam) Suppose that $t \cdot \lambda \overline{\xi}$ is a traversal then the only child
-node $n$ of $\lambda \overline{\xi}$ can then be visited and the
-following justified sequence of nodes is also a traversal:
-$$t \cdot \lambda \overline{\xi} \cdot n,$$
-where $n$ points to the (only) occurrence of its binding node in $\pview{t \cdot \lambda \overline{\xi}}$.
+\item (Lam) Suppose that $t \cdot \lambda \overline{\xi}$ is a traversal and $n$ is the only child node of $\lambda \overline{\xi}$ in
+the computation tree then
+$$t \cdot \lambda \overline{\xi} \cdot n$$
+is also a traversal
+where $n$ points to the (only) occurrence of its enabler in $\pview{t \cdot \lambda \overline{\xi}}$.
+In particular, if $n$ is a free variable node then $n$ points to the first node of $t$.
 
 \item (App) If $t \cdot @$ is a traversal then so is
 $$t \cdot \rnode{m}{@} \cdot
@@ -567,20 +572,20 @@ such that:
   \item $m$ is uniquely determined by $t$ (i.e. the rule is deterministic).
 \end{enumerate}
 \end{dfn}
-For example, the rules (InputVar$^0$) and (InputVar$^{\geq1}$) verify all the condition of well-behaveness except determinism.
-
 We have the following immediate properties: $m$ must be a child node of $n$ and therefore $m$ must be a $\lambda$-node;
 if $t$ is well-bracketed then $t'$ is also well-bracketed
 and if $?(t)$ satisfies alternation (resp. visibility) then so does $?(t')$.
 
+
+For example, the rules (InputVar$^0$) and (InputVar$^{\geq1}$) verify all the condition of well-behaviour except determinism.
 
 
 In the presence of higher-order constants, there must be additional rules to take into account the
 constant nodes of the computation tree.
 From now on, we assume that some constant rules have been fixed and that they respect the following two conditions:
 \begin{itemize}
-  \item[C1] constant rules are well-behaved;
-  \item[C2] the system of constant traversal rules is deterministic.  In other words, the domain of application of the
+  \item[(C1)] constant rules are well-behaved;
+  \item[(C2)] the system of constant traversal rules is deterministic (i.e. the domains of application of the
   constant rules do not overlap.
 \end{itemize}
 
@@ -614,26 +619,6 @@ Since $@$-nodes and $\Sigma$-constant do not have pointer, a reduced-traversal c
 non-lambda nodes and variable nodes.
 
 
-\begin{property}[Traversal of $\beta$-normal forms]
-\label{proper:betaeta_trav}
-Suppose $M$ is a term in $\beta$-normal form then
-for any traversal $t$ of $\tau(M)$ and any node $n$ in $t$:
-\begin{eqnarray*}
-r \mbox{ does not hereditarily justify } n  \  \iff \   n \mbox{
-is hereditarily justified by some node $m$ in } N_\Sigma
-\end{eqnarray*}
-where $r$ denotes the root of the tree $\tau(M)$.
-\end{property}
-\begin{proof}
-In a computation tree, the only nodes that do not have justification pointer are:
-the root $r$, application nodes $@$ and nodes labelled with $\Sigma$ constant.
-Since $M$ is in $\beta$-normal form there is no $@$-node in the computation tree.
-Hence nodes are either hereditarily justified by $r$ or
-hereditarily justified  by a node in $N_\Sigma$. Moreover $r$ is not in
-$N_\Sigma$ therefore the ``or'' is exclusive : a node cannot be hereditarily justified both by $r$ and some $f$ in $N_\Sigma$.
-\end{proof}
-
-
 \begin{lem}
 \label{lem:var_followedby_child}
 Let $M$ be a term in $\beta$-normal form and $t$ be a traversal of $\tau(M)$.
@@ -647,7 +632,7 @@ For the rules (CCAnswer-var), (InputVar$^0$) and (InputVar$^{\geq 1})$ we just u
 For the constant rules, the result is a consequence of the well-behaviour of the rules.
 \end{proof}
 
-\begin{lem}[Reduced-traversal and traversal]
+\begin{lem}[Views of reduced-traversal]
 \label{lem:redtrav_trav} Let $M$ be a term in $\beta$-normal form,
 $r$ denote the root of $\tau(M)$ and $t$ be a traversal of $\tau(M)$. We have
 \begin{itemize}
@@ -695,7 +680,7 @@ move. We have:
     &\jseq (\pview{t'} \cdot n) \upharpoonright  r      & (\mbox{equation \ref{eq_tprime}}) \\
     &\jseq (\pview{t'} \upharpoonright  r  ) \cdot n    & (n \mbox{ is hereditarily justified by } r)\\
     &\jseq \pview{t' \upharpoonright  r } \cdot n       & (\mbox{induction hypothesis}) \\
-    &\jseq \pview{(t' \upharpoonright  r ) \cdot n }    & (\mbox{def. P-view}) \\
+    &\jseq \pview{(t' \upharpoonright  r ) \cdot n }    & (\mbox{P-view computation}) \\
     &\jseq \pview{(t' \cdot n) \upharpoonright  r  }    & (n \mbox{ is hereditarily justified by } r) \\
     &\jseq \pview{?(t) \upharpoonright  r  }               & (\mbox{definition of } ?(t))
     \end{align*}
@@ -710,7 +695,7 @@ move. We have:
         &= \pview{t' \cdot \rnode{m}{m} \cdot \rnode{n}{n}} \upharpoonright  r
                \bkptra[nodesep=1pt]{60}{n}{m}                   & (u=\epsilon)\\
         &\jseq (\pview{t'} \cdot \rnode{m}{m} \cdot \rnode{lmd}{n} ) \upharpoonright  r
-               \bkptra[nodesep=1pt]{60}{lmd}{m}                 & \mbox{(equation \ref{eq_tprime_2})} \\
+               \bkptra[nodesep=1pt]{60}{lmd}{m}                 & (\mbox{P-view computation}) \\
         &\jseq \pview{t'} \upharpoonright  r                & (m, n \mbox{ are not hereditarily justified by } r) \\
         &\jseq \pview{t' \upharpoonright  r }               & \mbox{(induction hypothesis)} \\
         &\jseq \pview{ (t' \cdot \rnode{m}{m} \cdot \rnode{lmd}{n}) \upharpoonright r }
@@ -722,12 +707,47 @@ move. We have:
 (ii) By a straightforward induction similar to (i).
 \end{proof}
 
+\begin{lem}[Traversal of $\beta$-normal terms]
+\label{lem:betaeta_trav}
+Let $M$ be a $\beta$-normal term, $r$ denotes the root of the tree $\tau(M)$ and
+$t$ be a traversal of $\tau(M)$.
+\begin{itemize}
+\item[(i)] for any node $n$ occurring in $t$:
+\begin{eqnarray*}
+r \mbox{ does not hereditarily justify } n  \  \iff \   n \mbox{
+is hereditarily justified by some node in } N_\Sigma;
+\end{eqnarray*}
+
+\item[(ii)] For any $\lambda$-node $n$ occurring in $t$, $t_{\geq n} \in \travset(\kappa(n))$,
+
+ where $t_{\geq n}$ denotes the justified sequence of nodes obtained by taking the suffix of $t$ starting at $n$ and
+ such that any dangling link going from a variable node to a node preceding $n$ is ``fixed'' into a pointer going to $n$.
+ \end{itemize}
+\end{lem}
+\begin{proof}
+(i) In a computation tree, the only nodes that do not have justification pointer are:
+the root $r$, $@$-nodes and $\Sigma$-constant nodes.
+But since $M$ is in $\beta$-normal form the computation tree has no $@$-node.
+Hence nodes are either hereditarily justified by $r$ or
+hereditarily justified by a node in $N_\Sigma$. Moreover $r$ is not in
+$N_\Sigma$ therefore the ``or'' is exclusive : a node cannot be hereditarily justified both by $r$ and by some node in $N_\Sigma$.
+
+(ii) Since $M$ is in $\beta$-normal, the rules (App) and (Var) cannot be used. Therefore the traversals
+follow an inductive exploration of the computation tree without making any ``jump''.
+Consequently, by taking the prefix of $t$ starting at a $\lambda$-node, we obtain
+a traversal of a sub-computation tree of $\tau(M)$. However by taking the prefix we obtain some dangling pointers.
+The ``fix'' applied to the dangling pointers correspond to the
+
+
+The formal proof is by an easy induction on the traversal rules. For the constant rules, we appeal to well-behaviour of the rules.
+
+\end{proof}
+
 
 \subsection{Game semantics of simply-typed $\lambda$-calculus with $\Sigma$-constants}
 
 We are working in the general setting of an applied simply-typed $\lambda$-calculus with a given set of higher-order constants $\Sigma$.
 The operational semantics of these constants is given by certain reduction rules.
-
 We assume that a fully abstract model of the calculus is provided by mean of a category of games.
 We make the assumption that the constants are well-behaved in the sense that:
 \begin{enumerate}
@@ -939,7 +959,7 @@ $f_A(n,q)$ returns a partial function from $N$ to $A$. It is defined as follows:
     in the arena.  $f_A(n,q)$ maps each free occurrence of a variable $\xi_i$ to the corresponding move $q_i$:
     $$
     f_A(n,q) \leftarrow  \{ n \mapsto q \} \quad  \union \quad  \{ n^v \mapsto q^v \ | \ v \in \mathcal{D} \}
-                      \quad \union \quad  \Union_{\stackrel{i=1..p}{\xi_i \in E^+(n)}} f_A( \xi_i, q_i)
+                      \quad \union \quad  \Union_{\stackrel{\displaystyle m \in N | n \vdash m}{\displaystyle m \mbox{ labelled } \xi_i}} f_A( m, q_i)
     $$
 
 \item[case 3] If $n$ is a variable node labelled $x$ with $\ord{x}>0$ and $x:(A_1|\ldots|A_m|o)$ then
@@ -973,36 +993,38 @@ the computation tree and the arena $A_q$ have the following form:
 \end{itemize}
 
 Note that $f_A(n,q)$ is only a partial function from $N$ to $A$ since it is not defined on
-nodes that are hereditarily justified by variables free in $M$ or hereditarily justified by application nodes $@$.
+nodes that are hereditarily justified by a variables free in $M$ or by a node in $N_@ \union N_\Sigma$.
 \end{dfn}
 
 Suppose $\Gamma \vdash M  : T$ is a simply typed term and $N$ denotes the set of nodes of the computation tree.
 We write $\mathcal{M}_M$ to denote the following disjoint union of arenas:
-$$\mathcal{M}_M = \sem{\Gamma} \quad \uplus \quad  \sem{T} \quad \uplus \quad  \biguplus_{n \in N | E(@,n)} \sem{type(\kappa(n))}.$$
+$$\mathcal{M}_M = \sem{\Gamma \rightarrow T} \quad \uplus \quad  \biguplus_{n \in N |  n \in E \relimg{N_@ \union N_\Sigma} } \sem{type(\kappa(n))}.$$
 
-Moves in $\mathcal{M}_M$ are implicitly tagged so it is possible to recover which arena they belong to.
+Moves in $\mathcal{M}_M$ are implicitly tagged so it is possible to recover the arena that they belong to.
 
 
-Let $N\setminus \{@\}$ be the subset of $N$ constituted of the nodes that are not labelled by $@$.
 \begin{dfn}[Total mapping from nodes to moves]
 Let $\Gamma \vdash M : T$ be a simply-typed term
 with $\Gamma = x_1:X_1 \ldots x_p : X_p$.
-We write $q_{\sem{\Gamma}}^1$, \ldots, $q_{\sem{\Gamma}}^p$ to denotes the initial question moves of the arena $\sem{\Gamma}$ and $q^0_\sem{T}$ to denote the single initial question of $\sem{T}$ (arenas involved in the game semantics of pure simply-typed $\lambda$-calculus have a single root).
+We write $q_{\sem{\Gamma}}^1$, \ldots, $q_{\sem{\Gamma}}^p$ to denotes the initial question moves of the
+component $\Gamma$ of the arena $\sem{\Gamma \rightarrow T}$ and $q^0_A$ to denote the single initial question of any arena $A$
+(arenas involved in the game semantics of pure simply-typed $\lambda$-calculus have a single root).
 $r$ denotes the root of the computation tree.
 
-We define the total function $\varphi_M : N\setminus \{@\} \rightarrow \mathcal{M}_M$ as follows:
-$$\varphi_M =  \Union_{n \in N | n \mbox{ labelled } x_i }  f(n, q^i_{\sem{\Gamma}} )
-    \quad  \union \quad
-        f(r, q^0_{\sem{T}})
-    \quad  \union \quad
-        \Union_{n \in N | E(@,n)}  f(n, q^0_{\sem{type(\kappa(n))}} )
-$$
-\end{dfn}
+We define the total function $\varphi_M : N\setminus (N_@ \union N_\Sigma) \rightarrow \mathcal{M}_M$ as follows:
+\begin{align*}
+\varphi_M =
+        f_{\sem{\Gamma \rightarrow T}}(r, q^0_{\sem{\Gamma \rightarrow T}}) \quad
+    & \union \quad
+    \Union_{n \in N | n \mbox{ labelled } x_i }  f_{\sem{\Gamma \rightarrow T}}(n, q^i_{\sem{\Gamma}} ) \\
+    & \union \quad
+        \Union_{n \in N | E(@,n)}  f_{\sem{type(\kappa(n))}}(n, q^0_{\sem{type(\kappa(n))}} )
+\end{align*}
 When there is no ambiguity we just write $\varphi$ instead of $\varphi_M$.
+\end{dfn}
 
-Since there are no constants in the pure simply-typed $\lambda$-calculus, nodes that are not hereditarily justified
-by the root must be hereditarily justified by a $@$ nodes. Therefore, by doing the union of the partial functions $f(n,q)$
-for all nodes $n$ whose parent is an $@$ node, we obtain a function defined on $N\setminus \{@\}$.
+Nodes of $\tau(M)$ are either hereditarily justified by the root, by a $@$-node or by a $\Sigma$-node, therefore
+$\varphi$ is a totally defined on $N\setminus (N_@ \union N_\Sigma)$.
 
 \begin{exmp}
 Consider the term $\lambda x . (\lambda g . g x) (\lambda y . y)$ with $x,y:o$ and $g:(o,o)$.
@@ -1050,38 +1072,35 @@ $$
 \ncline{->}{lyy}{A3y}
 $$
 \end{exmp}
-%
-%Remark: We identify moves in the arena of two different subterms if they correspond to the same input variable
-%(i.e. a free variable or a variable bound at the root).
-%For instance, in the example above the three question moves $q_x$ appearing in three different arenas are
-%consider to be the same move. Similarly, the answer moves (not shown on the diagram) of the three questions $q_x$ are identified.
 
-The following properties follow immediately from the definition of procedure $f$:
+The following properties follow immediately from the definition of the procedure $f$:
 \begin{property} \
 \label{proper:phi_conserve_order}
 \begin{itemize}
 \item[(i)] $\varphi$ maps $\lambda$-nodes to O-questions, variable nodes to
 P-questions, value-leaves of $\lambda$-nodes to P-answers and
 value-leaves of variable nodes to O-answers;
-\item[(ii)] $\varphi$ maps nodes of a given order to moves of the same order.
-\item[(iii)] For any traversal $t$: $?(\varphi(t)) = \varphi(?(t))$
+\item[(ii)] $\varphi$ maps nodes of a given order to moves of the same order;
+\item[(iii)] for any traversal $t$: $?(\varphi(t)) = \varphi(?(t))$.
 \end{itemize}
-where for a justified sequence of moves $s$ and justified sequence of nodes $t$,  $?(s)$ denotes the
-set of unanswered questions in $s$ and $?(t)$ denotes the
-set of unmatched nodes in $t$ (see section \ref{sec:adding_value_leaves}).
+where $?(s)$ denotes the set of unanswered questions in a justified sequence of moves $s$ and $?(t)$ denotes the
+set of unmatched nodes in justified sequence of nodes $t$ (see section \ref{sec:adding_value_leaves}).
 \end{property}
+Note that to make property (ii) holds for open terms, it was necessary to chose a definition of node-order that differ
+between the root node and other $\lambda$-nodes (see definition definition \ref{def:nodeorder}).
 
 
 By extension, the function $\varphi$ is also defined on justified
 sequences of nodes: if $t$ is the justified sequences of nodes $t =
 t_0 t_1 \ldots$ then $\varphi(t)$ denotes the following sequence of
-moves of the arena $\sem{A}$:
+moves:
 $$\varphi(t) = \varphi(t_0)\ \varphi(t_1)\  \varphi(t_2) \ldots$$
 where the pointers of the justified sequence of move $\varphi(t)$
 are defined to be exactly those of the justified sequences of nodes
-$t$. It is straightforward to check that the sequence obtained is a
-valid justified sequence of moves.
-This definition implies that $\varphi : (N\setminus\{@\})^* \rightarrow \mathcal{M}^*$ regarded as a function
+$t$.
+%It is straightforward to check that the sequence obtained is a
+%valid justified sequence of moves.
+This definition implies that $\varphi : N\setminus (N_@ \union N_\Sigma)^* \rightarrow \mathcal{M}^*$ regarded as a function
 from pointer-less sequences of nodes to pointer-less sequences of moves is a monoid homomorphism.
 
 \begin{property}
@@ -1489,8 +1508,8 @@ $$\varphi(t-@) \upharpoonright \sem{\Gamma \rightarrow T} = \varphi(t\upharpoonr
     Since $@$ is not hereditarily justified by $r$ the result follows immediately.
 \end{proof}
 
-The function $\varphi$ regarded as a function from the set of nodes $N\setminus\{@\}$ of the computation tree to moves in arenas is not injective.
-For instance consider the term $\lambda f x. f x x$ the two occurrences of $x$ in the computation tree are mapped to the same question. However
+The function $\varphi$ regarded as a function from the set of nodes $N\setminus (N_@ \union N_\Sigma)$ of the computation tree to moves in arenas is not injective.
+For instance the two occurrences of $x$ in the computation tree of the term $\lambda f x. f x x$ are mapped to the same question. However
 the function $\varphi$ regarded as a function from sequences of nodes to sequences of moves is injective:
 \begin{lem}[$\varphi$ is injective]
 $\varphi$ regarded as a function defined on the set of
@@ -1924,7 +1943,7 @@ Putting corollary \ref{cor:varphi_bij} and proposition
 \ref{prop:rel_gamesem_trav} together we obtain the following
 theorem:
 
-\begin{thm}[Correspondence between game semantics and traversals]
+\begin{thm}[Game semantics--traversals correspondence]
 For any pure simply-typed term $M$, $\varphi_M$ defines a bijection from
 $\travset(M)^{\upharpoonright r}$ to $\sem{M}$ and a bijection
 from $\travset(M)^{-@}$ to $\intersem{M}$:
@@ -2003,20 +2022,37 @@ By the induction hypothesis the pointers in $s$ are recoverable, this ensures th
 P-view $\pview{?(s)}$ and the O-view $\oview{?(s)}$ can be computed. Consequently the pointer for $m$ can be (uniquely) recovered.
 \end{proof}
 
-\begin{dfn}[Regular computation tree]
-A computation tree is said to be \emph{regular} if any bound variable node $x$ in the computation tree is bound
-by the first $\lambda$-node in the path to the root that has
-order strictly greater than $\ord{x}$.
-\end{dfn}
 
-\begin{prop}
+In a computation tree a binder node always occurs in the path from the bound node to the root. We now introduce a
+class of computation tree in which binder nodes can uniquely recovered from the order of the nodes.
+%We use the notation $[n_1,n_2]$ to denote the path from node $n_1$ to node $n_2$ if it exists and $]n_1,n_2]$ for
+%the sequence of nodes obtained by removing $n_1$ from $[n_1,n_2]$.
+
+\begin{dfn}[Regular computation tree]
+A computation tree is said to be \emph{regular} if
+for any variable node $x$ occurring in the computation tree:
+\begin{enumerate}
+\item if $x$ is a bound variable then it is bound by the first $\lambda$-node in the path to the root that has
+order strictly greater than $\ord{x}$;
+\item if $x$ is a free variable then all the $\lambda$-nodes in the path to the root except the root have order
+smaller or equal to $\ord{x}$.
+\end{enumerate}
+\end{dfn}
+%We recall that from the definition of $\vdash$ that if $n$ is a $\lambda$-node then:
+%$$n\vdash x \iff ( x \mbox{ bound by } n ) \vee \mbox{ or } ( x \mbox{ is free in } M  \mbox{ and } n \mbox{ is the root of } \tau(M) ).$$
+
+%Therefore an equivalent definition of tree regularity is: for any $\lambda$-node $n$ different from the root of $\tau(M)$ and any variable node $x$:
+%$$n \vdash x \quad \iff \quad n \mbox{ is the first $\lambda$-node in the path from $x$ to the root with order $>\ord{x}$} $$
+
+\begin{prop}[Tree regularity and strategy regularity coincide]
 \label{prop:regular_comp_imp_regular_strat}
-The computation tree of a simply-typed term in $\beta$-normal form is regular if and only if the strategy denoting it is regular.
+Suppose that the constants of the simply-typed $\lambda$-calculus are regular strategies then
+the computation tree of a $\beta$-normal term is regular if and only if it is denoted by a regular strategy.
 \end{prop}
 
 \begin{proof}
-Let $\Gamma \vdash M : A$ be a simply-typed term in $\beta$-normal form.
-Let $r$ denotes the root of $\tau(M)$.
+Let $\Gamma \vdash M : A$ be a simply-typed term in $\beta$-normal form
+and $r$ denotes the root of $\tau(M)$.
 
 \noindent \emph{`If' part:} Suppose that $\tau(M)$ is regular.
 Consider a justified sequence of move $s \in \sem{\Gamma \vdash M}$
@@ -2028,16 +2064,16 @@ Then $n$ is also the last node in $?(t \upharpoonright r)$ and $t \upharpoonrigh
 
 \begin{itemize}
 \item Suppose $|s|$ is even then $q$ is a P-move.
-
-If $n$ is labelled with a free variable $x$ then $n$ points to $r$, the first node of the traversal.
-Therefore by definition of $\varphi$, $\varphi(n) = x$ is a child node of some root $q_0 = \varphi(r)$ of the arena $\sem{\Gamma \rightarrow A}$
-and $\ord{x} = \ord{q_0} - 1$. The game $\sem{\Gamma \rightarrow A}$ is well-opened therefore $x$ is the only move in $s$ that
+\begin{itemize}
+\item
+If $n$ is a variable node $x$ either free or bound by the root then $n$ is enabled by the root which is the first node in $t$.
+By definition of $\varphi$, $\varphi(n) = x$ must be a move enabled by the initial move $q_0 = \varphi(r)$ in the arena $\sem{\Gamma \rightarrow A}$.
+Therefore $\ord{x} = \ord{q_0} - 1$. Since the game $\sem{\Gamma \rightarrow A}$ is well-opened $q_0$ must be the only move in $s$ that
 has order strictly greater than $\ord{x}$.
 
 
-If $n$ is labelled with a variable $x$ bound by a node $m$ occuring in $t$ then
-since $t \upharpoonright r$ is a reduced-traversal of $\tau(M)$ and $M$ is in $\beta$-normal form,
-lemma \ref{lem:redtrav_trav} (i) gives:
+\item Suppose $n$ is labelled with a variable $x$ bound by a node $m$ different from the root occurring in $t$.
+Since $M$ is in $\beta$-normal form, lemma \ref{lem:redtrav_trav}(i) gives:
 \begin{equation*}
  \pview{?(t \upharpoonright r)} \jseq \pview{?(t)} \upharpoonright  r
 \end{equation*}
@@ -2057,6 +2093,7 @@ the justified sequence $\pview{?(t\upharpoonright r)}$ and $\pview{?(s)}$ respec
 Finally, since $\varphi$ maps nodes of a given order to moves of the same order (property \ref{proper:phi_conserve_order}),
 $q$ must point to the last O-move in $\pview{?(s)}$ whose
 order is strictly greater than $\ord{q}$.
+\end{itemize}
 
 \item Suppose $|s|$ is odd then $q$ is an O-move.
 
@@ -2083,12 +2120,13 @@ last question move in $\oview{?(s)}$ of order strictly greater than
 $\ord{q}$.
 \end{itemize}
 
-\noindent  \emph{`Only-if' part:}
-Suppose $x$ is a variable node of the computation tree $\tau(M)$.
+\noindent  \emph{`Only-if' part:} Suppose that the strategy $\sem{M}$ is regular.
+Let $x$ be a bound variable node of the computation tree $\tau(M)$.
+Since $M$ is in $\beta$-normal form, by lemma \ref{lem:betaeta_trav}(i),
+$x$ is either hereditarily justified by the root $r$ or by a constant $f \in N_\Sigma$.
 
 We remark that for terms in $\beta$-normal form, every variable node occurring in the computation tree can be visited by some traversal.
-Moreover, all the variables nodes are hereditarily justified by the root of the computation tree.
-Therefore there is a traversal $t \cdot x$ of $\tau(M)$ for some traversal $t$.
+Therefore there exist a traversal $t \cdot x \in \travset(M)$.
 The correspondence theorem gives $\varphi((t \upharpoonright r) \cdot x) \in \sem{M}$.
 
 Since $\sem{M}$ is regular, $\varphi(x)$ must point to the last move in $\pview{?(\varphi(t \upharpoonright r))}$ with
@@ -2107,12 +2145,12 @@ Therefore $x$ points to the last node in the path to the root that has order str
 
 
 
-\begin{lem}[Computation tree of safe terms are regular]
+\begin{lem}[Safe terms have regular computation trees]
 \label{lem:regularity}
-Let $M$ be a simply-typed term.
+Let $\overline{x}:\overline{A} \vdash M$ be a simply-typed term.
 \begin{itemize}
 \item[(i)] If $M$ is a safe term then $\tau(M)$ is regular.
-\item[(ii)] Reciprocally, if $\tau(M)$ is regular then the $\eta$-normal form of $M$ is safe.
+\item[(ii)] Reciprocally, if $\tau(M)$ is regular then the $\eta$-normal form of $\lambda \overline{x}:\overline{A} . M$ is safe.
 \end{itemize}
 \end{lem}
 \begin{proof}
@@ -2120,28 +2158,53 @@ Let $M$ be a simply-typed term.
 $M$ is safe, the computation tree $\tau(M)$ is the tree representation of a safe term.
 
 In the safe $\lambda$-calculus when applying the abstraction rule the variables in the lowest partition (smallest order) of the context
- must all be abstracted together.
-
+must all be abstracted together.
 Expressing this fact from point of view of the the computation tree
 (in which consecutive abstractions are merged into a single node) we obtain:
 for each lambda node $\lambda \overline{\xi}$, any variable $x$ occurring free in $\kappa(\lambda \overline{\xi})$
 has order greater or equal to $\ord{\lambda \overline{\xi}}$. Reciprocally, if a lambda node $\lambda \overline{\xi}$
-binds a variable node $x$ then $\ord{\lambda \overline{\xi}} = \max_{z\in\overline{\xi}} \ord{z} > \ord{x}$.
-Moreover in a computation tree, the binder of a node $x$ always occurs in the path from $x$ to the root.
-Therefore $x$ must be bound by the first $\lambda$ node occurring in the path the root
+binds a variable node $x$ then $\ord{\lambda \overline{\xi}} = 1+\max_{z\in\overline{\xi}} \ord{z} > \ord{x}$.
+
+Let $x$ be a bound variable in $\tau$.
+In a computation tree the binder always occurs in the path from the bound node to the root,
+therefore by the previous observation $x$ must be bound by the first $\lambda$-node occurring in the path the root
 that has order strictly greater than $\ord{x}$.
 
-(ii) This is because in the $\eta$-normal form, all the application are total: any subterm of type $(A_1,\ldots,A_n,o)$
-must occur applied by $n$ parameters. This rules out any possible source of unsafety caused by an application.
-Moreover regularity of the computation tree implies that every abstraction in the
-$\etanf{M}$ must abstract all the variable of the lowest partition in the context.
-Hence $\etanf{M}$ is safe.
+Let $x$ be a free variable in $\tau$. Since $x$ is free, it is not bound by any of the $\lambda$-nodes occurring in the path from $x$ to the root.
+By the previous observation, this means that all these $\lambda$-nodes have order smaller than $\ord{x}$.
+
+Hence $\tau$ is regular.
+
+(ii) We assume that $M$ is already in $\eta$-normal form. Moreover since the trees $\tau(M)$ and $\tau(\lambda \overline{x} . M)$ are isomorphic, we can assume that
+$M$ is closed. Suppose $\tau(M)$ is regular.
+We prove that $M$ is safe by induction on its structure.
+\emph{Base case:} $M = \lambda \overline{\xi} . \alpha$ for some variable or constant $\alpha$ then $\alpha$ is safe therefore so is $\lambda \overline{\xi} . \alpha$.
+\emph{Step case:} If $M = \lambda \overline{\xi} . N_1 \ldots N_p$. For $i \in 1..p$, $N_i$ can be written $\lambda \overline{\eta_i} . N'_i$ where $N'_i$
+is not an abstraction.
+
+Let $i$ ranges over $1..p$.
+By the induction hypothesis, $\lambda \overline{\xi} . N_i = \lambda \overline{\xi} \overline{\eta_i} . N'_i$ is safe. Therefore by the definition of
+the safety, $N'_i$ must be safe.
+Let $z$ be a variable occurring free in $N'_i$. $z$ is either bound by $\lambda \overline{\eta_1}$ or by $\lambda \overline{\xi}$.
+If it is bound by $\lambda \overline{\xi}$ then since $\tau(M)$ is regular we have $\ord{z} \geq \ord{\lambda \overline{\eta_1}} = \ord{N_i}$.
+Hence we can abstract the variables $\overline{\eta_1}$ by using the (abs) rule of the safe $\lambda$-calculus and we get that $N_i$ is safe.
+
+Since the term is in $\eta$-normal form, the application $N_1 \ldots N_p$ is total (i.e. $N_1$ is a function taking $p-1$ parameters
+and it is applied to $p-1$ arguments), therefore since the $N_i$ are safe, by the (app) rule of the safe $\lambda$-calculus
+$N_1 \ldots N_p$ is also safe.
+By the (abs) rule we conclude that $M = \lambda \overline{\xi} . N_1 \ldots N_p$ is safe.
 \end{proof}
+
+Note that in (ii) $\lambda \overline{x} . M$ is safe but $M$ is not necessarily safe. For instance, the two terms
+$\lambda x y .x$ and $\lambda y . x$ where $x,y:o$ have (isomorphic) regular computation trees. However $\lambda x y .x$ is safe
+whereas $\lambda y . x$ is not.
+
+
 
 Putting proposition \ref{prop:regular_comp_imp_regular_strat} and lemma \ref{lem:regularity} together we
 obtain a game semantics characterization of safe terms:
 \begin{cor}[Regular strategies characterize safe terms]
-Let $M$ be a  simply-typed term.
+Let $M$ be a closed simply-typed term then:
 $$ \sem{M} \mbox{ is regular if and only if $\etabetanf{M}$ is safe,} $$
 where $\etabetanf{M}$ denotes the $\eta$-normal form of the $\beta$-normal form of $M$.
 \end{cor}

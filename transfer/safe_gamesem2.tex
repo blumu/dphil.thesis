@@ -165,7 +165,6 @@ The node-order function $\textsf{ord}$ is defined on nodes as follows:
 \end{dfn}
 
 \noindent Some remarks:
-%Consider the computation tree $\tau(M)$ of a term $M$ in $\eta$-long normal form. Then:
 \begin{itemize}
 \item In a computation tree, nodes at even level are abstraction node and nodes at odd level are either application nodes,
 variable or constant nodes;
@@ -367,6 +366,8 @@ obtained from $t$ by conserving only unmatched nodes. $?(t)$ does not contain an
 We call \emph{input variable} a variable that is justified by the root of $\tau(M)$ (i.e. either free in $M$ or bound by the root of $\tau(M)$).
 
 \subsubsection{Traversal of the computation tree}
+\label{subsec:traversal}
+
 Intuitively, a \emph{traversal} is a justified sequence of nodes of the computation tree where each node
 indicates a step that is taken during the evaluation of the term.
 
@@ -584,7 +585,7 @@ In the presence of higher-order constants, there must be additional rules to tak
 constant nodes of the computation tree.
 From now on, we assume that some constant rules have been fixed and that they respect the following two conditions:
 \begin{itemize}
-  \item[(C1)] constant rules are well-behaved;
+  \item[(C1)] constant traversal rules are well-behaved;
   \item[(C2)] the system of constant traversal rules is deterministic (i.e. the domains of application of the
   constant rules do not overlap.
 \end{itemize}
@@ -749,6 +750,7 @@ $N_\Sigma$ therefore the ``or'' is exclusive : a node cannot be hereditarily jus
 
 
 \subsection{Game semantics of simply-typed $\lambda$-calculus with $\Sigma$-constants}
+\label{sec:assumptions}
 
 We are working in the general setting of an applied simply-typed $\lambda$-calculus with a given set of higher-order constants $\Sigma$.
 The operational semantics of these constants is given by certain reduction rules.
@@ -1102,8 +1104,6 @@ $$\varphi(t) = \varphi(t_0)\ \varphi(t_1)\  \varphi(t_2) \ldots$$
 where the pointers of the justified sequence of move $\varphi(t)$
 are defined to be exactly those of the justified sequences of nodes
 $t$.
-%It is straightforward to check that the sequence obtained is a
-%valid justified sequence of moves.
 This definition implies that $\varphi : N\setminus (N_@ \union N_\Sigma)^* \rightarrow \mathcal{M}^*$ regarded as a function
 from pointer-less sequences of nodes to pointer-less sequences of moves is a monoid homomorphism.
 
@@ -2026,6 +2026,21 @@ By the induction hypothesis the pointers in $s$ are recoverable, this ensures th
 P-view $\pview{?(s)}$ and the O-view $\oview{?(s)}$ can be computed. Consequently the pointer for $m$ can be (uniquely) recovered.
 \end{proof}
 
+\begin{exmp}
+The evaluation map $ev$ is denoted by a non-regular strategy. Indeed consider the play $s = q_0 q_1 q_2 q_3 \in \sem{ev}$
+shown on the diagram below:
+$$\begin{array}{cccccccc}
+(A & \implies & B) & \times  & A & \stackrel{ev}{\longrightarrow} & B \\
+&&&&&& q_0 \\
+&& q_1 \\
+ q_2 \\
+ &&&&q_3
+\end{array}$$
+The order of the moves are as follows:  $\ord{q_3} = \ord{A}$, $\ord{q_2} = \ord{A}$,
+$\ord{q_1} = \max( 1+\ord{A}, \ord{B})$ and $\ord{q_0} = 1 + \ord{q_1}$.
+The last O-move in $?(\pview{s})= s$ with order strictly greater than $\ord{q_3}$ is $q_1$. However $q_3$ points to $q_0$ therefore $\sem{ev}$ is not regular.
+\end{exmp}
+
 
 In a computation tree a binder node always occurs in the path from the bound node to the root.
 We now introduce a class of computation tree in which binder nodes can be uniquely recovered from the order of the nodes.
@@ -2139,7 +2154,6 @@ In the pure simply-type $\lambda$-calculus we have $\Sigma=\emptyset$ therefore 
 We remark that for terms in $\beta$-normal form, every variable node occurring in the computation tree can be visited by some traversal:
 there is a traversal $t \cdot x$ for some $t \in \travset(M)$.
 The correspondence theorem gives $\varphi((t \cdot x) \upharpoonright r) = \varphi((t \upharpoonright r) \cdot x) \in \sem{M}$.
-
 Since $\sem{M}$ is regular, $\varphi(x)$ must point to the last move in $\pview{?(\varphi(t \upharpoonright r))}$ with
 order strictly greater than $\ord{\varphi(x)}$.
 Consequently $x$ points to the last node in $\pview{?(t \upharpoonright r)}$ with
@@ -2150,28 +2164,36 @@ We have:
 & = \pview{?(t)} & \mbox{$M$ is a $\beta$-nf and $N_\Sigma = \emptyset$} \\
 & = [r,x[ & \mbox{by proposition \ref{prop:pviewtrav_is_path}}.
 \end{align*}
-Therefore if $x$ is a bound variable node then it is bound by the last $\lambda$-node in $[r,x[$ with order strictly greater than $\ord{x}$.
+Therefore if $x$ is a bound variable node then it is bound by the last $\lambda$-node in $[r,x[$ with order strictly greater than $\ord{x}$
 and if $x$ is a free variable then it points to $r$ and therefore all the $\lambda$-node in $]r,x[$ have order smaller than $\ord{x}$.
 Hence $\tau(M)$ is regular.
 \end{proof}
 
-\begin{floatingfigure}[r]{1.5cm}
-\pspicture(1.5cm, 2cm)
-\rput[t](0cm,2cm)
-{\psset{levelsep=4ex} \pstree{\TR{$\lambda x^3$}}{\pstree{\TR{$f^2$}}{ \pstree{\TR{$\lambda y^1$}}{ \TR{$x^0$} }}} }
-\endpspicture
-\end{floatingfigure}
-\noindent \emph{Example:}
-Consider the $\beta$-normal term $M = \lambda x . f (\lambda y .x)$ where $x,y:o$ and $f:(o,o),o$. Its computation tree is
-represented on the right. The exponent in each label gives the order of the node.
-The node $x$ of order $0$ is not bound by the order 1 node $\lambda y$ therefore $\tau(M)$ is not regular. Hence by proposition
-\ref{prop:regular_comp_imp_regular_strat},
-$\sem{\lambda x . f (\lambda y .x)}$ is not regular.
-Similarly, the denotation of $f (\lambda y .x)$ is not regular, but the denotation of $\lambda y. x$ is regular.
+%\begin{floatingfigure}[r]{0.5cm}
+%\begin{wrapfigure}{r}{0.5cm}
+\parpic[r]{
+%\pspicture(0,0)(1cm,1cm)
+%\psgrid[subgriddiv=0, gridcolor=lightgray, gridlabelcolor=lightgray](0,0)(1cm,2cm)
+%\rput[t](0.5cm,2cm)
+{\psset{levelsep=4ex} \pstree{\TR{$\lambda x^3$}}{\pstree{\TR{$f^2$}}{ \pstree{\TR{$\lambda y^1$}}{ \TR{$x^0$} }}} }}
+%\endpspicture
+%\end{floatingfigure}
+%\end{wrapfigure}
+\noindent \emph{Examples:}
+Consider the $\beta$-normal term $\lambda x . f (\lambda y .x)$ where $x,y:o$ and $f:(o,o),o$. The figure on the right represents
+the computation tree with the order of each node in the exponent part.
+Since node $x$ of order $0$ is not bound by the order 1 node $\lambda y$, $\tau(M)$ is not regular and by proposition
+\ref{prop:regular_comp_imp_regular_strat} $\sem{\lambda x . f (\lambda y .x)}$ is not regular.
+Similarly we can check that the denotation of $f (\lambda y .x)$ is not regular whereas $\lambda y. x$ has a regular denotation.
 Also for any higher-order variable $x:A$, the computation tree $\tau(x)$ is regular, therefore
 the projection strategies $\pi_i$ are regular.
-We also remark that the evaluation strategy does not preserve regularity since $\sem{f}$ and $\sem{\lambda y. x}$ are regular but
-$\sem{f (\lambda y .x)} = \langle \sem{f}, \sem{\lambda y. x} \rangle \fatsemi ev$ is not.
+From these examples we observe that application does not preserve regularity: $\sem{f}$ and $\sem{\lambda y. x}$ are regular whereas
+$\sem{f (\lambda y .x)}$ is not.
+
+%In fact regularity is not preserved by composition. Indeed,
+%$\sem{f (\lambda y . x) \cong \langle id_{\Gamma}, \sem{\lambda y . x} \rangle} $
+%$\sem{f (\lambda y .x)} = \langle \sem{f}, \sem{\lambda y. x} \rangle \fatsemi ev$ is not.
+
 
 \begin{lem}[Safety--regularity]
 \label{lem:regularity}
@@ -2182,23 +2204,22 @@ Let $\Gamma \vdash M$ be a simply-typed term.
 \end{itemize}
 \end{lem}
 \begin{proof}
-(i) The safety property is preserved after taking the $\eta$-normal form, therefore since
-$M$ is safe, the computation tree $\tau(M)$ is the tree representation of a safe term.
+(i) Suppose that $M$ is safe. The safety property is preserved after taking the $\eta$-normal form, therefore
+$\etanf{M}$ is also safe. Hence $\tau(M)$ is the tree representation of a safe term.
 
 In the safe $\lambda$-calculus when applying the abstraction rule the variables in the lowest partition (smallest order) of the context
 must all be abstracted together.
-Expressing this fact from point of view of the the computation tree
-(in which consecutive abstractions are merged into a single node) we obtain:
-for each lambda node $\lambda \overline{\xi}$, any variable $x$ occurring free in $\kappa(\lambda \overline{\xi})$
+In the computation tree consecutive abstractions are merged into a single node, therefore the safety of $\etanf{M}$ implies
+that: for each $\lambda$-node $\lambda \overline{\xi}$, any variable $x$ occurring free in $\kappa(\lambda \overline{\xi})$
 has order greater or equal to $\ord{\lambda \overline{\xi}}$. Reciprocally, if a lambda node $\lambda \overline{\xi}$
 binds a variable node $x$ then $\ord{\lambda \overline{\xi}} = 1+\max_{z\in\overline{\xi}} \ord{z} > \ord{x}$.
 
-In a computation tree, a binder node always occurs in the path from the bound node to the root,
-therefore by the previous observation a bound variable $x$ must be bound by the first $\lambda$-node occurring in the path to the root
-that has order strictly greater than $\ord{x}$. Hence $\tau$ is regular.
-
-Let $x$ be a free variable in $\tau$. Since $x$ is free, it is not bound by any of the $\lambda$-nodes occurring in the path from $x$ to the root.
-By the previous observation, this means that all these $\lambda$-nodes have order smaller than $\ord{x}$.
+Let $x$ be a bound variable node. In a computation tree, a binder node always occurs in the path from the bound node to the root,
+therefore by the previous observation $x$ must be bound by the first $\lambda$-node occurring in $[r,x]$
+with order strictly greater than $\ord{x}$.
+Similarly, let $x$ be a free variable node in $\tau$ then $x$ is not bound by any of the $\lambda$-nodes occurring in $[r,x]$.
+Therefore, by the previous observation, all these $\lambda$-nodes have order smaller than $\ord{x}$.
+Hence $\tau$ is regular.
 
 (ii) We assume that $M$ is already in $\eta$-normal form. Suppose $M$ is closed and $\tau(M)$ is regular,
 we prove that $M$ is safe by induction on its structure:
@@ -2254,7 +2275,7 @@ Finally, the soundness of the game model gives $\sem{M} = \sem{M'}$.
 
 Safe Idealized Algol, or Safe \ialgol\ for short, is Idealized Algol where the application and abstraction rules are restricted
 the same way as in the safe $\lambda$-calculus (see rules of section \ref{sec:safe_nonhomog}).
-The properties of the Safe $\lambda$-calculus transposed straightforwardly to Safe \ialgol. In particular, it can be shown that
+The properties of the Safe $\lambda$-calculus can be transposed straightforwardly to Safe \ialgol. In particular, it can be shown that
 no variable capture occur when performing substitution on a safe term.
 
 A natural question to ask is whether we can extend the result about game semantics of safe $\lambda$-terms to safe \ialgol-terms.
@@ -2262,8 +2283,9 @@ We conjecture that indeed the pointers in the game semantics of safe IA terms ca
 In this section we lay out the key elements of a possible proof of this conjecture.
 
 If our conjecture is true then there may be potential application in algorithmic game semantics.
-For instance, by following the framework of \cite{ghicamccusker00} we may be able to obtain a characterization of strategies
-by extended regular expressions for some higher-order fragments of Safe Idealized Algol.
+For instance, by following the framework of \cite{ghicamccusker00}, it may be possible to give
+a characterization of the game semantics of some higher-order fragments of Safe Idealized Algol using
+extended regular expressions.
 Subsequently, this would lead to the decidability of program equivalence
 for the considered higher-order fragments of Safe \ialgol.
 
@@ -2289,17 +2311,31 @@ In the following sections we give more details about each of these steps.
 
 \subsubsection{Computation tree}
 
-The definition of the $\eta$-long normal form needs to be adapted to take into account the $Y_A$ combinators. The solution consists in
-expanding the recursion infinitely. For instance the term $Y (\lambda f x. f x)$ is replaced by the infinite term
-$(\lambda f x. f x) ((\lambda f x. f x) ((\lambda f x. f x)  ( \ldots$.
-The corresponding infinite computation tree is:
-$$\tree{\lambda}{
-\tree{@}
-     {  \tree{\lambda x}
-        {   \tree{\lambda x} {\TR{x}}
-            \TR{\tau(M)}
-        }}}
-$$
+The $Y$ combinators needs a special treatment.
+In order to define a unique computation tree for $Y_A M$ we consider the syntactic approximants to $Y_A M$ defined by
+\begin{eqnarray*}
+Y^0_A M &=& \Gamma \vdash \Omega_A : A\\
+Y^{n+1}_A M &=& M( Y^n M )
+\end{eqnarray*}
+where $\Omega$ denotes the term $Y(\lambda x .x)$.
+For any term $M:A$ we have $\sem{Y_A M} = \Union_{n\in\omega} \sem{Y_A^n M}$ (\cite{abramsky:game-semantics-tutorial}, lemma 16).
+
+We add the constant $\bot$ to the set $\Sigma$ which represents the infinite computation $Y(\lambda x .x)$. Then it is possible to
+compute the computation tree $\tau(Y_A^n M)$ for each approximant $Y_A^n M$.
+We now use the standard approximation ordering on trees defined in \cite{KNU02}, section 1.
+$\tau(Y_A M)$ is then defined to be the least upper bound of the sequence of computation trees $(\tau(Y_A^n M))_{n\in\omega}$.
+
+%We handle this case by considering the infinite computation tree
+%obtained by expanding the recursion infinitely. For instance consider the term $M = Y (\lambda f x. f x)$ where $f:(o,o)$ and $x:o$.
+%Its computation tree $\tau(M)$ is defined to be the computation tree
+%of the infinite term $(\lambda f x. f x) ((\lambda f x. f x) ((\lambda f x. f x)  ( \ldots$.
+%$$\tree{\lambda}{
+%\tree{@}
+%     { % \tree{\lambda x}
+%        {   \tree{\lambda x} {\TR{x}}
+%            \TR{\tau(M)}
+%        }}}
+%$$
 
 The other operators of \ialgol\ are just treated as constants when computing the $\eta$-normal form and constructing the computation tree.
 For instance the computation tree of $\pcfcond\ b\ x\ y$ is:
@@ -2396,15 +2432,21 @@ $
 is also a traversal.
 \end{itemize}
 
+It is straightforward to check that these traversal rules are well-behaved and that the system $\Sigma$-rules is deterministic.
+Therefore conditions (C1) and (C2) of section \ref{subsec:traversal} are satisfied.
+
+Similarly the reduction rules associated to $\pcfsucc$, $\pcfpred$, $\pcfcond$ preserves safety and their game denotation
+are all regular strategies. Hence assumption (A1) and (A2) of section \ref{sec:assumptions} are satisfied.
+
+
 This complete the definition of traversal for the \pcf\ subset of \ialgol.
 
 
 %The (Var) rule needs to be accommodated to take into account the ground types of \ialgol. For the type \iacom, the definition is similar
 
-
 %\iaseqexp \iaseqcom, \iaskip
 
-\todobox{TODO: IA computation tree, traversal rules for IA}
+\todobox{TODO: for IA the computation tree becomes a computation DAG; define traversals rules for IA.}
 %arena in IA may have two roots : the arena for the type var. How to
 %define a computation tree that can take this into account? For
 %instance for the \texttt{new} operator,  We need to introduce
@@ -2416,16 +2458,11 @@ This complete the definition of traversal for the \pcf\ subset of \ialgol.
 %mkvar: solution guy mccusker: observational equivalence still
 %decidable without mkvar.
 
-\todobox{TODO: Game play-computation tree traversal correspondence theorem.}
-
-
-\todobox{TODO: We prove the counterpart of lemma \ref{lem:redtrav_trav} for traversal of \ialgol\ terms:}
-
-
-
-It is straightforward to check that computation trees of Safe \ialgol\ terms are regular.
-Consequently by lemma \ref{lem:regular_pointers_uniqu_recover}, pointers in the strategy are  superfluous for Safe IA terms.
-
+\todobox{TODO: Game play--computation DAG traversal correspondence theorem;
+prove the counterpart of lemma \ref{lem:redtrav_trav} for traversal of \ialgol\ terms;
+check that computation DAG of Safe \ialgol\ terms are regular;
+consequently by lemma \ref{lem:regular_pointers_uniqu_recover}, pointers in the strategy are  superfluous for Safe IA terms.
+}
 
 %In \ialgol, most of the operators added on top of the $\lambda$-calculus are of order $1$ at most. The two exceptions
 %are the Y-combinator and the \iamkvar\ operator.

@@ -8,8 +8,8 @@ type $o$ can be written $(A_1, \cdots, A_n, o)$ for some $n \geq 1$,
 which is a shorthand for $A_1 \funsp \cdots \funsp A_n \funsp o$ (by
 convention, $\rightarrow$ associates to the right).
 
-We suppose that a ranking function has been defined: ${\sf rank} :
-Types \funto (L, \leq)$ where $(L, \leq)$ is any linearly ordered
+Suppose that a ranking function ${\sf rank} :
+Types \funto (L, \leq)$ is given where $(L, \leq)$ is any linearly ordered
 set. Possible candidates for the ranking function are:
 \begin{itemize}
 \item ${\sf ord} : Types \funto (\nat,\leq)$ with $\ord{o} = 0$
@@ -21,12 +21,10 @@ $\slheight{o} = 0$ ;
 and $\nparam{A_1, \cdots, A_n} = n$;
 \item ${\sf ordernp} : Types \funto (\nat \times \nat,\leq)$ with $ {\sf ordernp} (t)  = (\order{t}, \nparam{t})$ for $t \in Types$.
 \end{itemize}
-
-
-Following \cite{KNU02}, a type is rank-homogeneous if it is $o$ or
+Then following \cite{KNU02}, we say that a type is {\sf rank}-homogeneous if it is $o$ or
 if it is $(A_1, \cdots, A_n, o)$ with the condition that $\rank{A_1}
 \geq \rank{A_2}\geq \cdots \geq \rank{A_n}$ and each $A_1$, \ldots,
-$A_n$ is rank-homogeneous.
+$A_n$ is {\sf rank}-homogeneous.
 
 
 
@@ -41,7 +39,7 @@ $\overline{A_i}$. Then the notation $A \; = \; (\overline{A_1} \, |
   \item $\forall i,j . \forall u \in A_i . \forall v \in A_j . i<j \implies \rank u >
    \rank v $
 \end{itemize}
-Consequently, $A$ is rank-homogenous. This notation organises the
+and therefore $A$ is {\sf rank}-homogenous. This notation organises the
 $A_{ij}$s into partitions according to their ranks. Suppose $B =
 (\overline{B_1} \, | \, \cdots \, | \, \overline{B_m} \, | \, o)$.
 We write $(\overline{A_1} \, | \, \cdots \, | \, \overline{A_n} \, |
@@ -53,34 +51,88 @@ From now on, we only consider the rank function {\sf ord}. The term
 ``homogeneous'' will be used to refer to {\sf ord}-homogeneity.
 
 
-\subsection{Safe recursion scheme}
-In \cite{KNU02}, safety is defined as a restriction for homogeneous recursion scheme.
-A recursion scheme is homogeneous if:
+\subsection{Safe Higher-order recursion scheme}
+We now present the original notion of safety introduced in \cite{KNU02}
+as a restriction on higher-order recursion scheme.
+We introduce briefly the notion of higher-order recursion scheme. The reader is refered to
+\cite{KNU02,demirandathesis,safety-mirlong2004} for more details.
+
+Suppose that $\Gamma$ is a set of typed symbol then the set of
+\emph{applicative terms} written $\mathcal{T}(\Gamma)$ is the
+closure of $\Gamma$ under the application rule (if $s: A\rightarrow
+B$ and $t:A$ are in $\mathcal{T}(\Gamma)$ then so is $st :B$).
+
+A higher-order recursion scheme is a deterministic grammar that can be used to define potentially infinite term trees:
+\begin{dfn}[Higher-order recursion scheme]
+A \emph{deterministic higher-order grammar} or \emph{higher-order recursion scheme} is a tuple $\mathcal{G} =
+\langle \Sigma, \mathcal{N}, V, \mathcal{R}, S \rangle$, where
 \begin{itemize}
-    \item[(i)] the $\Sigma$ constants are of order 1 at most and therefore have homogeneous types;
-    \item[(ii)] the variables in the alphabet $\Delta$ have homogeneous types,
-    \item[(iii)] and every non-terminal in the recursion scheme has a homogeneous type.
+\item $\Sigma$ is a ranked alphabet of terminals of order at most 1,
+\item $V$ is a finite set of typed variables,
+\item $\mathcal{N}$ is a finite set of homogeneously-typed non-terminals,
+\item $S$ a distinguished symbol of $\mathcal{N}$ of ground type, called the start symbol,
+\item $\mathcal{R}$ is a finite set of production rules, one for each $F : (A_1, \ldots A_n, o) \in N$, of the form
+    $$ F z_1 \ldots z_m \rightarrow e$$
+where $z_i$ is a variable of type $A_i$ and $e$ is an applicative
+term of type $o$ in $\mathcal{N}(\Sigma \union \mathcal{N} \union
+\{z_1 \ldots z_m \} )$. The $z_i$s are called the \emph{parameters}
+of the rule.
 \end{itemize}
+\end{dfn}
+The order of a rewrite rule is the order of the non-terminal symbol
+appearing on the left hand side of the rule. The order of a grammar
+is the highest order of its non-terminals.
 
-The first and second restriction imposes that every applicative terms in $\mathcal{T}(\Delta)$ must be homogeneous.
+Safety is a syntactic restriction on higher-order grammars. It can be formulated as
+follows:
+\begin{dfn}[Safe Higher-order grammar]
+  Let $G$ be a higher-order grammar $G$ of order $n$
+    whose non-terminals are of homogeneous type.
+    $G$ is \emph{unsafe} if and only if there is a rewrite rule $F z_1 \ldots z_m \rightarrow e$ where
+   $e$ contains a subterm $t$ such that:
+  \begin{enumerate}
+    \item $t$ occurs in an operand position in $e$,
+    \item $t$ is of order $k>0$,
+    \item $t$ contains a parameter of order strictly less than $k$.
+  \end{enumerate}
+  $G$ is \emph{safe} if it is not unsafe.
+\end{dfn}
 
-There is an obvious transformation mapping simply-typed terms to recursion schemes and reciprocally
-(the abstractions of the simply-typed terms correspond to the non-terminals of recursion schemes).
+Let us give an example taken from \cite{KNU02}:
+\begin{exmp} Let $f:(o,o,o)$, $g,h:(o,o)$ and $a,b:o$ be $\Sigma$ constants.
+ The grammar of level 3 with non-terminals $S:o$ and $F: ((o,o),o,o,o)$ and production rules:
+\begin{eqnarray*}
+    S &\rightarrow&  F g a b \\
+    F \varphi x y &\rightarrow& f ( \mathcal{F} ( F \varphi x ) y (h y)) (f (\varphi x) y)
+\end{eqnarray*}
+is not safe because the term $\mathcal{F} \varphi x : (o,o)$ containing a variable of order $0$
+occurs at an operand position in the right-hand side expression of the second rule.
 
-The definition of the Safe $\lambda$-calculus that follows is an adaption of the safety restriction to the simply-typed $\lambda$-calculus.
-In \cite{demirandathesis}, it is proved that
+On the other hand, the grammar with the following production rules is safe:
+\begin{eqnarray*}
+    S &\rightarrow&  F g a b \\
+    F \varphi x y &\rightarrow& f ( \mathcal{F} ( F \varphi x ) y (h y)) (f (\varphi x) y)
+\end{eqnarray*}
+Moreover it can be shown that these two grammars are equivalent in the sense that they generate the same
+infinite tree.
+\end{exmp}
 
-\todobox{Introduce safe grammars.}
-%In the following we shall consider terms-in-context $\seq{\Gamma}{M
-%: A}$ of the simply-typed $\lambda$-calculus.
-%Let $\Delta$ be a
-%simply-typed alphabet i.e., each symbol in $\Delta$ has a simple
-%type.
-%We write $\terms{A}{\Delta}$ for the set of terms of type $A$
-%built up from the set $\Delta$ understood as constant symbols,
-%\emph{without} using $\lambda$-abstraction.
 
 \subsection{Rules of the Safe $\lambda$-Calculus}
+
+There is an analogy between higher-order recursion schemes and the simply-typed $\lambda$-calculus.
+The non-terminals of a recursion scheme can be interpreted as
+$\lambda$-abstractions in the simply-typed $\lambda$-calculus.
+The $\Sigma$-constants are interpreted as ``constructors'' constants (in the sense of constructor used in functional programming languages to
+represent abstract data-types such as trees). The notion of variables and application can also be trivially interpreted
+in the simply-typed $\lambda$-calculus.
+Using this analogy it is possible to derive a version of the safety restriction for the $\lambda$-calculus.
+
+The Safe $\lambda$-calculus has been first proposed in \cite{DBLP:conf/fossacs/AehligMO05},
+a corrected definition appeared in \cite{Ong2005}. The definition that we give here is
+slightly more general in the sense that we allow the use of
+$\Sigma$-constants of any higher-order type whereas the original definition only allows first order constants.
+
 
 The \textbf{Safe $\lambda$-Calculus} is a sub-system of the
 simply-typed $\lambda$-calculus. Typing judgements (or
@@ -144,12 +196,8 @@ the condition that every variable in $\Gamma$ has an order strictly greater
 than $\ord{\overline{B_1}}$.
 
 
-Rules for the safe $\lambda$-calculus have been first proposed in
-\cite{DBLP:conf/fossacs/AehligMO05} and a corrected version is given
-in \cite{Ong2005}. The definition that we have given here is
-slightly more general in the sense that we authorize the use of
-$\Sigma$-constants of any higher-order type whereas the original
-definition only allows first order constants.
+
+
 
 
 \begin{property}[Basic properties]
@@ -682,7 +730,7 @@ $$
       { \sigma(\Gamma) \vdash^0 M : B }
 $$
 
-\item $\rulename{abs}$ The definition of the abstraction rule has a side condition
+\item $\rulename{abs}$ The abstraction rule has a side condition
 expressing the fact that the premise verifies $P_0$ or $P_{-1}$. Since this is always true for sequents
 generated by our new system of rules, we can drop the side condition:
 $$ \rulename{abs} \   \rulef{\Gamma | \overline{x} : \overline{A} \vdash^{-1} M : B}

@@ -630,7 +630,7 @@ By induction on the traversal rules. The only relevant rules are (Var), (CCAnswe
 and the constant rules.
 Since the term is in $\beta$-normal form, there is no $@$-node in $\tau(M)$ and therefore (Var) cannot be used.
 For the rules (CCAnswer-var), (InputVar$^0$) and (InputVar$^{\geq 1})$ we just use the well-bracketedness of traversals.
-For the constant rules, the result is a consequence of the well-behaviour of the rules.
+For the constant rules, the result is a consequence of condition (C1) stating that constant rules are the well-behaved.
 \end{proof}
 
 \begin{lem}[Views of reduced-traversal]
@@ -754,15 +754,9 @@ $N_\Sigma$ therefore the ``or'' is exclusive : a node cannot be hereditarily jus
 
 We are working in the general setting of an applied simply-typed $\lambda$-calculus with a given set of higher-order constants $\Sigma$.
 The operational semantics of these constants is given by certain reduction rules.
-We assume that a fully abstract model of the calculus is provided by mean of a category of games.
-We make the assumption that the constants are well-behaved in the sense that:
-\begin{enumerate}
-\item[(A1)] the reduction rules associated to $\Sigma$-constants preserve safety;
-\item[(A2)] the denotational game semantics of each constant is a well-bracketed strategy.
-\end{enumerate}
-
-For instance, if $\Sigma$ is the set of PCF constants then we work in the category $\mathcal{G}_{b}$
-of well-bracketed and well-opened games defined in section \ref{subsec:pcfgamemodel} of the first chapter.
+We assume that a fully abstract model of the calculus is provided by mean of a category of well-bracketed games.
+For instance, if $\Sigma$ is the set of PCF constants then we work in the category $\mathcal{C}_{b}$
+of well-bracketed defined in section \ref{subsec:pcfgamemodel} of the first chapter.
 
 We will use the alternative representation of strategy defined in remark \ref{rem:atlern_strategy}: a
 strategy is given by a prefix-closed set instead of an ``even length
@@ -1112,10 +1106,10 @@ from pointer-less sequences of nodes to pointer-less sequences of moves is a mon
 justified sequence of moves and $t$ is a justified sequence of nodes
 then
 \begin{itemize}
-\item (i) $s$ and $t$ have the same pointers.
+\item (i) $s$ and $t$ have the same pointers;
 \item (ii) the P-view of $s$ and the P-view of $t$ are computed
 identically: the set of indices of elements that must be removed
-from both sequences in order to obtain their P-view is the same.
+from both sequences in order to obtain their P-view is the same;
 \item (iii) the O-view of $s$ and the O-view of $t$ are computed identically.
 \end{itemize}
 \end{property}
@@ -1457,7 +1451,7 @@ be recovered from $u$ by reinserting the $@$ nodes as follows:
 \begin{itemize}
 \item replace any two consecutive lambda-nodes $n_1 \cdot n_2$ in $j$
 by $n_1 \cdot @ \cdot n_2$ where $@$ denotes the parent node of
-$n_2$ which is also the child node of $n_1$ in the computation tree.
+$n_2$ which is also the child node of $n_1$ in the computation tree;
 \item replace any link in $u$ pointing from a $\lambda$-node to $n_1$ by a link pointing to the inserted $@$ node.
 \end{itemize}
 We write $u+@$ for this second transformation.
@@ -1484,7 +1478,7 @@ The following lemma follows directly from the definition:
 \begin{lem}
 Let $M$ be a term in $\beta$-normal form, $t \in
 \travset(M)$ and $r$ the root of $\tau(M)$ then:
-$$t = t \upharpoonright r = t - @$$
+$$t = t \upharpoonright r = t - @.$$
 \end{lem}
 \begin{proof}
 This is because the computation tree of a term in $\beta$-normal
@@ -1516,10 +1510,11 @@ The function $\varphi$ regarded as a function from the set of nodes $N\setminus 
 For instance the two occurrences of $x$ in the computation tree of the term $\lambda f x. f x x$ are mapped to the same question. However
 the function $\varphi$ regarded as a function from sequences of nodes to sequences of moves is injective:
 \begin{lem}[$\varphi$ is injective]
+\label{lem:varphiinjective}
 $\varphi$ regarded as a function defined on the set of
 sequences of nodes is injective in the sense that for any two traversal $t_1$ and $t_2$:
 \begin{itemize}
-\item[(i)] if $\varphi (t_1 - @ ) = \varphi (t_2 - @ )$ then $t_1-@ =t_2 -@$.
+\item[(i)] if $\varphi (t_1 - @ ) = \varphi (t_2 - @ )$ then $t_1-@ =t_2 -@$;
 \item[(ii)] if $\varphi (t_1 \upharpoonright r ) = \varphi (t_2 \upharpoonright r )$ then $t_1\upharpoonright r = t_2\upharpoonright r$.
 \end{itemize}
 \end{lem}
@@ -2270,12 +2265,13 @@ Finally, the soundness of the game model gives $\sem{M} = \sem{M'}$.
 \end{proof}
 
 
-
-\section{Safe Idealized Algol}
+\section{Game semantics of Safe Idealized Algol}
 
 Safe Idealized Algol, or Safe \ialgol\ for short, is Idealized Algol where the application and abstraction rules are restricted
 the same way as in the safe $\lambda$-calculus (see rules of section \ref{sec:safe_nonhomog}).
-The properties of the Safe $\lambda$-calculus can be transposed straightforwardly to Safe \ialgol. In particular, it can be shown that
+
+The properties of the Safe $\lambda$-calculus can be transposed straightforwardly to Safe \ialgol.
+In particular, it can be shown that safety is preserved by $\beta$-reduction and that
 no variable capture occur when performing substitution on a safe term.
 
 A natural question to ask is whether we can extend the result about game semantics of safe $\lambda$-terms to safe \ialgol-terms.
@@ -2289,41 +2285,55 @@ extended regular expressions.
 Subsequently, this would lead to the decidability of program equivalence
 for the considered higher-order fragments of Safe \ialgol.
 
-\subsection{Overview of the main steps of the proof}
-We need to follow the same recipe used for the Safe $\lambda$-calculus case.
-Let us recapitulates the main ingredients:
-\begin{enumerate}
-\item define the computation tree of a term;
-\item define a notion of traversal over a computation tree;
-\item prove that P-view of traversals are paths in the computation tree;
-\item find a correspondence between traversals of the computation tree and plays in some interaction game semantics;
-\item define a ``reduction'' operation on traversals that eliminates the ``internal nodes'' of the computation. This leads to a
-correspondence between the standard game semantics and some set of sequences of nodes obtained from traversals;
-\item prove that the P-view of the reduction of a traversal is the reduction of the P-view
-and that the O-view of a traversal is the O-view of its reduction (lemma \ref{lem:redtrav_trav});
-\item prove that computation tree of safe term are regular;
-\item prove that regular computation trees are denoted by regular strategies.
-\end{enumerate}
+\subsection{Safe PCF}
+Let us first show how the results about Safe $\lambda$-calculus can be extended to the PCF fragment of Safe \ialgol.
 
-In the following sections we give more details about each of these steps.
 
-\subsection{Computation tree and traversals for \ialgol-$\{\ianew\}$ }
+\subsubsection{Reduction rules of Safe PCF}
+
+The reduction rules associated to the constants of PCF are:
+\begin{eqnarray*}
+\pcfsucc\ n &\rightarrow& n+1 \\
+\pcfpred\ n+1 &\rightarrow& n \\
+\pcfpred\ 0 &\rightarrow& 0 \\
+\pcfcond\ 0\ M N &\rightarrow& N \\
+\pcfcond\ 1\ M N &\rightarrow& M
+\end{eqnarray*}
+Clearly, all these rules preserve safety. Consequently in Safe PCF, safe terms reduces to safe terms.
 
 \subsubsection{Computation tree}
 
-The $Y$ combinators needs a special treatment.
+The $Y$ combinators needs a special treatment. Let $M$ be a term of type $A \rightarrow A$.
 In order to define a unique computation tree for $Y_A M$ we consider the syntactic approximants to $Y_A M$ defined by
 \begin{eqnarray*}
 Y^0_A M &=& \Gamma \vdash \Omega_A : A\\
 Y^{n+1}_A M &=& M( Y^n M )
 \end{eqnarray*}
-where $\Omega$ denotes the term $Y(\lambda x .x)$.
-For any term $M:A$ we have $\sem{Y_A M} = \Union_{n\in\omega} \sem{Y_A^n M}$ (\cite{abramsky:game-semantics-tutorial}, lemma 16).
+where $\Omega_A$ denotes the non-terminating term $Y(\lambda x:A .x)$ for a given type $A$.
+We have $\sem{Y_A M} = \Union_{n\in\omega} \sem{Y_A^n M}$ (\cite{abramsky:game-semantics-tutorial}, lemma 16).
 
-We add the constant $\bot$ to the set $\Sigma$ which represents the infinite computation $Y(\lambda x .x)$. Then it is possible to
-compute the computation tree $\tau(Y_A^n M)$ for each approximant $Y_A^n M$.
-We now use the standard approximation ordering on trees defined in \cite{KNU02}, section 1.
-$\tau(Y_A M)$ is then defined to be the least upper bound of the sequence of computation trees $(\tau(Y_A^n M))_{n\in\omega}$.
+We introduce a special $\Sigma$-constant $\bot$ which will be used to represent the non-terminating computation
+of ground type $\Omega_o$. Then given any type $A = (A_1, \ldots, A_n, o)$, the computation tree $\tau(\Omega_A)$ is
+defined to be the tree representation of the $\eta$-normal form : $\lambda x_1:A_1 \ldots x_n:A_n . \bot $.
+The computation tree for $Y^i M$ is then constructed in the standard way.
+
+Let us introduce a partial order on the set of computation trees.
+Formally, a tree $t$ is given by a labelling function $t:T\rightarrow L$ where
+$T$, called the domain of $t$ and noted $dom(t)$, is a non-empty prefix-closed subset of some free monoid $X^*$
+and $L$ denotes the set of possible labels ($\Sigma$-constants, $\bot$, $@$, variables,
+abstraction of any sequence of variable).
+Intuitively, $T$ represents the structure of the tree (the set of all paths) and $t$ is the labelling function mapping paths to labels.
+
+
+We now use the \emph{approximation ordering} on trees defined in \cite{KNU02}, section 1.
+We write $t' \sqsubseteq t$ if the tree $t'$ is obtained from $t$ by replacing some of its subtrees by $\bot$. Formally:
+$$t' \sqsubseteq t \quad \iff dom(t') \subseteq dom(t) \wedge \forall  w \in dom(t'). (t'(w) = t(w) \vee t'(w) = \bot).$$
+
+We define $\tau(Y_A M)$ to be $\Union_{n\in\omega}(\tau(Y_A^n M))_{n\in\omega}$.
+This is well-defined since the sequence of computation trees $(\tau(Y_A^n M))_{n\in\omega}$ is a chain
+and the set of trees with the approximation ordering is a complete partial order.
+
+
 
 %We handle this case by considering the infinite computation tree
 %obtained by expanding the recursion infinitely. For instance consider the term $M = Y (\lambda f x. f x)$ where $f:(o,o)$ and $x:o$.
@@ -2337,8 +2347,9 @@ $\tau(Y_A M)$ is then defined to be the least upper bound of the sequence of com
 %        }}}
 %$$
 
-The other operators of \ialgol\ are just treated as constants when computing the $\eta$-normal form and constructing the computation tree.
-For instance the computation tree of $\pcfcond\ b\ x\ y$ is:
+The other operators of \ialgol\ are just treated as standard constants and the computation tree are
+constructed from the $\eta$-normal form of the term in the standard way. For instance the diagram below show
+the computation tree for $\pcfcond\ b\ x\ y$ (left) and $\lambda x . 5$ (right):
 $$
 \tree{\lambda b x y}
      {  \tree{\pcfcond}
@@ -2347,36 +2358,22 @@ $$
             \tree{\lambda} {\TR{y}}
         }
     }
+\hspace{2cm}
+\tree{\lambda x}{  \TR{5} }
 $$
-Similarly the numeral constants are treated as ordinary constants. For instance, the computation tree associated
-for $\lambda x . 5$ is:
-$$\tree{\lambda x}{  \TR{5} }$$
-The node labelled $5$ has, like any other node, children value-leaves (not represented above for simplicity).
-
-
-The nodes of the computation tree need to be accommodated to take into account the new base types of \ialgol.
-We now annotate the nodes of the computation tree with base types: each node is annotated by the return type of the subterm
-that it represents.
-
-\ldots
-% the
-%nodes of the computation tree have value-leaves attached to them, one for each value of the return type. For instance the term
-%$\iaseqexp \iaskip
-
-
+The node labelled $5$ has, like any other node, children value-leaves which are not represented on the diagram above for simplicity.
 
 \subsubsection{Traversal}
 
-New traversal rules must accompany the additional constants of \ialgol.
-
-The rule for natural number constant is:
+New traversal rules accompany the additional constants of \ialgol.
+There is one additional rule for natural number constants:
 \begin{itemize}
 \item (Nat) If $t \cdot m$ is a traversal where $m$ denotes a node labelled with some numeral constant $i\in \nat$ then
             $t \cdot \rnode{m}{m} \cdot \rnode{mv}{m^i} \bkptra[nodesep=1pt]{60}{mv}{m}$
             is also a traversal where $m^i$ denotes the value leaf of $m$ corresponding to the value $i\in \nat$.
 \end{itemize}
 
-The rules for \pcfsucc\ nodes are:
+\noindent The traversals rules for \pcfpred\ and \pcfsucc\ are defined similarly. We just gives the ones for \pcfsucc.
 \begin{itemize}
 \item (Succ) If $t \cdot \pcfsucc$ is a traversal and $\lambda$ denotes the only child node of \pcfsucc\ then
 $t \cdot \rnode{succ}{\pcfsucc} \cdot \rnode{l}{\lambda}
@@ -2395,9 +2392,8 @@ $t_1 \cdot \rnode{succ}{\pcfsucc} \cdot \rnode{l}{\lambda} \cdot t_2 \cdot \rnod
 $
 is also a traversal.
 \end{itemize}
-The traversals rules for \pcfpred\ nodes are defined similarly.
 
-In the computation tree, nodes labelled with \pcfcond\ have three children nodes numbered from
+\noindent In the computation tree, nodes labelled with \pcfcond\ have three children nodes numbered from
 $1$ to $3$ corresponding to the three parameters of the operator \pcfcond. The traversal rules are:
 \begin{itemize}
 \item (Cond-If) If $t_1 \cdot \pcfcond$ is a traversal and $\lambda$ denotes the first child of \pcfcond\ then
@@ -2431,16 +2427,79 @@ $t_1 \cdot \rnode{cond}{\pcfcond} \cdot t_2 \cdot \rnode{l}{\lambda} \cdot t_3 \
 $
 is also a traversal.
 \end{itemize}
-
-It is straightforward to check that these traversal rules are well-behaved and that the system $\Sigma$-rules is deterministic.
-Therefore conditions (C1) and (C2) of section \ref{subsec:traversal} are satisfied.
-
-Similarly the reduction rules associated to $\pcfsucc$, $\pcfpred$, $\pcfcond$ preserves safety and their game denotation
-are all regular strategies. Hence assumption (A1) and (A2) of section \ref{sec:assumptions} are satisfied.
-
-
 This complete the definition of traversal for the \pcf\ subset of \ialgol.
 
+\subsubsection{Correspondence theorem}
+The well-bracketing assumption stated in section \ref{sec:assumptions} is satisfied: PCF is modeled by a category of \emph{well-bracketed} strategies.
+
+Proposition \ref{prop:rel_gamesem_trav} has been proved in the context of the simply-typed $\lambda$-calculus \emph{with no constants}.
+Let us see how to extend it to PCF.
+\begin{prop}
+Let $\Gamma \vdash M : T$ be a PCF term and $r$ be the root of $\tau(M)$. Then:
+$$\varphi_M(\travset(M)^{\upharpoonright r}) = \sem{M}$$
+\end{prop}
+
+It is straightforward to check that the traversal rules for the $\Sigma$-constants of PCF are well-behaved. Also, the rules
+have disjoint domains of application therefore conditions (C1) and (C2) of section \ref{subsec:traversal} are satisfied.
+Consequently, lemma \ref{lem:varphiinjective} holds, therefore
+$\varphi$ defines a bijection from $\travset(M)^{\upharpoonright r}$  to $\varphi(\travset(M)^{\upharpoonright r})$ and
+$$\varphi : \travset(M)^{\upharpoonright r} \stackrel{\cong}{\longrightarrow} \sem{M} $$
+
+
+\subsubsection{Regularity}
+
+Lemma \ref{lem:regularity} still hold in the PCF setting. The only difference with the pure
+simply-typed $\lambda$-calculus is that computation trees are potentially infinite:
+\begin{lem}[Safety--regularity]
+If $\Gamma \vdash M$ is a safe PCF term then $\tau(M)$ is regular.
+\end{lem}
+\begin{proof}
+
+\end{proof}
+
+
+
+Since condition C1 is verified, lemma \ref{lem:redtrav_trav} holds. Therefore
+proposition \ref{prop:regular_comp_imp_regular_strat}(i) also holds: terms in $\beta$-nf
+with a regular computation tree are denoted by regular strategies.
+
+Hence Safe PCF terms are denoted by regular strategies for which pointers are not necessary.
+
+
+\subsection{Safe \ialgol}
+
+\subsubsection{Reduction rules of Safe \ialgol}
+The reduction rules associated to the constants of \ialgol (\iaseq, \iaskip, \iaderef, \iaassign, \iadone, \iarun, \iawrite, \iaread, \iaok, \iamkvar, \ianew) all preserve safety.
+
+
+\subsubsection{Overview of the main steps of the proof}
+We need to follow the same recipe used for the Safe $\lambda$-calculus case.
+Let us recapitulates the main ingredients:
+\begin{enumerate}
+\item define the computation tree of a term;
+\item define a notion of traversal over a computation tree;
+\item prove that P-view of traversals are paths in the computation tree;
+\item find a correspondence between traversals of the computation tree and plays in some interaction game semantics;
+\item define a ``reduction'' operation on traversals that eliminates the ``internal nodes'' of the computation. This leads to a
+correspondence between the standard game semantics and some set of sequences of nodes obtained from traversals;
+\item prove that the P-view of the reduction of a traversal is the reduction of the P-view
+and that the O-view of a traversal is the O-view of its reduction (lemma \ref{lem:redtrav_trav});
+\item prove that computation tree of safe term are regular;
+\item prove that regular computation trees are denoted by regular strategies.
+\end{enumerate}
+
+In the following sections we give more details about each of these steps.
+
+\subsubsection{Computation tree and traversals for \ialgol-$\{\ianew\}$ }
+
+The nodes of the computation tree need to be accommodated to take into account the new base types of \ialgol.
+We now annotate the nodes of the computation tree with base types: each node is annotated by the return type of the subterm
+that it represents.
+
+\ldots
+% the
+%nodes of the computation tree have value-leaves attached to them, one for each value of the return type. For instance the term
+%$\iaseqexp \iaskip
 
 %The (Var) rule needs to be accommodated to take into account the ground types of \ialgol. For the type \iacom, the definition is similar
 
@@ -2453,7 +2512,7 @@ This complete the definition of traversal for the \pcf\ subset of \ialgol.
 %infinitely many nodes to make the correspondence with the
 %infinite number of initial question moves in the arena!
 
-\subsection{Game semantics}
+\subsubsection{Game semantics correspondence}
 
 %mkvar: solution guy mccusker: observational equivalence still
 %decidable without mkvar.

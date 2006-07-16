@@ -2043,25 +2043,20 @@ We write $[n_1,n_2]$ to denote the path from node $n_1$ to node $n_2$ if it exis
 the sequence of nodes obtained by removing $n_1$ from $[n_1,n_2]$.
 
 \begin{dfn}[Regular computation tree]
-A computation tree is said to be \emph{regular} if
-for any variable node $x$ occurring in the computation tree:
+A variable node $x$ of a computation tree is said to be \emph{regular} if either:
 \begin{enumerate}
-\item if $x$ is \emph{bound} then it is bound by the first $\lambda$-node in the path to the root that has
+\item $x$ is \emph{bound} by the first $\lambda$-node in the path to the root that has
 order strictly greater than $\ord{x}$. Formally:
 $$ x \mbox{ bound by } n \quad \imp \quad n \in [r,x] \wedge \ord{n} > \ord{x} \wedge \forall \lambda\mbox{-node } n' \in ]n,x] . \ord{n'} \leq \ord{x},$$
 
-\item if $x$ is a \emph{free variable} then all the $\lambda$-nodes in the path to the root except the root have order
+\item $x$ is a \emph{free variable} and all the $\lambda$-nodes in the path to the root except the root have order
 smaller or equal to $\ord{x}$. Formally:
 $$ x \mbox{ free } \quad \imp \quad  \forall \lambda\mbox{-node } n' \in ]r,x] . \ord{n'} \leq \ord{x}. $$
 \end{enumerate}
 where $r$ denotes the root of the computation tree.
+
+A computation tree is said to be \emph{regular} if all the variable nodes are regular.
 \end{dfn}
-
-
-%We recall that from the definition of $\vdash$ that if $n$ is a $\lambda$-node then:
-%$$n\vdash x \iff ( x \mbox{ bound by } n ) \vee \mbox{ or } ( x \mbox{ is free in } M  \mbox{ and } n \mbox{ is the root of } \tau(M) ).$$
-%Therefore an equivalent definition of tree regularity is: for any $\lambda$-node $n$ different from the root of $\tau(M)$ and any variable node $x$:
-%$$n \vdash x \quad \iff \quad n \mbox{ is the first $\lambda$-node in the path from $x$ to the root with order $>\ord{x}$} $$
 
 \begin{prop}[Tree regularity and strategy regularity coincide] \
 \label{prop:regular_comp_imp_regular_strat}
@@ -2164,16 +2159,12 @@ and if $x$ is a free variable then it points to $r$ and therefore all the $\lamb
 Hence $\tau(M)$ is regular.
 \end{proof}
 
-%\begin{floatingfigure}[r]{0.5cm}
-%\begin{wrapfigure}{r}{0.5cm}
+
 \parpic[r]{
-%\pspicture(0,0)(1cm,1cm)
-%\psgrid[subgriddiv=0, gridcolor=lightgray, gridlabelcolor=lightgray](0,0)(1cm,2cm)
-%\rput[t](0.5cm,2cm)
-{\psset{levelsep=4ex} \pstree{\TR{$\lambda x^3$}}{\pstree{\TR{$f^2$}}{ \pstree{\TR{$\lambda y^1$}}{ \TR{$x^0$} }}} }}
-%\endpspicture
-%\end{floatingfigure}
-%\end{wrapfigure}
+    \psset{levelsep=4ex}
+    \pstree{\TR{$\lambda x^3$}}{\pstree{\TR{$f^2$}}{ \pstree{\TR{$\lambda y^1$}}{ \TR{$x^0$} }}}
+}
+
 \noindent \emph{Examples:}
 Consider the $\beta$-normal term $\lambda x . f (\lambda y .x)$ where $x,y:o$ and $f:(o,o),o$. The figure on the right represents
 the computation tree with the order of each node in the exponent part.
@@ -2285,37 +2276,83 @@ extended regular expressions.
 Subsequently, this would lead to the decidability of program equivalence
 for the considered higher-order fragments of Safe \ialgol.
 
-\subsection{Safe PCF}
-Let us first show how the results about Safe $\lambda$-calculus can be extended to the PCF fragment of Safe \ialgol.
 
+\subsection{Small-step semantics of Safe \ialgol}
+In the first chapter we defined the operational semantics of \ialgol\ using a big step semantics.
+The operational semantics of \ialgol can be defined equivalently using a small-step semantics.
+The reduction rules of the small-step semantics are of the form $s,e \rightarrow s',e'$ where $s$ and $s'$ denotes the
+stores and $e$ and $e'$ denotes \ialgol expressions.
 
-\subsubsection{Reduction rules of Safe PCF}
-
-The reduction rules associated to the constants of PCF are:
+Firstly we define rules to show how to reduce redexes. There are the following ones:
+\begin{itemize}
+\item the reduction of safe-redex (relation $\beta_s$ from definition \ref{dfn:safereduction});
+\item reduction rules for PCF constants:
 \begin{eqnarray*}
 \pcfsucc\ n &\rightarrow& n+1 \\
 \pcfpred\ n+1 &\rightarrow& n \\
 \pcfpred\ 0 &\rightarrow& 0 \\
-\pcfcond\ 0\ M N &\rightarrow& N \\
-\pcfcond\ 1\ M N &\rightarrow& M
+\pcfcond\ 0\ N_1 N_2 &\rightarrow& N_1 \\
+\pcfcond\ n+1\ N_1 N_2 &\rightarrow& N_2 \\
+Y\ M &\rightarrow& M (Y M)
 \end{eqnarray*}
-Clearly, all these rules preserve safety. Consequently in Safe PCF, safe terms reduces to safe terms.
+\item reduction rules for \ialgol\ constants:
+\begin{eqnarray*}
+\iaseq\ \iaskip\  M &\rightarrow& M \\
+s, \ianewin{x}\ M &\rightarrow& (s|x\mapsto 0), M \\
+s, \iaassign\ x\ n &\rightarrow& (s|x\mapsto n), \iaskip \\
+s, \iaderef\ x &\rightarrow& s, s(x) \\
+\iaassign\ (\iamkvar M N)\ n &\rightarrow& M n \\
+\iaderef\ (\iamkvar M N) &\rightarrow& N
+\end{eqnarray*}
+\end{itemize}
 
-\subsubsection{Computation tree}
+Redex can also be reduced when they occur as subexpressions
+within a larger expression. We make use of evaluation contexts to
+indicate when such reduction can happen. Evaluation contexts are given by the following grammar:
+\begin{eqnarray*}
+E[-] &::=& - |\ E N\ |\ \pcfsucc\ E\ |\ \pcfpred\ E\ |\ \pcfcond\ E\ N_1\ N_2\ |\ \\
+&&    \iaseq\ E\ N\ |\ \iaderef\ E\ |\ \iaassign\ E\ n\ |\ \iaassign\ M\ E \ |\ \\
+&&    \iamkvar\ M\ E\ |\ \iamkvar\ E\ M\ |\ \ianewin{x}\ E  .
+\end{eqnarray*}
 
-The $Y$ combinators needs a special treatment. Let $M$ be a term of type $A \rightarrow A$.
-In order to define a unique computation tree for $Y_A M$ we consider the syntactic approximants to $Y_A M$ defined by
+The small-step semantics is completed with following rule:
+$$ \rulef{M \rightarrow N}{E[M] \rightarrow E[N]} $$
+
+\begin{lem}[Reduction preserves safety]
+\label{lem:ia_safety_preserved}
+Let $M$ be a safe \ialgol\ term.
+If $M \rightarrow N$ then $N$ is also a safe term.
+\end{lem}
+This can be proved straightforwardly by induction on the structure of M.
+
+
+\subsection{Safe PCF}
+Let us first show how the results about Safe $\lambda$-calculus can be extended to the PCF fragment of Safe \ialgol.
+
+The $Y$ combinators needs a special treatment. In order to deal with it, we follow the idea of \cite{abramsky:game-semantics-tutorial}:
+we consider the sublanguage $\pcf_1$ of \pcf\ in which the only allowed use of the $Y$ combinator is in terms of the form $Y( \lambda x:A .x )$ for some type $A$.
+We will write $\Omega_A$ to denote the non-terminating term $Y(\lambda x:A .x)$ for a given type $A$.
+
+We introduce the \emph{syntactic approximants} to $Y_A M$:
 \begin{eqnarray*}
 Y^0_A M &=& \Gamma \vdash \Omega_A : A\\
 Y^{n+1}_A M &=& M( Y^n M )
 \end{eqnarray*}
-where $\Omega_A$ denotes the non-terminating term $Y(\lambda x:A .x)$ for a given type $A$.
-We have $\sem{Y_A M} = \Union_{n\in\omega} \sem{Y_A^n M}$ (\cite{abramsky:game-semantics-tutorial}, lemma 16).
+For any PCF term $M$ and natural number $n$ we define $M_n$ to be the PCF term obtained from $M$ by replacing each subterm of the form $Y N$
+with $Y^n N_n$.
+We have $\sem{M} = \Union_{n\in\omega} \sem{M_n}$ (\cite{abramsky:game-semantics-tutorial}, lemma 16).
 
-We introduce a special $\Sigma$-constant $\bot$ which will be used to represent the non-terminating computation
-of ground type $\Omega_o$. Then given any type $A = (A_1, \ldots, A_n, o)$, the computation tree $\tau(\Omega_A)$ is
-defined to be the tree representation of the $\eta$-normal form : $\lambda x_1:A_1 \ldots x_n:A_n . \bot $.
-The computation tree for $Y^i M$ is then constructed in the standard way.
+
+\subsubsection{Computation tree}
+
+Let $N$ be a term of type $A \rightarrow A$. We would like to define a unique computation tree for $Y_A N$.
+To do that we make use of the syntactic approximants to $Y_A N$.
+
+We introduce a special $\Sigma$-constant $\bot$ representing the non-terminating computation
+of ground type $\Omega_o$. Given any type $A = (A_1, \ldots, A_n, o)$, the computation tree $\tau(\Omega_A)$ is
+defined to be the tree representation of $\lambda x_1:A_1 \ldots x_n:A_n . \bot$.
+The computation tree for $Y_A^i N = N( \ldots (N \Omega_A) \ldots )$ is then constructed in the standard way.
+
 
 Let us introduce a partial order on the set of computation trees.
 Formally, a tree $t$ is given by a labelling function $t:T\rightarrow L$ where
@@ -2324,13 +2361,12 @@ and $L$ denotes the set of possible labels ($\Sigma$-constants, $\bot$, $@$, var
 abstraction of any sequence of variable).
 Intuitively, $T$ represents the structure of the tree (the set of all paths) and $t$ is the labelling function mapping paths to labels.
 
-
 We now use the \emph{approximation ordering} on trees defined in \cite{KNU02}, section 1.
 We write $t' \sqsubseteq t$ if the tree $t'$ is obtained from $t$ by replacing some of its subtrees by $\bot$. Formally:
 $$t' \sqsubseteq t \quad \iff dom(t') \subseteq dom(t) \wedge \forall  w \in dom(t'). (t'(w) = t(w) \vee t'(w) = \bot).$$
 
-We define $\tau(Y_A M)$ to be $\Union_{n\in\omega}(\tau(Y_A^n M))_{n\in\omega}$.
-This is well-defined since the sequence of computation trees $(\tau(Y_A^n M))_{n\in\omega}$ is a chain
+We define $\tau(Y_A N)$ to be $\Union_{n\in\omega}(\tau(Y_A^n N))_{n\in\omega}$.
+This is well-defined since the sequence of computation trees $(\tau(Y_A^n N))_{n\in\omega}$ is a chain
 and the set of trees with the approximation ordering is a complete partial order.
 
 
@@ -2430,7 +2466,8 @@ is also a traversal.
 This complete the definition of traversal for the \pcf\ subset of \ialgol.
 
 \subsubsection{Correspondence theorem}
-The well-bracketing assumption stated in section \ref{sec:assumptions} is satisfied: PCF is modeled by a category of \emph{well-bracketed} strategies.
+The game model of the language PCF is given by the category $\mathcal{C}_b$ of
+well-bracketed strategies. Hence the well-bracketing assumption stated in section \ref{sec:assumptions} is satisfied.
 
 Proposition \ref{prop:rel_gamesem_trav} has been proved in the context of the simply-typed $\lambda$-calculus \emph{with no constants}.
 Let us see how to extend it to PCF.
@@ -2438,6 +2475,9 @@ Let us see how to extend it to PCF.
 Let $\Gamma \vdash M : T$ be a PCF term and $r$ be the root of $\tau(M)$. Then:
 $$\varphi_M(\travset(M)^{\upharpoonright r}) = \sem{M}$$
 \end{prop}
+\begin{proof}
+
+\end{proof}
 
 It is straightforward to check that the traversal rules for the $\Sigma$-constants of PCF are well-behaved. Also, the rules
 have disjoint domains of application therefore conditions (C1) and (C2) of section \ref{subsec:traversal} are satisfied.
@@ -2448,28 +2488,54 @@ $$\varphi : \travset(M)^{\upharpoonright r} \stackrel{\cong}{\longrightarrow} \s
 
 \subsubsection{Regularity}
 
-Lemma \ref{lem:regularity} still hold in the PCF setting. The only difference with the pure
-simply-typed $\lambda$-calculus is that computation trees are potentially infinite:
+Because of the presence of the Y combinator, a difficulty arises : computation trees of \pcf\ terms are potentially infinite.
+Despite this characteristics, lemma \ref{lem:regularity} still hold in the \pcf\ setting:
 \begin{lem}[Safety--regularity]
+\label{lem:pcf_saferegular}
 If $\Gamma \vdash M$ is a safe PCF term then $\tau(M)$ is regular.
 \end{lem}
 \begin{proof}
+Suppose that a variable node $z$ belongs to $\tau(M) = \Union_{k\in\omega} \tau(M_k)$ then there exists $k\in \omega$
+such that $z$ belongs to $\tau(M_k) \sqsubseteq \tau(M)$.
+Moreover if we write $r_k$ to denote the root of the tree $\tau(M_k)$ then the path $[r_k,z]$ in $\tau(M_k)$
+is equal to the path $[r,z]$ in $\tau(M)$.
 
+Let $i$ denotes the number of occurrences of the Y combinator in $M$. We prove by induction on $i$ that $M_k$ is
+safe for any $k\in \omega$.
+\emph{Base case:} $i=0$ then $M_k = M$.
+\emph{Step case:} $i>0$. Let $Y_A N$ be a subterm of $M$.
+Since $M$ is safe, $N$ is also safe. The number of occurrences of the Y combinator in $N$ is smaller than $i$ therefore
+by the induction hypothesis $N_k$ is safe. Consequently the term $Y_A^k N_k = \overbrace{N_k ( \ldots ( N_k}^k \Omega ) \ldots )$ is also safe.
+Hence $M_k$ must be safe.
+
+Clearly, lemma \ref{lem:regularity} is still valid in $\pcf_1$ (the subterms of the form $\Omega$ are just
+represented by the constant $\bot$ in the computation tree).
+Therefore since $M_k$ is in $\pcf_1$, $\tau(M_k)$ must be regular.
+Consequently, the node $z$ is regular in $\tau(M_k)$ and since $[r,z]=[r_k,z]$, the corresponding node $z$ in
+the tree $\tau(M)$ is also regular.
+
+Hence $\tau(M)$ is regular.
+\end{proof}
+
+\begin{thm}[Pointers are superfluous for Safe PCF]
+Pointers in the game denotation of safe terms are uniquely recoverable.
+\end{thm}
+\begin{proof}
+Since condition C1 is verified, lemma \ref{lem:redtrav_trav} holds in the Safe PCF setting. Therefore
+proposition \ref{prop:regular_comp_imp_regular_strat}(i) also holds: terms in $\beta$-nf
+with a regular computation tree are denoted by regular strategies.
+
+Safety is preserved by reduction (lemma \ref{lem:ia_safety_preserved}), therefore
+by lemma \ref{lem:pcf_saferegular} and soundness of the game denotation, any Safe PCF term must be
+denoted by a regular strategy.
+
+Hence pointer are superfluous in the game denotation of safe PCF terms.
 \end{proof}
 
 
 
-Since condition C1 is verified, lemma \ref{lem:redtrav_trav} holds. Therefore
-proposition \ref{prop:regular_comp_imp_regular_strat}(i) also holds: terms in $\beta$-nf
-with a regular computation tree are denoted by regular strategies.
-
-Hence Safe PCF terms are denoted by regular strategies for which pointers are not necessary.
-
-
 \subsection{Safe \ialgol}
 
-\subsubsection{Reduction rules of Safe \ialgol}
-The reduction rules associated to the constants of \ialgol (\iaseq, \iaskip, \iaderef, \iaassign, \iadone, \iarun, \iawrite, \iaread, \iaok, \iamkvar, \ianew) all preserve safety.
 
 
 \subsubsection{Overview of the main steps of the proof}

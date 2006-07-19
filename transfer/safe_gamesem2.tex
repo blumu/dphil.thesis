@@ -154,7 +154,7 @@ The node-order function $\textsf{ord}$ is defined on nodes as follows:
 \begin{eqnarray*}
 \ord{n} = \left\{
   \begin{array}{ll}
-    \ord{T}, & \hbox{if $n$ is a variable or constant node labelled $\alpha$ of type $T$;} \\
+    \ord{T}, & \hbox{if $n$ is a variable or constant of type $T$;} \\
     1 + \max_{z\in \overline{\xi}\union fv(M)} \ord{z}, & \hbox{if $n$ is the root of $\tau(M)$;} \\
     1 + \max_{z\in \overline{\xi}} \ord{z}, & \hbox{if $n$ is labelled $\lambda \overline{\xi}$ and is not the root;} \\
     1, & \hbox{if $n$ is labelled $\lambda$ and is not the root;} \\
@@ -264,6 +264,9 @@ a node labelled $x$ where $x$ is a variable free in $M$ must point to the root o
 
 We write $s \jseq t$ to denote that the two justified sequences $t$ and $s$ have
 the same nodes and same pointers.
+Justified sequence of nodes can be ordered using the prefix ordering: $t \sqsubseteq t'$ if and only if the sequence of nodes
+$t$ is a prefix of $t'$ and the pointers of $t$ are the same as the pointers of the corresponding prefix of $t'$.
+This ordering gives rise to a complete partial order.
 
 We say that a node $n_0$ of a justified sequence is hereditarily justified by $n_p$ if there are nodes $n_1, n_2, \ldots n_{p-1}$ in
 the sequence such that for all $i\in 0..p-1$, $n_i$ points to $n_{i+1}$.
@@ -274,6 +277,18 @@ obtained by keeping only the nodes that are hereditarily
 justified by nodes in $N$. This subsequence is also a justified
 sequence of nodes. If $n$ denotes a node of $\tau(M)$ we
 abbreviate $s \upharpoonright \{ n \}$ into $ s\upharpoonright n$.
+
+\begin{lem}
+\label{lem:filtercontinous}
+For any set of node $N$, the filtering function $\_ \upharpoonright N$ defined on the cpo of justified sequences ordered by the prefix ordering
+is continuous.
+\end{lem}
+\begin{proof}
+Clearly $\_ \upharpoonright N$ is monotonous.
+Suppose that $(t_i)_{i\in\omega}$ is a chain of justified sequence of nodes. Let $u$ be a finite prefix of $(\bigvee t_i) \upharpoonright r$.
+Then $u = s \upharpoonright r$ for some finite prefix $s$ of $\bigvee t_i$. Since $s$ is finite we must have $s \sqsubseteq t_j$ for some $j\in\omega$.
+Therefore $u \sqsubseteq t_j \upharpoonright r \sqsubseteq \bigvee (t_j \upharpoonright r)$.
+\end{proof}
 
 
 \begin{dfn}[P-view of justified sequence of nodes]
@@ -2525,52 +2540,62 @@ Let us see how to extend it to \pcf.
 Let $(S,\subseteq)$ denotes the set of sets of justified sequence of nodes ordered by subset inclusion.
 The function $\travset^{\upharpoonright r} : (CT,\sqsubseteq) \rightarrow (S,\subseteq)$ is continuous.
 \end{lem}
-\begin{proof}
+\begin{proof} \
     \begin{description}
     \item[Monotonicity:] Let $T$ and $T'$ be two computation trees such that $T \sqsubseteq T'$
     and let $t$ be some traversal of $T$.
+    Traversals ending with a node labelled $\bot$ are maximal therefore $\bot$ can only occur
+    at the last position in a traversal. Let us prove the following two properties:
+        \begin{itemize}
+            \item[(i)]  If $t = t \cdot n$ with $n\neq \bot$ then $t$ is a traversal of $T'$;
+            \item[(ii)] If $t= t_1 \cdot \bot$ then $t_1\in \travset(T')$.
+        \end{itemize}
 
-    First we observe that traversals ending with a node labelled $\bot$ are maximal.
-    Hence $\bot$ can only occur at the last position in a traversal.
-    There are two cases:
-        \begin{enumerate}
-            \item Suppose that $t$ does not end with a $\bot$-labelled node.
- %           that does not contain any node labelled with $\bot$.
+        (i) By induction on the length of $t$: it is trivial for the empty traversal.
+            suppose $t = t_1 \cdot n$ with $n \neq \bot$.
 
-            We prove that $t$ is also a traversal of $T'$ by induction on the length of $t$.
-            It is trivial for the empty traversal.
-            \emph{Step case:} suppose $t = t_1 \cdot n$ with $n \neq \bot$ then by induction, $t_1$ is a traversal of $T'$.
-            Let us do a case analysis on the rule used to obtain $t$ from $t_1$:
-            \begin{itemize}
-                \item if it is the (Var) rule:
-                \item  if it is a constant rule: since constant rules are well-behaved, $n$
-                must be the child node of some non $\lambda$-node occurring in $t_1$.
+            For all traversal rules the node $n$ is defined to be the $i$th node
+            of some node $n$ occurring in $t_1$ for some $i\in 0..arity(n)$.
+            Moreover for all rules, the exact value of $i$ depends only on the traversal $t_1$
+            and not from any other property of the computation
+            tree \footnote{In fact for the rules (InputVar$^0$) and (InputVar$^{\geq 1}$), the value of $i$ is chosen
+            non-deterministically and therefore does not even depend on $t_1$.}.
 
-                \item for any other rule: by inspection of the rules we observed that $n$
-                must be the child of some node occurring in $t_1$. Therefore
-                the proof is similar to the previous case.
-            \end{itemize}
-            %For all the traversal rules except Var
-            %therefore all the node of $t_1$ exist since $T \sqsubseteq T'$, the node
-            Consequently, any reduced traversa
+            Suppose that $n$ is justified by $m$ in $t_1$.
+            Since $T \sqsubseteq T'$ and $m\neq\bot$, $m$ belongs to $T'$
+            and all the children nodes of $m$ in $T$ also belong to $T'$.
 
+            By the induction hypothesis, $t_1$ is a traversal of $T'$. Therefore by the previous two remarks we can
+            apply the traversal rule that has been used to produced $t$ of $T$ to produce the traversal $t$ of $T'$.
 
-            \item Suppose that $t_1 \cdot \bot$. Then $t_1$ does not end with $\bot$ and
-            therefore from the previous case we have $t_1\in \travset(T')$.
-        \end{enumerate}
+        (ii) $\bot$ can only occur at the last position in a traversal
+        therefore $t_1$ does not end with $\bot$ and by (i) we have $t_1\in \travset(T')$.
+\vspace{10pt}
 
         Hence we have:
         \begin{align*}
         \travset(T)^{\upharpoonright r} &= \{ t \upharpoonright r \ | \ t \in \travset(T)     \} \\
         & = \{ (t\cdot n) \upharpoonright r \ | \ t\cdot n \in \travset(T) \wedge n \neq \bot \}
             \union \{ (t \cdot \bot ) \upharpoonright r \ | \ t \cdot \bot \in \travset(T)  \} \\
-\mbox{(by 1. and 2.)} \quad        & \subseteq  \{ (t\cdot n) \upharpoonright r \ | \ t\cdot n \in \travset(T') \wedge n \neq \bot \}
+\mbox{(by (i) and (ii))} \quad        & \subseteq  \{ (t\cdot n) \upharpoonright r \ | \ t\cdot n \in \travset(T') \wedge n \neq \bot \}
             \union \{ t \upharpoonright r \ | \ t \in \travset(T')  \} \\
         & = \travset(T')^{\upharpoonright r}
         \end{align*}
 
-        \item[Continuity:]
-        $$\travset^{\upharpoonright r} \left(\Union_{n\in\omega} T_n \right) = \Union_{n\in\omega} \travset^{\upharpoonright r}(T_n)$$
+        \item[Continuity:] Let $t \in \travset \left( \Union_{n\in\omega} T_n \right)$.
+        We write $t_i$ for the finite prefix of $t$ of length $i$.
+        The set of traversal is prefix-closed therefore $t_i \in \travset \left( \Union_{n\in\omega} T_n \right)$ for any $i$.
+        Since $t_i$ has finite length we have $t_i \in \travset(T_{j_i})$ for some $j_i \in \omega$.
+        Therefore we have:
+        \begin{align*}
+          t \upharpoonright r &= (\bigvee_{i\in\omega} t_i ) \upharpoonright r   & (\mbox{the sequence $(t_i)_{i\in\omega}$ converges to $t$}) \\
+          &= \Union_{i\in\omega} ( t_i \upharpoonright r )   & (\_ \upharpoonright r \mbox{ is continuous, lemma \ref{lem:filtercontinous}}) \\
+          &\in \Union_{i\in\omega} \travset^{\upharpoonright r}(T_{j_i})   & (t_i \in \travset(T_{j_i})) \\
+          &\subseteq \Union_{i\in\omega} \travset^{\upharpoonright r}(T_i)   & (\mbox{since } \{ j_i \sthat i \in \omega \} \subseteq \omega)
+        \end{align*}
+
+        Hence $\travset^{\upharpoonright r} (\Union_{n\in\omega} T_n ) \subseteq \Union_{n\in\omega} \travset^{\upharpoonright r}(T_n).$
+
     \end{description}
 \end{proof}
 
@@ -2593,7 +2618,7 @@ Let $M$ be a \pcf\ term, we have:
 \begin{align*}
 \sem{M} &= \Union_{n\in\omega} \sem{M_n} & (\mbox{\cite{abramsky:game-semantics-tutorial}, lemma 16})\\
 &= \Union_{n\in\omega} \travset^{\upharpoonright r}(\tau(M_n)) & (M_n \mbox{ is a $\pcf_1$ term}) \\
-&= \travset^{\upharpoonright r}\left(\Union_{n\in\omega} \tau(M_n) \right) & (\mbox{by continuity of $\travset^{\upharpoonright r}$, lemma \ref{lem:travred_continuous}}) \\
+&= \travset^{\upharpoonright r}(\Union_{n\in\omega} \tau(M_n) ) & (\mbox{by continuity of $\travset^{\upharpoonright r}$, lemma \ref{lem:travred_continuous}}) \\
 &= \travset^{\upharpoonright r}(\tau(M)) & (\mbox{by definition of } \tau(M)) \\
 &= \travset^{\upharpoonright r}(M) & (\mbox{abbreviation}).
 \end{align*}

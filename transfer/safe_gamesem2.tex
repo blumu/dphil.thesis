@@ -222,19 +222,26 @@ is enabled by $m$ or that $m$ enables $n$ if and only if
 
 
 \begin{dfn}[Justified sequence of nodes]
-A \emph{justified sequence of nodes} is an alternating sequence of
-lambda and non lambda nodes from the computation tree $\tau(M)$
-together with pointers. A node $n$ in the sequence
+A \emph{justified sequence of nodes} is a sequence of
+nodes of the computation tree $\tau(M)$ with pointers attached to the nodes. A node $n$ in the sequence
 that is either a variable node or a lambda-node different from the root of the computation tree
 has a pointer to a node $m$ occurring before $n$ in the sequence such that $m \vdash n$.
-
-If $n$ points to $m$ we say that $m$ justifies $n$ and we write:
+If $n$ points to $m$ then we say that $m$ \emph{justifies} $n$ and we represent the pointer in the sequence as follows:
 $$\rnode{m}{m} \cdot \ldots \cdot \rnode{n}{n} \bkptra[nodesep=1pt]{40}{n}{m}$$
+\end{dfn}
+Note that justified sequences are also defined for open terms:
+a node labelled $x$ where $x$ is a variable free in $M$ must point to the root of the computation tree.
 
 
-We sometimes add a label to the edge to specify that either node $n$
+We sometime add a label to the edge to specify that either node $n$
 is labelled by the $i$th variable abstracted in the lambda node
 $m$ or that $n$ is the $i$th child of the non-lambda node $m$.
+The children nodes are numbered using the following convention:
+\begin{itemize}
+\item the first child of a $@$-node is numbered $0$,
+\item the first child of a variable or constant node is numbered $1$,
+\item the first variable in $\overline{\xi}$ is numbered $1$ ($\overline{\xi} = \xi_1, \ldots \xi_n$).
+\end{itemize}
 Hence the pointers in a justified sequence of nodes must be of one
 of the following forms: \vspace{2pt}
 $$
@@ -248,24 +255,17 @@ $$
 \hspace{1.5cm}
 \rnode{m}{f } \cdot \ldots \cdot \rnode{n}{\lambda \overline{\xi}} \bkptra[nodesep=1pt]{40}{n}{m} \bklabel{k}
 $$
-for some variables $x,\xi_1, \ldots \xi_n$, $\Sigma$-constant $f$, $i \in 1..n$, $j \in 0..1$, $k \in 1 ..arity(m)$,
-variable $z$ free in $M$ and where $r$ denotes the root of $\tau(M)$.
+where $r$ denotes the root of $\tau(M)$
+and for some variables $x,\xi_1, \ldots \xi_n$, $\Sigma$-constant $f$, $i \in 1..n$, $j \in 0..1$, $k \in 1 ..arity(m)$,
+variable $z$ free in $M$.
 
-With the following conventions:
-\begin{itemize}
-\item the first child of a $@$-node is numbered $0$,
-\item the first child of a variable or constant node is numbered $1$,
-\item the first variable in $\overline{\xi}$ is numbered $1$ ($\overline{\xi} = \xi_1, \ldots \xi_n$).
-\end{itemize}
-\end{dfn}
 
-Note that justified sequences are also defined for open terms:
-a node labelled $x$ where $x$ is a variable free in $M$ must point to the root of the computation tree.
 
 We write $s \jseq t$ to denote that the two justified sequences $t$ and $s$ have
 the same nodes and same pointers.
-Justified sequence of nodes can be ordered using the prefix ordering: $t \sqsubseteq t'$ if and only if the sequence of nodes
-$t$ is a prefix of $t'$ and the pointers of $t$ are the same as the pointers of the corresponding prefix of $t'$.
+Justified sequence of nodes can be ordered using the prefix ordering: $t \sqsubseteq t'$ if and only if $t=t'$ or the sequence of nodes
+$t$ is a finite prefix of $t'$ (and the pointers of $t$ are the same as the pointers of the corresponding prefix of $t'$).
+Note that this definition also applies in the case of infinite justified sequences of nodes.
 This ordering gives rise to a complete partial order.
 
 We say that a node $n_0$ of a justified sequence is hereditarily justified by $n_p$ if there are nodes $n_1, n_2, \ldots n_{p-1}$ in
@@ -288,6 +288,7 @@ Clearly $\_ \upharpoonright N$ is monotonous.
 Suppose that $(t_i)_{i\in\omega}$ is a chain of justified sequence of nodes. Let $u$ be a finite prefix of $(\bigvee t_i) \upharpoonright r$.
 Then $u = s \upharpoonright r$ for some finite prefix $s$ of $\bigvee t_i$. Since $s$ is finite we must have $s \sqsubseteq t_j$ for some $j\in\omega$.
 Therefore $u \sqsubseteq t_j \upharpoonright r \sqsubseteq \bigvee (t_j \upharpoonright r)$.
+This is valid for any finite prefix $u$ therefore $(\bigvee t_i) \upharpoonright r \sqsubseteq \bigvee (t_j \upharpoonright r)$.
 \end{proof}
 
 
@@ -2011,8 +2012,8 @@ ambiguity disappears since $M_1$ is safe whereas $M_2$ is not (because
 in the subterm $f (\lambda y . x)$, the free variable $x$ has the same
 order as $y$ but $x$ is not abstracted together with $y$).
 
-\begin{dfn}[Regular strategy]
-A strategy $\sigma : A$ is said to be \emph{regular} if for any sequence of moves $s q \in P_A$
+\begin{dfn}[Safely-justified strategy]
+A strategy $\sigma : A$ is said to be \emph{safely-justified} if for any sequence of moves $s q \in P_A$
 where $q$ is a question move in $M_A$ we have:
 \begin{eqnarray*}
 s q \in \sigma \wedge |s| \mbox{ even } &\implies& \parbox[t]{10cm}{$q$ points to the last P-move in $\oview{?(s)}$ with order strictly greater than $\ord{q}$;} \\
@@ -2021,25 +2022,25 @@ s q \in \sigma \wedge |s| \mbox{ odd } &\implies& \parbox[t]{10cm}{$q$  points t
 \end{dfn}
 
 \begin{lem}
-\label{lem:regular_pointers_uniqu_recover}
-Pointers are superfluous for regular strategies.
+\label{lem:safejustified_pointers_uniqu_recover}
+Pointers are superfluous for safely-justified strategies.
 \end{lem}
 \begin{proof}
-Suppose $\sigma$ is a regular strategy. We prove that pointers in a play $s\in \sigma$ are uniquely recoverable by induction on the length of $s$.
+Suppose $\sigma$ is a safely-justified strategy. We prove that pointers in a play $s\in \sigma$ are uniquely recoverable by induction on the length of $s$.
 \noindent \emph{Base case}: if $s \in \sigma$ with $|s| \leq 1$ then there is no pointer to recover.
 \noindent \emph{Step case}: suppose $s m \in \sigma$. If $m$ is an answer move then
 thanks to the well-bracketing condition $m$ points to the last unanswered question in $s$.
 Suppose $m$ is a question move.
-If $m$ is a P-move then $|s|$ is odd and by regularity
+If $m$ is a P-move then $|s|$ is odd and by safe-justification
 $m$ points to the last O-move in $\pview{?(s)}$ with order strictly greater than $\ord{q}$.
-Similarly, if $m$ is an O-move then $|s|$ is even and by regularity
+Similarly, if $m$ is an O-move then $|s|$ is even and by safe-justification
 $m$ points to the last P-move in $\oview{?(s)}$ with order strictly greater than $\ord{q}$.
 By the induction hypothesis the pointers in $s$ are recoverable, this ensures that the
 P-view $\pview{?(s)}$ and the O-view $\oview{?(s)}$ can be computed. Consequently the pointer for $m$ can be (uniquely) recovered.
 \end{proof}
 
 \begin{exmp}
-The evaluation map $ev$ is denoted by a non-regular strategy. Indeed consider the play $s = q_0 q_1 q_2 q_3 \in \sem{ev}$
+The denotation of the evaluation map $ev$ is not safely-justified. Indeed consider the play $s = q_0 q_1 q_2 q_3 \in \sem{ev}$
 shown on the diagram below:
 $$\begin{array}{cccccccc}
 (A & \implies & B) & \times  & A & \stackrel{ev}{\longrightarrow} & B \\
@@ -2050,7 +2051,8 @@ $$\begin{array}{cccccccc}
 \end{array}$$
 The order of the moves are as follows:  $\ord{q_3} = \ord{A}$, $\ord{q_2} = \ord{A}$,
 $\ord{q_1} = \max( 1+\ord{A}, \ord{B})$ and $\ord{q_0} = 1 + \ord{q_1}$.
-The last O-move in $?(\pview{s})= s$ with order strictly greater than $\ord{q_3}$ is $q_1$. However $q_3$ points to $q_0$ therefore $\sem{ev}$ is not regular.
+The last O-move in $?(\pview{s})= s$ with order strictly greater than $\ord{q_3}$ is $q_1$.
+ However $q_3$ points to $q_0$ therefore $\sem{ev}$ is not safely-justified.
 \end{exmp}
 
 
@@ -2059,8 +2061,8 @@ We now introduce a class of computation tree in which binder nodes can be unique
 We write $[n_1,n_2]$ to denote the path from node $n_1$ to node $n_2$ if it exists and $]n_1,n_2]$ for
 the sequence of nodes obtained by removing $n_1$ from $[n_1,n_2]$.
 
-\begin{dfn}[Regular computation tree]
-A variable node $x$ of a computation tree is said to be \emph{regular} if either:
+\begin{dfn}[Safely-bound computation tree]
+A variable node $x$ of a computation tree is said to be \emph{safe} if either:
 \begin{enumerate}
 \item $x$ is \emph{bound} by the first $\lambda$-node in the path to the root that has
 order strictly greater than $\ord{x}$. Formally:
@@ -2072,15 +2074,15 @@ $$ x \mbox{ free } \quad \imp \quad  \forall \lambda\mbox{-node } n' \in ]r,x] .
 \end{enumerate}
 where $r$ denotes the root of the computation tree.
 
-A computation tree is said to be \emph{regular} if all the variable nodes are regular.
+A computation tree is said to be \emph{safely-bound} if all the variable nodes are safe.
 \end{dfn}
 
-\begin{prop}[Tree regularity and strategy regularity coincide] \
-\label{prop:regular_comp_imp_regular_strat}
+\begin{prop}[Safely-bound trees coincide with safely-justified strategies] \
+\label{prop:safebound_imp_safejustified}
 \begin{enumerate}
-\item[(i)] If a term in $\beta$-normal form has a regular computation tree then it is denoted by a regular strategy.
-\item[(ii)] in the pure $\lambda$-calculus ($\Sigma=\emptyset$), reciprocally if a term is denoted by a regular strategy then
-the computation tree of its $\beta$-normal is regular.
+\item[(i)] If a term in $\beta$-normal form has a safely-bound computation tree then it is denoted by a safely-justified strategy.
+\item[(ii)] in the pure $\lambda$-calculus ($\Sigma=\emptyset$), reciprocally if a term is denoted by a safely-justified strategy then
+the computation tree of its $\beta$-normal is safely-bound.
 \end{enumerate}
 \end{prop}
 
@@ -2089,7 +2091,7 @@ Let $\Gamma \vdash M : A$ be a simply-typed term in $\beta$-normal form
 and $r$ denotes the root of $\tau(M)$.
 
 \noindent %\emph{`If' part:}
-(i) Suppose that $\tau(M)$ is regular.
+(i) Suppose that $\tau(M)$ is safely-bound.
 Consider a justified sequence of move $s \in \sem{\Gamma \vdash M}$
 ending with a question move $q$ (note that $q$ is also the last question in $?(s)$).
 By proposition \ref{prop:rel_gamesem_trav}, there
@@ -2104,7 +2106,7 @@ Then $n$ is also the last node in $?(t \upharpoonright r)$ and $t \upharpoonrigh
 Since $M$ is in $\beta$-normal form, lemma \ref{lem:redtrav_trav}(i) gives:
 $ \pview{?(t \upharpoonright r)} \jseq \pview{?(t)} \upharpoonright  r$.
 By proposition \ref{prop:pviewtrav_is_path}, $\pview{?(t)} = [r,n]$ and since
-$\tau(M)$ is regular, $m$ is the last $\lambda$-node in $[r,n]$ of order strictly greater than $\ord{n}$.
+$\tau(M)$ is safely-bound, $m$ is the last $\lambda$-node in $[r,n]$ of order strictly greater than $\ord{n}$.
 Since $n$ is hereditarily justified by the root, so is $m$ and therefore $m$ occurs in $\pview{?(t \upharpoonright r)}$.
 But $\pview{?(t \upharpoonright r)}$ is a subsequence of $\pview{?(t)}$ therefore $m$ is also be the last $\lambda$-node
 in $\pview{?(t \upharpoonright  r)}$ that has order strictly greater than $\ord{n}$.
@@ -2122,7 +2124,7 @@ order is strictly greater than $\ord{q}$.
 \item If $n$ is a free variable node $x$ then $n$ is enabled by the root which is the first node in $t$.
 By definition of $\varphi$, $\varphi(n) = x$ must be a move enabled by the initial move $q_0 = \varphi(r)$ in the arena $\sem{\Gamma \rightarrow A}$.
 Therefore $\ord{q_0} > \ord{x}$.
-By regularity of the computation tree, all the $\lambda$-nodes in $]r,n]$ have smaller than $\ord{n}$. Therefore by the correspondence theorem,
+Since the computation tree is safely-bound, all the $\lambda$-nodes in $]r,n]$ have order smaller than $\ord{n}$. Therefore by the correspondence theorem,
 all the O-moves in $\pview{?(s)}$ have order smaller than $\ord{x}$.
 \end{itemize}
 
@@ -2151,7 +2153,7 @@ $\ord{q}$.
 \end{itemize}
 
 \noindent  %\emph{`Only-if' part:}
-(ii) Suppose that the strategy $\sem{M}$ is regular.
+(ii) Suppose that the strategy $\sem{M}$ is safely-justified.
 Let $x$ be variable node of $\tau(M)$.
 Since $M$ is in $\beta$-normal form, by lemma \ref{lem:betaeta_trav},
 $x$ is either hereditarily justified by the root $r$ or by a constant in $N_\Sigma$.
@@ -2161,7 +2163,7 @@ In the pure simply-type $\lambda$-calculus we have $\Sigma=\emptyset$ therefore 
 We remark that for terms in $\beta$-normal form, every variable node occurring in the computation tree can be visited by some traversal:
 there is a traversal $t \cdot x$ for some $t \in \travset(M)$.
 The correspondence theorem gives $\varphi((t \cdot x) \upharpoonright r) = \varphi((t \upharpoonright r) \cdot x) \in \sem{M}$.
-Since $\sem{M}$ is regular, $\varphi(x)$ must point to the last move in $\pview{?(\varphi(t \upharpoonright r))}$ with
+Since $\sem{M}$ is safely-justified, $\varphi(x)$ must point to the last move in $\pview{?(\varphi(t \upharpoonright r))}$ with
 order strictly greater than $\ord{\varphi(x)}$.
 Consequently $x$ points to the last node in $\pview{?(t \upharpoonright r)}$ with
 order strictly greater than $\ord{x}$.
@@ -2173,7 +2175,7 @@ We have:
 \end{align*}
 Therefore if $x$ is a bound variable node then it is bound by the last $\lambda$-node in $[r,x[$ with order strictly greater than $\ord{x}$
 and if $x$ is a free variable then it points to $r$ and therefore all the $\lambda$-node in $]r,x[$ have order smaller than $\ord{x}$.
-Hence $\tau(M)$ is regular.
+Hence $\tau(M)$ is safely-bound.
 \end{proof}
 
 
@@ -2185,25 +2187,25 @@ Hence $\tau(M)$ is regular.
 \noindent \emph{Examples:}
 Consider the $\beta$-normal term $\lambda x . f (\lambda y .x)$ where $x,y:o$ and $f:(o,o),o$. The figure on the right represents
 the computation tree with the order of each node in the exponent part.
-Since node $x$ of order $0$ is not bound by the order 1 node $\lambda y$, $\tau(M)$ is not regular and by proposition
-\ref{prop:regular_comp_imp_regular_strat} $\sem{\lambda x . f (\lambda y .x)}$ is not regular.
-Similarly we can check that the denotation of $f (\lambda y .x)$ is not regular whereas $\lambda y. x$ has a regular denotation.
-Also for any higher-order variable $x:A$, the computation tree $\tau(x)$ is regular, therefore
-the projection strategies $\pi_i$ are regular.
-From these examples we observe that application does not preserve regularity: $\sem{f}$ and $\sem{\lambda y. x}$ are regular whereas
+Since node $x$ of order $0$ is not bound by the order 1 node $\lambda y$, $\tau(M)$ is not safely-bound and by proposition
+\ref{prop:safebound_imp_safejustified} $\sem{\lambda x . f (\lambda y .x)}$ is not safely-justified.
+Similarly we can check that the denotation of $f (\lambda y .x)$ is not safely-justified whereas $\lambda y. x$ has a safely-justified denotation.
+Also for any higher-order variable $x:A$, the computation tree $\tau(x)$ is safely-bound, therefore
+the projection strategies $\pi_i$ are safely-justified.
+From these examples we observe that application does not preserve safe-justification: $\sem{f}$ and $\sem{\lambda y. x}$ are safely-justified whereas
 $\sem{f (\lambda y .x)}$ is not.
 
-%In fact regularity is not preserved by composition. Indeed,
+%In fact safe-justification is not preserved by composition. Indeed,
 %$\sem{f (\lambda y . x) \cong \langle id_{\Gamma}, \sem{\lambda y . x} \rangle} $
 %$\sem{f (\lambda y .x)} = \langle \sem{f}, \sem{\lambda y. x} \rangle \fatsemi ev$ is not.
 
 
-\begin{lem}[Safety--regularity]
-\label{lem:regularity}
+\begin{lem}[Safe terms have safely bound computation trees]
+\label{lem:safe_imp_safebound}
 Let $\Gamma \vdash M$ be a simply-typed term.
 \begin{itemize}
-\item[(i)] If $M$ is a safe term then $\tau(M)$ is regular;
-\item[(ii)] reciprocally, if $M$ is \emph{closed} and $\tau(M)$ is regular then the $\eta$-normal form of $M$ is safe.
+\item[(i)] If $M$ is a safe term then $\tau(M)$ is safely bound ;
+\item[(ii)] reciprocally, if $M$ is \emph{closed} and $\tau(M)$ is safely-bound then the $\eta$-normal form of $M$ is safe.
 \end{itemize}
 \end{lem}
 \begin{proof}
@@ -2222,9 +2224,9 @@ therefore by the previous observation $x$ must be bound by the first $\lambda$-n
 with order strictly greater than $\ord{x}$.
 Similarly, let $x$ be a free variable node in $\tau$ then $x$ is not bound by any of the $\lambda$-nodes occurring in $[r,x]$.
 Therefore, by the previous observation, all these $\lambda$-nodes have order smaller than $\ord{x}$.
-Hence $\tau$ is regular.
+Hence $\tau$ is safely-bound.
 
-(ii) We assume that $M$ is already in $\eta$-normal form. Suppose $M$ is closed and $\tau(M)$ is regular,
+(ii) We assume that $M$ is already in $\eta$-normal form. Suppose $M$ is closed and $\tau(M)$ is safely-bound,
 we prove that $M$ is safe by induction on its structure:
 \emph{Base case:} $M = \lambda \overline{\xi} . \alpha$ for some variable or constant $\alpha$ then $\alpha$ is safe therefore so is $\lambda \overline{\xi} . \alpha$.
 
@@ -2235,7 +2237,7 @@ By looking at the formation rules of safe $\lambda$-calculus we observe that the
 of $\lambda \overline{\xi} \overline{\eta_i} . N'_i$ can only be derived by applying the (abs) rules on the term $N'_i$. Hence
 $N'_i$ is necessarily safe.
 Let $z$ be a variable occurring free in $N'_i$. Since $M$ is closed, $z$ is either bound by $\lambda \overline{\eta_1}$ or by $\lambda \overline{\xi}$.
-If it is bound by $\lambda \overline{\xi}$ then since $\tau(M)$ is regular we have $\ord{z} \geq \ord{\lambda \overline{\eta_1}} = \ord{N_i}$.
+If it is bound by $\lambda \overline{\xi}$ then since $\tau(M)$ is safely-bound we have $\ord{z} \geq \ord{\lambda \overline{\eta_1}} = \ord{N_i}$.
 Hence we can abstract the variables $\overline{\eta_1}$ by using the (abs) rule of the safe $\lambda$-calculus and we get that $N_i$ is safe.
 
 Since the term is in $\eta$-normal form, the application $N_1 \ldots N_p$ is total (i.e. $N_1$ is a function taking $p-1$ parameters
@@ -2245,16 +2247,16 @@ By the (abs) rule we conclude that $M = \lambda \overline{\xi} . N_1 \ldots N_p$
 \end{proof}
 
 Note that in (ii) the condition saying that $M$ is closed is necessary.  For instance, the two terms
-$\lambda x y .x$ and $\lambda y . x$ where $x,y:o$ have (isomorphic) regular computation trees. However $\lambda x y .x$ is safe
+$\lambda x y .x$ and $\lambda y . x$ where $x,y:o$ have (isomorphic) safely-bound computation trees. However $\lambda x y .x$ is safe
 whereas $\lambda y . x$ is not.
 
 
 
-Putting proposition \ref{prop:regular_comp_imp_regular_strat} and lemma \ref{lem:regularity} together we
+Putting proposition \ref{prop:safebound_imp_safejustified} and lemma \ref{lem:safe_imp_safebound} together we
 obtain a game semantics characterization of safe terms:
-\begin{cor}[Regular strategies characterize safe terms]
+\begin{cor}[Safely-justified strategies characterize closed safe terms]
 Let $M$ be a closed pure simply-typed term (with no constants) then:
-$$ \sem{M} \mbox{ is regular if and only if $\etabetanf{M}$ is safe,} $$
+$$ \sem{M} \mbox{ is safely-justified if and only if $\etabetanf{M}$ is safe,} $$
 where $\etabetanf{M}$ denotes the $\eta$-normal form of the $\beta$-normal form of $M$.
 \end{cor}
 
@@ -2265,10 +2267,10 @@ Pointers in the game semantics of safe terms are uniquely recoverable.
 \end{thm}
 \begin{proof}
 Suppose that a safe simply-typed term $M$ is safe then its $\beta$-normal form $M'$ is also safe.
-By lemma \ref{lem:regularity} (i), $\tau(M')$ is regular and
-by proposition \ref{prop:regular_comp_imp_regular_strat},
-$\sem{M'}$ is a regular strategy.
-By lemma \ref{lem:regular_pointers_uniqu_recover}, the pointers in $\sem{M'}$ are uniquely recoverable.
+By lemma \ref{lem:safe_imp_safebound} (i), $\tau(M')$ is safely-bound and
+by proposition \ref{prop:safebound_imp_safejustified},
+$\sem{M'}$ is a safely-justified strategy.
+By lemma \ref{lem:safejustified_pointers_uniqu_recover}, the pointers in $\sem{M'}$ are uniquely recoverable.
 Finally, the soundness of the game model gives $\sem{M} = \sem{M'}$.
 \end{proof}
 
@@ -2631,13 +2633,13 @@ $\varphi$ defines a bijection from $\travset(M)^{\upharpoonright r}$ to $\varphi
 $$\varphi : \travset(M)^{\upharpoonright r} \stackrel{\cong}{\longrightarrow} \sem{M} $$
 
 
-\subsubsection{Regularity}
+\subsubsection{Game characterization of safe terms}
 
 A difficulty arises because of the presence of the Y combinator : computation trees of \pcf\ terms are potentially infinite.
-Despite this particularity, lemma \ref{lem:regularity} still holds in the \pcf\ setting:
-\begin{lem}[Safety--regularity]
-\label{lem:pcf_saferegular}
-If $\Gamma \vdash M$ is a safe \pcf\ term then $\tau(M)$ is regular.
+Despite this particularity, lemma \ref{lem:safe_imp_safebound} still holds in the \pcf\ setting:
+\begin{lem}[Safe terms have safely-bound computation tree]
+\label{lem:pcf_safe_imp_safebound}
+If $\Gamma \vdash M$ is a safe \pcf\ term then $\tau(M)$ is safely-bound.
 \end{lem}
 \begin{proof}
 Suppose that a variable node $z$ belongs to $\tau(M) = \Union_{k\in\omega} \tau(M_k)$ then there exists $k\in \omega$
@@ -2653,13 +2655,13 @@ Since $M$ is safe, $N$ is also safe. The number of occurrences of the Y combinat
 by the induction hypothesis $N_k$ is safe. Consequently the term $Y_A^k N_k = \underbrace{N_k ( \ldots ( N_k}_{k \mbox{ times}} \Omega ) \ldots )$ is also safe.
 Hence by compositionality $M_k$ must be safe.
 
-Clearly, lemma \ref{lem:regularity} is still valid in $\pcf_1$ (the subterms of the form $\Omega$ are just
+Clearly, lemma \ref{lem:safe_imp_safebound} is still valid in $\pcf_1$ (the subterms of the form $\Omega$ are just
 represented by the constant $\bot$ in the computation tree).
-Therefore since $M_k$ is in $\pcf_1$, $\tau(M_k)$ must be regular.
-Consequently, the node $z$ is regular in $\tau(M_k)$ and since $[r,z]=[r_k,z]$, the corresponding node $z$ in
-the tree $\tau(M)$ is also regular.
+Therefore since $M_k$ is in $\pcf_1$, $\tau(M_k)$ must be safely-bound.
+Consequently, the node $z$ is safe in $\tau(M_k)$ and since $[r,z]=[r_k,z]$, the corresponding node $z$ in
+the tree $\tau(M)$ is also safe.
 
-Hence $\tau(M)$ is regular.
+Hence $\tau(M)$ is safely-bound.
 \end{proof}
 
 \begin{thm}[Pointers are superfluous for Safe \pcf]
@@ -2667,12 +2669,12 @@ Pointers in the game denotation of safe terms are uniquely recoverable.
 \end{thm}
 \begin{proof}
 Since condition C1 is verified, lemma \ref{lem:redtrav_trav} holds in the Safe \pcf\ setting. Therefore
-proposition \ref{prop:regular_comp_imp_regular_strat}(i) also holds: terms in $\beta$-nf
-with a regular computation tree are denoted by regular strategies.
+proposition \ref{prop:safebound_imp_safejustified}(i) also holds: terms in $\beta$-nf
+with a safely-bound computation tree are denoted by safely-justified strategies.
 
 Safety is preserved by reduction (lemma \ref{lem:ia_safety_preserved}), therefore
-by lemma \ref{lem:pcf_saferegular} and soundness of the game denotation, any Safe \pcf\ term must be
-denoted by a regular strategy.
+by lemma \ref{lem:pcf_safe_imp_safebound} and soundness of the game denotation, any Safe \pcf\ term must be
+denoted by a safely-justified strategy.
 
 Hence pointer are superfluous in the game denotation of safe \pcf\ terms.
 \end{proof}
@@ -2695,8 +2697,8 @@ Let us recapitulates the main ingredients:
 correspondence between the standard game semantics and some set of sequences of nodes obtained from traversals;
 \item prove that the P-view of the reduction of a traversal is the reduction of the P-view
 and that the O-view of a traversal is the O-view of its reduction (lemma \ref{lem:redtrav_trav});
-\item prove that computation tree of safe term are regular;
-\item prove that regular computation trees are denoted by regular strategies.
+\item prove that computation tree of safe term are safely-bound;
+\item prove that safely-bound computation trees are denoted by safely-justified strategies.
 \end{enumerate}
 
 In the following sections we give more details about each of these steps.
@@ -2728,10 +2730,10 @@ that it represents.
 %mkvar: solution guy mccusker: observational equivalence still
 %decidable without mkvar.
 
-\todobox{TODO: Game play--computation DAG traversal correspondence theorem;
+\todobox{TODO: Theorem showing the correspondence  between game plays and traversals of the computation DAG;
 prove the counterpart of lemma \ref{lem:redtrav_trav} for traversal of \ialgol\ terms;
-check that computation DAG of Safe \ialgol\ terms are regular;
-consequently by lemma \ref{lem:regular_pointers_uniqu_recover}, pointers in the strategy are  superfluous for Safe IA terms.
+check that computation DAG of Safe \ialgol\ terms are safely-bound;
+consequently by lemma \ref{lem:safejustified_pointers_uniqu_recover}, pointers in the strategy are superfluous for Safe IA terms.
 }
 
 %In \ialgol, most of the operators added on top of the $\lambda$-calculus are of order $1$ at most. The two exceptions
@@ -2770,14 +2772,18 @@ is still not well known. We propose the following possible roadmap for further r
 
 In a different direction of research, we would like to establish relations between
 Safe $\lambda$-calculus and others languages with pointer-less game semantics.
-In particular Abramsky has proposed in \cite{abramsky:mchecking_ia} a language
-called Serially Re-entrant Idealized Algol, or SRIA for short. This
-language allows multiple occurrences or uses of arguments, as long
-as they do not overlap in time. In the games of this language there
+
+An example of such language is the Serially Re-entrant Idealized Algol, or SRIA for short, proposed
+by Abramsky  in \cite{abramsky:mchecking_ia}.
+This language allows multiple occurrences or uses of arguments, as long
+as they do not overlap in time. In the game semantics denotation of a SRIA term there
 is at most one pending occurrence of a question at any time, so that
 each move has a unique justifier and so justification pointers may
 be ignored.
-Clearly the Serially Re-entrant and safety properties are not the same since for instance the Kierstead terms
+Safe \ialgol\ is not a sublanguage of SRIA. One reason for this is that none of the two Kierstead terms
 $\lambda f . f (\lambda x . f (\lambda y .y ))$ and
-$\lambda f . f (\lambda x . f (\lambda y .x ))$ are both not Serially Re-entrant whereas the first one is safe.
-However it would still be interesting to find out how SRIA relates to Safe Idealized Algol.
+$\lambda f . f (\lambda x . f (\lambda y .x ))$ are Serially Re-entrant whereas the first one is safe.
+Conversely, SRIA is not a sublanguage of Safe \ialgol\ since the term
+$\lambda f g. f (\lambda x . g (\lambda y .x ))$ where $f,g:((o,o),o)$ belongs to SRIA but not to Safe \ialgol.
+SRIA and Safe \ialgol\ are therefore two different examples of languages with pointer-less game semantics. It
+would be interesting to compare the computational power of both languages.

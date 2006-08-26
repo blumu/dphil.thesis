@@ -1,28 +1,66 @@
 \chapter{Computation trees, traversals and game semantics}
 
-This chapter is concerned with the study of game semantics of
-simply-typed terms. We present the notion of computation tree and
-traversal of a computation tree following ideas from
-\cite{OngLics2006} and we establish a correspondence between the
-game semantics of a term and the traversals of its computation tree.
+The aim of this chapter is to develop tools that will be used in the
+next chapter to give a characterisation of the game semantics of the
+Safe $\lambda$-Calculus. Establishing such a characterisation is
+complicated by the fact that Safety is a syntactic restriction
+whereas Game Semantics is by nature a syntax-independent semantics.
+We therefore need to make an explicit correspondence between the
+game denotation of a term and its syntax.
 
+Our approach follows ideas recently introduced in
+\cite{OngLics2006}: we introduce the notion of computation tree of a
+simply-typed $\lambda$-term and traversals over the computation
+tree. A computation tree can be regarded as an abstract syntax tree
+(AST) of the $\eta$-long normal form of a term. A traversal is a
+justified sequence of nodes of the computation tree respecting some
+formation rules. Traversals are used to describe computations. An
+interesting property is that the \emph{P-view} of a traversal
+(computed in the same way as P-view of plays in Game Semantics) is a
+path in the computation tree.
 
+The main result that we will prove in this chapter is called the
+\emph{Correspondence Theorem} (theorem \ref{thm:correspondence}). It
+states that traversals over the computation tree are just
+representations of the uncovering of plays in the
+strategy-denotation of the term. Hence there is an isomorphism
+between the strategy denotation of a term and its revealed game
+denotation (i.e. its strategy denotation where internal moves are
+not hidden after composition). This theorem permits us to explore
+the effect that a given syntactic restriction has on the strategy
+denotating a term.
 
-
-Here is a general overview of the main steps of this chapter:
-\begin{enumerate}
-\item define the computation tree of a term and the notion of traversal over the computation tree;
-\item prove that P-view of traversals are paths in the computation tree;
-\item find a correspondence between traversals of the computation tree and plays in some interaction game semantics;
-\item define a ``reduction'' operation on traversals that eliminates the ``internal nodes'' of the computation. This leads to a
+To really make use of the Correspondence Theorem, it will be
+necessary to restate it in the standard game-semantic framework in
+which internal moves are hidden. For that purpose, we will define a
+\emph{reduction} operation on traversals that eliminates the
+``internal nodes'' of the computation. This leads to a
 correspondence between the standard game denotation of a term and
-the set of reduction of the traversals over its computation tree;
-\item prove that the P-view of the reduction of a traversal is the reduction of the P-view
-and that the O-view of a traversal is the O-view of its reduction (lemma \ref{lem:redtrav_trav});
-\item prove that the computation tree of a safe term is incrementally-bound;
-\item Using 2. and 5., prove that incrementally-justified strategies characterize incrementally-bound computation trees;
-\item prove that the pointers in the plays of incrementally-justified strategies are uniquely recoverable.
-\end{enumerate}
+the set of reductions of traversals over its computation tree.
+Fortunately, the reduction process preserves the good properties of
+traversals. This is guaranteed by the fact that the P-view of the
+reduction of a traversal is equal to the reduction of the P-view of
+the traversal, and the O-view of a traversal is the same as the
+O-view of its reduction (lemma \ref{lem:redtrav_trav}). \vspace{8pt}
+
+\emph{Related works}: Traversals of a computation tree provides a
+way to perform \emph{local computation} of $\beta$-reductions as
+opposed to a global approach where the $\beta$-reduction is
+implemented by performing substitutions. A notion of local
+computation of $\beta$-reduction has been investigated in
+\cite{DanosRegnier-Localandasynchronou} through the use of special
+graphs called ``virtual nets'' that embeds the lambda-calculus.
+
+In \cite{DBLP:conf/lics/AspertiDLR94}, a notion of graph based on
+Lamping's graphs \citep{lamping} is introduced to represent
+$\lambda$-terms. The authors unify different notions of paths
+(regular, legal, consistent and persistent paths) that have appeared
+in the literature as a way to implement graph-based reduction of
+lambda-expressions. We can regard traversals as an alternative
+version of paths which is adapted to the graph representation of
+$\lambda$-expressions given by computation trees.
+
+
 
 %Is there any unsafe term whose game semantics is a strategy where
 %pointers can be recovered?
@@ -70,7 +108,8 @@ is defined as follows:
 \aux{(\lambda x . s_0) s_1 \ldots s_m : (A_1,\ldots,A_n,o) } &= \lambda \overline{\varphi} . (\lambda x . \aux{s_0}) \aux{s_1} \ldots \aux{s_m} \aux{\varphi_1} \ldots \aux{\varphi_n}
 & \mbox{with $m\geq 1,n\geq0$}
 \end{align*}
-where $x$ is a variable and $\alpha$ is either a variable or a constant.
+where $x$ and each $\varphi_i : A_i$ are variables and $\alpha$ is
+either a variable or a constant.
 \end{dfn}
 
 For $n=0$, the first clause in the definition becomes:
@@ -105,8 +144,8 @@ $\beta$-nf.
 \end{proof}
 
 
-We now define the computation tree of term to be a certain tree
-representation of its $\eta$-long normal form.
+The computation tree of term is a certain tree representation of its
+$\eta$-long normal form. It is defined as follows:
 \begin{dfn}[Computation tree]
 For any term $M$ in $\eta$-normal form we define the tree $\tau(M)$ by induction
 on the structure of the term.
@@ -125,7 +164,7 @@ where $\tau(s)^{-}$ denotes the tree obtained after deleting the
 root of $\tau(s)$.
 
 
-\item the tree for $\alpha s_1 \ldots s_m$ where $m\geq0$ and $\alpha$ is a variable or constant is:
+\item the tree for $\alpha s_1 \ldots s_m : o$ where $m\geq0$ and $\alpha$ is a variable or constant is:
 $$ \tau( \alpha s_1 \ldots s_m) =
     \tree{\lambda}
     {
@@ -137,7 +176,7 @@ $$ \tau( \alpha s_1 \ldots s_m) =
 $$
 
 
-\item the tree for $(\lambda x.s_0) s_1 \ldots s_n$ where $n \geq 1$ is:
+\item the tree for $(\lambda x.s_0) s_1 \ldots s_n : o$ where $n \geq 1$ is:
 $$ \tau((\lambda x.s_0) s_1 \ldots s_n) =
     \tree{\lambda}
     {
@@ -286,11 +325,11 @@ The following numbering conventions are used:
 We use the notation $n.i$ to denote the $i$th child of node $n$.
 
 
-We write $s \jseq t$ to denote that the justified sequences $t$ and
-$s$ have same nodes \emph{and} pointers. Justified sequence of nodes
-can be ordered using the prefix ordering: $t \sqsubseteq t'$ if and
-only if $t=t'$ or the sequence of nodes $t$ is a finite prefix of
-$t'$ (and the pointers of $t$ are the same as the pointers of the
+We write $s = t$ to denote that the justified sequences $t$ and $s$
+have same nodes \emph{and} pointers. Justified sequence of nodes can
+be ordered using the prefix ordering: $t \sqsubseteq t'$ if and only
+if $t=t'$ or the sequence of nodes $t$ is a finite prefix of $t'$
+(and the pointers of $t$ are the same as the pointers of the
 corresponding prefix of $t'$). Note that with this definition,
 infinite justified sequences can also be compared. This ordering
 gives rise to a complete partial order.
@@ -364,7 +403,7 @@ equalities.
 \begin{dfn}[Alternation and Visibility] \ \\
 A justified sequence of nodes $s$ satisfies:
 \begin{itemize}
-\item \emph{alternation} if for any two consecutive nodes in $s$, one is a $\lambda$-node
+\item \emph{Alternation} if for any two consecutive nodes in $s$, one is a $\lambda$-node
 and the other is not;
 
 \item \emph{P-visibility} if every variable node in $s$ points to a node occurring in the P-view a that point;
@@ -427,8 +466,8 @@ The last unmatched node is called the \emph{pending node}.
 A justified sequence of nodes is \emph{well-bracketed} if
 each value-leaf in the traversal points to the pending node at that point.
 
-If $t$ is a traversal then we write $?(t)$ to denote the sequence
-obtained from $t$ by conserving only unmatched nodes.
+If $t$ is a traversal then we write $?(t)$ to denote the subsequence
+of $t$ consisting only of unmatched nodes.
 
 \subsection{Traversal of the computation tree}
 \label{subsec:traversal} We first define traversals for computation
@@ -436,7 +475,7 @@ tree of simply-typed $\lambda$-terms with no interpreted constants.
 We will then we show how to extend the definition to the general
 setting of $\lambda$-calculus augmented with interpreted constants.
 
-\subsubsection{Traversals for simply-typed $\lambda$-terms without constants}
+\subsubsection{Traversals for simply-typed $\lambda$-terms}
 Intuitively, a \emph{traversal} is a justified sequence of nodes of the computation tree where each node
 indicates a step that is taken during the evaluation of the term.
 
@@ -594,6 +633,25 @@ on $p$:
 Note that a traversal always starts with the root of the tree.
 \end{dfn}
 
+\begin{rem}
+Our notions of computation tree and traversal differ slightly from
+\cite{OngLics2006}.
+
+Firstly, our computation tree do not have nodes labelled with
+(uninterpreted) first-order constants. On the other hand, there are
+nodes which are labelled by free variables of any order. Since
+uninterpreted constants can be regarded as free variables, we do not
+lose any expressivity. The traversal rules (InputVar$^0$) and
+(InputVar$^\geq 1$) provide a more general version of the (Sig) rule
+of \cite{OngLics2006}.
+
+Secondly we have introduced copy-cat rules that permit to visit the
+value-leaves of the computation tree. The presence of value-leaves
+is necessary to model free variables as well as the interpreted
+constants present in extensions of the $\lambda$-calculus such as
+\pcf\ or \ialgol.
+\end{rem}
+
 \begin{exmp}
 Consider the following computation tree:
 $$\tree{\lambda}
@@ -644,7 +702,7 @@ such that:
 \begin{enumerate}
   \item $n$ is a variable or a constant node;
   \item $P$ expresses some condition on $t$;
-  \item the set $S(t)$ is a subset of $E(n)$, the set of children $\lambda$-nodes and value-leaves of $n$.
+  \item $S(t)$ is some subset of $E(n)$, the set of children $\lambda$-nodes and value-leaves of $n$.
   If $S(t)$ has more than one element then the rule is non-deterministic.
 \end{enumerate}
 \end{dfn}
@@ -739,8 +797,8 @@ For the constant rules, the result is a consequence of condition (WB) stating th
 $r$ be the root of $\tau(M)$ and $t$ be a traversal of $\tau(M)$. We
 have
 \begin{itemize}
-\item[(i)] $ \pview{?(t) \upharpoonright  r } \jseq \pview{?(t)} \upharpoonright r$;
-\item[(ii)] if the last node in $t$ is hereditarily justified by $r$ then $ \oview{?(t) \upharpoonright r } \jseq \oview{?(t)}$.
+\item[(i)] $ \pview{?(t) \upharpoonright  r } = \pview{?(t)} \upharpoonright r$;
+\item[(ii)] if the last node in $t$ is hereditarily justified by $r$ then $ \oview{?(t) \upharpoonright r } = \oview{?(t)}$.
 \end{itemize}
 \end{lem}
 
@@ -753,12 +811,12 @@ than $t$. There are three cases:
 \item Suppose $?(t) = t' \cdot r$ then:
     \begin{align*}
     \pview{?(t)} \upharpoonright  r
-        &\jseq  \pview{t' \cdot r } \upharpoonright  r       & (\mbox{definition of } ?(t))\\
-        &\jseq  r \upharpoonright  r                         & (\mbox{def. P-view})\\
-        &\jseq  r                                                & (\mbox{def. operator $\upharpoonright$})\\
-        &\jseq  \pview{(t' \upharpoonright  r ) \cdot r }    & (\mbox{def. P-view})\\
-        &\jseq  \pview{(t' \cdot r)  \upharpoonright  r }    & (\mbox{def. operator $\upharpoonright$})\\
-        &\jseq \pview{?(t) \upharpoonright  r }                & (\mbox{definition of } ?(t))
+        &=  \pview{t' \cdot r } \upharpoonright  r       & (\mbox{definition of } ?(t))\\
+        &=  r \upharpoonright  r                         & (\mbox{def. P-view})\\
+        &=  r                                                & (\mbox{def. operator $\upharpoonright$})\\
+        &=  \pview{(t' \upharpoonright  r ) \cdot r }    & (\mbox{def. P-view})\\
+        &=  \pview{(t' \cdot r)  \upharpoonright  r }    & (\mbox{def. operator $\upharpoonright$})\\
+        &= \pview{?(t) \upharpoonright  r }                & (\mbox{definition of } ?(t))
     \end{align*}
 
 \item Suppose $?(t) = t' \cdot n$ where $n$ is a non-lambda
@@ -770,22 +828,22 @@ move. We have:
     \item If $n$ is not hereditarily justified by $r$ then:
     \begin{align*}
     \pview{?(t)} \upharpoonright  r
-        &\jseq (\pview{t'} \cdot n) \upharpoonright  r  & (\mbox{equation \ref{eq_tprime}}) \\
-        &\jseq \pview{t'} \upharpoonright  r            & (n \mbox{ is not hereditarily justified by } r) \\
-        &\jseq \pview{t' \upharpoonright  r }           & (\mbox{induction hypothesis}) \\
-        &\jseq \pview{(t' \cdot n) \upharpoonright  r } & (n \mbox{ is not hereditarily justified by } r) \\
-        &\jseq \pview{?(t) \upharpoonright  r  }           & (\mbox{definition of } ?(t))
+        &= (\pview{t'} \cdot n) \upharpoonright  r  & (\mbox{equation \ref{eq_tprime}}) \\
+        &= \pview{t'} \upharpoonright  r            & (n \mbox{ is not hereditarily justified by } r) \\
+        &= \pview{t' \upharpoonright  r }           & (\mbox{induction hypothesis}) \\
+        &= \pview{(t' \cdot n) \upharpoonright  r } & (n \mbox{ is not hereditarily justified by } r) \\
+        &= \pview{?(t) \upharpoonright  r  }           & (\mbox{definition of } ?(t))
     \end{align*}
 
     \item If $n$ is hereditarily justified by $r$ then:
     \begin{align*}
     \pview{?(t)} \upharpoonright  r
-    &\jseq (\pview{t'} \cdot n) \upharpoonright  r      & (\mbox{equation \ref{eq_tprime}}) \\
-    &\jseq (\pview{t'} \upharpoonright  r  ) \cdot n    & (n \mbox{ is hereditarily justified by } r)\\
-    &\jseq \pview{t' \upharpoonright  r } \cdot n       & (\mbox{induction hypothesis}) \\
-    &\jseq \pview{(t' \upharpoonright  r ) \cdot n }    & (\mbox{P-view computation}) \\
-    &\jseq \pview{(t' \cdot n) \upharpoonright  r  }    & (n \mbox{ is hereditarily justified by } r) \\
-    &\jseq \pview{?(t) \upharpoonright  r  }               & (\mbox{definition of } ?(t))
+    &= (\pview{t'} \cdot n) \upharpoonright  r      & (\mbox{equation \ref{eq_tprime}}) \\
+    &= (\pview{t'} \upharpoonright  r  ) \cdot n    & (n \mbox{ is hereditarily justified by } r)\\
+    &= \pview{t' \upharpoonright  r } \cdot n       & (\mbox{induction hypothesis}) \\
+    &= \pview{(t' \upharpoonright  r ) \cdot n }    & (\mbox{P-view computation}) \\
+    &= \pview{(t' \cdot n) \upharpoonright  r  }    & (n \mbox{ is hereditarily justified by } r) \\
+    &= \pview{?(t) \upharpoonright  r  }               & (\mbox{definition of } ?(t))
     \end{align*}
     \end{itemize}
 
@@ -797,14 +855,14 @@ move. We have:
         \pview{?(t)} \upharpoonright  r
         &= \pview{t' \cdot \rnode{m}{m} \cdot \rnode{n}{n}} \upharpoonright  r
                \bkptr[nodesep=1pt]{60}{n}{m}                   & (u=\epsilon)\\
-        &\jseq (\pview{t'} \cdot \rnode{m}{m} \cdot \rnode{lmd}{n} ) \upharpoonright  r
+        &= (\pview{t'} \cdot \rnode{m}{m} \cdot \rnode{lmd}{n} ) \upharpoonright  r
                \bkptr[nodesep=1pt]{60}{lmd}{m}                 & (\mbox{P-view computation}) \\
-        &\jseq \pview{t'} \upharpoonright  r                & (m, n \mbox{ are not hereditarily justified by } r) \\
-        &\jseq \pview{t' \upharpoonright  r }               & \mbox{(induction hypothesis)} \\
-        &\jseq \pview{ (t' \cdot \rnode{m}{m} \cdot \rnode{lmd}{n}) \upharpoonright r }
+        &= \pview{t'} \upharpoonright  r                & (m, n \mbox{ are not hereditarily justified by } r) \\
+        &= \pview{t' \upharpoonright  r }               & \mbox{(induction hypothesis)} \\
+        &= \pview{ (t' \cdot \rnode{m}{m} \cdot \rnode{lmd}{n}) \upharpoonright r }
                         \bkptr[nodesep=1pt,ncurv=0.7]{40}{lmd}{m}
                                                             & (\mbox{def. operator $\upharpoonright$ and } m, \lambda \mbox{ are not her. just. by } r) \\
-        &\jseq \pview{ ?(t) \upharpoonright r }                & \mbox{(def. of $?(t)$)}
+        &= \pview{ ?(t) \upharpoonright r }                & \mbox{(def. of $?(t)$)}
         \end{align*}
 \end{itemize}
 (ii) By a straightforward induction similar to (i).
@@ -1019,7 +1077,7 @@ $f_A(n,q)$ returns a partial function from $V$ to $A$. It is defined as follows:
 \noindent
 \begin{itemize}
 \item[case 1] If $n$ is an order $0$ $\lambda$-node (i.e. labelled $\lambda$) or a ground type variable node then
-        $$f_A(n,q) \leftarrow \{ n \mapsto q \} \quad \union \quad  \{ v_n \mapsto v_q \ | \ v \in \mathcal{D} \}$$
+        $$f_A(n,q) = \{ n \mapsto q \} \quad \union \quad  \{ v_n \mapsto v_q \ | \ v \in \mathcal{D} \}$$
 
 \item[case 2] If $n$ is a $\lambda$-node labelled $\lambda \overline{\xi} = \lambda \xi_1 \ldots \xi_p$ with $p\geq 1$ then
     the computation tree and the arena $A_q$ have the following form
@@ -1050,7 +1108,7 @@ $f_A(n,q)$ returns a partial function from $V$ to $A$. It is defined as follows:
     For each of the abstracted variable $\xi_i$ there exists a corresponding question move $q^i$ of the same order
     in the arena.  $f_A(n,q)$ maps each free occurrence of a variable $\xi_i$ to the corresponding move $q^i$:
     $$
-    f_A(n,q) \leftarrow  \{ n \mapsto q \} \quad  \union \quad  \{ v_n \mapsto v_q \ | \ v \in \mathcal{D} \}
+    f_A(n,q) =  \{ n \mapsto q \} \quad  \union \quad  \{ v_n \mapsto v_q \ | \ v \in \mathcal{D} \}
                       \quad \union \quad  \Union_{\stackrel{\displaystyle m \in N | n \vdash m}{\displaystyle m \mbox{ labelled } \xi_i}} f_A( m, q^i)
     $$
 
@@ -1079,7 +1137,7 @@ have the following form:
 
     $f_A(n,q)$ maps each child node of $n$ to the corresponding question move $q^i$ of the same type
     in the arena $A_q$:
-    $$f_A(n,q) \leftarrow
+    $$f_A(n,q) =
          \{ n \mapsto q \} \quad \union\quad \{ v_n \mapsto v_q \ | \ v \in \mathcal{D}   \} \quad\union\quad     \Union_{i=1..m} f_A( \lambda \overline{\eta}_i, q^i)
     $$
 \end{itemize}
@@ -1116,8 +1174,10 @@ We define the total function $\varphi_M : V_\lambda \union V_{var} \rightarrow \
 When there is no ambiguity we just write $\varphi$ instead of $\varphi_M$.
 \end{dfn}
 
-Nodes of $\tau(M)$ are either hereditarily justified by the root, by a @-node or by a $\Sigma$-node, therefore
-$\varphi$ is totally defined on $V_\lambda \union V_{var} = V\setminus (V_@ \union V_\Sigma)$.
+Nodes of $\tau(M)$ are either hereditarily justified by the root, by
+a @-node or by a $\Sigma$-node, therefore $\varphi_M$ is totally
+defined on $V_\lambda \union V_{var} = V\setminus (V_@ \union
+V_\Sigma)$.
 
 \begin{exmp}
 Consider the term $\lambda x . (\lambda g . g x) (\lambda y . y)$ with $x,y:o$ and $g:(o,o)$.
@@ -1226,9 +1286,12 @@ nodes follow the same steps;
 \subsection{Category of interaction games}
 \label{sec:interaction_semantics}
 
-In game semantics, strategy composition is achieved by performing a CSP-like ``composition + hiding''.
-It is possible to define an alternative semantics where the internal moves are not hidden when performing composition.
-This semantics has been named \emph{interaction} semantics in \cite{DBLP:conf/sas/DimovskiGL05}.
+In game semantics, strategy composition is achieved by performing a
+CSP-like ``composition + hiding''. It is possible to define an
+alternative semantics where the internal moves are not hidden when
+performing composition. This semantics is named \emph{interaction}
+semantics in \cite{DBLP:conf/sas/DimovskiGL05} and \emph{revealed
+semantics} in \cite{willgreenlandthesis}.
 
 In addition to the moves of the standard semantics, the interaction semantics contains certain
 internal moves of the computation.
@@ -1287,12 +1350,12 @@ Let $T$ be a type-tree. Each leaf or node of type $A$ in $T$ can be mapped to th
 This tree, written $\intersem{T}$, is called the \emph{interaction arena} of type $T$.
 We write $root(\intersem{T})$ to denote the arena located at the root of the interaction arena $\intersem{T}$.
 
-An \emph{interaction strategy} $\Sigma$ on the interaction arena
+A \emph{revealed strategy} $\Sigma$ on the interaction arena
 $\intersem{T}$ is a composition of several standard strategies where
-certain internal moves are not hidden. Formally this can be defined as
-follows:
-\begin{dfn}[Interaction strategy]
-An interaction strategy $\Sigma$ on a game $\intersem{T}$, written
+certain internal moves are not hidden. Formally this can be defined
+as follows:
+\begin{dfn}[Revealed strategy]
+A revealed strategy $\Sigma$ on a game $\intersem{T}$, written
 $\Sigma: \intersem{T}$, is a tree type $T$ where
 \begin{itemize}
 \item each leaf $\sem{A}$ of
@@ -1304,8 +1367,9 @@ game $\sem{A}$;
 A $;$-node with children of type $A\multimap B$ and $B\multimap C$ is annotated with a set of indices $U$ indicating
 which components of $B$ should be uncovered when performing composition.
 \begin{exmp}
-The diagrams below represent a type-tree $T$ (left) the corresponding interaction arena $\intersem{T}$ (middle) and an
-interaction strategy $\Sigma$ (right):
+The diagrams below represent a type-tree $T$ (left) the
+corresponding interaction arena $\intersem{T}$ (middle) and an
+revealed strategy $\Sigma$ (right):
 $$
 \pstree[levelsep=6ex]{\TR{;}}
         {
@@ -1335,17 +1399,21 @@ $$
         }
 $$
 \end{exmp}
-An interaction strategy can also be written as an expression, for instance the strategy represented above is given
-by the expression $\Sigma = (\sigma_1 ;^{\{0\}} \sigma_2) ;^{\{0\}} \sigma_3$.
-We will use the abbreviation $\Sigma_1 \fatsemi^U \Sigma_2$ for $\Sigma_1^\dagger ; ^U \Sigma_2$.
+A revealed strategy can also be written as an expression, for
+instance the strategy represented above is given by the expression
+$\Sigma = (\sigma_1 ;^{\{0\}} \sigma_2) ;^{\{0\}} \sigma_3$. We will
+use the abbreviation $\Sigma_1 \fatsemi^U \Sigma_2$ for
+$\Sigma_1^\dagger ; ^U \Sigma_2$.
 
-\begin{dfn}[Composition of interaction strategies]
-Suppose $\Sigma_1 : \intersem{T_1}$ and $\Sigma_2 :
-\intersem{T_2}$ are interaction strategies where $type(T_1) = A \multimap B$
-and $type(T_2) = B \multimap C$ then
-the \emph{interaction composition} of $\Sigma_1$ and $\Sigma_2$ written $\Sigma_1 ; \Sigma_2$
-is the interaction strategy on $\intersem{T_1 ; T_2}$ obtained by copying the annotation of the leaves and nodes from $\Sigma_1$ and $\Sigma_2$
-to the corresponding leaves and nodes of the type-tree $T_1 ; T_2$ and by annotating the root node with $\emptyset$.
+\begin{dfn}[Composition of revealed strategies]
+Suppose $\Sigma_1 : \intersem{T_1}$ and $\Sigma_2 : \intersem{T_2}$
+are revealed strategies where $type(T_1) = A \multimap B$ and
+$type(T_2) = B \multimap C$ then the \emph{interaction composition}
+of $\Sigma_1$ and $\Sigma_2$ written $\Sigma_1 ; \Sigma_2$ is the
+revealed strategy on $\intersem{T_1 ; T_2}$ obtained by copying the
+annotation of the leaves and nodes from $\Sigma_1$ and $\Sigma_2$ to
+the corresponding leaves and nodes of the type-tree $T_1 ; T_2$ and
+by annotating the root node with $\emptyset$.
 \end{dfn}
 
 A play of the interaction semantics, called an \emph{uncovered
@@ -1361,24 +1429,26 @@ sequence of moves obtained from $s$ by keeping only the moves
 belonging to a node or leaf-arena of $\intersem{T}$.
 
 
-Interaction strategies can alternatively be represented by mean of sets of
-uncovered plays instead of annotated type-trees. This set is defined
-inductively on the structure of the annotated type-tree $\Sigma$ as follows:
+Revealed strategies can alternatively be represented by mean of sets
+of uncovered plays instead of annotated type-trees. This set is
+defined inductively on the structure of the annotated type-tree
+$\Sigma$ as follows:
 \begin{itemize}
 \item for a leaf $\sem{A}$ of $\Sigma$ annotated by $\sigma :\sem{A}$, it is just the set of plays of the standard strategy $\sigma$;
 \item for a $\otimes$-node with two children strategies $\Sigma_1$ and $\Sigma_2$, it is the tensor product written $\Sigma_1 \otimes \Sigma_2$;
 \item for a $\times$-node, it is the pairing written $\langle \Sigma_1, \Sigma_2 \rangle$;
 \item for a $\dagger$-node with a child strategy $\Sigma$, it is the promotion written $\Sigma^\dagger$;
-\item for a $\Lambda$-node with a child strategy $\Sigma$, it is the same set of plays but with the moves retagged appropriately;
+\item for a $\Lambda$-node with a child strategy $\Sigma$, it is the same set of plays with the moves retagged appropriately;
 
 \item for a $;^U$-node, it is the ``uncovered-composition'' of $\Sigma_1 : \intersem{T_1}$ and $\Sigma_2 :\intersem{T_2}$ which is written $\Sigma_1
-;^U \Sigma_1$ and defined as follows: suppose that $type(T_1) =
-A \multimap B_0 \times \ldots B_l$ and $type(T_2) = B_0 \times \ldots B_l \multimap C$
-then $\Sigma_1
-;^U \Sigma_1$ is the set of uncovered plays
-obtained by performing the usual composition, while ignoring and
-copying the internal moves from arenas in $\intersem{T_1}$ or $\intersem{T_2}$
-and preserving any internal move produced by the composition in some component $B_k$ for $k \in U$. Formally:
+;^U \Sigma_1$ and defined as follows: suppose that $type(T_1) = A
+\multimap B_0 \times \ldots \times B_l$ and $type(T_2) = B_0 \times
+\ldots \times B_l \multimap C$ then $\Sigma_1 ;^U \Sigma_1$ is the
+set of uncovered plays obtained by performing the usual composition
+while ignoring and copying the internal moves from arenas in
+$\intersem{T_1}$ or $\intersem{T_2}$ and preserving any internal
+move produced by the composition in some component $B_k$ for $k \in
+U$. Formally:
 $$ \Sigma_1 \| \Sigma_2 = \{ u \in int(\intersem{T}) \ | \ u \upharpoonright \intersem{T_1} \in \Sigma_1 \mbox{ and } u \upharpoonright \intersem{T_2} \in \Sigma_2 \}$$
 $$ \Sigma_1 ;^{\{i_0, \ldots i_l\}} \Sigma_2 = \{ u \upharpoonright A, B_{i_0}, \ldots, B_{i_l}, C \ | \ u \in \Sigma_1 \| \Sigma_2 \}$$
 where $int(\intersem{T})$ denotes the set of sequences of moves in (some arena of) $\intersem{T}$;
@@ -1389,15 +1459,17 @@ where the tensor product, pairing and promotion are defined similarly as in the 
 We can now define the category $\mathcal{I}$ of interaction games:
 \begin{dfn}[Category of interaction games]
 The category of interaction games is denoted by $\mathcal{I}$. The
-objects of $\mathcal{I}$ are those of $\mathcal{C}$ i.e. the arenas $\sem{A}$ for some linear type $A$. The morphisms of
-the category are the interaction strategies: a morphism from $A$
-to $B$ is an interaction strategy $\Sigma$ on some interaction arena
-$\intersem{T}$ such that $root(\intersem{T}) = \sem{!A\multimap B}$.
+objects of $\mathcal{I}$ are those of $\mathcal{C}$ i.e. the arenas
+$\sem{A}$ for some linear type $A$. The morphisms of the category
+are the revealed strategies: a morphism from $A$ to $B$ is an
+revealed strategy $\Sigma$ on some interaction arena $\intersem{T}$
+such that $root(\intersem{T}) = \sem{!A\multimap B}$.
 
-The composition of two morphisms $\Sigma_1$ and $\Sigma_2$ is given by
-$\Sigma_1 \fatsemi \Sigma_2 = \Sigma_1^\dagger ; \Sigma_2$ where $;$ denotes
-the interaction strategy composition.
-The identity on $A$ is given by the single leaf interaction strategy $\sem{!A \multimap A}^{der_A}$.
+The composition of two morphisms $\Sigma_1$ and $\Sigma_2$ is given
+by $\Sigma_1 \fatsemi \Sigma_2 = \Sigma_1^\dagger ; \Sigma_2$ where
+$;$ denotes the revealed strategy composition. The identity on $A$
+is the revealed strategy given by the single annotated leaf $\sem{!A
+\multimap A}^{der_A}$.
 \end{dfn}
 
 It can be checked that this indeed defines a category. The constructions of the category $\mathcal{C}$ can be transposed to $\mathcal{I}$
@@ -1405,9 +1477,9 @@ making $\mathcal{I}$ a cartesian closed category.
 
 
 \begin{dfn}[Valid strategy]
-Consider a term $\Gamma \vdash M : A$ and $\Sigma : \intersem{T}$ an
-interaction strategy. We say that $\Sigma$ is a valid interaction
-strategies for $M$ if $root(\intersem{T}) = \sem{\Gamma \rightarrow
+Consider a term $\Gamma \vdash M : A$ and an revealed strategy
+$\Sigma : \intersem{T}$. We say that $\Sigma$ is a valid revealed
+strategy for $M$ if $root(\intersem{T}) = \sem{\Gamma \rightarrow
 A}$ or equivalently if $type(T) = \Gamma \rightarrow A$.
 \end{dfn}
 
@@ -1419,18 +1491,19 @@ the simply-typed lambda calculus. However there may be several valid
 type decomposition tree for a given term $M$ and therefore several
 strategies denoting $M$. To fix this problem, we will base our
 definition on the computation tree of $M$. Since the computation
-tree is unique, the interaction strategy of a term is defined
-uniquely.
+tree is unique, the denotation of a term will be uniquely defined.
 
-\begin{dfn}[Interaction strategy of a term]
+\begin{dfn}[Revealed denotation of a term]
 \label{dfn:interactionstrategy_ofterms} Let $\Gamma \vdash M : A$ be
 a term with $\Gamma = x_1:X_1, \ldots, x_k:X_k$. Let $\pi_i :
 \sem{\Gamma \rightarrow X_i}$ denote the $i$th projection copycat
 strategy and $ev^p$ denote the evaluation strategy with $p$
 parameters.
 
-The \emph{interaction strategy of $M$} written $\intersem{\Gamma \vdash M : A}$ is defined by structural induction on the
-computation tree $\tau(M)$:
+The \emph{revealed game denotation of $M$} or \emph{revealed
+strategy of $M$} written $\intersem{\Gamma \vdash M : A}$ is the
+revealed strategy defined by structural induction on the computation
+tree $\tau(M)$ as follows:
 
 \begin{tabularx}{14cm}{cX}
 $\tree[levelsep=6ex]{\lambda \xi_1\ldots \xi_n}{\TR{x_i}}$ &
@@ -1453,8 +1526,9 @@ $ \tree[levelsep=6ex]{\lambda \xi_1\ldots \xi_n}
 \end{tabularx}
 \vspace{10pt}
 
-The interaction arena of the strategy $\intersem{\Gamma \vdash M : A}$ is denoted by
-$\intersem{\Gamma \rightarrow A}_M$.
+We write $\intersem{\Gamma \rightarrow A}_M$ to denote the
+interaction arena of the revealed strategy $\intersem{\Gamma \vdash
+M : A}$.
 \end{dfn}
 
 
@@ -1471,7 +1545,9 @@ $$
                     {\TR{y}}
     } }
 $$
-and its interaction strategy is $\langle \sem{ x:X \vdash \lambda f . f x} , \sem{ x:X \vdash \lambda y . y} \rangle \fatsemi^{\{0,1\}} ev_2$.
+and its revealed strategy is $\langle \sem{ x:X \vdash \lambda f . f
+x} , \sem{ x:X \vdash \lambda y . y} \rangle \fatsemi^{\{0,1\}}
+ev_2$.
 \end{exmp}
 
 
@@ -1481,10 +1557,10 @@ In the standard semantics, given two strategies $\sigma : A \rightarrow B$, $\ta
 a sequence $s \in \sigma \fatsemi \tau$, it is possible to (uniquely) recover the internal moves. The uncovered sequence is written
 ${\bf u}(s, \sigma, \tau)$. The algorithm to obtain this unique uncovering is given in part II of \cite{hylandong_pcf}.
 
-Given a term $M$, we can completely uncover the internal moves of a sequence $s\in\sem{M}$
-by performing the uncovering recursively at every @-node of the computation tree.
-This operation is called \emph{full-uncovering with respect to $M$}.
-Consequently, the interaction semantics can be computed from the standard semantics.
+Given a term $M$, we can completely uncover the internal moves of a
+sequence $s\in\sem{M}$ by performing the uncovering recursively at
+every @-node of the computation tree. This operation is called
+\emph{full-uncovering with respect to $M$}.
 
 Conversely, the standard semantics can be recovered from the
 interaction semantics by filtering the moves, keeping only those
@@ -1496,8 +1572,9 @@ played in the root arena:
 
 \subsubsection{Full abstraction}
 
-Let $\mathcal{I'}$ denote lluf sub-category of $\mathcal{I}$ obtained by conserving only strategies $\Sigma$ with a single
-annotated leaf and no nodes. We have the following lemma:
+Let $\mathcal{I'}$ denote lluf sub-category of $\mathcal{I}$
+consisting only of strategies $\Sigma$ with a single annotated leaf
+and no nodes. We have the following lemma:
 \begin{lem}[$\mathcal{I'}$ is isomorphic to $\mathcal{C}$]
 $\mathcal{I'} \cong \mathcal{C}$
 \end{lem}
@@ -1525,8 +1602,19 @@ connection between the interaction semantics of a simply-typed term without cons
 and the traversals of its computation tree.
 
 \subsubsection{Removing @-nodes from traversals}
-The @-nodes occurring in traversals are superfluous. We need to filter them out from the traversals
-in order to reveal a correspondence with the interaction game semantics.
+
+When defining computation trees, it was necessary to introduce
+application nodes (labelled @) in order to connect the operator and
+the operand of an application. The presence of @-nodes has also
+another advantage: it ensures that the lambda-nodes are all at even
+level in the computation tree. Consequently a traversal respects
+Alternation.
+
+Application nodes are however redundant in the sense that they do
+not play any role in the computation of the term. In other words,
+the @-nodes occurring in traversals are superfluous. In fact it is
+necessary to filter them out if we want to establish the
+correspondence with the interaction game semantics.
 
 \begin{dfn}[Filtering @-nodes in traversals]
 \label{dfn:appnode_filter}
@@ -2026,16 +2114,19 @@ case analysis on the structure of the computation tree:
 
 
 Putting corollary \ref{cor:varphi_bij} and proposition
-\ref{prop:rel_gamesem_trav} together we obtain the following
-theorem:
+\ref{prop:rel_gamesem_trav} together we obtain the following theorem
+which establish a correspondence between the game-denotation of a
+term and the set of traversals of its computation tree:
 
-\begin{thm}[Game semantics--traversals correspondence]
-For any pure simply-typed term $M$, $\varphi_M$ defines a bijection from
-$\travset(M)^{\upharpoonright r}$ to $\sem{M}$ and a bijection
-from $\travset(M)^{-@}$ to $\intersem{M}$:
+\begin{thm}[The Correspondence Theorem]
+\label{thm:correspondence}
+ For any pure simply-typed term $\Gamma \vdash M$,
+$\varphi_M$ defines a bijection from $\travset(M)^{\upharpoonright
+r}$ to $\sem{M}$ and a bijection from $\travset(M)^{-@}$ to
+$\intersem{M}$:
 \begin{eqnarray*}
- \varphi_M  &:& \travset(M)^{\upharpoonright r} \stackrel{\cong}{\longrightarrow} \sem{M} \\
- \varphi_M  &:& \travset(M)^{-@} \stackrel{\cong}{\longrightarrow} \intersem{M}
+ \varphi_M  &:& \travset(\Gamma \vdash M)^{\upharpoonright r} \stackrel{\cong}{\longrightarrow} \sem{\Gamma \vdash M} \\
+ \varphi_M  &:& \travset(\Gamma \vdash M)^{-@} \stackrel{\cong}{\longrightarrow} \intersem{\Gamma \vdash M}
 \end{eqnarray*}
 
 Moreover if $M$ is in $\beta$-normal form and $s$ is a

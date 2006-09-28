@@ -1,0 +1,280 @@
+%&slides-prg06
+\ifx\preambleread\undefined
+    \input preamble.tex
+\fi
+
+
+
+\newcommand\rulef[2]{\frac{\dps #1}{#2}}
+\newcommand{\rulename}[1]{\textcolor{blue}{(#1)} }
+\newcommand\dps{\displaystyle}
+\newcommand\ord[1]{{\sf ord}(#1)}
+\newcommand\union{\cup}
+\newcommand{\typear}{\rightarrow}
+\newcommand{\tree}[2][levelsep=4ex]{\pstree[levelsep=4ex,#1]{\TR{#2}}}
+\newcommand{\bkptr}[2][nodesep=0pt]{\ncarc[offset=-2pt,nodesep=0pt,ncurv=1,arcangleA=-#2, arcangleB=-#2,#1]{->}}
+\newcommand{\lsem}{[\![} % \llbracket
+\newcommand{\rsem}{]\!]} % \rrbracket
+\newcommand{\sem}[1]{{\lsem #1 \rsem}}
+\newcommand\travset{\mathcal{T}rav}
+
+\usepackage{pst-tree}
+
+
+\title{Game semantics of the Safe $\lambda$-calculus}
+\author[W. Blum]{William Blum}
+
+\institute[University Of Oxford]{ \color{red}{Oxford University Computing Laboratory}
+\vspace{20pt}
+
+\textcolor{black}{\small PRG Student Conference}}
+\date{\small 13 October 2006}
+
+
+
+\begin{document}
+
+\frame{\titlepage}
+
+\section<presentation>*{Outline}
+
+%\begin{frame}
+%  \frametitle{Outline}
+%  \tableofcontents[part=1]
+%\end{frame}
+
+%\AtBeginSection[] {
+%   \begin{frame}<beamer>
+%     \frametitle{Outline}
+%     \tableofcontents[currentpart,currentsection]
+%   \end{frame}
+% }
+%
+
+\part<presentation>{Main Talk}
+
+
+\section{The safety condition}
+
+\frame{
+\frametitle{Overview}
+\begin{itemize}
+\item
+\end{itemize}
+}
+
+\frame{
+\frametitle{Outline for this talk}
+\begin{itemize}
+\item The safety constraint
+\item Definition of the Safe $\lambda$-calculus
+\item Game semantics
+\item Computation trees, traversals
+\item The correspondence theorem
+\item Application:
+\end{itemize}
+}
+
+\frame{
+\frametitle{Types}
+\begin{itemize}
+\item Simple types: $A := o\ |\ A \rightarrow A$
+\item The order of a type is given by $\textsf{order}(o) = 0$,
+$\textsf{order}(A \rightarrow B) = \max(\textsf{order}(A) + 1; \textsf{order}(B))$.
+\end{itemize}
+}
+
+% ==================================================================================
+
+\begin{frame}[fragile]
+\frametitle{The Safe $\lambda$-calculus}
+Jugdements of the form $ \Gamma \vdash M : T $ where $\Gamma$ is the context, $M$ is the term and $T$ is the type.
+
+$$ \rulename{var} \   \rulef{}{x : A\vdash x : A}
+\quad  \rulename{wk} \   \rulef{\Gamma \vdash M : A}{\Delta \vdash M : A} \ \Gamma \subset \Delta$$
+
+$$ \rulename{app} \  \rulef{\Gamma \vdash M : (A,\ldots,A_l,B)
+                                        \quad \Gamma \vdash N_1 : A_1
+                                        \quad \ldots \quad \Gamma \vdash N_l : A_l  }
+                                   {\Gamma  \vdash M N_1 \ldots N_l : B}$$
+\hfill with  $\textcolor{red}{\forall y \in \Gamma : \ord{y} \geq \ord{B}}$
+
+$$ \rulename{abs} \   \rulef{\Gamma \union \overline{x} : \overline{A} \vdash M : B}
+                                   {\Gamma  \vdash \lambda \overline{x} : \overline{A} . M : (\overline{A},B)} \quad
+                                   \textcolor{red}{\forall y \in \Gamma : \ord{y} \geq \ord{\overline{A},B}}$$
+
+%    \small
+% \begin{columns}
+%   \column{7cm}
+%\vspace{0.4cm}
+%  \column{4.3cm}
+%\begin{block}{Example}
+%\end{block}
+%\vspace{0.1cm}
+%\end{columns}
+\end{frame}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\section{Computation trees and traversals}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+
+\frame{ \frametitle{Computation trees and traversals}
+\textcolor{blue}{Computation tree} = tree representation of the $\eta$-long normal form of a term.
+
+Take $M \equiv \lambda f z . (\lambda g x . f x) (\lambda y. y) z$ of type $(o \typear o) \typear o \typear o$.
+Its $\eta$-long normal form is $\lambda f z . (\lambda g x . f x) (\lambda y. y) (\lambda .z)$).
+Its computation tree is
+\begin{center}
+$\tree{\lambda f z}
+{ \tree{@}
+    {
+        \tree{\lambda g x}
+            {  \tree{f}{  \tree{\lambda}{\TR{x}}}
+            }
+        \tree{\lambda y}{\TR{y}}
+        \tree{\lambda}{\TR{z}}
+    }
+}$
+\end{center}
+
+Traversals:
+
+The set of traversals of the computation tree of $M$ is $\travset(M)$
+
+Reduction of traversals.
+
+}
+
+\frame{
+\frametitle{Game semantics}
+}
+
+\frame{
+\frametitle{Correspondence Theorem (example)}
+It is possible to define a
+a partial function $\textcolor{green}{\varphi}$ from the nodes of the \textcolor{blue}{computation tree}
+to the moves of the \textcolor{red}{arena}.
+\begin{center}
+$\textcolor{blue}{
+\tree{ \Rnode{root} {\lambda f z w}^{[1]} }
+     {  \tree{@^{[2]}}
+        {   \tree{\lambda g x ^{[3]}}
+                {
+                 \tree{\Rnode{f2}{f^{[6]}}} {\tree{\Rnode{lmd2}\lambda^{[7]}}{\TR{x^{[8]}}}}
+                }
+            \tree{\lambda y ^{[4]}}{\TR{y}}
+            \tree{\lambda ^{[5]}}{\TR{\Rnode{z}z}}
+        }
+    }}
+\hspace{3cm}
+\textcolor{red}{
+  \tree[levelsep=12ex]{ \Rnode{q1}q^1 }
+    {   \pstree[levelsep=4ex]{\TR{\Rnode{q3}q^3}}{\TR{\Rnode{q4}q^4}}
+        \TR{\Rnode{q2}q^2}
+        \TR{\Rnode{q5}q^5}
+    }
+}
+\psset{linecolor=green,nodesep=1pt,arrows=->,arcangle=-20,arrowsize=2pt 1,linewidth=0.3pt}
+\ncline{->}{root}{q1} \aput*{:U}{\textcolor{green}{\varphi}}
+\ncarc{->}{z}{q2}
+\ncline{->}{f}{q3}
+\ncline{->}{lmd}{q4}
+\ncline{->}{f2}{q3}
+\ncline{->}{lmd2}{q4}
+$\end{center}
+
+The following justified sequence of moves $s \in \sem{M}$:
+\vspace{0.2cm}
+\begin{center}
+ $s =
+\rnode{q1}{q}^1\ \rnode{q3}{q}^3\ \rnode{q4}{q}^4\ \rnode{q2}{q}^2
+\bkptr[offset=-3pt]{60}{q3}{q1}
+\bkptr[offset=-3pt]{60}{q4}{q3}
+\bkptr[offset=-3pt,ncurv=0.5]{60}{q2}{q1}
+\in \sem{M}$
+\end{center}
+
+there is a justified sequence of nodes $r$ such that $s = \varphi(r)$:
+\vspace{0.1cm}
+\begin{center}
+$r =
+\rnode{q1}{\lambda f z} \cdot
+\rnode{q3}{f}^{[6]} \cdot
+\rnode{q4}{\lambda^{[7]}} \cdot
+\rnode{q2}{z}
+\bkptr[ncurv=1]{60}{q3}{q1}
+\bkptr[ncurv=1]{50}{q4}{q3}
+\bkptr[ncurv=0.4]{80}{q2}{q1}$
+\end{center}
+such that $r$ is the reduction of a traversal: \vspace*{1cm}
+\begin{center}
+$t = \rnode{q1}{\lambda f
+z w} \cdot \rnode{n2}{@^{[2]}} \cdot \rnode{n3}{\lambda g x^{[3]}}
+\cdot \rnode{q3}{f}^{[6]} \cdot \rnode{q4}{\lambda^{[7]}} \cdot
+\rnode{n8}{x^{[8]}} \cdot \rnode{n9}{\lambda^{[5]}} \cdot
+\rnode{q2}{z} \bkptr[ncurv=0.6]{60}{q3}{q1}
+\bkptr[ncurv=1]{60}{q4}{q3}
+\bkptr[ncurv=0.4]{80}{q2}{q1}
+\bkptr[ncurv=0.4]{60}{n3}{n2} \bkptr[ncurv=0.4]{60}{n8}{n3}
+\bkptr[ncurv=0.4]{60}{n9}{n2}.
+$
+\end{center}
+
+\note{
+By representing side-by-side the computation tree and the type arena of a term, we
+see that (some) nodes of the computation tree can be mapped to question moves of the arena.
+}
+}
+
+%%%%%%%%%%%%%%%%
+\section{Game-semantic characterisation of Safety}
+
+
+\frame{ \frametitle{Game-semantic characterisation of Safety}
+
+}
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+
+\frame{ \frametitle{Results}
+
+}
+
+
+\section*{Summary}
+
+\frame{ \frametitle{Conclusion and Further Work}
+
+\begin{itemize}
+\item
+\item
+\item
+\end{itemize}
+}
+
+\subsection<presentation>*{Bibliography}
+
+\begin{frame}
+  \frametitle<presentation>{Bibliography}
+
+  \begin{thebibliography}{10}
+  \beamertemplatearticlebibitems
+  \bibitem{jones01}
+    Chin~Soon~Lee, Neil~D.~Jones, and Amir~Ben-Amram.
+    \newblock The Size-Change Principle for Program Termination.
+    \newblock {\em Principles of Programming Languages}, pp. 81-92. Volume 28 of Principles of Programming Languages. ACM press 2001
+  \end{thebibliography}
+\end{frame}
+
+\end{document}

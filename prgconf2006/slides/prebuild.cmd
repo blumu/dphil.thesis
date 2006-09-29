@@ -15,8 +15,8 @@ rem         \fi
 
 
 :prebuild
-rem 2 Build the precompilation format file "preamble.fmt" using the following command:
-latex -dont-parse-first-line -ini "&latex"  "\def\precompilation{} \input{slides-prg06.tex}"
+rem 2 Build the precompilation format file "slides-prg06.fmt" using the following command:
+pdftex -dont-parse-first-line -ini "&latex"  "\def\precompilation{} \input{slides-prg06.tex}"
 goto fin
 
 

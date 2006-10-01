@@ -1,30 +1,27 @@
 \ifx\incrcompilation\undefined \input preamble.tex \fi
 
-
-\setbeamertemplate{blocks}[rounded][shadow=true]
+\def\highlight{\textcolor{blue}}
 
 
 \title{\texorpdfstring{Game semantics of the Safe $\lambda$-calculus}{Game semantics of the Safe lambda-calculus}}
 \author[W. Blum]{William Blum}
 
 \institute[University Of Oxford]{ \color{red}{Oxford University Computing Laboratory}
-\vspace{20pt}
+\vspace{20pt} 
 
 \textcolor{black}{\small PRG Student Conference}}
 \date{\small 13 October 2006}
-
+ 
 
 \begin{document}
 
 \frame{\titlepage}
 
-\section<presentation>*{Outline}
-
+%\section<presentation>*{Outline}
 %\begin{frame}
 %  \frametitle{Outline}
 %  \tableofcontents[part=1]
 %\end{frame}
-
 %\AtBeginSection[] {
 %   \begin{frame}<beamer>
 %     \frametitle{Outline}
@@ -32,59 +29,99 @@
 %   \end{frame}
 % }
 %
+%\part<presentation>{Main Talk}
 
-
-\part<presentation>{Main Talk}
-
-
-\section{The safety condition}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 \frame{
 \frametitle{Overview}
 \begin{itemize}
-\item
+\item \textcolor{blue}{Safe $\lambda$-calculus} is a sub-language of the simply typed $\lambda$-calculus.
+A term is safe if it satisfies some constraints on the order of the variables occurring in it.
+\pause
+
+\item \textcolor{blue}{Game semantics} provides an abstract model for the $\lambda$-calculus.
+\pause
 \end{itemize}
+
+\begin{block}{}
+We want to study the game model of the Safe $\lambda$-calculus.
+\end{block}
 }
 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+ 
 \frame{
 \frametitle{Outline for this talk}
-\begin{itemize}
-\item The safety constraint
-\item Definition of the Safe $\lambda$-calculus
+\begin{enumerate}
+\item The simply typed $\lambda$-calculus
+\item The Safe $\lambda$-calculus
 \item Game semantics
-\item Computation trees, traversals
 \item The correspondence theorem
-\item Application: game semantic-characterisation of Safety
-\end{itemize}
+\item Game semantic-characterisation of Safety
+\end{enumerate}
 }
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 \frame{
-\frametitle{Types}
+\frametitle{Simply  typed $\lambda$ calculus}
 \begin{itemize}
-\item Simple types: $A := o\ |\ A \rightarrow A$
-\item The order of a type is given by $\textsf{order}(o) = 0$,
+\item \highlight{Simple types} $A := o\ |\ A \rightarrow A$.
+%We write $(A_1,\ldots, A_n)$ for $A_1\rightarrow \ldots \rightarrow A_n$.
+\pause
+\item The \highlight{order} of a type is given by $\textsf{order}(o) = 0$,
 $\textsf{order}(A \rightarrow B) = \max(\textsf{order}(A) + 1; \textsf{order}(B))$.
+\pause
+\item Jugdements of the form $ \Gamma \vdash M : T $ where $\Gamma$ is the context, $M$ is the term and $T$ is the type.
+\pause
+\item The formation rules:
+$$ \rulename{var} \   \rulef{}{x : A\vdash x : A}
+\qquad  \rulename{wk} \   \rulef{\Gamma \vdash M : A}{\Delta \vdash M : A} \ \Gamma \subset \Delta$$
+$$ \rulename{app} \  \rulef{\Gamma \vdash M : A \rightarrow B \quad \Gamma \vdash N : A }
+                           {\Gamma  \vdash M N : B}
+\quad \rulename{abs} \   \rulef{\Gamma, x : A \vdash M : B}
+                                {\Gamma  \vdash \lambda x^A. M : A \rightarrow B}$$
+\pause
+\item Example: $f:o\rightarrow o\rightarrow o, x:o \vdash (\lambda \varphi^{o \rightarrow o} x^o . \varphi x) (f x)$
 \end{itemize}
 }
 
-% ==================================================================================
-
-\begin{frame}[fragile]
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+ 
+\begin{frame}
 \frametitle{The Safe $\lambda$-calculus}
-Jugdements are of the form $ \Gamma \vdash M : T $ where $\Gamma$ is the context, $M$ is the term and $T$ is the type.
-
+\begin{block}{The rules}
 $$ \rulename{var} \   \rulef{}{x : A\vdash x : A}
-\quad  \rulename{wk} \   \rulef{\Gamma \vdash M : A}{\Delta \vdash M : A} \ \Gamma \subset \Delta$$
-
+\qquad  \rulename{wk} \   \rulef{\Gamma \vdash M : A}{\Delta \vdash M : A} \ \Gamma \subset \Delta$$
 $$ \rulename{app} \  \rulef{\Gamma \vdash M : (A,\ldots,A_l,B)
                                         \quad \Gamma \vdash N_1 : A_1
                                         \quad \ldots \quad \Gamma \vdash N_l : A_l  }
                                    {\Gamma  \vdash M N_1 \ldots N_l : B}$$
-\hfill with  $\textcolor{red}{\forall y \in \Gamma : \ord{y} \geq \ord{B}}$
+\hfill with the side-condition $\textcolor{red}{\forall y \in \Gamma : \ord{y} \geq \ord{B}}$
+$$ \rulename{abs} \   \rulef{\Gamma, x_1:A_1 \ldots x_n : A_n \vdash M : B}
+                                   {\Gamma  \vdash \lambda x_1:A_1 \ldots x_n : A_n . M : A_1 \rightarrow \ldots \rightarrow A_n \rightarrow B}$$
+\hfill with the side-condition $\textcolor{red}{\forall y \in \Gamma : \ord{y} \geq \ord{A_1 \rightarrow \ldots \rightarrow A_n \rightarrow B}}$
+\end{block} 
 
-$$ \rulename{abs} \   \rulef{\Gamma \union \overline{x} : \overline{A} \vdash M : B}
-                                   {\Gamma  \vdash \lambda \overline{x} : \overline{A} . M : (\overline{A},B)} \quad
-                                   \textcolor{red}{\forall y \in \Gamma : \ord{y} \geq \ord{\overline{A},B}}$$
+\begin{block}{Property} 
+There is no variable capture in the Safe $\lambda$-calculus when performing $\beta$-reduction.
+\end{block} 
+\end{frame}
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\frame{
+\frametitle{Game semantics}
+}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\def\highlightat#1#2{\expandafter\alt<#1->{\textcolor{DarkGreen}{#2}}{#2}}
+\def\visibleat#1#2{\expandafter\visible<#1->{#2}}
+
+\frame{ \frametitle{Computation trees and traversals}
 
 %    \small
 % \begin{columns}
@@ -95,65 +132,103 @@ $$ \rulename{abs} \   \rulef{\Gamma \union \overline{x} : \overline{A} \vdash M 
 %\end{block}
 %\vspace{0.1cm}
 %\end{columns}
-\end{frame}
 
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
-
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
-
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
-\section{Computation trees and traversals}
-
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
-
-\frame{ \frametitle{Computation trees and traversals}
 \textcolor{blue}{Computation tree} = tree representation of the $\eta$-long normal form of a term.
 
-Take $M \equiv \lambda f z . (\lambda g x . f x) (\lambda y. y) z$ of type $(o \typear o) \typear o \typear o$.
-Its $\eta$-long normal form is $\lambda f z . (\lambda g x . f x) (\lambda y. y) (\lambda .z)$).
-Its computation tree is
-\begin{center}
-$\tree{\lambda f z}
-{ \tree{@}
+\uncover<2->{
+\textcolor{DarkGreen}{Traversal} = justified sequence of nodes respecting some formation rules.
+}
+
+\uncover<11->{
+\textcolor{red}{Traversal reduction} is obtained by removing the nodes not hereditarily justified by the root of the tree.
+}
+
+\vspace{0.5cm}
+\textcolor{blue}{Example} $M \equiv \lambda f z . (\lambda g x . f x) (\lambda y. y) z$ of type $(o \typear o) \typear o \typear o$.
+\vspace{0.5cm}
+\begin{columns}
+\column{4cm}
+\textcolor{blue}{
+$ \tree{\highlightat{3}{\lambda f z} }
+{ \tree{\highlightat{4}{@}}
     {
-        \tree{\lambda g x}
-            {  \tree{f}{  \tree{\lambda}{\TR{x}}}
+        \tree{\highlightat{5}{\lambda g x}}
+            {  \tree{\highlightat{6}{f}}{  \tree{\highlightat{7}{\lambda}}{\TR{\highlightat{8}{x}}}}
             }
         \tree{\lambda y}{\TR{y}}
-        \tree{\lambda}{\TR{z}}
+         \tree{\highlightat{9}{\lambda}}{\TR{\highlightat{10}{z}}}
     }
 }$
-\end{center}
-
-\textcolor{blue}{Traversal} = justified sequence of nodes respecting some formation rules.
-
-
-Reduction of traversals.
-
 }
 
-\frame{
-\frametitle{Game semantics}
+\column{7cm}
+$\textcolor{DarkGreen}{
+\visible<2->{t } =
+\visible<3->{\rnode{q1}{\lambda f z}}
+\visible<4->{\ \cdot\ \rnode{n2}{@} \bkptr[ncurv=0.6,linecolor=DarkGreen]{60}{n2}{q1} }
+\visible<5->{\ \cdot\ \rnode{n3}{\lambda g x} \bkptr[ncurv=0.6,linecolor=DarkGreen]{60}{n3}{n2} }
+\visible<6->{\ \cdot\ \rnode{q3}{f}  \bkptr[ncurv=0.6,linecolor=DarkGreen]{50}{q3}{q1} }
+\visible<7->{\ \cdot\ \rnode{q4}{\lambda} \bkptr[ncurv=0.6,linecolor=DarkGreen]{60}{q4}{q3} } 
+\visible<8->{\ \cdot\ \rnode{n8}{x}  \bkptr[ncurv=0.4,linecolor=DarkGreen]{60}{n8}{n3} }
+\visible<9->{\ \cdot\ \rnode{n9}{\lambda} \bkptr[ncurv=0.4,linecolor=DarkGreen]{60}{n9}{n2} }
+\visible<10->{\ \cdot\ \rnode{q2}{z} \bkptr[ncurv=0.4,linecolor=DarkGreen]{80}{q2}{q1}}
+}$
+ 
+\vspace*{0.8cm}
+\visible<11->{
+$\textcolor{Red}{
+t \upharpoonright r = \rnode{q1}{\lambda f z}
+\cdot \rnode{q3}{f} \bkptr[ncurv=1,linecolor=red]{50}{q3}{q1}
+\cdot \rnode{q4}{\lambda} \bkptr[ncurv=1,linecolor=red]{50}{q4}{q3}
+\cdot \rnode{q2}{z}  \bkptr[ncurv=0.7,linecolor=red]{80}{q2}{q1}
+}$
 }
+\vspace*{0.8cm}
+\visible<12->{
+$t - @ = 
+\rnode{q1}{\lambda f z}
+\ \cdot\ \rnode{n3}{\lambda g x} \bkptr[ncurv=0.6,linecolor=DarkGreen]{60}{n3}{q1}
+\ \cdot\ \rnode{q3}{f}  \bkptr[ncurv=0.6,linecolor=DarkGreen]{50}{q3}{q1}
+\ \cdot\ \rnode{q4}{\lambda} \bkptr[ncurv=0.6,linecolor=DarkGreen]{60}{q4}{q3}
+\ \cdot\ \rnode{n8}{x}  \bkptr[ncurv=0.4,linecolor=DarkGreen]{60}{n8}{n3}
+\ \cdot\ \rnode{n9}{\lambda} \bkptr[ncurv=0.4,linecolor=DarkGreen]{60}{n9}{q1}
+\ \cdot\ \rnode{q2}{z} \bkptr[ncurv=0.4,linecolor=DarkGreen]{80}{q2}{q1}
+$}
+\end{columns}
+}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\frame{ \frametitle{The Correspondence Theorem}
+Let $M$ be a pure simply typed term of type $T$.
+\begin{itemize}
+\item $\textcolor{blue}{\travset(M)}$ = set of traversals of the computation tree of $M$
+\item $\textcolor{blue}{\travset(M)}^{\upharpoonright r} = \{ t \upharpoonright r \ | \  t \in \travset(M) \}$
+\item $\textcolor{blue}{\travset(M)}^{-@} = \{ t - @ \ | \  t \in \travset(M) \}$
+\item $\textcolor{red}{\sem{M}}$ = game-semantic denotation of the term $M$
+\item $\textcolor{red}{\intersem{M}}$ = revealed game-semantic denotion (i.e. internal moves are not hidden)
+\end{itemize}
+
+There exists a partial function $\textcolor{DarkGreen}{\varphi}$ from the nodes of the \textcolor{blue}{computation tree}
+to the moves of the \textcolor{red}{arena \sem{T}} such that
+$$ \textcolor{DarkGreen}{\varphi}  : \textcolor{blue}{\travset(M)}^{-@} \textcolor{DarkGreen}{\stackrel{\cong}{\longrightarrow}} \textcolor{red}{\intersem{M}} $$
+$$ \textcolor{DarkGreen}{\varphi}  : \textcolor{blue}{\travset(M)}^{\upharpoonright r}  \textcolor{DarkGreen}{\stackrel{\cong}{\longrightarrow}} \textcolor{red}{\sem{M}}.$$
+}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 \frame{
 \frametitle{Correspondence Theorem (example)}
-There exists a partial function $\textcolor{DarkGreen}{\varphi}$ from the nodes of the \textcolor{blue}{computation tree}
-to the moves of the \textcolor{red}{arena}.
 \begin{center}
 $\textcolor{blue}{
-\tree{ \Rnode{root} {\lambda f z w}^{[1]} }
-     {  \tree{@^{[2]}}
-        {   \tree{\lambda g x ^{[3]}}
+\tree{ \Rnode{root} {\lambda f z} }
+     {  \tree{@}
+        {   \tree{\lambda g x }
                 {
-                 \tree{\Rnode{f2}{f^{[6]}}} {\tree{\Rnode{lmd2}\lambda^{[7]}}{\TR{x^{[8]}}}}
+                 \tree{\Rnode{f2}{f}} {\tree{\Rnode{lmd2}\lambda}{\TR{x}}}
                 }
-            \tree{\lambda y ^{[4]}}{\TR{y}}
-            \tree{\lambda ^{[5]}}{\TR{\Rnode{z}z}}
+            \tree{\lambda y }{\TR{y}}
+            \tree{\lambda}{\TR{\Rnode{z}z}}
         }
     }}
 \hspace{3cm}
@@ -173,78 +248,34 @@ $\textcolor{blue}{
 \ncline{->}{lmd2}{q4}
 $\end{center}
 
-Take the traversal $t = \rnode{q1}{\lambda f z w} \cdot
-\rnode{n2}{@^{[2]}} \cdot \rnode{n3}{\lambda g x^{[3]}} \cdot
-\rnode{q3}{f}^{[6]} \cdot \rnode{q4}{\lambda^{[7]}} \cdot
-\rnode{n8}{x^{[8]}} \cdot \rnode{n9}{\lambda^{[5]}} \cdot
+\vspace{1cm}
+Take the traversal $t = \rnode{q1}{\lambda f z} \cdot
+\rnode{n2}{@} \cdot \rnode{n3}{\lambda g x} \cdot
+\rnode{q3}{f} \cdot \rnode{q4}{\lambda} \cdot
+\rnode{n8}{x} \cdot \rnode{n9}{\lambda} \cdot
 \rnode{q2}{z} \bkptr[ncurv=0.6]{60}{q3}{q1}
 \bkptr[ncurv=1]{60}{q4}{q3} \bkptr[ncurv=0.4]{80}{q2}{q1}
 \bkptr[ncurv=0.4]{60}{n3}{n2} \bkptr[ncurv=0.4]{60}{n8}{n3}
 \bkptr[ncurv=0.4]{60}{n9}{n2}. $
 
-Its reduction is $r = \rnode{q1}{\lambda f z} \cdot
-\rnode{q3}{f}^{[6]} \cdot \rnode{q4}{\lambda^{[7]}} \cdot
-\rnode{q2}{z} \bkptr[ncurv=1]{60}{q3}{q1}
-\bkptr[ncurv=1]{50}{q4}{q3} \bkptr[ncurv=0.4]{80}{q2}{q1}$
-
-\vspace{0.2cm} We have $\varphi(r) = \rnode{q1}{q}^1\
+\vspace{0.5cm}
+The play $\rnode{q1}{q}^1\
 \rnode{q3}{q}^3\ \rnode{q4}{q}^4\ \rnode{q2}{q}^2
 \bkptr[offset=-3pt]{60}{q3}{q1} \bkptr[offset=-3pt]{60}{q4}{q3}
-\bkptr[offset=-3pt,ncurv=0.5]{60}{q2}{q1} \in \sem{M}$
-\end{center}
-
-there is a justified sequence of nodes $r$ such that $s = \varphi(r)$:
-\vspace{0.1cm}
-\begin{center}
-$r =
-\rnode{q1}{\lambda f z} \cdot
-\rnode{q3}{f}^{[6]} \cdot
-\rnode{q4}{\lambda^{[7]}} \cdot
-\rnode{q2}{z}
-\bkptr[ncurv=1]{60}{q3}{q1}
-\bkptr[ncurv=1]{50}{q4}{q3}
-\bkptr[ncurv=0.4]{80}{q2}{q1}$
-\end{center}
-such that $r$ is the reduction of a traversal: \vspace*{1cm}
-\begin{center}
-$t = \rnode{q1}{\lambda f
-z w} \cdot \rnode{n2}{@^{[2]}} \cdot \rnode{n3}{\lambda g x^{[3]}}
-\cdot \rnode{q3}{f}^{[6]} \cdot \rnode{q4}{\lambda^{[7]}} \cdot
-\rnode{n8}{x^{[8]}} \cdot \rnode{n9}{\lambda^{[5]}} \cdot
-\rnode{q2}{z} \bkptr[ncurv=0.6]{60}{q3}{q1}
-\bkptr[ncurv=1]{60}{q4}{q3}
-\bkptr[ncurv=0.4]{80}{q2}{q1}
-\bkptr[ncurv=0.4]{60}{n3}{n2} \bkptr[ncurv=0.4]{60}{n8}{n3}
-\bkptr[ncurv=0.4]{60}{n9}{n2}.
-$
-\end{center}
-
+\bkptr[offset=-3pt,ncurv=0.5]{60}{q2}{q1} \in \sem{M}$ 
+is the image by $\varphi$ of the reduction of t : 
+$t \upharpoonright r = \rnode{q1}{\lambda f z} \cdot
+\rnode{q3}{f} \cdot \rnode{q4}{\lambda} \cdot
+\rnode{q2}{z} \bkptr[ncurv=1]{60}{q3}{q1}
+\bkptr[ncurv=1]{50}{q4}{q3} \bkptr[ncurv=0.4]{80}{q2}{q1}$.
 %\note{
 %By representing side-by-side the computation tree and the type arena of a term, we
 %see that (some) nodes of the computation tree can be mapped to question moves of the arena.
 %}
 }
 
-\frame{ \frametitle{The Correspondence Theorem (2)}
-Let $M$ be a pure simply-typed term.
-\begin{itemize}
-\item $\textcolor{blue}{\travset(M)}$ = set of traversals of the computation tree of $M$
-\item $\textcolor{blue}{\travset(M)}^{\upharpoonright r}$ = \{ reductions of traversals of $\travset(M)$ \}
-\item $\textcolor{blue}{\travset(M)}^{-@}$ = \{ traversals of $\travset(M)$ where the application nodes are removed \}
-\item $\textcolor{red}{\sem{M}}$ = game-semantic denotation of the term $M$
-\item $\textcolor{red}{\intersem{M}}$ = revealed game-semantic denotion (i.e. internal moves are not hidden)
-\item $\textcolor{DarkGreen}{\varphi_M}$ is the function of the previous slides
-\end{itemize}
-\begin{block}{The Correspondence Theorem}
-\begin{eqnarray*}
- \textcolor{DarkGreen}{\varphi_M}  : \textcolor{blue}{\travset(M)}^{\upharpoonright r} & \textcolor{DarkGreen}{\stackrel{\cong}{\longrightarrow}}& \textcolor{red}{\sem{M}} \\
- \textcolor{DarkGreen}{\varphi_M}  : \textcolor{blue}{\travset(M)}^{-@} &\textcolor{DarkGreen}{\stackrel{\cong}{\longrightarrow}}& \textcolor{red}{\intersem{M}}
-\end{eqnarray*}
-\end{block}
-}
 
-%%%%%%%%%%%%%%%%
-\section{Game-semantic characterisation of Safety}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 
 \frame{ \frametitle{Game-semantic characterisation of Safety}
@@ -252,7 +283,7 @@ Let $M$ be a pure simply-typed term.
 }
 
 
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 
 \frame{ \frametitle{Results}
@@ -260,7 +291,7 @@ Let $M$ be a pure simply-typed term.
 }
 
 
-\section*{Summary}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 \frame{ \frametitle{Conclusion and Further Work}
 
@@ -271,7 +302,7 @@ Let $M$ be a pure simply-typed term.
 \end{itemize}
 }
 
-\subsection<presentation>*{Bibliography}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 \begin{frame}
   \frametitle<presentation>{Bibliography}

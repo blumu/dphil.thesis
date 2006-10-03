@@ -1,6 +1,9 @@
  \ifx\incrcompilation\undefined \input preamble.tex \fi
 
-\def\highlight{\textcolor{blue}}
+\newcommand\highlight{\textcolor{blue}}
+\newcommand\pcfsucc{\texttt{succ}}
+\newcommand\nat{\mathbb{N}}
+\newcommand\prefset{\textsf{Pref}}
 
  
 \title{\texorpdfstring{Game semantics of the Safe $\lambda$-calculus}{Game semantics of the Safe lambda-calculus}}
@@ -93,7 +96,31 @@ $$ \rulename{app} \  \rulef{\Gamma \vdash M : A \rightarrow B \quad \Gamma \vdas
 
 \section{Game semantics}
 \frame{\frametitle{Game semantics}
-
+\begin{itemize}
+\item Model of programming languages based on games (Abramsky et al.; Hyland and Ong; Nickau).
+\item 2 players: \highlight{O}pponnent (system) and \highlight{P}roponent (program)
+\item The game definition is given by the type of the term: the \highlight{arena} indicates which moves are possible.
+ \begin{center}
+ \psset{treesep=2ex,treefit=loose,nodesep=1pt}
+$ \sem{\nat} = \pstree[levelsep=4ex]
+    { \TR{q} }
+    {    \TR{\scriptstyle 0} \TR{\scriptstyle 1} \TR{\scriptstyle \ldots} }
+    \hspace{1cm}
+  \sem{\nat \rightarrow \nat} = \pstree[levelsep=3ex,treesep=2ex]
+    { \TR{q^0} }
+    {  \pstree
+        { \TR{q^1} }
+        {    \TR{\scriptstyle 0} \TR{\scriptstyle 1} \TR{\scriptstyle \ldots} }
+      \TR{\scriptstyle 0} \TR{\scriptstyle 1} \TR{\scriptstyle \ldots} 
+    }$
+\end{center}
+\item \highlight{Play} = sequence of moves played by O and P with justification pointers.
+\item \highlight{Strategy for P} = prefix-closed set of plays. $s \cdot a \cdot b$ in the strategy means that P should responds $b$ when O plays $a$ in position $s$.
+\item The \highlight{denotation} of a term $M$, written $\sem{M}$, is a strategy for P.
+\item $\sem{ 7 : \nat} = \{ \epsilon, q, q\ 7 \}$\\
+$\sem{ \pcfsucc : \nat \rightarrow \nat} = Pref( \{ q^0 q^1 n ( n+1) \ | \ n \in \nat \} )$
+\item Compositionality: $\sem{ \pcfsucc\  7} = \sem{ \pcfsucc } ; \sem{7}$
+\end{itemize}
 }
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -109,8 +136,7 @@ $$ \rulename{app} \  \rulef{\Gamma \vdash M : A \rightarrow B \quad \Gamma \vdas
 }
 
 \uncover<11->{
-\textcolor{red}{\it  Traversal reduction} is obtained by keeping only the nodes
-that are hereditarily justified by the root of the tree.
+\textcolor{red}{\it  Traversal reduction} = keep only nodes hereditarily justified by the root.
 }
 
 \vspace{0.5cm}
@@ -132,16 +158,17 @@ $ \tree{\highlightat{3}{\lambda f z} }
 %}
 
 \column{7cm}
+\psset{linewidth=0.5pt}
 $\textcolor{blue}{
 \visible<2->{t=}
 \visible<3->{\rnode{q1}{\lambda f z}}
-\visible<4->{\ \cdot\ \rnode{n2}{@} \bkptr[ncurv=0.6,linecolor=blue]{60}{n2}{q1} }
-\visible<5->{\ \cdot\ \rnode{n3}{\lambda g x} \bkptr[ncurv=0.6,linecolor=blue]{60}{n3}{n2} }
-\visible<6->{\ \cdot\ \rnode{q3}{f}  \bkptr[ncurv=0.6,linecolor=blue]{50}{q3}{q1} }
-\visible<7->{\ \cdot\ \rnode{q4}{\lambda} \bkptr[ncurv=0.6,linecolor=blue]{60}{q4}{q3} }
-\visible<8->{\ \cdot\ \rnode{n8}{x}  \bkptr[ncurv=0.4,linecolor=blue]{60}{n8}{n3} }
-\visible<9->{\ \cdot\ \rnode{n9}{\lambda} \bkptr[ncurv=0.4,linecolor=blue]{60}{n9}{n2} }
-\visible<10->{\ \cdot\ \rnode{q2}{z} \bkptr[ncurv=0.4,linecolor=blue]{80}{q2}{q1}}
+\visible<4->{ \cdot \rnode{n2}{@} \bkptr[ncurv=0.6,linecolor=blue]{60}{n2}{q1} }
+\visible<5->{ \cdot \rnode{n3}{\lambda g x} \bkptr[ncurv=0.6,linecolor=blue]{60}{n3}{n2} }
+\visible<6->{ \cdot \rnode{q3}{f}  \bkptr[ncurv=0.6,linecolor=blue]{50}{q3}{q1} }
+\visible<7->{ \cdot \rnode{q4}{\lambda} \bkptr[ncurv=0.6,linecolor=blue]{60}{q4}{q3} }
+\visible<8->{ \cdot \rnode{n8}{x}  \bkptr[ncurv=0.4,linecolor=blue]{60}{n8}{n3} }
+\visible<9->{ \cdot \rnode{n9}{\lambda} \bkptr[ncurv=0.4,linecolor=blue]{60}{n9}{n2} }
+\visible<10->{ \cdot \rnode{q2}{z} \bkptr[ncurv=0.4,linecolor=blue]{80}{q2}{q1}}
 }$
 
 \vspace*{0.65cm}
@@ -155,14 +182,14 @@ t \upharpoonright r = \rnode{q1}{\lambda f z}
 }
 \vspace*{0.8cm}
 \visible<12->{
-$t - @ =
-\rnode{q1}{\lambda f z}
-\ \cdot\ \rnode{n3}{\lambda g x} \bkptr[ncurv=0.6]{60}{n3}{q1}
-\ \cdot\ \rnode{q3}{f}  \bkptr[ncurv=0.6]{50}{q3}{q1}
-\ \cdot\ \rnode{q4}{\lambda} \bkptr[ncurv=0.6]{60}{q4}{q3}
-\ \cdot\ \rnode{n8}{x}  \bkptr[ncurv=0.4]{60}{n8}{n3}
-\ \cdot\ \rnode{n9}{\lambda} \bkptr[ncurv=0.4]{60}{n9}{q1}
-\ \cdot\ \rnode{q2}{z} \bkptr[ncurv=0.4]{80}{q2}{q1}
+$ t - @ = 
+\rnode{q1}{ \lambda f z}
+ \cdot \rnode{n3}{ \lambda g x} \bkptr[ncurv=0.6]{60}{n3}{q1}
+ \cdot \rnode{q3}{ f}  \bkptr[ncurv=0.6]{50}{q3}{q1}
+ \cdot \rnode{q4}{ \lambda} \bkptr[ncurv=0.6]{60}{q4}{q3}
+ \cdot \rnode{n8}{ x}  \bkptr[ncurv=0.4]{60}{n8}{n3}
+ \cdot \rnode{n9}{ \lambda} \bkptr[ncurv=0.4]{60}{n9}{q1}
+ \cdot \rnode{q2}{ z} \bkptr[ncurv=0.4]{80}{q2}{q1}
 $}
 \end{columns}
 }

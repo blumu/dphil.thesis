@@ -108,8 +108,7 @@ $$ \rulename{app} \  \rulef{\Gamma \vdash M : A \rightarrow B \quad \Gamma \vdas
 \pause
 \item Example: $f:o\rightarrow o\rightarrow o, x:o \vdash (\lambda \varphi^{o \rightarrow o} x^o . \varphi\ x) (f\ x)$
 \pause
-\item A single rule: \highlight{$\beta$-reduction}. e.g. $(\lambda x. f\ x) u \betared
-(f\ x) [u/x] = f\ u$
+\item A single rule: \highlight{$\beta$-reduction}. e.g. $(\lambda x. M) N \betared M [N/x]$
 \end{itemize}
 }
 
@@ -146,24 +145,24 @@ Variable renaming then becomes unnecessary.
 \section{The Safe \texorpdfstring{$\lambda$}{lambda}-calculus}
 \begin{frame} \frametitle{The Safe $\lambda$-calculus}
 \begin{block}{The formation rules}
-$$ \rulename{var} \   \rulef{}{x : A\vdash x : A}
-\qquad  \rulename{wk} \   \rulef{\Gamma \vdash M : A}{\Delta \vdash
+$$ \rulename{var} \   \rulef{}{x : A\vdash_s x : A}
+\qquad  \rulename{wk} \   \rulef{\Gamma \vdash_s M : A}{\Delta \vdash_s
 M : A} \ \Gamma \subset \Delta$$
 $$ \rulename{app} \  \rulef{\Gamma \vdash M : (A,\ldots,A_l,B)
-                                        \quad \Gamma \vdash N_1 : A_1
-                                        \quad \ldots \quad \Gamma \vdash N_l : A_l  }
-                                   {\Gamma  \vdash M N_1 \ldots N_l : B}$$
+                                        \quad \Gamma \vdash_s N_1 : A_1
+                                        \quad \ldots \quad \Gamma \vdash_s N_l : A_l  }
+                                   {\Gamma  \vdash_s M N_1 \ldots N_l : B}$$
 \hfill with the side-condition $\textcolor{red}{\forall y \in \Gamma
 : \ord{y} \geq \ord{B}}$
-$$ \rulename{abs} \   \rulef{\Gamma, x_1:A_1 \ldots x_n : A_n \vdash M : B}
-                                   {\Gamma  \vdash \lambda x_1:A_1 \ldots x_n : A_n . M : A_1 \rightarrow \ldots \rightarrow A_n \rightarrow B}$$
+$$ \rulename{abs} \   \rulef{\Gamma, x_1:A_1 \ldots x_n : A_n \vdash_s M : B}
+                                   {\Gamma  \vdash_s \lambda x_1:A_1 \ldots x_n : A_n . M : A_1 \rightarrow \ldots \rightarrow A_n \rightarrow B}$$
 \hfill with the side-condition $\textcolor{red}{\forall y \in \Gamma
 : \ord{y} \geq \ord{A_1 \rightarrow \ldots \rightarrow A_n
 \rightarrow B}}$
 \end{block}
 \pause
 \begin{block}{Property}
-There is no variable capture in the Safe $\lambda$-calculus when
+In the Safe $\lambda$-calculus there is no need to rename variables when
 performing $\beta$-reduction.
 \end{block}
 \end{frame}
@@ -172,7 +171,20 @@ performing $\beta$-reduction.
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \section{Example}
 \frame{\frametitle{Example}
+\begin{itemize}
+\item 
+Contracting the $\beta$-redex in the following term
+$$f:o\rightarrow o\rightarrow o, x:o \vdash (\lambda \varphi^{o \rightarrow o} x^o . \varphi\ x) (\temporal<2>{f\ x}{\underline{f\ \alert{x}}}{\underline{f\ \alert{x}}})$$
+leads to variable capture:
+$$(\lambda \varphi x . \varphi\ x) (f\ x) \not\betared (\lambda \alert{x} . (f\ \alert{x}) x).$$
+\pause
+Hence the term is \alert{unsafe}.
 
+Indeed, $\ord{x} = 0 \leq 1 = \ord{f\ x}$.
+\pause
+
+\item The term $(\lambda \varphi^{o \rightarrow o} x^o . \varphi\ x) (\lambda y^o . y )$ is safe.
+\end{itemize}
 }
 
 
@@ -199,7 +211,7 @@ to a preceding move).
 \end{itemize}
 \pause
 
- The game semantics of a term can be ``visualized'' on the
+ The game semantics of a term can be completely represented on the
 computation tree:
 \begin{block}{}
 $$ \textcolor{DarkGreen}{\travset(M)} \cong \textcolor{blue}{\intersem{M}} $$

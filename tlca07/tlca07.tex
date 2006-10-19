@@ -62,6 +62,10 @@
 \newcommand\pcf{\textsf{PCF}}
 \newtheorem{thm}{Theorem}
 \newtheorem{cor}{Corollary}
+\theoremstyle{remark}
+\newtheorem{rem}[thm]{Remark}
+\newtheorem{exmp}[thm]{Example}
+
 \pagestyle{empty}
 
 % TLCA05:
@@ -182,7 +186,7 @@ $\ord{A \funsp B} = \max(\ord{A}+1, \ord{B})$.
 
 
 The \textbf{Safe $\lambda$-Calculus} is a sub-system of the
-simply-typed $\lambda$-calculus. 
+simply-typed $\lambda$-calculus.
 We use a set of sequents of the form $\Gamma \vdash M : A$ to represent
 terms-in-context where $\Gamma$ is the context and $A$ is the type. Let
 $\Sigma$ be a set of higher-order constants. We call \emph{safe term} any
@@ -195,13 +199,41 @@ $$ \rulename{app} \  \rulef{\Gamma \vdash s : (A_1,\ldots,A_n,B)
                                         \ \Gamma \vdash t_1 : A_1
                                         \  \ldots\  \Gamma \vdash t_n : A_n }
                                    {\Gamma  \vdash s t_1 \ldots t_n : B}
-                                    \ 
-                                   \ord{B} \leq \min \ord{\Gamma}$$
+                                    \
+                                   \ord{B} \sqsubseteq \ord{\Gamma}$$
 $$ \rulename{abs} \   \rulef{\Gamma, x_1 : A_1 \ldots x_n : A_n \vdash s : B}
-                                   {\Gamma  \vdash \lambda x_1 \ldots x_n . s : (\overline{A},B)} \
-                                   \ord{\overline{A},B} \leq \min \ord{\Gamma}$$
+                                   {\Gamma  \vdash \lambda x_1 \ldots x_n . s : (A_1, \ldots ,A_n,B)} \
+                                   \ord{A_1, \ldots ,A_n,B} \sqsubseteq \ord{\Gamma}$$
 
-where $\ord{\Gamma}$ denotes the set $\{ \ord{y} : y \in \Gamma \}$.
+where in the side-conditions, $\ord{\Gamma}$ denotes the set $\{ \ord{y} : y \in \Gamma \}$ and $c \sqsubseteq S$ is a notation for
+``$c$ is a lower-bound for $S$''.
+
+
+The side-condition in the application rule and abstraction rules expresses the fact that all variables in the context of the term being formed must have order greater than the order of the term itself.
+
+
+Note that there is no specific constraint on the term type. In particular, the type-homogeneity constraint that is used
+in the definition of safe higher-order grammars in \cite{KNU02} is not required here.
+In that regards, our formulation differs from the one proposed in \cite{safety-mirlong2004}.
+However it is easy to show that after enforcing the type-homogeneity constraint to our calculus, we obtain a new system of rules equivalent
+to the one defined in \cite{safety-mirlong2004}.
+
+\begin{exmp}[Kierstead terms]
+Consider the terms $M_1 = \lambda f . f (\lambda x . f (\lambda y . y ))$ and
+$M_2 = \lambda f . f (\lambda x . f (\lambda y .x ))$.
+
+$M_2$ is not safe because in the subterm $f (\lambda y . x)$, the free variable $x$ has order $0$ which is smaller than $\ord{\lambda y . x} = 1$.
+On the other hand, $M_1$ is safe as the following proof tree shows:
+$$
+ \rulef{ 
+ \rulef{\rulef{}{f : (o,o) \vdash f} \qquad \rulef{ \rulef{}{} }{ f:(o,o) \vdash \lambda x . f (\lambda y .y )} }{f : (o,o) \vdash f (\lambda x . f (\lambda y .y ))}
+ }
+ {\vdash M_1 = \lambda f . f (\lambda x . f (\lambda y .y ))}
+$$
+\end{exmp}
+
+
+
 
 %\begin{thm}[Correspondence theorem]
 %\label{thm:corresp} The set of traversals of the computation tree is

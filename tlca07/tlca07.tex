@@ -1,6 +1,7 @@
 % the LaTeX macro package from Springer-Verlag for Lecture Notes in Computer Science,
 % version 2.2 for LaTeX2e
 \documentclass{llncs}
+\usepackage{amssymb}
 
 %%% Safe lambda calculus
 \newcommand\funto{\longrightarrow}
@@ -30,6 +31,15 @@
 
 \newcommand\ialgol{\textsf{IA}}
 \newcommand\pcf{\textsf{PCF}}
+
+\newcommand\defeq{\stackrel{\textsf{def}}{=}}
+\newcommand\betared{\rightarrow_\beta}
+\newcommand\betaredtr{\twoheadrightarrow_\beta} % transitive closure of the beta reduction
+\newcommand\betasred{\rightarrow_{\beta_s}}
+\newcommand\betasredO{\rightarrow_{\beta_s^1}}
+\newcommand\betasredT{\rightarrow_{\beta_s^2}}
+\newcommand\subst[2]{\left[ #1/#2 \right]}
+\newcommand\captsubst[2]{\{ #1/#2 \}}
 
 
 \newtheorem{thm}{Theorem}
@@ -268,11 +278,63 @@ $$
 
 The following lemma is an immediate consequence of the definition
 \begin{lem}
+\label{lem:ordfreevar}
 If $\Gamma \vdash M : A$ then every variable in $\Gamma$ occurring free in $M$ has order at least $ord(M)$.
 \end{lem}
 
-It is desirable to have an appropriate notion of reduction for our calculus. However the standard $\beta$-reduction rule is not adequate. Indeed, Safety is not preserved by $\beta$-reduction as the following example shows. Suppose that $x,y,z,y : o$ and $\varphi : (o,o,o)$ then the safe term $(\lambda x y . \varphi x y) z w$ $\beta$-reduces to $(\underline{\lambda y . \varphi z y}) w$ which is unsafe since the underline order-1 subterm  contains a free occurrence of the ground type variable $z$. However if we perform one more reduction we obtain the safe term
-$\varphi z w$. This suggests an alternative notion of reduction that performs simultaneous reduction of consecutive $\beta$-redexes. We will define this reduction shortly.
+
+
+
+In the simply typed $\lambda$-calculus, it is necessary to rename
+variables when performing substitution on an abstraction in order to
+avoid possible variable capture. As a consequence, in order to
+implement substitution one needs to have access to an unbound number
+of variable names. 
+In the Safe $\lambda$-Calculus, however, variable capture never happens as the following lemma shows.
+Hence substitution can implemented naively by capture-permitting replacement, avoiding any need for variable renaming. 
+
+
+Let us write $M\{N/x\}$ to denote the capture-permitting substitution of $N$ for $x$ in $M$. This substitution is implemented
+by textually replacing all free occurrences of $x$ in $M$ by $N$ without performing variable renaming. We omit the definition here.
+
+\begin{lem}[No variable capture]
+\label{lem:homog_nocapture} There is
+no variable capture when performing capture-permitting
+substitution of $N$ for $x$ in $M$
+provided that $\Gamma, x \vdash M$ and $\Gamma \vdash  N$ are valid judgments of the Safe $\lambda$-calculus.
+\end{lem}
+
+\begin{proof}
+We prove the result by induction. The variable, constant and
+application cases are trivial. For the abstraction case, suppose $M
+= \lambda \overline{y} : \overline{A}. P$ where $\overline{y} = y_1
+\ldots y_p$. If $x \in \overline{y}$ then $M \subst{N}{x} = M$ and there is no variable capture.
+Suppose that $x \not\in \overline{y}$ then the capture-permitting substitution gives:
+$$M \captsubst{N}{x} = \lambda \overline{y} . P \captsubst{N}{x} \ .$$
+
+
+By the induction hypothesis there is no variable capture in $P \captsubst{N}{x}$.
+Hence variable capture can only happen when for some $i \in 1..p$, the variable $y_i$
+occurs freely in $N$ and $x$ occurs freely in $P$. Lemma \ref{lem:ordfreevar} gives:
+$$ \ord{y_i} \geq \ord{N} = \ord{x} \ .$$
+
+Since $x \not \in \overline{y}$ and $x$ occurs freely in $P$, $x$ also occurs freely in the safe term
+$\lambda \overline{y}. P$ therefore by lemma \ref{lem:ordfreevar} we have:
+$$ \ord{x} \geq \ord{\lambda y_1 \ldots y_p . T} \geq 1+ \ord{y_i} > \ord{y_i}$$
+which, together with the previous equation, gives a contradiction.
+\end{proof}
+
+
+%%%%%%%%%%%%%
+
+
+
+
+
+
+
+It is desirable to have an appropriate notion of reduction for our calculus. However the standard $\beta$-reduction rule is not adequate. Indeed, Safety is not preserved by $\beta$-reduction as the following example shows. Suppose that $x,y,z,y : o$ and $\varphi : (o,o,o)$ then the safe term $(\lambda x y . \varphi x y) z w$ $\beta$-reduces to $(\underline{\lambda y . \varphi z y}) w$ which is unsafe since the underline order-1 subterm  contains a free occurrence of variable $z$ of ground type. However if we perform one more reduction we obtain the safe term
+$\varphi z w$. This suggests an alternative notion of reduction that performs simultaneous reduction of consecutive $\beta$-redexes. In order to define this reduction we first introduce an appropriate notion of redex.
 
 In the simply-typed lambda calculus a redex is a term of the form
 $(\lambda x . M) N$. In the Safe
@@ -288,11 +350,11 @@ $$   \rulef{
        \Gamma \vdash (\lambda \overline{x} . L) N_1 \ldots N_l
     } (\sf{app})
 $$
-where $\overline{x}$ denotes the list of variables $x_1\ldots x_n$ and $l\leq n$.
+where $\overline{x}$ denotes the list of variables $x_1\ldots x_n$.
 \end{dfn}
 
 In other words a safe redex is a safe term of the form $(\lambda \overline{x} . M) N_1 \ldots N_l$ such that
-the variable $\overline{x}$ are abstracted altogether by one occurrence of the rule $\rulename{abs}$ and the terms $(\lambda \overline{x} . M)$, $N_1$, $N_l$ are applied together at once using the $(\sf{app})$ rule
+the variable $\overline{x}$ are abstracted altogether by one occurrence of the rule $\rulename{abs}$ and the terms $(\lambda \overline{x} . M)$, $N_1$, \ldots, $N_l$ are applied together at once using the $(\sf{app})$ rule
 (and consequently each $N_i$ must be safe).
 
 Note that the condition $l\leq n$ is not too restrictive. Indeed if
@@ -328,50 +390,6 @@ lambda calculus. Their proofs are identical.
 
 
 %%%%%%%%%%%%%%%%%%%%
-With the traditional substitution, it is necessary to rename
-variables when performing substitution on an abstraction in order to
-avoid possible variable capture. As a consequence, in order to
-implement substitution one needs to have access to an unbound number
-of variable names. An interesting property of the homogeneous Safe
-$\lambda$-Calculus is that variable capture never occurs when
-performing substitution. In other words, the traditional
-substitution can be safely replaced by the capture-permitting
-substitution:
-
-
-\begin{lem}[No variable capture]
-\label{lem:homog_nocapture} In the Safe $\lambda$-Calculus, there is
-no variable capture when performing the following capture-permitting
-simultaneous substitution:
-$$ M[N_1 / x_1 , \cdots, N_n / x_n] $$
-provided that $\Gamma \union \overline{x} \vdash M$, $\Gamma \vdash  N_1, \cdots ,\Gamma \vdash  N_n$ are valid judgments.
-\end{lem}
-
-\begin{proof}
-We prove the result by induction. The variable, constant and
-application cases are trivial. For the abstraction case, suppose $M
-= \lambda \overline{y} : \overline{A}. P$ where $\overline{y} = y_1
-\ldots y_p$. The capture-permitting simultaneous substitution gives:
-$$M \subst{\overline{N}}{\overline{x}} = \lambda \overline{y} . P
-\subst{\overline{N} \upharpoonright I}{\overline{x} \upharpoonright
-I} \mbox{ where } I  = \{ i \in 1..n \ | \ x_i \not \in \overline{y}
-\}. $$
-
-
-By the induction hypothesis there is no variable capture in $P
-\subst{\overline{N} \upharpoonright I}{\overline{x} \upharpoonright
-I}$. Hence variable capture can only happen when the variable $y_j$
-occurs freely in $N_i$ and $x_i$ occurs freely in $P$ for some $i
-\in I$ and $j \in 1..p$. In that case, property
-\ref{proper:safe_basic_prop} (ii) gives:
-$$ \ord{y_j} \geq \ord{N_i} = \ord{x_i}$$
-
-Moreover $i\in I$ therefore $x_i \not \in \overline{y}$ and since $x_i$ occurs freely in $P$, $x_i$ must also occur freely in the safe term
-$\lambda \overline{y}. P$. Thus, property \ref{proper:safe_basic_prop} (ii) gives:
-$$ \ord{x_i} \geq \ord{\lambda y_1 \ldots y_p . T} \geq 1+ \ord{y_j} > \ord{y_j}$$
-
-which, together with the previous equation, gives a contradiction.
-\end{proof}
 
 
 

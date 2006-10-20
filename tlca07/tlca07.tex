@@ -192,7 +192,7 @@ $\ord{A \funsp B} = \max(\ord{A}+1, \ord{B})$.
 The \textbf{Safe $\lambda$-Calculus} is a sub-system of the simply-typed $\lambda$-calculus formally defined by the definition that follows.
 We use a set of sequents of the form $\Gamma \vdash M : A$ to represent
 terms-in-context where $\Gamma$ is the context (a typed-alphabet) and $A$ is the type. We assume that a set
-of higher-order constants $\Sigma$ is given. 
+of higher-order constants $\Sigma$ is given.
 
 \begin{dfn}[The Safe $\lambda$-calculus]
 We call \emph{safe term} any simply-typed lambda term that is typable using the following
@@ -207,7 +207,7 @@ $$ \rulename{app} \  \rulef{\Gamma \vdash s : (A_1,\ldots,A_n,B)
                                    {\Gamma  \vdash s t_1 \ldots t_n : B}
                                     \
                                    \ord{B} \sqsubseteq \ord{\Gamma}$$
-                                   
+
 $$ \rulename{abs} \   \rulef{\Gamma, x_1 : A_1 \ldots x_n : A_n \vdash s : B}
                                    {\Gamma  \vdash \lambda x_1 \ldots x_n . s : (A_1, \ldots ,A_n,B)} \
                                    \ord{A_1, \ldots ,A_n,B} \sqsubseteq \ord{\Gamma}$$
@@ -236,10 +236,10 @@ $M_2 = \lambda f . f (\lambda x . f (\lambda y .x ))$ where $x,y:o$ and $f:((o,o
 $M_2$ is not safe because in the subterm $f (\lambda y . x)$, the free variable $x$ has order $0$ which is smaller than $\ord{\lambda y . x} = 1$.
 On the other hand, $M_1$ is safe as the following proof tree shows:
 $$
- \rulef{ 
+ \rulef{
      \rulef{
         \rulef{}{f \vdash f} {\sf(var)}
-        \  
+        \
         \rulef{
              \rulef{
                 \rulef{
@@ -266,16 +266,68 @@ $$
 $$
 \end{exmp}
 
+The following lemma is an immediate consequence of the definition
+\begin{lem}
+If $\Gamma \vdash M : A$ then every variable in $\Gamma$ occurring free in $M$ has order at least $ord(M)$.
+\end{lem}
 
-It is desirable to have an appropriate notion of reduction for our calculus. However the standard $\beta$-reduction rule
-is not adequate. Indeed, Safety is not preserved by $\beta$-reduction as the following example shows. Suppose that $x,y,z,y : o$ and $\varphi : (o,o,o)$ then the safe term $(\lambda x y . \varphi x y) z w$ $\beta$-reduces to $(\underline{\lambda y . \varphi z y}) w$ which is unsafe since the underline order-1 subterm  contains a free occurrence of the ground type variable $z$.
+It is desirable to have an appropriate notion of reduction for our calculus. However the standard $\beta$-reduction rule is not adequate. Indeed, Safety is not preserved by $\beta$-reduction as the following example shows. Suppose that $x,y,z,y : o$ and $\varphi : (o,o,o)$ then the safe term $(\lambda x y . \varphi x y) z w$ $\beta$-reduces to $(\underline{\lambda y . \varphi z y}) w$ which is unsafe since the underline order-1 subterm  contains a free occurrence of the ground type variable $z$. However if we perform one more reduction we obtain the safe term
+$\varphi z w$. This suggests an alternative notion of reduction that performs simultaneous reduction of consecutive $\beta$-redexes. We will define this reduction shortly.
 
-To overcome the problem
+In the simply-typed lambda calculus a redex is a term of the form
+$(\lambda x . M) N$. In the Safe
+lambda calculus, a redex is a succession of several standard redexes:
+\begin{dfn}[Safe redex]
+We call \emph{safe redex} a safe term whose derivation tree has the following form:
+$$   \rulef{
+            \rulef{\rulef{\vdots}{\Gamma, \overline{x}\vdash M}}{\Gamma \vdash \lambda \overline{x} . M} (\sf{abs})
+            \quad
+            \rulef{\vdots}{\Gamma \vdash N_1}  \ \ldots \  \rulef{\vdots}{\Gamma \vdash N_l}
+    }
+    {
+       \Gamma \vdash (\lambda \overline{x} . L) N_1 \ldots N_l
+    } (\sf{app})
+$$
+where $\overline{x}$ denotes the list of variables $x_1\ldots x_n$ and $l\leq n$.
+\end{dfn}
+
+In other words a safe redex is a safe term of the form $(\lambda \overline{x} . M) N_1 \ldots N_l$ such that
+the variable $\overline{x}$ are abstracted altogether by one occurrence of the rule $\rulename{abs}$ and the terms $(\lambda \overline{x} . M)$, $N_1$, $N_l$ are applied together at once using the $(\sf{app})$ rule
+(and consequently each $N_i$ must be safe).
+
+Note that the condition $l\leq n$ is not too restrictive. Indeed if
+$l>n$ then the application rule is ``wider'' than the abstraction
+and therefore it can be replaced by an application of exactly $n$
+terms followed by another application for the remaining terms
+$N_{n+1}, \ldots, N_l$.
 
 
-An immediate consequence of the definition is that every variable occurring free in a safe term $M$ has order at least $ord(M)$.
-This allows us to state the following lemma:
+The relation $\beta_s$ is defined on safe-redex: $(s\mapsto t) \in
+\beta_s$ iff $s \equiv (\lambda \overline{x} . M) N_1 \ldots N_l$ is
+a safe redex and $t \equiv \lambda x_l \ldots x_n . M \subst{N_1
+\ldots N_l}{x_1 \ldots x_l}$. The safe $\beta$-reduction denoted by
+$\betasred$ is the closure of the relation $\beta_s$ by
+compatibility with the formation rules of the Safe
+$\lambda$-Calculus. It is straightforward to show, as we did for the
+homogeneous Safe $\lambda$-Calculus, that $\betasred \subseteq
+\betared^*$.
 
+
+\begin{lem}
+\label{lem:safereduction} A safe redex reduces to a safe term.
+\end{lem}
+
+This lemma, which is a consequence of lemma
+\ref{lem:subst_preserve_i}, is the counterpart of lemma
+\ref{lem:homoh_safered_preserve_safety} in the homogeneous safe
+lambda calculus. Their proofs are identical.
+
+
+
+
+
+
+%%%%%%%%%%%%%%%%%%%%
 With the traditional substitution, it is necessary to rename
 variables when performing substitution on an abstraction in order to
 avoid possible variable capture. As a consequence, in order to
@@ -284,7 +336,7 @@ of variable names. An interesting property of the homogeneous Safe
 $\lambda$-Calculus is that variable capture never occurs when
 performing substitution. In other words, the traditional
 substitution can be safely replaced by the capture-permitting
-substitution:  
+substitution:
 
 
 \begin{lem}[No variable capture]

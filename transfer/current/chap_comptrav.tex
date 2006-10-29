@@ -971,7 +971,7 @@ arena (right). The dashed line defines a partial function $\varphi$
 from the set of nodes in the computation tree to the set of moves.
 For simplicity, we now omit answers moves when representing arenas.
 $$
-\tree{ \Rnode{root} {\lambda f z w}^{[1]} }
+\tree{ \Rnode{root} {\lambda f z}^{[1]} }
      {  \tree{@^{[2]}}
         {   \tree{\lambda g x ^{[3]}}
                 { \tree{\Rnode{f}{f^{[6]}}}{  \tree{\Rnode{lmd}\lambda^{[7]}}{ \tree{\Rnode{f2}{f^{[8]}}} {\tree{\Rnode{lmd2}\lambda^{[9]}}{\TR{x^{[10]}}}}}  }
@@ -1050,13 +1050,8 @@ the trees and $E$ is the edges relation. $V = N \union L$ where $N$
 is the set of nodes and $L$ is the set of value-leaves.
 
 The relation $E \subseteq V \times V$ gives the parent-child relation on the vertices of the tree.
-$E = E_n \union E_l$ where $E_n \subseteq N \times N$ gives the node-node parent relation and $E_l \subseteq N \times L$ gives the node-leaf parent relation.
-We write $L_\$$ for $E_l(N_\$)$
-and $V_\$$  for $N_\$ \union L_\$$ where $\$$ ranges over $\{@, var, \Sigma, fv \}$.
+We write $V_\$$ for $N_\$ \union (E(N_\$) \inter L)$ where $\$$ ranges over $\{@, var, \Sigma, fv \}$.
 
-%$E^+$ denotes the transitive closure of $E$ --
-%$E^+(n)$ is the set of nodes $m$ such that there is a path from $n$
-%to $m$ in the computation tree.
 
 Let $\mathcal{D}$ be the set of values of the base type $o$. If $n$
 is a node in $N$ then the value-leaves in
@@ -1076,13 +1071,12 @@ such that $q$ and $n$ have the same type.
 $f_A(n,q)$ returns a partial function from $V$ to $A$. It is defined as follows:
 \noindent
 \begin{itemize}
-\item[case 1] If $n$ is an order $0$ $\lambda$-node (i.e. labelled $\lambda$) or a ground type variable node then
+\item[case 1] If $n$ is labelled labelled $\lambda$ or is a ground type variable node then
         $$f_A(n,q) = \{ n \mapsto q \} \quad \union \quad  \{ v_n \mapsto v_q \ | \ v \in \mathcal{D} \}$$
 
-\item[case 2] If $n$ is a $\lambda$-node labelled $\lambda \overline{\xi} = \lambda \xi_1 \ldots \xi_p$ with $p\geq 1$ then
-    the computation tree and the arena $A_q$ have the following form
+\item[case 2]  If $n$ is a $\lambda$-node labelled $\lambda \overline{\xi} = \lambda \xi_1 \ldots \xi_p$ with $p\geq 1$ and with a child node labelled $\alpha$ and $\vdash( q ) = \{ q^1, \ldots, q^m \} \union \{  v_q : v \in \mathcal{D} \} $ then the computation tree and the arena $A_q$ have the following form
     (value-leaves and answer moves are not represented for simplicity):
-    $$ \tree[levelsep=6ex]{ \Rnode{r}\lambda \overline{\xi}  ^{[n]}}
+    $$ \tree{ \Rnode{r}\lambda \overline{\xi}  ^{[n]}}
         {
             \tree[levelsep=6ex]{\alpha}
             {   \TR{\ldots} \TR{\ldots} \TR{\ldots}
@@ -1112,9 +1106,10 @@ $f_A(n,q)$ returns a partial function from $V$ to $A$. It is defined as follows:
                       \quad \union \quad  \Union_{\stackrel{\displaystyle m \in N | n \vdash m}{\displaystyle m \mbox{ labelled } \xi_i}} f_A( m, q^i)
     $$
 
-\item[case 3] If $n$ is a variable node labelled with a higher-order variable $x$ of type $(A_1|\ldots|A_m|o)$ then the computation tree and the arena $A_q$
-have the following form:
-    $$\tree[levelsep=6ex]{\Rnode{r}{x^{[n]}}}
+\item[case 3] If $n$ is a variable node $x$ of higher-order type $(A_1,\ldots,A_m,o)$
+with children nodes $\lambda \overline{\eta}_1$, \ldots, $\lambda \overline{\eta}_m$ and
+$\vdash( q ) = \{ q^1, \ldots, q^m \} \union \{  v_q : v \in \mathcal{D} \} $ then the computation tree and the arena $A_q$ have the following form:
+    $$\tree{\Rnode{r}{x^{[n]}}}
         {   \tree{\TR{\lambda \overline{\eta}_1}}{\vdots} \TR{\ldots}
         \tree{\TR{\lambda \overline{\eta}_m }}{\vdots}
         }
@@ -1147,9 +1142,8 @@ on nodes that are hereditarily justified by the root \emph{and} not hereditarily
 In other words, $f_A(n,q)$ is undefined on nodes that are hereditarily justified by $N_{fv} \union N_@ \union N_\Sigma$.
 \end{dfn}
 
-Suppose $\Gamma \vdash M  : T$ is a simply-typed term and $N$ denotes the set of nodes of the computation tree.
 We write $\mathcal{M}_M$ to denote the following disjoint union of arenas:
-$$\mathcal{M}_M = \sem{\Gamma \rightarrow T} \quad \uplus \quad  \biguplus_{n \in E_n \relimg{N_@ \union N_\Sigma} } \sem{type(\kappa(n))}.$$
+$$\mathcal{M}_M = \sem{\Gamma \rightarrow T} \quad \uplus \quad  \biguplus_{n \in N \inter E\relimg{N_@ \union N_\Sigma} } \sem{type(\kappa(n))}.$$
 
 Moves in $\mathcal{M}_M$ are implicitly tagged so it is possible to recover the arena in which they belong.
 
@@ -1169,7 +1163,7 @@ We define the total function $\varphi_M : V_\lambda \union V_{var} \rightarrow \
     & \union \quad
     \Union_{n \in N_{fv} | n \mbox{ {\small labelled} } x_i }  f_{\sem{\Gamma \rightarrow T}}(n, q^i_{\sem{\Gamma}} ) \\
     & \union \quad
-        \Union_{n \in E_n \relimg{N_@ \union N_\Sigma}}  f_{\sem{type(\kappa(n))}}(n, q^0_{\sem{type(\kappa(n))}} )
+        \Union_{n \in N \inter E \relimg{N_@ \union N_\Sigma}}  f_{\sem{type(\kappa(n))}}(n, q^0_{\sem{type(\kappa(n))}} )
 \end{align*}
 When there is no ambiguity we just write $\varphi$ instead of $\varphi_M$.
 \end{dfn}
@@ -1487,7 +1481,7 @@ A}$ or equivalently if $type(T) = \Gamma \rightarrow A$.
 \subsubsection{Modeling the $\lambda$-calculus in $\mathcal{I}$}
 
 We would like to use the category $\mathcal{I}$ to model terms of
-the simply-typed lambda calculus. 
+the simply-typed lambda calculus.
 Depending on the internal moves that we wish to hide, we obtain different possible interaction strategies for a given term.
 We now fix a unique strategy denotation which is computed from the $\eta$-normal form of the term.
 

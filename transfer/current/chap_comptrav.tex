@@ -1487,50 +1487,75 @@ A}$ or equivalently if $type(T) = \Gamma \rightarrow A$.
 \subsubsection{Modeling the $\lambda$-calculus in $\mathcal{I}$}
 
 We would like to use the category $\mathcal{I}$ to model terms of
-the simply-typed lambda calculus. However there may be several valid
-type decomposition tree for a given term $M$ and therefore several
-strategies denoting $M$. To fix this problem, we will base our
-definition on the computation tree of $M$. Since the computation
-tree is unique, the denotation of a term will be uniquely defined.
+the simply-typed lambda calculus. 
+Depending on the internal moves that we wish to hide, we obtain different possible interaction strategies for a given term.
+We now fix a unique strategy denotation which is computed from the $\eta$-normal form of the term.
 
 \begin{dfn}[Revealed denotation of a term]
-\label{dfn:interactionstrategy_ofterms} Let $\Gamma \vdash M : A$ be
-a term with $\Gamma = x_1:X_1, \ldots, x_k:X_k$. Let $\pi_i :
-\sem{\Gamma \rightarrow X_i}$ denote the $i$th projection copycat
-strategy and $ev^p$ denote the evaluation strategy with $p$
-parameters.
+\label{dfn:interactionstrategy_ofterms}
+The \emph{revealed game denotation} or \emph{revealed
+strategy} of $M$ written $\intersem{\Gamma \vdash M : A}$ is defined by structural induction on the $\eta$-long normal form of $M$ as follows:
 
-The \emph{revealed game denotation of $M$} or \emph{revealed
-strategy of $M$} written $\intersem{\Gamma \vdash M : A}$ is the
-revealed strategy defined by structural induction on the computation
-tree $\tau(M)$ as follows:
-
-\begin{tabularx}{14cm}{cX}
-$\tree[levelsep=6ex]{\lambda \xi_1\ldots \xi_n}{\TR{x_i}}$ &
-       $\intersem{M} = \Lambda^n(\pi_i)$ \\ \hline
-$ \tree[levelsep=6ex]{\lambda \xi_1\ldots \xi_n}
-        { \tree[levelsep=6ex]{x_i}
-            {   \TR{\tau(N_1)} \TR{\ldots} \TR{\tau(N_p)}}}
-    $
-&    where $\Gamma \vdash x_i : (A_1,\ldots,A_p,B)$ and $\Gamma \vdash N_j : A_j$ for $j\in 1..p$
-    $$\intersem{M} = \Lambda^n(\langle \pi_i, \intersem{\Gamma \vdash N_1 : A_1}, \ldots, \intersem{\Gamma \vdash N_p : A_p}  \rangle
-    \fatsemi ^{1..p} ev^p)$$
-\\ \hline
-$ \tree[levelsep=6ex]{\lambda \xi_1\ldots \xi_n}
-        { \tree[levelsep=6ex]{@}
-            {   \TR{\tau(N_0)} \TR{\ldots} \TR{\tau(N_p)}}}
-    $ &
-    where $\Gamma \vdash N_0 : (A_1,\ldots,A_p,B)$ and $\Gamma \vdash N_j : A_j$ for $j\in 1..p$
-    $$\intersem{M} = \Lambda^n(\langle \intersem{\Gamma \vdash N_0 : A_0}, \ldots, \intersem{\Gamma \vdash N_p : A_p}  \rangle
-    \fatsemi^{0..p} ev^p)$$
-\end{tabularx}
-\vspace{10pt}
+Let $\overline{\xi} = \xi_1 : Y_1, \ldots \xi_n : Y_n$
+and $z$ be a variable ranging in $\Gamma \union \overline{\xi}$. If $z\in \Gamma$ then $\pi_{z}$ denotes
+the $i^{th}$ projection copycat strategy $\pi_i : \sem{\Gamma \union \overline{\xi}} \rightarrow \sem{X_i}$. If $z = \xi_j$ then
+$\pi_{z}$ denotes the $(n+j)^{th}$ projection $\pi_{n+j} : \sem{\Gamma \union \overline{\xi}} \rightarrow \sem{Y_j}$.
+\begin{eqnarray*}
+\intersem{\Gamma \vdash \lambda \overline{\xi} . z } &=& \Lambda^n(\pi_{z})  \\
+\intersem{\Gamma \vdash \lambda \overline{\xi} . z N_1 \ldots N_p} &=& \Lambda^n(\langle \pi_z, \intersem{\Gamma \vdash N_1 : A_1}, \ldots, \intersem{\Gamma \vdash N_p : A_p}  \rangle \fatsemi ^{\emptyset} ev^p) \\
+\intersem{\Gamma \vdash \lambda \overline{\xi}. f N_1 \ldots N_p} &=& \langle \intersem{\Gamma \vdash N_1}, \ldots, \intersem{\Gamma \vdash N_p} \rangle \fatsemi^{0..p-1} \sem{f} \\
+\intersem{\Gamma \vdash \lambda \overline{\xi} . N_0 \ldots N_p} &=& \Lambda^n(\langle \intersem{\Gamma \vdash N_0 : A_0}, \ldots, \intersem{\Gamma \vdash N_p : A_p}  \rangle \fatsemi^{0..p} ev^p)
+\end{eqnarray*}
+where $\Gamma \vdash N_0 : (A_1,\ldots,A_p,B)$, $\Gamma \vdash z : (A_1,\ldots,A_p,B)$, $\Gamma \vdash N_k : A_k$ for $k\in 1..p$,
+$f : (A_1,\ldots,A_p,B) \in \Sigma$ and $ev^p$ denotes the evaluation strategy with $p$ parameters.
 
 We write $\intersem{\Gamma \rightarrow A}_M$ to denote the
 interaction arena of the revealed strategy $\intersem{\Gamma \vdash
 M : A}$.
 \end{dfn}
+Note that when computing $\intersem{z N_1 \ldots N_p}$, for some variable $z$, the internal moves of $N_1$, \ldots, $N_p$ are preserved but
+we omit the internal moves produced by the copy-cat projection strategy denoting $z$.
 
+
+
+%\begin{dfn}[Revealed denotation of a term]
+%\label{dfn:interactionstrategy_ofterms} Let $\Gamma \vdash M : A$ be
+%a term with $\Gamma = x_1:X_1, \ldots, x_k:X_k$. Let $\pi_i :
+%\sem{\Gamma \rightarrow X_i}$ denote the $i$th projection copycat
+%strategy and $ev^p$ denote the evaluation strategy with $p$
+%parameters.
+%
+%The \emph{revealed game denotation of $M$} or \emph{revealed
+%strategy of $M$} written $\intersem{\Gamma \vdash M : A}$ is the
+%revealed strategy defined by structural induction on the computation
+%tree $\tau(M)$ as follows:
+%
+%\begin{tabularx}{14cm}{cX}
+%$\tree[levelsep=6ex]{\lambda \xi_1\ldots \xi_n}{\TR{x_i}}$ &
+%       $\intersem{M} = \Lambda^n(\pi_i)$ \\ \hline
+%$ \tree[levelsep=6ex]{\lambda \xi_1\ldots \xi_n}
+%        { \tree[levelsep=6ex]{x_i}
+%            {   \TR{\tau(N_1)} \TR{\ldots} \TR{\tau(N_p)}}}
+%    $
+%&    where $\Gamma \vdash x_i : (A_1,\ldots,A_p,B)$ and $\Gamma \vdash N_j : A_j$ for $j\in 1..p$
+%    $$\intersem{M} = \Lambda^n(\langle \pi_i, \intersem{\Gamma \vdash N_1 : A_1}, \ldots, \intersem{\Gamma \vdash N_p : A_p}  \rangle
+%    \fatsemi ^{1..p} ev^p)$$
+%\\ \hline
+%$ \tree[levelsep=6ex]{\lambda \xi_1\ldots \xi_n}
+%        { \tree[levelsep=6ex]{@}
+%            {   \TR{\tau(N_0)} \TR{\ldots} \TR{\tau(N_p)}}}
+%    $ &
+%    where $\Gamma \vdash N_0 : (A_1,\ldots,A_p,B)$ and $\Gamma \vdash N_j : A_j$ for $j\in 1..p$
+%    $$\intersem{M} = \Lambda^n(\langle \intersem{\Gamma \vdash N_0 : A_0}, \ldots, \intersem{\Gamma \vdash N_p : A_p}  \rangle
+%    \fatsemi^{0..p} ev^p)$$
+%\end{tabularx}
+%\vspace{10pt}
+%
+%We write $\intersem{\Gamma \rightarrow A}_M$ to denote the
+%interaction arena of the revealed strategy $\intersem{\Gamma \vdash
+%M : A}$.
+%\end{dfn}
+%
 
 
 \begin{exmp}

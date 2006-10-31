@@ -6,6 +6,8 @@
 \usepackage[all]{xy}
 %\usepackage{picins}
 \usepackage{wrapfig}
+\usepackage{floatflt}
+
 
 
 % used for definitions
@@ -419,13 +421,11 @@ $\overline{N} = N_1 \ldots N_l$, and when $n\geq l$, $\overline{x_L}
 \item The relation $\beta_s$ is defined on the set of safe redex as follows:
 \begin{eqnarray*}
 \beta_s &=&
-\{  \ (\lambda \overline{x} : \overline{A} . T) N_1 \ldots N_l \mapsto \lambda \overline{x_R}. T\subst{\overline{N}}{\overline{x_L}}  \\
-&& \mbox{ where $(\lambda \overline{x} : \overline{A} . T) N_1 \ldots N_l$ is a safe redex such that $n> l$}
+\{  \ (\lambda \overline{x} : \overline{A} . T) N_1 \ldots N_l \mapsto \lambda \overline{x_R}. T\subst{\overline{N}}{\overline{x_L}} \mbox{, for $n> l$}
 \} \\
 &\cup&
-\{ \ (\lambda \overline{x} : \overline{A} . T) N_1 \ldots N_l \mapsto T\subst{\overline{N}}{\overline{x}} N_{n+1} \ldots N_l  \\
-&& \mbox{ where $(\lambda \overline{x} : \overline{A} . T) N_1 \ldots N_l$ is a safe redex such that $n\leq l$}
-\} \ .
+\{ \ (\lambda \overline{x} : \overline{A} . T) N_1 \ldots N_l \mapsto T\subst{\overline{N}}{\overline{x}} N_{n+1} \ldots N_l
+\mbox{, for $n\leq l$} \} \ .
 \end{eqnarray*}
 
 \item
@@ -569,7 +569,7 @@ a $L$-labelled tree defined from its $\eta$-normal form as follows:
 \begin{eqnarray*}
   \mbox{for $n\geq0$, } \tau(\lambda x_1 \ldots x_n . s) &=& [\lambda x_1 \ldots x_n](\tau(s)^{-}) \\
   \mbox{for $m\geq0$, } \tau( \alpha s_1 \ldots s_m : o) &=& [ \lambda ]([\alpha](\tau(s_1),\ldots,\tau(s_m)))\\
-  \mbox{for $m \geq 1$, } \tau((\lambda x.s_0) s_1 \ldots s_m :o) &=& [\lambda] ([@](\tau(\lambda x.s),\tau(s_1),\ldots,\tau(s_m))) )
+  \mbox{for $m \geq 1$, } \tau((\lambda x.s_0) s_1 \ldots s_m :o) &=& [\lambda] ([@](\tau(\lambda x.s),\tau(s_1),\ldots,\tau(s_m)))
 \end{eqnarray*}
 where $s$ is not an abstraction and $\alpha$ is a variable or a constant.
 \end{definition}
@@ -593,7 +593,7 @@ For $n \in N$, we write $\kappa(n)$ to denote the subterm of $\aux{M}$
 corresponding to the subtree of $\tau$ rooted at $n$.
 In particular if $\tau = [r](\ldots)$ then $\kappa(r) = \aux{M}$.
 
-The \defname{order} of the root node is $\ord{\lambda \overline{x} . M}$ where $\overline{x} = fv(M)$ and for 
+The \defname{order} of the root node is $\ord{\lambda \overline{x} . M}$ where $\overline{x} = fv(M)$ and for
 a node $n$ different from the root, $\ord{n} = \ord{\kappa(n)}$.
 
 
@@ -975,26 +975,28 @@ denotation of the term.
 This theorem is the counterpart of the ``Path-Traversal Correspondence'' of \cite{OngLics2006}.
 
 \begin{example}
-Consider the following term $M \equiv \lambda f z . (\lambda g x . f (f x)) (\lambda y. y) z$ of type $(o \typear o) \typear o \typear o$.
-Its $\eta$-long normal form is $\lambda f z . (\lambda g x . f (f x)) (\lambda y. y) (\lambda .z)$.
-
-\newlength{\yNull}
-\def\bow{\quad\psarc{->}(0,\yNull){1.5ex}{90}{270}}
-
+Consider the term $M \equiv \lambda f z . (\lambda g x . f x) (\lambda y. y) (f z)$ of type $(o,o),o, o$.
+Its $\eta$-long normal form is $\lambda f z . (\lambda g x . f x) (\lambda y. y) (\lambda . f z)$.
 The figure below represents the computation tree (left) and the
-arena (right). The dashed line defines a partial function $\varphi$
-from the set of nodes in the computation tree to the set of moves.
-For simplicity, we now omit answers moves when representing arenas.
+arena (right). The partial function $\varphi_M$
+is represented in dashed line. For clarity we omit answers moves when representing arenas.
 $$
 \tree{ \Rnode{root} {\lambda f z}^{[1]} }
      {  \tree{@^{[2]}}
-        {   \tree{\lambda g x ^{[3]}}
-                { \tree{\Rnode{f}{f^{[6]}}}{  \tree{\Rnode{lmd}\lambda^{[7]}}{ \tree{\Rnode{f2}{f^{[8]}}} {\tree{\Rnode{lmd2}\lambda^{[9]}}{\TR{x^{[10]}}}}}  }
+        {   \tree{\lambda g x ^{[3]}}{ 
+                  \tree{\Rnode{f}{f^{[6]}}}{  
+                            \tree{\Rnode{lmd}\lambda^{[7]}}
+                            {\TR{x^{[8]}}}  
+                  }
                 }
-            \tree{\lambda y ^{[4]}}{\TR{y}}
-            \tree{\lambda ^{[5]}}{\TR{\Rnode{z}z}}
+            \tree{ \lambda y ^{[4]}  }{\TR{y}}
+            \tree{\lambda ^{[5]}}{
+                \tree{\Rnode{f2}{f^{[9]}}} {
+                \tree{\Rnode{lmd2}\lambda^{[10]}}{\TR{\Rnode{z}z^{[11]}}}
+                }
+            }
         }
-    }
+     }
 \hspace{3cm}
   \tree[levelsep=11ex]{ \Rnode{q1}q^1 }
     {   \pstree[levelsep=4ex]{\TR{\Rnode{q3}q^3}}{\TR{\Rnode{q4}q^4}}
@@ -1015,11 +1017,15 @@ z} \cdot \rnode{n2}{@^{[2]}} \cdot \rnode{n3}{\lambda g x^{[3]}}
 \cdot \rnode{q3}{f}^{[6]} \cdot \rnode{q4}{\lambda^{[7]}} \cdot
 \rnode{q3b}{f}^{[8]} \cdot \rnode{q4b}{\lambda^{[9]}} \cdot
 \rnode{n8}{x^{[10]}} \cdot \rnode{n9}{\lambda^{[5]}} \cdot
-\rnode{q2}{z} \bkptr[ncurv=0.6]{60}{q3}{q1}
-\bkptr[ncurv=1]{60}{q4}{q3} \bkptr[ncurv=0.4]{75}{q3b}{q1}
-\bkptr[ncurv=0.8]{70}{q4b}{q3b} \bkptr[ncurv=0.4]{70}{q2}{q1}
-\bkptr[ncurv=0.4]{60}{n3}{n2} \bkptr[ncurv=0.4]{60}{n8}{n3}
-\bkptr[ncurv=0.4]{60}{n9}{n2}$} has for reduction \raisebox{0cm}[0.8cm]{$\rnode{q1}{\lambda f z} \cdot
+\rnode{q2}{z}
+\bkptr[ncurv=0.6]{50}{q3}{q1}
+\bkptr[ncurv=1]{50}{q4}{q3}
+\bkptr[ncurv=0.4]{75}{q3b}{q1}
+\bkptr[ncurv=0.8]{70}{q4b}{q3b}
+\bkptr[ncurv=0.4]{65}{q2}{q1}
+\bkptr[ncurv=0.4]{50}{n3}{n2}
+\bkptr[ncurv=0.4]{50}{n8}{n3}
+\bkptr[ncurv=0.4]{50}{n9}{n2}$} has for reduction \raisebox{0cm}[0.8cm]{$\rnode{q1}{\lambda f z} \cdot
 \rnode{q3}{f}^{[6]} \cdot \rnode{q4}{\lambda^{[7]}} \cdot
 \rnode{q3b}{f}^{[8]} \cdot \rnode{q4b}{\lambda^{[9]}} \cdot
 \rnode{q2}{z} \bkptr[ncurv=1]{60}{q3}{q1} \bkptr[ncurv=1]{60}{q4}{q3} \bkptr[ncurv=0.5]{75}{q3b}{q1} \bkptr[ncurv=1]{50}{q4b}{q3b}
@@ -1068,7 +1074,7 @@ $\ord{q_0} = 1 + \ord{q_1}$. Since the last O-move in $?(\pview{s})= s$
 with order strictly greater than $\ord{q_3}$ is $q_1$ and $q_3$ points to $q_0$, $\sem{ev}$ is not incrementally-justified.
 \end{example}
 
-A binder node always occurs in the path from the bound node to the root. 
+A binder node always occurs in the path from the bound node to the root.
 We now introduce a class of computation tree in which the binder node is uniquely determined by the node orders.
 \begin{definition}[Incrementally-binding]
 A variable node $x$ of a computation tree is said to be
@@ -1096,9 +1102,13 @@ the variable nodes are incrementally-bound.
 %\parpic(0.5cm,1cm)(0.1pt,0.2cm)[r]{ $\tree{\lambda^3}{\tree{f^2}{ \tree{\lambda y^1}{ \TR{x^0} }}}$ }
 %\parpic(0.3cm,1cm)[r]{ \rput[t](0,0cm){$\tree{\lambda^3}{\tree{f^2}{ \tree{\lambda y^1}{ \TR{x^0} }}}$} }
 %%%  ah Latex... i hate you !!!
+%\begin{floatingfigure}[r]{60mm}
+%$%\rput[t](0cm,0cm)
+%{\tree{\lambda^3}{\tree{f^2}{ \tree{\lambda y^1}{ \TR{x^0} }}}}$
+%\end{floatingfigure}
 
 \begin{wrapfigure}[5]{r}{0.6cm}
-$%\rput[b](0.1cm,0.8cm)
+$\rput[b](0.1cm,-1cm)
 {\tree{\lambda^3}{\tree{f^2}{ \tree{\lambda y^1}{ \TR{x^0} }}}}$
 \end{wrapfigure}
 \noindent \emph{Example:} %\begin{example}
@@ -1179,18 +1189,14 @@ $(S,\subseteq)$ denotes the set of sets of justified sequences of nodes ordered 
 and $(CT,\sqsubseteq)$ denotes the set of computation trees ordered by the approximation ordering.
 
 
-Although \pcf\ computation trees can be infinite, lemma \ref{lem:safe_imp_incrbound} still holds: Safe \pcf\ terms have incrementally-bound computation trees.
-Moreover, \pcf\ traversal rules are \defname{well-behaved} in
-the sense that they can all be stated under the form:
-$$\rulef{t = t_1\cdot n \cdot t_2 \in \travset \quad ?(t_2) = \epsilon \quad n \in N_{var}\union N_{\Sigma} \quad P(t)}
-  { \stackrel{  \rule{0pt}{3pt} }{t' = t_1\cdot \rnode{n}{n} \cdot t_2 \cdot \rnode{m}{m} \in \travset} }
-   \bkptr[nodesep=1pt]{35}{m}{n}
-    \ m\in S(t)
-   $$
-for some expression $P$ expressing a condition on $t$ and  function $S$ mapping traversals of the form of $t$ to a subset of $E(n)$, the set of children of $n$.
-
-This guarantees that lemma \ref{lem:redtrav_trav} remains true in the presence of
-constants. Consequently the game-semantic analysis of safety remains valid for \pcf:
+Although \pcf\ computation trees can be infinite, lemma \ref{lem:safe_imp_incrbound} still holds:
+Safe \pcf\ computation trees are incrementally-bound.
+Moreover since \pcf\ traversal rules are \emph{well-behaved}
+\footnote{A traversal rule is \defname{well-behaved} if it can be stated under the form
+``$t = t_1\cdot n \cdot t_2 \in \travset \zand ?(t_2) = \epsilon \zand n \in N_{var}\union N_{\Sigma} \zand P(t) \zand m\in S(t) \imp
+t_1\cdot \rnode{n}{n} \cdot t_2 \cdot \rnode{m}{m} \in \travset \bkptr[nodesep=1pt]{26}{m}{n}$''
+for some expression $P$ expressing a condition on $t$ and  function $S$ mapping traversals of the form of $t$ to a subset of $E(n)$ (the set of children of $n$).}, lemma \ref{lem:redtrav_trav} remains true in the presence of
+constants and therefore the game-semantic analysis of safety remains valid for \pcf:
 \begin{theorem}
 Pointers in the game denotation of Safe PCF terms are uniquely recoverable.
 \end{theorem}

@@ -27,7 +27,8 @@
 % lambda calculus
 %\newcommand\bot{\perp}
 \newcommand\dps{\displaystyle}
-\newcommand\rulef[2]{\frac{\dps #1}{#2}}
+\newcommand\rulef[2]{\frac{\dps #1}{\dps #2}}
+\newcommand\rulefex[3][5pt]{\frac{\dps #2}{\stackrel{\rule{0pt}{#1}}{\dps #3}}}
 \newcommand\ord[1]{{\sf ord}(#1)}
 \newcommand\typear{\rightarrow}
 \newcommand{\rulename}[1]{\mathbf{(#1)}}
@@ -547,7 +548,7 @@ At even levels there are the $\lambda$-nodes. A single $\lambda$-node can repres
 a \textsl{dummy lambda} if the corresponding subterm is of ground type.
 At odd levels, there are the variable and application nodes.
 
-We write $N$ for the set of nodes of $\tau$, $N_@$ for the set of @-labelled nodes, 
+We write $N$ for the set of nodes of $\tau$, $N_@$ for the set of @-labelled nodes,
 $N_{var}$ for the set of variable nodes,
 $N_{fv}$ for the subset of $N_{var}$ constituted of free-variable nodes and $r$ for the root of $\tau(M)$.
 For $n \in N$, we write $\kappa(n)$ to denote the subterm of $\aux{M}$
@@ -639,6 +640,65 @@ indicates a step that is taken during the evaluation of the term.
 \label{def:traversal}
 The set $\travset(M)$ of \defname{traversals} over $\tau(M)$ is defined by induction over the following rules.
 
+%\noindent
+%{\bf (Empty)} $\rulef{}{\epsilon \in \travset(M)}$
+%{\bf (Root)} $\rulef{}{r \in \travset(M)}$
+%{\bf (App)} $\rulefex{t \cdot @ \in \travset(M)}{t \cdot \rnode{m}{@} \cdot \rnode{n}{n}\bkptr[nodesep=0.5pt]{25}{n}{m} \bklabelc{0} \in \travset(M)}$
+%
+%
+%
+%\noindent {\bf (Lam)}
+%$\rulef{t \cdot \lambda \overline{\xi} \in \travset(M)}{t \cdot \lambda \overline{\xi} \cdot n \in \travset(M)}$
+%where $n$ is $\lambda \overline{\xi}$'s child and points to the only occurrence of its enabler that is still present in $\pview{t \cdot \lambda \overline{\xi}}$.
+%
+%
+%\noindent {\bf (InputVar$^0$)}
+%$\rulefex
+%    {t_1 \cdot x \cdot t_2 \in \travset(M) \quad x : o \in N_{var}^{\upharpoonright r} \quad ?(t_2)=\epsilon }
+%    {t_1 \cdot \rnode{x}{x} \cdot t_2 \cdot \rnode{xv}{v_x} \bkptr[nodesep=0.5pt]{25}{xv}{x} \bklabelc{v} \in \travset(M)}$
+%    $\forall v \in \mathcal{D}$
+%
+%\noindent {\bf (InputVar$^{\geq 1}$)} $\rulefex
+%{ t_1 \cdot x \cdot t_2 \in \travset(M) \quad x \in N_{var}^{\upharpoonright r} \quad  \ord{x} > 0 \quad ?(t_2)=\epsilon}
+%{ t_1 \cdot \rnode{m}{x} \cdot t_2 \cdot \rnode{n}{n} \bkptr[nodesep=0.5pt]{25}{n}{m} \bklabelc{i} }$ $\forall i \in 1.. arity(x)$
+%
+%\noindent $\rulefex
+%{ t_1 \cdot x \cdot t_2 \in \travset(M) \quad x \in N_{var}^{\upharpoonright r} \quad  \ord{x} > 0 \quad ?(t_2)=\epsilon}
+%{ t_1 \cdot \rnode{x}{x} \cdot t_2 \cdot \rnode{xv}{v_x} \bkptr[nodesep=0.5pt]{25}{xv}{x} \bklabelc{v} }$ $\forall v\in \mathcal{D}$
+%
+%\noindent {\bf (Copycat$^@$)}
+%$\rulefex[8pt]{ t \cdot \rnode{app}{@} \cdot \rnode{lz}{\lambda \overline{z}}  \ldots  \rnode{lzv}{v_{\lambda \overline{z}}}
+%              \bkptr[nodesep=0.5pt]{30}{lzv}{lz} \bklabelc{v}
+%              \bkptr[nodesep=0.5pt]{40}{lz}{app} \bklabelc{0} \in \travset(M) }
+%              {t \cdot \rnode{app}{@} \cdot \rnode{lz}{\lambda \overline{z}}  \ldots  \rnode{lzv}{v_{\lambda \overline{z}}} \cdot \rnode{appv}{v_@}
+%              \bkptr[nodesep=0.5pt]{25}{lzv}{lz} \bklabelc{v}
+%              \bkptr[nodesep=0.5pt]{40}{lz}{app} \bklabelc{0}
+%              \bkptr[nodesep=0.5pt,ncurv=0.8]{25}{appv}{app} \bklabelc{v} \in \travset(M)}$
+%{\bf (Copycat$^\lambda$)} $\rulefex
+%{t \cdot \lambda \overline{\xi} \cdot \rnode{x}{x}  \ldots   \rnode{xv}{v_x} \bkptr[nodesep=0.5pt]{30}{xv}{x} \bklabelc{v}}
+%{t \cdot \rnode{lmd}{\lambda \overline{\xi}} \cdot \rnode{x}{x}  \ldots  \rnode{xv}{v_x} \cdot \rnode{lmdv}{v_{\lambda \overline{\xi}}} \bkptr[nodesep=0.5pt]{20}{xv}{x} \bklabelc{v} \bkptr[nodesep=0.5pt]{20}{lmdv}{lmd} \bklabelc{v}}$
+%
+%\noindent {\bf (Copycat$^{var}$)} $\rulefex
+%{ t \cdot y \cdot \rnode{lmd}{\lambda \overline{\xi}} \ldots \rnode{lmdv}{v_{\lambda \overline{\xi}}} \bkptr[nodesep=1pt]{30}{lmdv}{lmd} \bklabelc{v}
+%                   \quad y\in N_{var}\setminus N_{var}^{\upharpoonright r}}
+%{t \cdot \rnode{y}{y} \cdot \rnode{lmd}{\lambda \overline{\xi}}
+%             \ldots
+%             \rnode{lmdv}{v_{\lambda \overline{\xi}}}
+%            \cdot \rnode{yv}{v_y}
+%                \bkptr[nodesep=3pt]{25}{yv}{y} \bklabelc{v}
+%                \bkptr[nodesep=1pt]{25}{lmdv}{lmd} \bklabelc{v}}$
+%\item[{\bf (Var)}]
+%If  \raisebox{0cm}[0.5cm]{$t' \cdot \rnode{n}{n} \cdot
+%    \rnode{lx}{\lambda \overline{x}}  \ldots
+%    \rnode{x}{x_i}  \bkptr[ncurv=0.6]{50}{x}{lx} \bklabel{i}$} is a traversal for some variable $x_i$ not in $N_{var}^{\upharpoonright r}$ then
+%    so is
+%\raisebox{0cm}[0.6cm]{
+%    $t' \cdot \rnode{n}{n} \cdot
+%    \rnode{lx}{\lambda \overline{x}}  \ldots
+%    \rnode{x}{x_i} \cdot
+%    \rnode{letai}{\lambda \overline{\eta_i}}
+%    \bkptr[ncurv=0.45]{45}{letai}{n} \bklabelc{i}
+%    \bkptr[ncurv=0.5]{45}{x}{lx} \bklabelc{i}$}.
 \begin{description}
 \item[{\bf (Empty)}] $\epsilon \in \travset(M)$.
 \item[{\bf (Root)}] $ r \in \travset(M)$.
@@ -692,7 +752,7 @@ for all $i \in 1.. arity(x), v\in \mathcal{D}$.
 \item[{\bf (Var)}]
 If  \raisebox{0cm}[0.5cm]{$t' \cdot \rnode{n}{n} \cdot
     \rnode{lx}{\lambda \overline{x}}  \ldots
-    \rnode{x}{x_i}  \bkptr[ncurv=0.6]{50}{x}{lx} \bklabel{i}$} is a traversal for some variable $x_i$ not in $N_{var}^{\upharpoonright r}$ then 
+    \rnode{x}{x_i}  \bkptr[ncurv=0.6]{50}{x}{lx} \bklabel{i}$} is a traversal for some variable $x_i$ not in $N_{var}^{\upharpoonright r}$ then
     so is
 \raisebox{0cm}[0.6cm]{
     $t' \cdot \rnode{n}{n} \cdot
@@ -748,8 +808,8 @@ This is the counterpart of proposition 6 from
 \cite{OngHoMchecking2006}.
 
 The \defname{reduction} of a traversal $t$ written $ t \upharpoonright r$, is the subsequence of $t$
-obtained by keeping only the nodes that are hereditarily 
-justified by $r$. This has the effect of eliminating the ``internal nodes'' of the computation. 
+obtained by keeping only the nodes that are hereditarily
+justified by $r$. This has the effect of eliminating the ``internal nodes'' of the computation.
 
 Application nodes are used to connect the operator and
 the operand of an application in the computation tree but since they do not play
@@ -765,7 +825,7 @@ We introduce the two notations $\travset(M)^{-@} = \{ t - @ \ | \  t \in \travse
 %\end{remark}
 
 \begin{lemma}[View of a traversal reduction]
-\label{lem:redtrav_trav} 
+\label{lem:redtrav_trav}
 If $M$ is in $\beta$-normal form then $\travset(M)^{-@} \cong \travset(M) \cong  \travset(M)^{\upharpoonright r }$ and for all $t\in \travset(M)$:
 \begin{itemize}
 \item[(i)] $ \pview{?(t) \upharpoonright  r } = \pview{?(t)} \upharpoonright r$;

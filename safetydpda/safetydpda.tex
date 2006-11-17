@@ -1,13 +1,54 @@
 \documentclass{article}
+\usepackage{amssymb}
+\usepackage{pst-tree}
+
+
 
 % computation tree, eta normal form, traversals
 \newcommand{\aux}[1]{\lceil #1\rceil}
 \newcommand{\betared}{\rightarrow_\beta}
 \newcommand{\syneq}{\equiv}
 
+% back pointer using psttricks
+\newcommand{\bkptr}[2][nodesep=0pt]{\ncarc[linewidth=0.4pt,offset=-2pt,nodesep=0pt,ncurv=1,arcangleA=-#2, arcangleB=-#2,#1]{->}}
+\newcommand{\bklabel}[1]{\mput*{\mbox{{\tiny $#1$}}}}
+\newcommand{\bklabelc}[1]{\Bput[1pt]{\mbox{{\tiny $#1$}}}}
+\newcommand\treelabel[1]{\mput*{\mbox{{\small $#1$}}}}
+
+% ia
+\newcommand\ialgol{\textsf{IA}}
+\newcommand\ialgolmnew{\ialgol-$\{\ianew\}$}
+\newcommand\iaseqcom{$\tt{seq_{com}}$}
+\newcommand\iaseqexp{$\tt{seq_{exp}}$}
+\newcommand\iaseq{\texttt{seq}}
+\newcommand\iaskip{\texttt{skip}}
+\newcommand\iaderef{\texttt{deref}}
+\newcommand\iaassign{\texttt{assign}}
+\newcommand\iadone{\texttt{done}}
+\newcommand\iarun{\texttt{run}}
+\newcommand\iawrite{\texttt{write}}
+\newcommand\iaread{\texttt{read}}
+\newcommand\iaok{\texttt{ok}}
+\newcommand\iamkvar{\texttt{mkvar}}
+\newcommand\ianew{\texttt{new}}
+\newcommand{\ianewin}[1]{\texttt{new}\ #1\ \texttt{in}}
+\newcommand\iabool{\texttt{bool}}
+\newcommand\iawhile{\texttt{while}}
+\newcommand\iado{\texttt{do}}
+\newcommand\iacom{\texttt{com}}
+\newcommand\iaexp{\texttt{exp}}
+\newcommand\iavar{\texttt{var}}
+
+% pcf
+\newcommand\pcf{\textsf{PCF}}
+\newcommand\pcfcond{\texttt{cond}}
+\newcommand\pcfsucc{\texttt{succ}}
+\newcommand\pcfpred{\texttt{pred}}
+
+
 \begin{document}
 
-\section{Safe PCF}
+\section{The correspondence theorem for PCF}
 
 We define the computation tree of a term to be the least upper bound of the computation trees of its approximants. Equivalently, it can be defined as follows. Consider a term of the form $Y_A F$ where $F:A\rightarrow A$ and $A = (A_1,\ldots,A_n,o)$.
 We have $Y_A F \betared F (Y_A F)$.
@@ -20,15 +61,57 @@ For instance take $F \syneq \lambda f x. f x$ then
 $\aux{Y F} \syneq \lambda x . \aux{F} \aux{Y F} x \syneq \lambda x. (\lambda f x. f x) \aux{Y F} x$ therefore its computation tree $\tau$ is defined by the recursive equation $\tau = \lambda x . (\lambda f x. f x)  \tau x$.
 
 
-A term containing a Y combinator may have an infinite computation tree. This is an undesired feature since we would like to derive a DPDA with finite states from the computation tree where each state corresponds to a node of the computation tree.
+A term containing a Y combinator may have an infinite computation tree. This is an undesired feature since we would like to derive from the computation tree a DPDA with finite states where each state corresponds to a node of the computation tree.
+
+To remedy this problem, we introduce an alternative definition of computation tree for Safe PCF terms.  In order to handle the Y combinators, we introduce a new kind of abstraction node. Such node is labelled $\lambda \overline{x}$ where each variable occurring in $\overline{x}$ is either a standard variable or a ``recursion variable''.
+Recursion variables are surrounded by parenthesis in order to distinguish them from standard ones. The set of labels $L$ is therefore given by the following grammar:
+\begin{eqnarray*}
+L &::=& \lambda\ V_{abs}^*\ |\ @\ |\ \mathcal{V} \\
+V_{abs} &::=& \mathcal{V}\ |\ (\mathcal{V})
+\end{eqnarray*}
+where $\mathcal{V}$ is a countable set of variables.
 
 
-We therefore need to use an alternative definition of computation tree for Safe PCF terms.  We introduce a new type of abstraction node, written $\lambda_{rec}(f) x_1 \ldots x_n$ for some variable names $f, x_1, \ldots x_n$.
+A term of the form $Y_A (\lambda f. M)$ where $f,M:A$ will be written  $\lambda (f) . M$. Ground type recursion can also be represented using this notation. For instance the \iawhile operator of Idealized Algol 
+$\iawhile\ C\ \iado\ I \syneq Y( \lambda f. \pcfcond\ C\ \iaskip\ (\iaseq I f))$ will be written $\lambda (f) . \pcfcond\ C\ \iaskip\ (\iaseq I f)$.
+
+To construct the computation tree of a PCF term, we first remove all the $Y$ combinators occurring in the term by converting them into $\lambda$ abstraction as described above. Then we compute the $\eta$-normal form in the usual way, ignoring the recursion variables in the abstraction. Finally the computation tree is obtained from the eta normal form in the standard way.
+
+The definition of the  order of an abstraction node does not change: it is the order of the term represented by the subtree rooted at this node. In other word, the order 
+of $\lambda \overline{x}$ is the same as order of node $\lambda \overline{y}$ where $\overline{y}$ is the sublist of $\overline{x}$ obtained by filtering out the recursion variables.
+
+The numbering of variables bound in a $\lambda$-node labelled $\lambda \overline{x}$ is as follows: the $i^{\sf th}$ standard variable in $\overline{x}$ is denoted by $i$ and the
+the $i^{\sf th}$ recursion variable in $\overline{x}$ 
+is denoted by $(i)$. The links in a justified sequence of nodes are labelled accordingly.
+
+We can now define a notion of traversals adapted to this new kind of computation tree as follows. Firstly, all the traversal rules are kept unmodified. The recursion variables in the $\lambda$-nodes are automatically ignored by each rule since such variables are numbered differently from standard variables. In particular, the (Var) rules only applies to non-recursion variables. 
+Secondly we add a new rule to handle the case of recursion variable:
+{\bf ($Var_{rec}$)}
+If  \raisebox{0cm}[0.5cm]{$t' \cdot \rnode{n}{n} \cdot
+    \rnode{l}{\lambda \overline{x}}  \ldots
+    \rnode{f}{f_i}  \bkptr[ncurv=0.6]{50}{f}{l} \bklabel{(i)}$} is a traversal for some \emph{recursion} variable $f_i$ bound by $\lambda \overline{x}$ then
+    so is
+\raisebox{0cm}[0.55cm]{
+    $t' \cdot \rnode{n}{n} \cdot
+    \rnode{l}{\lambda \overline{x}}  \ldots
+    \rnode{f}{f_i} \cdot
+    \rnode{letai}{\lambda \overline{x}}
+     \bkptr[ncurv=0.6]{50}{f}{l} \bklabel{(i)}
+    $}.
+
+The node visited by this rule has no pointer associated to it (strictly speaking the resulting sequence is therefore not a justified sequence of nodes).
 
 
 
 
-The disadvantage of this definition is that we have to redefine the function $\varphi$ that maps nodes to moves. We also need to define a new traversal rules to handle the new type of node.
+We should point out that the original definition of computation tree for PCF was not useless: it permitted us to prove the Correspondence Theorem straightforwardly by reducing it to the special case of the simply typed lambda-calculus (without recursion) through the use of approximants. 
+The counterpart of this is that traversals were defined over infinite computation trees.
+
+On the other hand, our new finite version of computation tree does not permit to show immediately a correspondence between 
+
+ from $\lambda$-calclto PCF in a simple way as
+
+The disadvantage of this definition is that we have to redefine the function $\varphi$ wich maps nodes of the computation tree to moves of the arena. We also need to define a new traversal rules to handle the new type of node.
 
 
 \end{document}

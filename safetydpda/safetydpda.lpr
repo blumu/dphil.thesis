@@ -1,7 +1,7 @@
 [Files\0]
 ActiveFilters=
 Bookmark#0=0
-Bookmark#1=39
+Bookmark#1=128
 Bookmark#2=0
 Bookmark#3=0
 Bookmark#4=0
@@ -10,15 +10,15 @@ Bookmark#6=0
 Bookmark#7=0
 Bookmark#8=0
 Bookmark#9=0
-CaretPos.X=0
-CaretPos.Y=27
+CaretPos.X=19
+CaretPos.Y=106
 CharSet=def
 FileName=safetydpda.tex
 FoldedLines=
 IsMainFile=yes
 Opened=yes
 ScrollPos.X=0
-ScrollPos.Y=14
+ScrollPos.Y=140
 SearchListCount=0
 ShowSyntax=yes
 SpellChecking=yes
@@ -46,7 +46,7 @@ Zoom=9
 
 [Project\DVI\1]
 Page=0
-Zoom=5
+Zoom=7
 
 [Project\DVI\2]
 Page=0
@@ -84,7 +84,7 @@ Zoom=9
 FileName=1
 FirstPage=0
 Magnifier=5
-Page=0
+Page=1
 PaperHeight=297
 PaperWidth=210
 Zoom=6

@@ -1,7 +1,7 @@
 [Files\0]
 ActiveFilters=
 Bookmark#0=0
-Bookmark#1=127
+Bookmark#1=176
 Bookmark#2=0
 Bookmark#3=0
 Bookmark#4=0
@@ -10,15 +10,15 @@ Bookmark#6=0
 Bookmark#7=0
 Bookmark#8=0
 Bookmark#9=0
-CaretPos.X=50
-CaretPos.Y=123
+CaretPos.X=57
+CaretPos.Y=230
 CharSet=def
 FileName=safetydpda.tex
 FoldedLines=
 IsMainFile=yes
 Opened=yes
 ScrollPos.X=0
-ScrollPos.Y=161
+ScrollPos.Y=388
 SearchListCount=0
 ShowSyntax=yes
 SpellChecking=yes
@@ -87,7 +87,7 @@ Magnifier=4
 Page=1
 PaperHeight=297
 PaperWidth=210
-Zoom=5
+Zoom=6
 
 [Project\Dictionaries\1033\0]
 Active=Yes

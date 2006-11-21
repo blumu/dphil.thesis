@@ -1,13 +1,28 @@
 \documentclass{article}
-\usepackage{amssymb}
+\usepackage{amsmath, amsthm, amssymb}
 \usepackage{pst-tree}
+\usepackage{a4wide}
 
+\newtheorem{theorem}{Theorem}[section]
+%\newtheorem{cor}[thm]{Corollary}
+\newtheorem{lemma}[theorem]{Lemma}
+%\newtheorem{prop}[thm]{Proposition}
+
+
+
+% game semantics
+\newcommand{\sem}[1]{{[\![ #1 ]\!]}}
+\newcommand{\intersem}[1]{{\langle\!\langle #1 \rangle\!\rangle}}
 
 
 % computation tree, eta normal form, traversals
 \newcommand{\aux}[1]{\lceil #1\rceil}
 \newcommand{\betared}{\rightarrow_\beta}
 \newcommand{\syneq}{\equiv}
+\newcommand{\travset}{\mathcal{T}rv}
+
+% trees
+\newcommand{\tree}[2][levelsep=3.5ex]{\pstree[levelsep=3.5ex,#1]{\TR{#2}}}
 
 % back pointer using psttricks
 \newcommand{\bkptr}[2][nodesep=0pt]{\ncarc[linewidth=0.4pt,offset=-2pt,nodesep=0pt,ncurv=1,arcangleA=-#2, arcangleB=-#2,#1]{->}}
@@ -82,9 +97,9 @@ $\iawhile\ C\ \iado\ I \syneq Y( \lambda f. \pcfcond\ C\ \iaskip\ (\iaseq I f))$
 
 
 To construct the computation tree of a PCF term, we first compute the $\eta$-normal form as usual except for the Y combinator case which is treated as follows. 
-For each term $Y_A F$ where $F:A\rightarrow A$, let  $\aux{F} = \lambda f \overline{x} M$ where $f:A$ and $M:o$. The eta-normal form of $Y_A F$ is defined to be
+For each term $Y_A F$ where $F:A\rightarrow A$, let  $\aux{F} = \lambda f \overline{x} M$ where $f:A$ and $M:o$. The \emph{finitary eta-normal form} of $Y_A F$ is defined to be
 $\aux{Y_A F} = \lambda (f) \overline{x} M$.
-The computation tree is then obtained from the eta-normal form in the standard way.
+The \emph{finitary computation tree} is then obtained from the finitary eta-normal form in the standard way.
 
 The definition of the  order of an abstraction node does not change: it is the order of the term represented by the subtree rooted at this node. In other word, the order 
 of $\lambda \overline{x}$ is the same as order of node $\lambda \overline{y}$ where $\overline{y}$ is the sublist of $\overline{x}$ obtained by filtering out the recursion variables.
@@ -121,19 +136,108 @@ However, after performing a proper reduction, it will become obvious that the se
 traversals of the standard computation tree.
 Therefore the correspondence theorem concerning the \emph{unrevealed} game semantics still holds.
 
+%\subsection{Consistence of the two representations}
+%
+%Let us write $\tau$ for the computation tree corresponding to the original definition of computation tree and $\tau'$ for the finitary version of the computation tree.
+%Let $r$ denote the root of $\tau$ and $r'$ denote the root of $\tau'$.
+%
+%We write $N^{\upharpoonright r}$ for the set of nodes of $\tau$ that are hereditarily enabled by $r$ and $N'^{\upharpoonright r'}$ for the set of nodes of $\tau'$ that are hereditarily enabled by $r'$.
+%
+%We define a mapping $\alpha :N'^{\upharpoonright r} \longrightarrow N^{\upharpoonright r}$ by induction on the finatary eta-normal form of $M$ as follows\footnote{A term in  eta-normal form is of the form $\lambda \overline{\varphi}. s_0 \ldots s_m$ where $s_0 \ldots s_m : o$, the $s_i$ for $i$ in $1..m$ are in eta-normal form, $m=0$ implies $s_0$ is a variable and $m\neq 0$ implies that $s_0$ is in eta-normal form. If the term is in finatary eta-normal form then the list of variables $\overline{\varphi}$ can contain  recursion variables. }:
+%
+%Suppose $M$ is of type $(A_1, \ldots A_n, o)$ with $n\geq 0$.
+%
+%The base case is $M = \lambda \overline{\varphi} . x$ for some variable $x$. In that case  $\tau$ is the same tree as $\tau'$. Therefore $N^{\upharpoonright r}$ is isomorphic to $N'^{\upharpoonright r}$ and we define $\alpha_M$ to be this isomorphism.
+%
+%Step case: $M = \lambda \overline{\varphi} . s_0 s_1 \ldots s_m$ where $s_0 s_1 \ldots s_m : o$ and $m \geq 1$. 
+%Suppose that $\overline{\varphi} = y \overline{x}$ (i.e. the first variable is not a recursion variable).
+%
+%Suppose that $s_0$ is a variable $x$ then the computation tree are of the form $\lambda \overline{\varphi} . x \tau_{s_1} \ldots \tau_{s_n}$ and $\lambda \overline{\varphi} . x \tau'_{s_1} \ldots \tau'_{s_n}$ respectively
+
 \subsection{Consistence of the two representations}
 
-Let us write $\tau$ for the computation tree corresponding to the original definition of computation tree and $\tau'$ the finite version of the computation tree.
-Let $r$ denote the root of $\tau$ and $r'$ denote the root of $\tau'$.
+Consider a term of the form $Y_A F$ with $A = (A_1, \ldots A_n)$, $\overline{x} : \overline{A}$ where $\overline{A} = A_1 \ldots A_n$. Its computation tree $\tau(Y_A F)$ is defined recursively as follows:
+$$\tau(Y_A F) = \tree{ \lambda \overline{y}}
+     {  \tree{@}
+		       { \tree{ \lambda f \overline{x}}{\TR{\tau^-(F)}}   
+			\TR{\tau(Y_A F)}
+			\TR{\tau(y_1)}
+			\TR{\ldots}
+			\TR{\tau(y_n)}
+				}
+	}
+$$
+where $\tau^-(F)$ denotes $\tau(F)$ with the root removed and the variables $\overline{y}:\overline{A}$ are fresh variables.
 
-We write $N^{\upharpoonright r}$ for the set of nodes of $\tau$ that are hereditarily enabled by $r$ and $N'^{\upharpoonright r'}$ for the set of nodes of $\tau'$ that are hereditarily enabled by $r'$.
+Its set of traversals is written $\travset(Y_A F)$. We now make a harmless change in the definition of a traversal reduction. Let $r$ denote the root of the computation tree. For any traversal $t$, we write $t \upharpoonright r$ for the sequence obtained by keeping only nodes that are hereditarily justified by the \emph{first} occurrence of the root $r$ in $t$ (which is necessarily the first node in $t$ if $t$ is not empty). This change in the definition is harmless since the root can occur only once in a traversal.
 
-We define a mapping $\alpha :N'^{\upharpoonright r} \longrightarrow N^{\upharpoonright r}$ as follows.
+We can now ``compress'' the computation tree by identifying   the subtree $\tau(Y_A F)$ in $\tau(Y_A F)$ with the main computation tree. Now when a traversal visits the recursion variable $f$ in the subtree $\tau^-(F)$, instead of jumping to the root of the subtree $\tau(Y_A F)$, we jump back to the root of the main tree. Since this new occurrence of the root in the traversal has no pointer associated to it, it is clear that with our modified notion of reduction, the set of traversals reduction remains unchanged up to identification of the free variable nodes occurring in the different ``copies'' of the subtree $\tau(Y_A F)$ created during the infinite tree expansion.
 
-%If the term does not contain any subterm of the form $Y F$ then the two trees $\tau$ and $\tau'$ are identical and 
-%$\alpha$ is just the identity function.
-%If the term contains a
-%
-%$\alpha(r') = r$ and for each variable $x$ bound by $r'$, 
+Hence we can use the following finite representation of the computation tree provided that we add a further rule permitting  the traversal to jump to the root after visiting $f$ in  $\tau^-(F)$:
+$$\tau''(Y_A F) = \tree{ \lambda \overline{y}}
+     {  \tree{@}
+		       { \tree{ \lambda (f) \overline{x}}{\TR{\tau^-(F)}}   
+			\TR{\tau(y_1)}
+			\TR{\ldots}
+			\TR{\tau(y_n)}
+				}
+	}
+$$
+
+Since nodes labelled by the same free variable are mapped by $\psi$ to the same question move in the game arena, the game-semantic correspondence still holds:
+$$ \psi : \travset^{\upharpoonright r}_{\tau''}( Y_A F) \stackrel{\cong}{\longrightarrow} \sem{Y_A F}$$
+where $\travset^{\upharpoonright r}_{\tau''}(M)$ denotes the set of reductions of traversals of the computation tree $\tau''(M)$.
+
+
+The computation tree $\tau''(Y_A F)$ is finite but it still does not match exactly with the finitary representation $\tau'(Y_A F)$ defined in the previous section:
+$$\tau'(Y_A F) = \tree{ \lambda (f) \overline{x}}{\TR{\tau^-(F)}}   
+$$
+
+We define a partial map $\alpha$ from the set of nodes of $\tau''(Y_A F)$ to the set of nodes of $\tau'(Y_A F)$ as follows. Each node labelled by a variable $x_i$ is mapped to the child of the root of the sub-tree $\tau(y_i)$ in $\tau''(Y_A F)$ labelled with $y_i$. Also, $\alpha$ maps each node hereditarily justified by $x_i$ to the corresponding node hereditarily justified by $y_i$ in $\tau''(Y_A F)$.
+
+\begin{lemma}
+$\alpha(\travset^{\upharpoonright r}_{\tau'}(Y_A F)) = \travset^{\upharpoonright r}_{\tau''}(Y_A F)$.
+\end{lemma}
+\begin{proof}
+We prove $\travset^{\upharpoonright r}_{\tau''}(Y_A F) \subseteq \alpha(\travset^{\upharpoonright r}_{\tau'}(Y_A F))$ by induction on the traversal rules for $\tau''$.
+The base case is trivial. For the step case we consider the (Var) rule, the other cases being trivial.
+
+Take the tree $\tau''$, when traversing the sub-tree $\tau^-(F)$, each time a variable node hereditarily justified by $\lambda (f) \overline{x}$ is encountered, the next step consists in taking a jump to a node in $\tau(y_i)$ hereditarily justified by the root of $\tau(y_i)$. Then the traversal of $\tau(y_i)$ continues until it reaches a variable node $z$ hereditarily justified by the root of $\tau(y_i)$ after which it jumps back to a node $\lambda \overline{\eta}$ in $\tau^-(F)$. $\lambda \overline{\eta}$ is the child of a previously visited node $p$ hereditarily justified by $\lambda (f) \overline{x}$ and from which a previous jump to $\tau(y_i)$ was taken:
+$$ t = t_1 \cdot \underline{p} \cdot \lambda \overline{\nu} \cdot s \cdot z \cdot \underline{\lambda \overline{\eta}}$$
+for some traversal $t_1$ of $\tau''$, sequence of nodes $s$ of even-length and where the nodes belonging to the sub-tree $\tau^-(F)$ are underlined.
+
+By construction of $\tau(y_i)$, each node of $\tau(y_i)$ is either hereditarily justified by the root of $\tau(y_i)$
+or by the root of $\tau''$. Consequently,
+$$ t\upharpoonright r = (t_1\upharpoonright r) \cdot  (s \upharpoonright r) \ .$$
+
+If $s = \epsilon$ then we conclude immediately using the induction hypothesis.
+Suppose that $|s|\geq 2$ then $s = u\cdot \ldots \cdot v$ where $u$ the child of $\lambda \overline{\nu}$ and $v$ is the parent of $z$.
+Necessarily, $u$ and $v$ are not hereditarily justified by the root of $\tau(y_i)$ and therefore are hereditarily justified by the root of $\tau''$. Hence:
+$$ t\upharpoonright r = (t_1\upharpoonright r) \cdot  u \cdot v \ .$$
+
+By the  induction hypothesis we have $t_1\upharpoonright r = \alpha(t_1'\upharpoonright r)$ for some traversal $t_1'$  of $\tau'$.
+
+The nodes $p$ and $\lambda \overline{\eta}$ belong
+to the sub-tree $\tau^-(F)$ of $\tau''$. Let us write $p'$ and $\lambda \overline{\eta}'$ to denote the corresponding nodes in the sub-tree $\tau^-(F)$ of $\tau'$. We have $\alpha(p') = u$ and $\alpha(\lambda \overline{\eta}') = v$.
+
+After the traversal $t_1'\upharpoonright r$ of $\tau'$, it is possible to  visit the node $p'$ using the same rule that has permitted to visit $p$ in $\tau''$ after $t_1\upharpoonright r$. After this step, since $p'$ is hereditarily justified by the root of $\tau'$, it is possible to visit the child node $\lambda \overline{\eta}'$ of $p'$ using the (InputVar) rule. Hence 
+$$(t_1'\upharpoonright r) \cdot p' \cdot \lambda \overline{\eta}' \in \travset(\tau'(Y_A F)) $$
+and $\alpha((t_1'\upharpoonright r) \cdot p' \cdot \lambda \overline{\eta}') = t\upharpoonright r$.
+
+The proof of $\travset^{\upharpoonright r}_{\tau''}(Y_A F) \supseteq \alpha(\travset^{\upharpoonright r}_{\tau'}(Y_A F))$ is similar.
+ \end{proof}
+
+Although $\alpha$ is not injective (it maps two different nodes of $\tau'$ labelled by the same variable to the same node of $\tau''$), its node-wise extension to the set of reductions of traversals is injective.
+The proof is by an easy induction on the traversal rules.
+
+
+
+Hence $\alpha$ defines an isomorphism from $\travset^{\upharpoonright r}_{\tau''}(Y_A F)$ 
+to $\travset^{\upharpoonright r}_{\tau'}(Y_A F)$.
+Consequently,
+$$ \psi : \travset^{\upharpoonright r}_{\tau'}( Y_A F) \stackrel{\cong}{\longrightarrow} \sem{Y_A F}$$
+
+This shows that the finitary representation of the computation tree defined in the previous section is adequate in the sense that the game-semantics characterisation sill holds.
+
 
 \end{document}

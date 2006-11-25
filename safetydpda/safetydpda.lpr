@@ -10,15 +10,15 @@ Bookmark#6=0
 Bookmark#7=0
 Bookmark#8=0
 Bookmark#9=0
-CaretPos.X=35
-CaretPos.Y=69
+CaretPos.X=0
+CaretPos.Y=0
 CharSet=def
 FileName=safetydpda.tex
 FoldedLines=
 IsMainFile=yes
 Opened=yes
 ScrollPos.X=0
-ScrollPos.Y=66
+ScrollPos.Y=317
 SearchListCount=0
 ShowSyntax=yes
 SpellChecking=yes
@@ -98,7 +98,7 @@ Active=Yes
 Size=0
 
 [Project\Dictionaries\1033]
-Active=No
+Active=Yes
 
 [Project\Dictionaries\1036\0]
 Active=Yes

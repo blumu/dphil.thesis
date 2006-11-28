@@ -1,0 +1,117 @@
+\documentclass{article}
+\usepackage{a4wide}
+\usepackage{amsmath, amsthm, amssymb}
+
+\newcommand\nat{\mathbb{N}}
+\newcommand\eop{{\sf eop}}
+\newcommand{\betared}{\rightarrow_\beta}
+\newcommand{\encode}[1]{\ulcorner #1 \urcorner}
+
+%pcf
+\newcommand\ialgol{{\textsl{IA}}}
+\newcommand\pcf{\textsf{PCF}}
+\newcommand\pcfcond{\texttt{cond}}
+\newcommand\pcfsucc{\texttt{succ}}
+\newcommand\pcfpred{\texttt{pred}}
+
+\newtheorem{theorem}{Theorem}[section]
+%\newtheorem{cor}[thm]{Corollary}
+\newtheorem{lemma}[theorem]{Lemma}
+%\newtheorem{prop}[thm]{Proposition}
+
+\begin{document}
+
+
+In \cite{Ong02}, Ong shows that finitary second-order \ialgol\ with recursion ($\ialgol_2 + Y_1$) is undecidable by reducing the Queue-Halting problem to the obvservational equivalence of two $\ialgol_2 + Y_1$ programs. The same proof can be reused to show that observational equivalence for the Safe fragment of $\ialgol_2 + Y_1$ is also undecidable.
+
+
+We fix a finite alphabet $\Sigma = \{ a_1, \ldots, a_p \}$. A queue program is a finite sequence of instructions that manipulate a queue data-structure. Let $n$ be the number of instruction in the program. There are four possible kinds of instruction: halting, enqueuing, dequeuing and branching. The set of instructions is formally defined as:
+$$ \mathcal{I} = \{ {\tt halt} \} \cup
+\{ {\tt enqueue \ } a \ | \ a \in \Sigma \}
+\cup \{ {\tt dequeue} \} \cup \{ {\tt goto\ } l {\tt\ if\ first =\ } a \ | \ l \in 1..n, a \in \Sigma \}
+ $$
+
+A program $P$ is a sequence of $n$ instruction for some $n\in \nat$. For $1 \leq i \leq n$, $P i$ denotes the $i^{\sf th}$ instruction of the sequence $P$.
+
+The operational semantics is described using a set of states $ \{ \eop \} \cup 1..n \times \Sigma^* $. The state $\eop$ corresponds to the final state at which the program stops. A state of the form $(i,x) \in 1..n \times \Sigma^*$ indicates that the queue's content is given by the sequence $x$ and that the next instruction to be executed by the machine is $P i$. The empty queue is denoted by $\epsilon$ and for any sequence $x \in \Sigma^*$, the first element of $x$ corresponds to the element that has been \emph{first} enqueued (i.e. the queue is fed at the right-end side and consumed at the left-end side). The rules defining the operational semantics are:
+\begin{eqnarray*}
+(i,x) \mbox{ with } P i = {\tt halt} &\longrightarrow& \eop \\
+(i,x) \mbox{ with } P i = {\tt enqueue\ } a &\longrightarrow& (i+1,x \cdot a) \\
+(i,\epsilon) \mbox{ with } P i = {\tt dequeue } &\longrightarrow& \eop \\
+(i,a \cdot x) \mbox{ with } P i = {\tt dequeue } &\longrightarrow& (i+1,x) \\
+(i,\epsilon) \mbox{ with } P i =  {\tt goto\ } l {\tt\ if\ first =\ } a &\longrightarrow& (i+1,\epsilon) \\
+(i,b \cdot x) \mbox{ with } a \neq b \mbox{ and } P i =  {\tt goto\ } l {\tt\ if\ first =\ } a &\longrightarrow& (i+1,b \cdot x) \\
+(i,a \cdot x) \mbox{ with } P i =  {\tt goto\ } l {\tt\ if\ first =\ } a &\longrightarrow& (l,a \cdot x)
+\end{eqnarray*}
+
+
+We now describe a transformation which, given a queue-program $P$, produces an \ialgol\ term $M_P$ that simulates $P$ in the sense that $P \Downarrow$ if and only if $M_P \rightarrow^* \eop$.
+
+We fix a distinguished element $\bot$ denoting the end of the queue. Let $\Sigma^\bot = \Sigma \cup \{ \bot \}$. We assume that an injective function $\encode{\underline{\ }}$ is defined that encodes  the
+elements of $\Sigma^\bot$ into $\nat$. It can for instance be defined as follows:
+\begin{eqnarray*}
+\encode{\underline{\ }} : \Sigma^\bot &\longrightarrow& 0..p \\
+ \bot &\mapsto& 0 \\
+ a_k &\mapsto& k \ , \mbox{for } k \in 1..p \ .
+\end{eqnarray*}
+
+We say that a $\ialgol_2$-term $M$ computes a sequence $s \in {(\Sigma^\bot)}^\omega$ if and only if 
+$M k \betared^* \encode{s k}$ for all $k\in \nat$.
+
+We now identify a queue content $s \in \Sigma^*$ with the infinite sequence $s \bot^\omega \in \Sigma^\omega$. In the \ialgol\ program that we are about to define, a queue content $s \in \Sigma^*$ will be represented by a term $\hat{s}$ that computes $s \bot^\omega$.
+
+Each instruction $c$ of $\mathcal{I}$ is encoded uniquely into a natural number $\encode{ c }$. The following table give an example of such a (injective) function:
+\begin{center}
+\begin{tabular}{c|c|c|c|c}
+$c \in \mathcal{I}$ & {\tt halt} & {\tt dequeue } & {\tt enqueue} $a_i$ &  {\tt goto} l {\tt if first=} $a_i$ \\ \hline
+$\encode{ c } \in \nat$ & $0$ & $1$ & $1+i$ & $1+p + n.l +i$ \\
+\end{tabular} 
+\end{center}
+where $1 \leq i \leq p, 1 \leq l \leq n$.
+
+Let us fix a queue-program $P$ with $n$ instructions. 
+The code of $P$ is compiled into the \ialgol\ program $\hat{P}$
+which maps an index $i$ to the encoding of the $i^{\sf th}$ instruction of $P$:
+\begin{equation}
+\hat{P} = \lambda i .  {\sf match\ } i {\sf \ with\ } 
+   0 \rightarrow \encode{ P 0 } 
+  \ | \ldots \ | n \rightarrow \encode{ P n }  | \_ \rightarrow 0
+\end{equation} 
+
+We now define an \ialgol\ program which interprets the queue-program $P$ given  its compiled form $\hat{P}$.
+\begin{eqnarray*}
+SIM = Y ( \lambda f i z . {\sf match\ } \hat{P} i  {\sf \ with\ }   \\
+ \encode{ \tt halt }&\rightarrow& \encode{\eop} \\
+| \encode{ {\tt enqueue\ } a_1 } &\rightarrow& f (i+1) ( \lambda j . {\sf if} j = \underline{\sf length}\ x\ {\sf then\ } \encode{a_1} {\sf\ else\ } x j ) \\
+| \ldots \\
+| \encode{ {\tt enqueue\ } a_p } &\rightarrow& f (i+1) ( \lambda j . {\sf if} j = \underline{\sf length}\ x\ {\sf then\ } \encode{a_p} {\sf\ else\ } x j ) \\
+| \encode{ {\tt dequeue } } &\rightarrow& f (i+1) (\lambda j . x (j+1) ) \\
+| \encode{ {\tt goto\ } l {\tt\ if\ first=\ } a_1 } &\rightarrow&  
+{\sf if\ } \underline{\sf length}\ x = 0 {\ \sf then\ } f (i+1) x \\
+&&{\sf else\ if\ } \encode{a_1} = x 0 {\sf\ then\ } f l x \\
+&&{\sf else\ } f (i+1) x \\
+x j ) \\
+| \ldots \\
+| \encode{{\tt goto\ } l {\tt\ if\ first=\ } a_p} &\rightarrow&  
+{\sf if\ } \underline{\sf length}\ x = 0 {\ \sf then\ } f (i+1) x \\
+&&{\sf else\ if\ } \encode{a_p} = x 0 {\sf\ then\ } f l x \\
+&&{\sf else\ } f (i+1) x \\
+x j ) \\
+\\
+)\ 0\ (\lambda j . 0)
+\end{eqnarray*}
+
+where $f: (o,(o,o),o)$, $i:o$, $x:(o,o)$ and $\encode{\eop}$ is defined to be some \ialgol\ constant natural number .
+$$ \underline{\sf  length}  = Y( \lambda f x k . {\sf if\ } x k = \encode{\bot} {\sf\ then\ } 0 {\sf\ else\ } 1 + (f x (k+1)))$$
+
+Note that the test of equality of two natural numbers is definable in $\ialgol_2 + Y_1$ since the substraction operation is  also definable (by recursion). Moreover, it is easy to verify that the corresponding term is safe.
+
+
+It is easy to show that $SIM \betared^* \encode{\eop}$ if and only if $P \rightarrow^* \eop$. Therefore since $SIM$ is a safe $\ialgol_2 + Y_1$ term we have the following result:
+\begin{theorem}
+Observational equivalence for Safe $\ialgol_2 + Y_1$ is undecidable.
+\end{theorem}
+\bibliographystyle{plain}
+\bibliography{../transfer/current/gamesem}
+
+\end{document}

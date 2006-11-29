@@ -9,23 +9,25 @@
 
 %pcf
 \newcommand\ialgol{{\textsl{IA}}}
-\newcommand\pcf{\textsf{PCF}}
+\newcommand\pcf{\textsl{PCF}}
 \newcommand\pcfcond{\texttt{cond}}
 \newcommand\pcfsucc{\texttt{succ}}
 \newcommand\pcfpred{\texttt{pred}}
 
 \newtheorem{theorem}{Theorem}[section]
-%\newtheorem{cor}[thm]{Corollary}
+\newtheorem{corollary}[theorem]{Corollary}
 \newtheorem{lemma}[theorem]{Lemma}
 %\newtheorem{prop}[thm]{Proposition}
 
 \author{William Blum}
-\title{Observational equivalence is undecidable for the Safe fragment of $\ialgol_2 + Y_1$}
+\title{Observational equivalence is undecidable for the Safe non-finitary fragment of $\ialgol_2 + Y_1$}
 
 \begin{document}
 \maketitle
 
-In \cite{Ong02}, Ong shows that observational equivalence for finitary second-order \ialgol\ with recursion ($\ialgol_2 + Y_1$) is undecidable by reducing the Queue-Halting problem to the obvservational equivalence of two $\ialgol_2 + Y_1$ programs. The same proof can be reused to show that observational equivalence for the Safe fragment of $\ialgol_2 + Y_1$ is also undecidable.
+\section{Undecidabilty of observational equivalence for $\ialgol_2 + Y_1$}
+
+In \cite{Ong02}, Ong shows that observational equivalence for finitary second-order \ialgol\ with recursion ($\ialgol_2 + Y_1$) is undecidable by reducing the Queue-Halting problem to the obvservational equivalence of two $\ialgol_2 + Y_1$ programs. Similarly, it is possible to show that observational equivalence for the Safe non-finitary fragment of $\ialgol_2 + Y_1$ is undecidable.
 
 
 We fix a finite alphabet $\Sigma = \{ a_1, \ldots, a_p \}$. A queue program is a finite sequence of instructions that manipulate a queue data-structure. 
@@ -73,17 +75,17 @@ $\encode{ c } \in \nat$ & $0$ & $1$ & $1+i$ & $1+p + n.l +i$ \\
 where $1 \leq i \leq p, 1 \leq l \leq n$.
 
 Let us fix a queue-program $P$ with $n$ instructions. 
-The code of $P$ is compiled into the \ialgol\ program $\hat{P}$
+The code of $P$ is compiled into the following \pcf\ program $\hat{P}$
 which maps an index $i$ to the encoding of the $i^{\sf th}$ instruction of $P$:
 \begin{equation}
 \hat{P} = \lambda i .  {\sf match\ } i {\sf \ with\ } 
    0 \rightarrow \encode{ P 0 } 
-  \ | \ldots \ | n \rightarrow \encode{ P n }  | \_ \rightarrow 0
+  \ | \ldots \ | n \rightarrow \encode{ P n }  | \_ \rightarrow \encode{\bot}
 \end{equation} 
 
-We now define an \ialgol\ program which interprets the queue-program $P$ given  its compiled form $\hat{P}$.
+We now define a \pcf\ program which interprets the queue-program $P$ given  its compiled form $\hat{P}$.
 \begin{eqnarray*}
-SIM = Y ( \lambda f i z . {\sf match\ } \hat{P} i  {\sf \ with\ }   \\
+SIM = Y ( \lambda f i x . {\sf match\ } \hat{P} i  {\sf \ with\ }   \\
  \encode{ \tt halt }&\rightarrow& \encode{\eop} \\
 | \encode{ {\tt enqueue\ } a_1 } &\rightarrow& f (i+1) ( \lambda j . {\sf if} j = \underline{\sf length}\ x\ {\sf then\ } \encode{a_1} {\sf\ else\ } x j ) \\
 | \ldots \\
@@ -93,27 +95,40 @@ SIM = Y ( \lambda f i z . {\sf match\ } \hat{P} i  {\sf \ with\ }   \\
 {\sf if\ } \underline{\sf length}\ x = 0 {\ \sf then\ } f (i+1) x \\
 &&{\sf else\ if\ } \encode{a_1} = x 0 {\sf\ then\ } f l x \\
 &&{\sf else\ } f (i+1) x \\
-x j ) \\
 | \ldots \\
 | \encode{{\tt goto\ } l {\tt\ if\ first=\ } a_p} &\rightarrow&  
 {\sf if\ } \underline{\sf length}\ x = 0 {\ \sf then\ } f (i+1) x \\
 &&{\sf else\ if\ } \encode{a_p} = x 0 {\sf\ then\ } f l x \\
 &&{\sf else\ } f (i+1) x \\
-x j ) \\
-\\
 )\ 0\ (\lambda j . 0)
 \end{eqnarray*}
 
-where $f: (o,(o,o),o)$, $i:o$, $x:(o,o)$ and $\encode{\eop}$ is defined to be some \ialgol\ constant natural number .
+where $f: (o,(o,o),o)$, $i:o$, $x:(o,o)$ and $\encode{\eop}$ is defined to be some \ialgol\ natural number constant.
 $$ \underline{\sf  length}  = Y( \lambda f x k . {\sf if\ } x k = \encode{\bot} {\sf\ then\ } 0 {\sf\ else\ } 1 + (f x (k+1)))$$
 
-Note that the test of equality of two natural numbers is definable in $\ialgol_2 + Y_1$ since the substraction operation is  also definable (by recursion). Moreover, it is easy to verify that the corresponding term is safe.
+Note that the test of equality of two natural numbers is definable in $\pcf_2$ since the substraction operation is  also definable (by recursion). Moreover, it is easy to verify that the corresponding term is safe.
 
 
-It is easy to show that $SIM \betared^* \encode{\eop}$ if and only if $P \rightarrow^* \eop$. Therefore since $SIM$ is a safe $\ialgol_2 + Y_1$ term we have the following result:
+It is easy to show that $SIM \betared^* \encode{\eop}$ if and only if $P \rightarrow^* \eop$. Therefore since $SIM$ is a safe $\pcf_2$ 
+non-finitary (variable $i$ is unbounded) term, we have the following result:
 \begin{theorem}
-Observational equivalence for Safe $\ialgol_2 + Y_1$ is undecidable.
+Observational equivalence for Safe (non-finitary) $\pcf_2$ is undecidable.
 \end{theorem}
+Since $SIM$ is also an $\ialgol_2 + Y_1$ term, we have:
+\begin{corollary}
+Observational equivalence for Safe (non-finitary) $\ialgol_2 + Y_1$ is undecidable.
+\end{corollary}
+
+\section{Does this imply that 2-DPDA equivalence is undecidable?}
+
+A closed Safe PCF term of ground type with redexes of order $n$ at most can be encoded into an order-$n$ safe recursion scheme whose value tree is either undefined (when the computation does not terminate) or is a single node
+labelled by a constant of ground type (representing a numerical \pcf\ constant). The encoding of the natural numbers can be done using Church numerals.
+
+Since order-$n$ safe recursion schemes are as expressive as 2-DPDA, 
+this implies that order-2 DPDA is undecidable.
+
+Is this argument correct?
+
 \bibliographystyle{plain}
 \bibliography{../transfer/current/gamesem}
 

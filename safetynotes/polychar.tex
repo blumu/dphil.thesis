@@ -31,35 +31,61 @@ Numbers constants are encoded using Church Numerals: $\encode{n} = \lambda s z. 
 Addition: for $n,m \in \nat$, $\encode{n+m} = \lambda \alpha^{(o,o)} x^o . (\encode{n} \alpha) (\encode{m} \alpha x)$. Multiplication: $\encode{n . m} = \lambda \alpha^{(o,o)} . \encode{n} (\encode{m} \alpha)$.
 All these terms are safe and clearly any multivariate polynomial $P(n_1, \ldots, n_k)$ can be computed by composing the addition and multiplication terms as appropriate.
 
-We now prove the converse. We consider safe lambda terms of type $I\rightarrow I  \rightarrow I$ which corresponds to polynomials with 2 variables. It is straightforward to generalize to $I^n \rightarrow I$ (i.e. polynomial with $n$ variables) for $n>2$.
+We now prove the converse. We consider safe lambda terms of type $I\rightarrow I  \rightarrow I$ which corresponds to polynomials with 2 variables. The generalisation to terms of type $I^n \rightarrow I$ for $n>2$ is immediate (they correspond to polynomials with $n$ variables).
  
 Consider a Safe $\lambda$-term $U:I\rightarrow I\rightarrow I$. Without lose of generality we can assume that $U = \lambda x y \alpha z. u$ where $u$ is a safe term of ground type in $\beta$-normal form with $fv(u) \subseteq \{ x, y, z, \alpha \}$.
 
-\emph{Notation:} Let $T$ be a set of terms of type $\tau \rightarrow \tau$ and $T'$ be a set of terms of type $\tau$ then $T \cdot T'$ denotes the set of terms $\{ s s' : \tau \ | \ s \in T \wedge s' \in T' \}$. For $k\in\nat$, $T^k \cdot T'$ denotes  $\{ s_1( \ldots (s_k s'))  \ | \ s_1, \ldots, s_k \in T \wedge s' \in T' \}$, in particular $T^0 \cdot T' = T'$. We   define $T^*\cdot T' = \Union_{k \in \omega} T^k \cdot T'$.
+\emph{Notation:} Let $T$ be a set of terms of type $\tau \rightarrow \tau$ and $T'$ be a set of terms of type $\tau$ then $T \cdot T'$ denotes the set of terms $\{ s s' : \tau \ | \ s \in T \wedge s' \in T' \}$. We define the set of terms 
+$T^k \cdot T'$ recursively as follows:  $T^0 \cdot T' = T'$ and
+for $k\in\nat$, $T^{k+1} \cdot T' = T \cdot (T^k \cdot T')$ (i.e. $T^k \cdot T'$ denotes $\{ s_1( \ldots (s_k s'))  \ | \ s_1, \ldots, s_k \in T \wedge s' \in T' \}$). We define $T^+\cdot T' = \Union_{k > 0} T^k \cdot T'$ and 
+$T^*\cdot T' = (T^+\cdot T') \union T'$.
 
-Let us write $Sub^\tau$ for the set of sub terms of $u$ of type $\tau$ where $\tau$ ranges in $\{ o; (o,o); I  \}$. Clearly since $u$ is in $\beta$-normal form, $Sub^o \cup Sub^{(o,o)} \cup Sub^I$ is exactly the set of sub terms of $u$.
-We have $Sub^I = \{ x, y\}$, $Sub^{(o,o)} = A \cup \{ s s' \ | \ s \in Sub^I \wedge s' \in Sub^{(o,o)} \}$ and
-$Sub^o = \{ z \} \cup \{ s s' \ | \ s \in Sub^{(o,o)} \wedge s' \in Sub^o \}$ where $A = \{ \alpha \} \cup \{ \lambda a^o . b^o \mbox{ for some variables } a,b:o \}$. 
+Let us write $\mathcal{N}^\tau$ for the set of $\beta$-normal form terms of type $\tau$ where $\tau$ ranges in $\{ o, o\rightarrow o, I  \}$ and with free variables in $\{ x,y:I, z:o, \alpha:o\rightarrow o\}$. We write $\mathcal{A}^\tau$ for the subset of $\mathcal{N}^\tau$ consisting of applicative terms only (i.e. not abstractions).
 
-In other words we have:
+Let $B$ be the set of terms of type $o\rightarrow o$ defined by $B = \{ \alpha \} \union \{ \lambda a.b \ | \ b \in \{a,z\}, a \neq z \}$.
+It is easy to see that the following equations hold:
 \begin{eqnarray*}
-Sub^I &=& \{ x, y\} \\
-Sub^{(o,o)} &=&  A \cup Sub^I \cdot Sub^{(o,o)} \\
-Sub^o &=& \{ z \} \cup Sub^{(o,o)} \cdot Sub^o
+\mathcal{A}^\tau &=& \{ x,y :I \} \\
+\mathcal{N}^{(o,o)} &=& \mathcal{A}^I \cdot \mathcal{N}^{(o,o)} \union B = (\mathcal{A}^I)^* \cdot B \\
+\mathcal{A}^{(o,o)} &=& (\mathcal{A}^I)^+ \cdot B \union \{ \alpha \} \\
+\mathcal{N}^o &=& \mathcal{A}^{(o,o)} \cdot \mathcal{N}^o \union \{ z \} = (\mathcal{A}^{(o,o)})^* \cdot \{ z \} \\
+\mathcal{A}^o &=& \mathcal{N}^{o}
 \end{eqnarray*}
-Hence: $Sub^{(o,o)} = (Sub^I)^* \cdot A$ and $Sub^o = (Sub^{(o,o)})^* \cdot \{ z \} = (\{ x, y\}^* \cdot A)^* \cdot \{ z \}$.
 
-Since $u$ is in $Sub^o$, we have $u \in (\{ x, y\}^l \cdot A)^r \cdot \{ z \}$ for some $l,r \in \nat$.
+Consequently, $$\mathcal{A}^o = \left( \{x,y\}^+ \cdot \left( \{\alpha \} \union \{\lambda a.b \ | \ b \in \{a,z\}, a \neq z \} \right) \union \{\alpha\} \right)^* \cdot \{ z \}$$
+
+We have $u \in \mathcal{A}^o$ and $u$ is a safe term. Therefore a term of the form $\lambda a . z$ with $a \neq z$ cannot occur in an operand position in $u$. Hence:
+$$u \in \left( \{x,y\}^+ \cdot \left( \{\alpha \} \union \{\lambda a.a \}\right) \union \{\alpha\} \right)^* \cdot \{ z \}$$
+Therefore:
+$$u[\encode{m} \encode{n}/x,y] \in \left( \{\encode{m},\encode{n}\}^+ \cdot \left( \{\alpha, \underline{i} \} \right) \union \{\alpha\} \right)^* \cdot \{ z \}$$
+where $\underline{i}$ is the identity term of type $o\rightarrow o$.
+
+We observe that for all $m \in \nat$, we have $\encode{m} \underline{i} =_\beta \underline{i}$ and for all $k_1, \ldots k_l \in \nat$, 
+$\encode{k_1} \encode{k_2} \ldots \encode{k_l} \alpha =_\beta \encode{k_1\times k_2 \ldots \times k_l} \alpha$. Therefore the $\beta$-normal form of $u[\encode{m} \encode{n}/x,y]$ is in the following set:
+$$\left( \{\alpha, \underline{i} \} \union \{ \encode{k_1 \times \ldots k_l} \alpha \ | \mbox{ for some $l\geq 1$ and $k_i \in \{m,n\}$ for $1\leq i \leq l$} \} \right) \right)^* \cdot \{ z \} $$
+
+
+
+% Clearly since $u$ is in $\beta$-normal form, $Sub^o \cup Sub^{(o,o)} \cup Sub^I$ is exactly the set of sub terms of $u$.
+%We have $Sub^I = \{ x, y\}$, $Sub^{(o,o)} = A \cup \{ s s' \ | \ s \in Sub^I \wedge s' \in Sub^{(o,o)} \}$ and
+%$Sub^o = \{ z \} \cup \{ s s' \ | \ s \in Sub^{(o,o)} \wedge s' \in Sub^o \}$ where $A = \{ \alpha \} \cup \{ \lambda a^o . b^o \mbox{ for some variables } a,b:o \}$. 
+%
+%In other words we have:
+%\begin{eqnarray*}
+%Sub^I &=& \{ x, y\} \\
+%Sub^{(o,o)} &=&  A \cup Sub^I \cdot Sub^{(o,o)} \\
+%Sub^o &=& \{ z \} \cup Sub^{(o,o)} \cdot Sub^o
+%\end{eqnarray*}
+%Hence: $Sub^{(o,o)} = (Sub^I)^* \cdot A$ and $Sub^o = (Sub^{(o,o)})^* \cdot \{ z \} = (\{ x, y\}^* \cdot A)^* \cdot \{ z \}$.
+%
+%Since $u$ is in $Sub^o$, we have $u \in (\{ x, y\}^l \cdot A)^r \cdot \{ z \}$ for some $l,r \in \nat$.
+
 We prove by induction on $r \in \nat$ that for all $m,n \in\nat$, $u[\encode{m}, \encode{n}/x,y] =_\beta \alpha^{P(m,n)} z$ for some polynomial $P$ (therefore $U \encode{m} \encode{m}  = \lambda \alpha z . \alpha^{P(m,n)} z = \encode{P(m,n)}$ i.e. $U$ computes $P$).
 
 
 \begin{itemize}
 
 \item \emph{Base case:} If $r = 0$ then $u = z$, thus $U$ encodes the constant function $0$.
-
-%If $r >0$ and $l=0$ then 
-%$u = s_1 ( \ldots (s_r ( z)))$ for some $s_1,\ldots s_r \in A$.
-%Since $u$ is in $\beta$-normal form we have $s_1 = \alpha$ and since $u$ is safe, for all $2 \leq i \leq r$, $s_i$ is either $\alpha$ or $\lambda a . a$ ($u$ would be unsafe if a term of the form $\lambda a . b$ with $b\neq a$ occurred at an operand position). Therefore $u = \alpha^i z$ for some $1 \leq i \leq r$ and thus $U$ computes the constant function $i$.
 
 \item \emph{Step cases:} Let $r>0$. We have
  $u \in (\{ x, y\}^l \cdot A) \cdot \left( (\{ x, y\}^l \cdot A)^{r-1} \cdot \{ z \} \right)$. Thus $u = t t'$ for some $t \in \{ x, y\}^l \cdot A$ and $t' \in

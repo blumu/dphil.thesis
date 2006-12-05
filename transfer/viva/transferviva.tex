@@ -1,10 +1,5 @@
 \ifx\incrcompilation\undefined \input preamble.tex \fi
 
-\newcommand\highlight{\textcolor{blue}}
-\newcommand\pcfsucc{\texttt{succ}}
-\newcommand\nat{\mathbb{N}}
-\newcommand\prefset{\textsf{Pref}}
-
 
 \title{\texorpdfstring{The Safe $\lambda$-Calculus}{The Safe Lambda-Calculus}}
 \author[W. Blum]{William Blum}
@@ -94,21 +89,17 @@ Safe grammars of order $n$ are as expressive as pushdown automata of order $n$.
 \begin{itemize}
 \item \highlight{Simple types} $A := o\ |\ A \rightarrow A$.
 %We write $(A_1,\ldots, A_n)$ for $A_1\rightarrow \ldots \rightarrow A_n$.
-\pause
-\item The \highlight{order} of a type is given by $\textsf{order}(o) = 0$,
+\item \highlight{Type order} given by $\textsf{order}(o) = 0$,
 $\textsf{order}(A \rightarrow B) = \max(\textsf{order}(A) + 1, \textsf{order}(B))$.
-\pause
-\item Jugdements of the form $ \Gamma \vdash M : T $ where $\Gamma$ is the context, $M$ is the term and $T$ is the type :
+\item Jugdements of the form $ \Gamma \vdash M : T$
 $$ \rulename{var} \   \rulef{}{x : A\vdash x : A}
 \qquad  \rulename{wk} \   \rulef{\Gamma \vdash M : A}{\Delta \vdash M : A} \ \Gamma \subset \Delta$$
 $$ \rulename{app} \  \rulef{\Gamma \vdash M : A \rightarrow B \quad \Gamma \vdash N : A }
                            {\Gamma  \vdash M N : B}
 \quad \rulename{abs} \   \rulef{\Gamma, x : A \vdash M : B}
                                 {\Gamma  \vdash \lambda x^A. M : A \rightarrow B}$$
-\pause
 \item Example: $f:o\rightarrow o\rightarrow o, x:o \vdash (\lambda \varphi^{o \rightarrow o} x^o . \varphi\ x) (f\ x)$
-\pause
-\item A single rule: \highlight{$\beta$-reduction}. e.g. $(\lambda x. M) N \betared M [N/x]$
+\item A single rule: \highlight{$\beta$-reduction}. e.g. $(\lambda x. M) N \betared M [N/x]$ 
 \end{itemize}
 }
 
@@ -189,6 +180,8 @@ Indeed, $\ord{x} = 0 \leq 1 = \ord{f\ x}$.
 }
 
 
+
+
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 %\def\highlightat#1#2{\temporal<#1>{#2}{\underline{#2}}{\textcolor{blue}{#2}}}
@@ -232,25 +225,30 @@ each variable $x$ is bound by the first $\lambda$ node occurring in
 \emph{the path to the root} with order $> \ord{x}$.
 \pause
 
-\item By the Correspondence theorem, this implies that
-safe terms are denoted by \highlight{incrementally-justified strategies}: each move $m$ points to the
-last other player's move with order $> \ord{m}$.
+\item A path to the root in the computation tree corresponds to a
+P-view in the game semantic.
+\pause
+
+\item Hence, by the Correspondence theorem, for a play $s \cdot m$ in the game denotation of a safe term, $m$ is justified
+by the first move in  $\pview{s}$ with order
+$>\ord{m}$. We say that safe term are denoted by \highlight{incrementally justified strategies.} \pause
+
 \end{itemize}
 \pause
 
 \begin{block}{Corollary}
 Justification pointers are redundant in the game-semantics of safe
-terms. Hence the game semantics of a safe term has a
-\highlight{succinct} representation.
+terms.
 \end{block}
 }
 
-\section{Recent results}
-\frame{ \frametitle{Recent results}
+\section{Recent result}
+\frame{ \frametitle{Recent result}
 
 \begin{theorem}
 Functions definable in the safe $\lambda$-calculus are exactly the polynomials.
 \end{theorem}
+\pause
 \begin{corollary}
 The conditional operator $C:I\rightarrow I\rightarrow I \rightarrow I$ verifying:
 \begin{eqnarray*}
@@ -259,14 +257,14 @@ C t y z &\rightarrow_\beta& z \mbox{, if } t \rightarrow_\beta \encode{n+1}
 \end{eqnarray*}
 is not definable in the safe simply typed $\lambda$-calculus.
 \end{corollary}
-E.g. $$ C = \lambda F G H \alpha x . H ( \underline{\lambda y . G \alpha x} ) (F \alpha x) \ .$$
+E.g. $$ C = \lambda F G H \alpha x . H ( \underline{\lambda y . G \alpha x} ) (F \alpha x) \ .$$ 
 }
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \section{Conclusion and Further Work}
 \frame{ \frametitle{Conclusion and Further Work}
 
-\highlight{Conclusion:}
+\highlight{Conclusion:} 
 
 Safety is a syntactic constraint with nice algorithmic and
 game-semantic properties.
@@ -315,5 +313,173 @@ relying on equivalent notions of computation tree and traversal.
 
   \end{thebibliography}
 \end{frame}
+
+
+\appendix
+
+\section{Correspondence (1) : computation trees and traversals}
+\frame{ \frametitle{Correspondence (1) : computation trees and traversals}
+{\it Computation tree} = tree representation of the $\eta$-long normal form of a term.
+
+\uncover<2->{
+\textcolor{blue}{\it Traversal} = justified sequence of nodes respecting some formation rules.
+}
+
+\uncover<11->{
+\textcolor{red}{\it  Traversal reduction} = keep only nodes hereditarily justified by the root.
+}
+
+\vspace{0.5cm}
+\textcolor{blue}{Example} $M \equiv \lambda f z . (\lambda g x . f x) (\lambda y. y) z$ of type $(o \typear o) \typear o \typear o$.
+\vspace{0.5cm}
+\begin{columns}
+\column{4cm}
+%\textcolor{blue}{
+$ \tree{\highlightat{3}{\lambda f z} }
+{ \tree{\highlightat{4}{@}}
+    {
+        \tree{\highlightat{5}{\lambda g x}}
+            {  \tree{\highlightat{6}{f}}{  \tree{\highlightat{7}{\lambda}}{\TR{\highlightat{8}{x}}}}
+            }
+        \tree{\lambda y}{\TR{y}}
+         \tree{\highlightat{9}{\lambda}}{\TR{\highlightat{10}{z}}}
+    }
+}$
+%}
+
+\column{7cm}
+\psset{linewidth=0.5pt}
+$\textcolor{blue}{
+\visible<2->{t=}
+\visible<3->{\rnode{q1}{\lambda f z}}
+\visible<4->{ \cdot \rnode{n2}{@} \bkptr[ncurv=0.6,linecolor=blue]{60}{n2}{q1} }
+\visible<5->{ \cdot \rnode{n3}{\lambda g x} \bkptr[ncurv=0.6,linecolor=blue]{60}{n3}{n2} }
+\visible<6->{ \cdot \rnode{q3}{f}  \bkptr[ncurv=0.6,linecolor=blue]{50}{q3}{q1} }
+\visible<7->{ \cdot \rnode{q4}{\lambda} \bkptr[ncurv=0.6,linecolor=blue]{60}{q4}{q3} }
+\visible<8->{ \cdot \rnode{n8}{x}  \bkptr[ncurv=0.4,linecolor=blue]{60}{n8}{n3} }
+\visible<9->{ \cdot \rnode{n9}{\lambda} \bkptr[ncurv=0.4,linecolor=blue]{60}{n9}{n2} }
+\visible<10->{ \cdot \rnode{q2}{z} \bkptr[ncurv=0.4,linecolor=blue]{80}{q2}{q1}}
+}$
+
+\vspace*{0.65cm}
+\visible<11->{
+$\textcolor{red}{
+t \upharpoonright r = \rnode{q1}{\lambda f z}
+\cdot \rnode{q3}{f} \bkptr[ncurv=1,linecolor=red]{50}{q3}{q1}
+\cdot \rnode{q4}{\lambda} \bkptr[ncurv=1,linecolor=red]{50}{q4}{q3}
+\cdot \rnode{q2}{z}  \bkptr[ncurv=0.7,linecolor=red]{80}{q2}{q1}
+}$
+}
+\vspace*{0.8cm}
+\visible<12->{
+$ t - @ =
+\rnode{q1}{ \lambda f z}
+ \cdot \rnode{n3}{ \lambda g x} \bkptr[ncurv=0.6]{60}{n3}{q1}
+ \cdot \rnode{q3}{ f}  \bkptr[ncurv=0.6]{50}{q3}{q1}
+ \cdot \rnode{q4}{ \lambda} \bkptr[ncurv=0.6]{60}{q4}{q3}
+ \cdot \rnode{n8}{ x}  \bkptr[ncurv=0.4]{60}{n8}{n3}
+ \cdot \rnode{n9}{ \lambda} \bkptr[ncurv=0.4]{60}{n9}{q1}
+ \cdot \rnode{q2}{ z} \bkptr[ncurv=0.4]{80}{q2}{q1}
+$}
+\end{columns}
+}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\section{Correspondence (2) : the theorem}
+\frame{ \frametitle{Correspondence (2) : the theorem}
+Let $M$ be a pure simply typed term of type $T$.
+\begin{itemize}
+\item $\textcolor{blue}{\travset(M)}$ = set of traversals of the computation tree of $M$
+\item $\textcolor{blue}{\travset(M)}^{\upharpoonright r} = \{ t \upharpoonright r \ | \  t \in {\travset(M)} \}$
+\item $\textcolor{blue}{\travset(M)}^{-@} = \{ t - @ \ | \  t \in {\travset(M)} \}$
+\item $\textcolor{red}{\sem{M}}$ = game-semantic denotation of $M$
+\item $\textcolor{red}{\intersem{M}}$ = revealed denotion (i.e. internal moves are not hidden)
+\end{itemize}
+
+\begin{block}{}
+There exists a partial function $\textcolor{DarkGreen}{\varphi}$ from the nodes of the \textcolor{blue}{computation tree}
+to the moves of the \textcolor{red}{arena} for $T$ such that
+$$ \textcolor{DarkGreen}{\varphi}  : \textcolor{blue}{\travset(M)}^{-@} \textcolor{DarkGreen}{\stackrel{\cong}{\longrightarrow}} \textcolor{red}{\intersem{M}} $$
+$$ \textcolor{DarkGreen}{\varphi}  : \textcolor{blue}{\travset(M)}^{\upharpoonright r}  \textcolor{DarkGreen}{\stackrel{\cong}{\longrightarrow}} \textcolor{red}{\sem{M}}.$$
+\end{block}
+}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{Correspondence (3) : example}
+\frame{\frametitle{Correspondence (3) : example}
+\begin{center}
+$\textcolor{blue}{\tree{ \Rnode{root} {\lambda f z} }
+     {  \tree{@}
+        {   \tree{\lambda g x }
+                {
+                 \tree{\Rnode{f2}{f}} {\tree{\Rnode{lmd2}\lambda}{\TR{x}}}
+                }
+            \tree{\lambda y }{\TR{y}}
+            \tree{\lambda}{\TR{\Rnode{z}z}}
+        }
+    }
+}
+\hspace{3cm}
+\textcolor{red}{
+  \tree[levelsep=12ex]{ \Rnode{q1}q^1 }
+    {   \pstree[levelsep=4ex]{\TR{\Rnode{q3}q^3}}{\TR{\Rnode{q4}q^4}}
+        \TR{\Rnode{q2}q^2}
+        \TR{\Rnode{q5}q^5}
+    }
+}
+\psset{linecolor=DarkGreen,nodesep=1pt,arrows=->,arcangle=-20,arrowsize=2pt 1,linewidth=0.3pt}
+\ncline{->}{root}{q1} \aput{:U}{\textcolor{DarkGreen}{\varphi}}
+\ncarc{->}{z}{q2}
+\ncline{->}{f}{q3}
+\ncline{->}{lmd}{q4}
+\ncline{->}{f2}{q3}
+\ncline{->}{lmd2}{q4}
+$\end{center}
+
+\vspace{0.4cm}
+\psset{linewidth=0.5pt}
+Take the traversal \textcolor{blue}{$t =
+\rnode{q1}{\lambda f z}
+\cdot \rnode{n2}{@}
+\cdot \rnode{n3}{\lambda g x}   \bkptr[ncurv=0.6,linecolor=blue]{60}{n3}{n2}
+\cdot \rnode{q3}{f}             \bkptr[ncurv=0.6,linecolor=blue]{50}{q3}{q1}
+\cdot \rnode{q4}{\lambda}       \bkptr[ncurv=0.6,linecolor=blue]{60}{q4}{q3}
+\cdot \rnode{n8}{x}             \bkptr[ncurv=0.4,linecolor=blue]{60}{n8}{n3}
+\cdot \rnode{n9}{\lambda}       \bkptr[ncurv=0.4,linecolor=blue]{60}{n9}{n2}
+\cdot \rnode{q2}{z}             \bkptr[ncurv=0.4,linecolor=blue]{80}{q2}{q1}
+. $}
+
+The image by $\textcolor{DarkGreen}{\varphi}$ of the reduction of
+\textcolor{blue}{$t$} is the play:
+\vspace{0.2cm}
+$$
+\textcolor{DarkGreen}{\varphi (}\textcolor{blue}{t \upharpoonright
+r} \textcolor{DarkGreen}{)} = \textcolor{DarkGreen}{\varphi (}
+\textcolor{blue}{ \rnode{q1}{\lambda f z} \cdot \rnode{q3}{f}
+\bkptr[linecolor=blue,ncurv=1]{50}{q3}{q1} \cdot \rnode{q4}{\lambda}
+\bkptr[linecolor=blue,ncurv=1]{50}{q4}{q3} \cdot \rnode{q2}{z}
+\bkptr[linecolor=blue,ncurv=0.7]{80}{q2}{q1} }
+\textcolor{DarkGreen}{)} = \textcolor{red}{ \rnode{q1}{q}^1\
+\rnode{q3}{q}^3\
+\bkptr[linecolor=red,offset=-3pt]{60}{q3}{q1} \rnode{q4}{q}^4\
+\bkptr[linecolor=red,offset=-3pt]{60}{q4}{q3} \rnode{q2}{q}^2
+\bkptr[linecolor=red,offset=-3pt,ncurv=0.5]{60}{q2}{q1} } \in
+\textcolor{red}{\sem{M}}.$$
+ }
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\section{Correspondence (4) : summary}
+\frame{ \frametitle{Correspondence (4) : Summary}
+\begin{center}
+\begin{tabular}{c|c}
+computation tree & arena \\ \\
+traversals & uncovered plays \\ \\
+reduced traversal & plays \\ \\
+paths in the computation tree & P-views of uncovered plays
+\end{tabular}
+\end{center}
+}
 
 \end{document}

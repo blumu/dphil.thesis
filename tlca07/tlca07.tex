@@ -20,7 +20,7 @@
 \newcommand\captsubst[2]{\{#1/#2 \}}
 
 % computation tree, eta normal form, traversals
-\newcommand\aux[1]{\lceil #1\rceil}
+\newcommand{\elnf}[1]{\lceil #1\rceil} % eta long normal form
 \newcommand\travset{\mathcal{T}rv}
 
 % lambda calculus
@@ -364,6 +364,8 @@ $ \ord{x} \geq \ord{\lambda y_1 \ldots y_p . T} \geq 1+ \ord{y_i} > \ord{y_i}$
 which gives a a contradiction. \qed
 \end{proof}
 
+\subsection{Reductions and transformations preserving safety}
+
 From now on we will use the standard notation $M\subst{N}{x}$ to denote the substitution of $N$ for $x$ in $M$.
 It is understood that, provided that $M$ and $N$ are safe, this substitution
 is implemented by capture-permitting substitution.
@@ -376,8 +378,8 @@ If $\Gamma, x \vdash M$ and $\Gamma \vdash N$ then $\Gamma \vdash M[N/x]$.
 This is proved by an easy induction on the structure of the safe term $M$.
 
 
-It is desirable to have an appropriate notion of reduction for our calculus. However the standard $\beta$-reduction rule is not adequate. Indeed, safety is not preserved by $\beta$-reduction as the following example shows. Suppose that $w,x,y,z : o$ and $\varphi : (o,o,o)$ then the safe term $(\lambda x y . \varphi x y) z w$ $\beta$-reduces to $(\underline{\lambda y . \varphi z y}) w$ which is unsafe since the underline order-1 subterm  contains a free occurrence of variable $z$ of ground type. However if we perform one more reduction we obtain the safe term
-$\varphi z w$. This suggests an alternative notion of reduction that performs simultaneous reduction of consecutive $\beta$-redexes. In order to define this reduction we first introduce an appropriate notion of redex.
+It is desirable to have an appropriate notion of reduction for our calculus. However the standard $\beta$-reduction rule is not adequate. Indeed, safety is not preserved by $\beta$-reduction as the following example shows. Suppose that $w,x,y,z : o$ and $f : (o,o,o) \in \Sigma$ then the safe term $(\lambda x y . f x y) z w$ $\beta$-reduces to $(\underline{\lambda y . f z y}) w$ which is unsafe since the underline order-1 subterm  contains a free occurrence of variable $z$ of ground type. However if we perform one more reduction we obtain the safe term
+$f z w$. This suggests an alternative notion of reduction that performs simultaneous reduction of consecutive $\beta$-redexes. In order to define this reduction we first introduce an appropriate notion of redex.
 
 In the simply typed $\lambda$-calculus a redex is a term of the form
 $(\lambda x . M) N$. In the safe $\lambda$-calculus, a redex is a succession of several standard redexes:
@@ -445,6 +447,81 @@ and if $n \leq l$ we can use the {\sf(app)} rule to form $\Gamma \vdash t \equiv
 \qed
 \end{proof}
 
+In general, safety is not preserved by $\eta$-expansion for instance we have $f:o,o \vdash f$ but $f:o,o \not \vdash \lambda x^o . f x$.
+This remark remains true for closed terms, for instance $\vdash \lambda y z . y$ but 
+$\not \vdash \lambda x . (\lambda y z . y) x$.
+However, as the following lemma shows, safety is preserved by $\eta$-reduction:
+
+\begin{lemma}[Safety is preserved by $\eta$-reduction]
+$\Gamma \vdash \lambda \varphi . s \varphi $ with $\varphi$ not occurring free in $s$ implies $\Gamma \vdash s$.
+\end{lemma}
+\begin{proof}
+Suppose $\Gamma \vdash \lambda \varphi . s \varphi $. If $s$ is an abstraction then by construction of the safe term $\lambda \varphi . s \varphi$, $s$ is necessarily safe.
+If $s$ is an applicative term: $s = N_0 \ldots N_p$ for $p\geq 1$ then again, since $\lambda \varphi . N_0 \ldots N_p \varphi$ is safe, each of the $N_i$ is safe for $0 \leq i \leq p$ and for any $z\in \Gamma$, $\ord{z} \geq \ord{\lambda \varphi . s \varphi} = \ord{s}$. Hence, since $\varphi \not\in \Gamma$, we obtain $\Gamma \vdash N_0 \ldots N_p = s$ using the application rule.
+\end{proof}
+
+
+
+The $\eta$-long normal form of a term is obtained by hereditarily $\eta$-expanding every
+subterm occurring at an operand position.
+It also appeared in the literature \cite{DBLP:journals/tcs/JensenP76,DBLP:journals/tcs/Huet75,huet76} under the names \emph{long reduced form}, \emph{$\eta$-normal form} and \emph{extensional form}.
+
+\begin{definition}
+The \defname{$\eta$-long normal form} $\elnf{t}$ of a term $t: (A_1,\ldots,A_n,o)$ with $n \geq 0$ is defined as follows:
+\begin{eqnarray*}
+\elnf{\lambda x . s } &=& \lambda x . \elnf{s} \\
+\elnf{x s_1 \ldots s_m } &=& \lambda \overline{\varphi} . x \elnf{s_1}\ldots \elnf{s_m} \elnf{\varphi_1} \ldots \elnf{\varphi_n} \\
+\elnf{(\lambda x . s) s_1 \ldots s_p } &=& \lambda \overline{\varphi} . (\lambda x . \elnf{s}) \elnf{s_1} \ldots \elnf{s_p} \elnf{\varphi_1} \ldots \elnf{\varphi_n}
+\end{eqnarray*}
+where $m \geq 0$, $p\geq 1$, $x$ is a  variable or constant, $\overline{\varphi} = \varphi_1 \ldots \varphi_n$ and each $\varphi_i : A_i$ is a fresh variable.
+\end{definition}
+
+%\begin{remark}
+%Converting a term to its $\eta$-long normal form does not introduce new redex therefore
+%the $\eta$-long normal form of $\beta$-normal term is a $\beta$-normal term.
+%\end{remark}
+
+\begin{lemma}[$\eta$-long normalisation preserves safety]
+If $\Gamma \vdash s$ then $\Gamma \vdash \elnf{s}$.
+\end{lemma}
+\begin{proof}
+
+First we observe that for any variable or constant $x$ we have $x \vdash \elnf{x}$. The proof is by induction on $\ord{x}$. Base case: $x$ is of ground type and we have $x \vdash x = \elnf{x}$. Step case:
+$x:(A_1, \ldots, A_n,o)$ with $n>0$. Let $\varphi_i:A_i$ be fresh variables for $1\leq i\leq n$. The (var) rules gives $\varphi_i  \vdash \varphi_i$ and since $\ord{A_i} < \ord{x}$ the induction hypothesis gives $\varphi_i \vdash \elnf{\varphi_i}$. Using (wk) we obtain $x, \overline{\varphi} \vdash \elnf{\varphi_i}$.
+The application rule gives $x, \overline{\varphi} \vdash x \elnf{\varphi_1} \ldots \elnf{\varphi_n} : o$ and the abstraction rule gives $ x \vdash \lambda \overline{\varphi} . x \elnf{\varphi_1} \ldots \elnf{\varphi_n} = \elnf{x}$.
+
+
+We now prove the lemma by induction on the structure of $s$.
+The base case (where $s$ is some variable $x$) is covered by the previous observation.
+\emph{Step case:} 
+\begin{itemize}
+\item $s = x s_1 \ldots s_m$ with $x: (B_1, \ldots, B_m, A_1, \ldots, A_n, o)$ with $m\geq 0$, $n>0$ and $s_i : B_i$ for $1 \leq i \leq m$. 
+
+Let $\varphi_i: A_i$ be fresh variables for $1\leq i \leq n$. By the previous observation we have $\varphi_i \vdash \elnf{\varphi_i}$ which in turn gives $\Gamma , \overline{\varphi} \vdash \elnf{\varphi_i}$ using the weakening rule.
+
+The judgement $\Gamma \vdash x s_1 \ldots s_m$ is formed using the (app) rule therefore each $s_j$ is safe for $1\leq j \leq m$. By the induction hypothesis we have $\Gamma \vdash \elnf{s_j}$ and by weakening we get $\Gamma, \overline{\varphi} \vdash \elnf{s_j}$.
+
+The application rule gives $\Gamma, \overline{\varphi} \vdash 
+x \elnf{s_1} \ldots \elnf{s_m} \elnf{\varphi_1} \ldots \elnf{\varphi_n} : o$. Finally the (abs) rule gives $\Gamma \vdash \lambda \overline{\varphi} . x \elnf{s_1} \ldots \elnf{s_m}  \elnf{\varphi_1} \ldots \elnf{\varphi_n} = \elnf{s}$, the side-condition of (abs) being met since $\ord{\elnf{s}} = \ord{s}$.
+
+
+\item $s = t s_0 \ldots s_m$ where $t$ is an abstraction. Again, using the induction hypothesis it is easy to show that $\Gamma \vdash \elnf{s} = \elnf{t} \elnf{s_0} \ldots \elnf{s_m} \elnf{\varphi_1} \ldots \elnf{\varphi_n}$ holds for some fresh variables $\varphi_1$, \ldots, $\varphi_n$.
+
+\item $s = \lambda \overline{\eta} . t$ where $t$ is not an abstraction. By the induction hypothesis we have $\Gamma, \overline{\eta} \vdash \elnf{t}$ and by the abstraction rule we have $\Gamma \vdash \lambda \overline{\eta} . \elnf{t} = \elnf{s}$.
+\end{itemize}
+\end{proof}
+
+Note that in general the converse does not hold, for instance the term $\lambda x^o . f^{o,(o,o),o} x^o$ is unsafe however $\elnf{\lambda x . f x} = \lambda x^o \varphi^{o,o} . f x \varphi$ is safe (and not homogeneous). However for terms with homogeneous types the converse does hold:
+\begin{lemma}
+If $\Gamma \vdash \elnf{s}$ is homogeneously safe (i.e. it is a safe judgement of the safe $\lambda$-calculus and each sequent occurring at the nodes of the proof tree is homogeneously typed) then
+$\Gamma \vdash s$ is homogeneously safe.
+\end{lemma}
+\begin{proof}
+
+\end{proof}
+
+
+
 
 \section{Computation tree, Traversals and Correspondence}
 \label{sec:correspondence}
@@ -461,25 +538,6 @@ constants since we can just consider them as free variables. Moreover there is n
 
 In the following, we fix a simply typed term $M$ of type $T$ with variables in $\mathcal{V}$, a countable set of variables.
 \subsection{Computation Tree}
-
-The $\eta$-long normal form of a term is obtained by hereditarily $\eta$-expanding every
-subterm occurring at an operand position.
-It also appeared in the literature \cite{DBLP:journals/tcs/JensenP76,DBLP:journals/tcs/Huet75,huet76} under the names \emph{long reduced form}, \emph{$\eta$-normal form} and \emph{extensional form}.
-
-\begin{definition}
-The \defname{$\eta$-long normal form} $\aux{M}$ of a term $M: (A_1,\ldots,A_n,o)$ is defined as follows:
-\begin{eqnarray*}
-\aux{\lambda x . s } &=& \lambda x . \aux{s} \\
-\aux{x s_1 \ldots s_m } &=& \lambda \overline{\varphi} . x \aux{s_1}\ldots \aux{s_m} \aux{\varphi_1} \ldots \aux{\varphi_n} \\
-\aux{(\lambda x . s) s_0 \ldots s_m } &=& \lambda \overline{\varphi} . (\lambda x . \aux{s}) \aux{s_0} \ldots \aux{s_m} \aux{\varphi_1} \ldots \aux{\varphi_n}
-\end{eqnarray*}
-where $n,m \geq 0$, $x$ is a  variable, and each $\varphi_i : A_i$ is a fresh variable.
-\end{definition}
-
-%\begin{remark}
-%Converting a term to its $\eta$-long normal form does not introduce new redex therefore
-%the $\eta$-long normal form of $\beta$-normal term is a $\beta$-normal term.
-%\end{remark}
 
 Computation trees were proposed in \cite{OngLics2006} for the purpose of studying the infinite tree structures generated by higher-order grammars. The computation tree of a grammar is defined as the unravelling of a finite graph representing the long transform of a grammar. Similarly, we define the computation tree of a $\lambda$-term to be the abstract syntax tree of its $\eta$-long normal form.
 
@@ -505,8 +563,8 @@ At odd levels, there are the variable and application nodes.
 We write $N$ for the set of nodes of $\tau$, $N_@$ for the set of @-labelled nodes,
 $N_{var}$ for the set of variable nodes,
 $N_{fv}$ for the subset of $N_{var}$ constituted of free-variable nodes and $r$ for the root of $\tau(M)$.
-For $n \in N$, we write $\kappa(n)$ to denote the subterm of $\aux{M}$
-corresponding to the subtree of $\tau(M)$ rooted at $n$, in particular $\kappa(r) = \aux{M}$.
+For $n \in N$, we write $\kappa(n)$ to denote the subterm of $\elnf{M}$
+corresponding to the subtree of $\tau(M)$ rooted at $n$, in particular $\kappa(r) = \elnf{M}$.
 The \defname{order} of a variable node $n$ labelled by $x$ of type $T$ 
 is defined as $\ord{n} = \ord{T}$, the order of the root is $\ord{r} = \ord{\lambda \overline{x} . M}$ where $\overline{x}$ are the free variables of $M$ and for $n$ in $(N_\lambda \union N_@) \setminus \{ r \}$, $\ord{n} = \ord{\kappa(n)}$.
 

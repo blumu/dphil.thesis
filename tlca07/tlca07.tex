@@ -25,6 +25,7 @@
 
 % lambda calculus
 %\newcommand\bot{\perp}
+\newcommand{\encode}[1]{\ulcorner #1 \urcorner}
 \newcommand\dps{\displaystyle}
 \newcommand\rulef[2]{\frac{\dps #1}{\dps #2}}
 \newcommand\rulefex[3][5pt]{\frac{\dps #2}{\stackrel{\rule{0pt}{#1}}{\dps #3}}}
@@ -114,9 +115,11 @@
 
 \begin{abstract}
 The \emph{safety condition} has been introduced in \cite{KNU02} as a syntactic restriction for higher-order grammars that constrains occurrences of variables in the grammar equations according to their order.
-When transposed to the $\lambda$-calculus, the safety condition gives rise to the \emph{safe $\lambda$-calculus}, an $\alpha$-conversion free sub-language of the $\lambda$-calculus (\cite{safety-mirlong2004}).
+When transposed to the $\lambda$-calculus, the safety condition gives rise to the \emph{safe $\lambda$-calculus}, an $\alpha$-conversion free sub-language of the $\lambda$-calculus \cite{safety-mirlong2004}.
 
-We present a new version of safe $\lambda$-calculus and give a game-semantic account of it. In particular we show that pointers are superfluous in the game denotation of safe terms i.e. there is an algorithm that, given a play belonging to the strategy denotation of a safe term, recovers uniquely the pointers from the underlying sequence of moves.
+We propose a simpler definition for the safe $\lambda$-calculus which does not require the type homogeneity constraint originally used in 
+\cite{KNU02} to define safety. We then present an adequate notion of $\beta$-reduction that preserves safety.
+Finally we give a game-semantic account and we show that pointers are superfluous in the game denotation of safe terms i.e. there is an algorithm that, given a play belonging to the strategy denotation of a safe term, recovers uniquely the pointers from the underlying sequence of moves.
 \end{abstract}
 
 
@@ -511,7 +514,7 @@ x \elnf{s_1} \ldots \elnf{s_m} \elnf{\varphi_1} \ldots \elnf{\varphi_n} : o$. Fi
 \end{itemize}
 \end{proof}
 
-Note that in general the converse does not hold, for instance the term $\lambda x^o . f^{o,(o,o),o} x^o$ is unsafe however $\elnf{\lambda x . f x} = \lambda x^o \varphi^{o,o} . f x \varphi$ is safe (and not homogeneous). However for terms with homogeneous types the converse does hold:
+Note that in general the converse does not hold, for instance $\lambda x^o . f^{o,(o,o),o} x^o$ is unsafe although $\elnf{\lambda x . f x} = \lambda x^o \varphi^{o,o} . f x \varphi$ is safe (and not homogeneous). For terms with homogeneous types however, the converse does hold:
 \begin{lemma}
 If $\Gamma \vdash \elnf{s}$ is homogeneously safe (i.e. it is a safe judgement of the safe $\lambda$-calculus and each sequent occurring at the nodes of the proof tree is homogeneously typed) then
 $\Gamma \vdash s$ is homogeneously safe.
@@ -520,7 +523,26 @@ $\Gamma \vdash s$ is homogeneously safe.
 
 \end{proof}
 
+\subsection{Numerical Functions Representable in the Safe $\lambda$-Calculus}
 
+Natural numbers can be encoded into the simply-typed $\lambda$-calculus 
+using the Church Numerals: each constant $n\in\nat$ is encoded into the term $\encode{n} = \lambda s z. s^n z$ of type $I = ((o,o),o,o)$ where $o$ is a ground type.  In \cite{citeulike:622637}, Schwichtenberg showed that with this encoding, the numerical functions representable in the simply typed $\lambda$-calculus are exactly the multivariate polynomials \emph{extended with the conditional function}:
+\begin{theorem}[Schwichtenberg, 1979]
+The functions representable by $\lambda$-terms of type $I\rightarrow I \rightarrow \ldots \rightarrow I$ are exactly the multivariate polynomials extended with the conditional operator.
+\end{theorem}
+
+If we limit ourselves to safe terms, the representable functions are exactly the multivariate polynomials:
+\begin{theorem}
+\label{thm:polychar}
+The functions representable by safe $\lambda$-expressions of type $I\rightarrow I \rightarrow \ldots \rightarrow I$ are exactly the multivariate polynomials.
+\end{theorem}
+
+\begin{corollary}
+The conditional operator $C:I\rightarrow I\rightarrow I \rightarrow I$ verifying  $C t y z \rightarrow_\beta y$  if $t \rightarrow_\beta \encode{0}$ and $C t y z \rightarrow_\beta z$ if $t \rightarrow_\beta \encode{n+1}$ is not definable in the safe simply typed $\lambda$-calculus.
+\end{corollary}
+
+For instance, the term $ C = \lambda F G H \alpha x . H ( \underline{\lambda y . G \alpha x} ) (F \alpha x)$ used in \cite{citeulike:622637} to define the conditional operator is
+unsafe since the underlined term is of order $1$, occurs at an operand position and contains an occurrence of $x$ of order $0$.
 
 
 \section{Computation tree, Traversals and Correspondence}
@@ -839,13 +861,17 @@ We introduce the two notations $\travset(M)^{-@} = \{ t - @ \ | \  t \in \travse
 
 \begin{lemma}[View of a traversal reduction]
 \label{lem:redtrav_trav}
-If $M$ is in $\beta$-normal form then $\travset(M)^{-@} \cong \travset(M) \cong  \travset(M)^{\upharpoonright r }$ and for all $t\in \travset(M)$:
+If $M$ is in $\beta$-normal form then $\travset(M)^{-@} =\travset(M) = \travset(M)^{\upharpoonright r }$ and for all $t\in \travset(M)$:
 \begin{itemize}
 \item[(i)] $ \pview{?(t) \upharpoonright  r } = \pview{?(t)} \upharpoonright r$;
 \item[(ii)] if the last node in $t$ is hereditarily justified by $r$ then $ \oview{?(t) \upharpoonright r } = \oview{?(t)}$.
 \end{itemize}
 \end{lemma}
-
+In the safe $\lambda$-calculus without interpreted constants this lemma follows immediately from the fact that
+$\travset(M) = \travset(M)^{\upharpoonright r }$. The lemma remains valid in the presence of interpreted constants provided that the traversal rules implementing the constants are \emph{well-behaved}.\footnote{A traversal rule is \defname{well-behaved} if it can be stated under the form
+``$t = t_1\cdot n \cdot t_2 \in \travset \zand ?(t_2) = \epsilon \zand n \in N_{\Sigma}\union N_{var} \zand P(t) \zand m\in S(t) \imp
+t_1\cdot \rnode{n}{n} \cdot t_2 \cdot \rnode{m}{m} \in \travset \link[nodesep=1pt]{26}{m}{n}$''
+for some expression $P$ expressing a condition on $t$ and function $S$ mapping traversals of the form of $t$ to a subset of the children of $n$.}
 
 \subsection{Relationship between Computation Tree and Game Arena}
 We consider the well-bracketed game model of the simply typed $\lambda$-calculus.
@@ -865,7 +891,7 @@ is of type $A_i$. The function $\psi_M^{n,q}$ from $V^{\upharpoonright n}$ to $\
 \psi^{n,q}_M &=& \{ n \mapsto q \} \union  \{ v_n \mapsto v_q \ | \ v \in \mathcal{D} \}\\
  &&\union \left\{
                 \begin{array}{ll}
-                  \emptyset, & \hbox{if $p=0$;} \\
+                  \emptyset, & \hbox{if $p=0$\ ;} \\
                   \Union_{m \in N | n \vdash_i m} \psi_M^{m, q^i}, & \hbox{if $p\geq1$ and $n\in N_{\lambda}$\ ;} \\
                   \Union_{i=1..p} \psi_M^{n.i, q^i}, & \hbox{if $p\geq1$ and $n\in N_{var}$\ .}
                 \end{array}
@@ -1186,11 +1212,7 @@ is continuous.
 
 Although \pcf\ computation trees can be infinite, lemma \ref{lem:safe_imp_incrbound} still holds:
 Safe \pcf\ computation trees are incrementally-bound.
-Moreover since \pcf\ traversal rules are \emph{well-behaved}
-\footnote{A traversal rule is \defname{well-behaved} if it can be stated under the form
-``$t = t_1\cdot n \cdot t_2 \in \travset \zand ?(t_2) = \epsilon \zand n \in N_{\Sigma}\union N_{var} \zand P(t) \zand m\in S(t) \imp
-t_1\cdot \rnode{n}{n} \cdot t_2 \cdot \rnode{m}{m} \in \travset \link[nodesep=1pt]{26}{m}{n}$''
-for some expression $P$ expressing a condition on $t$ and function $S$ mapping traversals of the form of $t$ to a subset of the children of $n$.}, lemma \ref{lem:redtrav_trav} remains true in the presence of
+Moreover since \pcf\ traversal rules are \emph{well-behaved}, lemma \ref{lem:redtrav_trav} remains true in the presence of
 constants and therefore the game-semantic analysis of safety remains valid for \pcf:
 \begin{theorem}
 In the game semantics of Safe PCF, pointers are superfluous.
@@ -1227,8 +1249,8 @@ seems feasible although the presence of the base type \iavar, whose
 game arena $\iacom^{\nat} \times \iaexp$ has infinitely many initial moves, causes
 a mismatch between the simple tree representation of the term and its game arena. This suggests the use of ``computation directed acyclic graphs'' instead of computation trees.
 
-\bibliographystyle{splncs}
-%\bibliography{../bib/higherorder,../bib/gamesem}
+%\bibliographystyle{splncs}
+%\bibliography{../bib/higherorder,../bib/gamesem,../bib/lambdacalculus}
 \begin{thebibliography}{10}
 
 \bibitem{KNU02}
@@ -1312,6 +1334,11 @@ Huet, G.P.:
   1,2,...,$\omega$.
 \newblock Th{\`e}se de doctorat es sciences math{\'e}matiques, Universit{\'e}
   Paris VII (1976)
+
+\bibitem{citeulike:622637}
+Schwichtenberg, H.:
+\newblock Definierbare funktionen im lambda-kalkul mit typen.
+\newblock Archiv Logik Grundlagenforsch \textbf{17} (1976)  113--114
 
 \bibitem{OngHoMchecking2006}
 Ong, C.H.L.:

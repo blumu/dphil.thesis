@@ -367,6 +367,12 @@ $ \ord{x} \geq \ord{\lambda y_1 \ldots y_p . T} \geq 1+ \ord{y_i} > \ord{y_i}$
 which gives a a contradiction. \qed
 \end{proof}
 
+\begin{example}
+In order to contract the $\beta$-redex in the term $f:(o,o,o),x:o \vdash (\lambda \varphi^{(o,o)} x^o . \varphi x) (\underline{f x})$ one needs to rename the bound variable $x$ into a fresh name to prevent the free occurrence of $x$ in the underline term from being captured during substitution. Consequently, by the previous lemma, this term is not safe. Indeed, it cannot be safe since $\ord{x} = 0 < 1 = \ord{f x}$.
+\end{example}
+
+Note that safety does not capture the entire set of $\alpha$-conversion free terms. For instance the reduction $\lambda y^o z^o. (\lambda x^o .y) z \betared \lambda yz.y$ can be done via capture-permitting substitution although the first term is not safe.
+
 \subsection{Reductions and transformations preserving safety}
 
 From now on we will use the standard notation $M\subst{N}{x}$ to denote the substitution of $N$ for $x$ in $M$.
@@ -431,7 +437,7 @@ the safe $\lambda$-calculus.
 \noindent \emph{Remark:} The $\beta_s$-reduction is a multi-step $\beta$-reduction i.e. $\betared \subset \betasred \subset \betaredtr$\ .
 
 
-\begin{lemma}[$\beta_s$ reduction preserves safety]
+\begin{lemma}[$\beta_s$-reduction preserves safety]
 \label{lem:homoh_safered_preserve_safety}
 If $\Gamma \vdash s$ and $s \betasred t$ then $\Gamma \vdash t$.
 \end{lemma}
@@ -455,7 +461,7 @@ This remark remains true for closed terms, for instance $\vdash \lambda y z . y$
 $\not \vdash \lambda x . (\lambda y z . y) x$.
 However, as the following lemma shows, safety is preserved by $\eta$-reduction:
 
-\begin{lemma}[Safety is preserved by $\eta$-reduction]
+\begin{lemma}[$\eta$-reduction preserves safety]
 $\Gamma \vdash \lambda \varphi . s \varphi $ with $\varphi$ not occurring free in $s$ implies $\Gamma \vdash s$.
 \end{lemma}
 \begin{proof}
@@ -525,16 +531,15 @@ $\Gamma \vdash s$ is homogeneously safe.
 
 \subsection{Numerical Functions Representable in the Safe $\lambda$-Calculus}
 
-Natural numbers can be encoded into the simply-typed $\lambda$-calculus 
-using the Church Numerals: each constant $n\in\nat$ is encoded into the term $\encode{n} = \lambda s z. s^n z$ of type $I = ((o,o),o,o)$ where $o$ is a ground type.  In \cite{citeulike:622637}, Schwichtenberg showed that with this encoding, the numerical functions representable in the simply typed $\lambda$-calculus are exactly the multivariate polynomials \emph{extended with the conditional function}:
+Natural numbers can be encoded into the simply-typed $\lambda$-calculus using the Church Numerals: each $n\in\nat$ is encoded into the term $\encode{n} = \lambda s z. s^n z$ of type $I = ((o,o),o,o)$ where $o$ is a ground type.  In \cite{citeulike:622637}, Schwichtenberg showed that the numerical functions representable in the simply typed $\lambda$-calculus with this encoding are exactly the multivariate polynomials \emph{extended with the conditional function}:
 \begin{theorem}[Schwichtenberg, 1979]
-The functions representable by $\lambda$-terms of type $I\rightarrow I \rightarrow \ldots \rightarrow I$ are exactly the multivariate polynomials extended with the conditional operator.
+The functions representable by $\lambda$-terms of type $I\rightarrow \ldots \rightarrow I$ are exactly the multivariate polynomials extended with the conditional operator.
 \end{theorem}
 
 If we limit ourselves to safe terms, the representable functions are exactly the multivariate polynomials:
 \begin{theorem}
 \label{thm:polychar}
-The functions representable by safe $\lambda$-expressions of type $I\rightarrow I \rightarrow \ldots \rightarrow I$ are exactly the multivariate polynomials.
+The functions representable by safe $\lambda$-expressions of type $I\rightarrow \ldots \rightarrow I$ are exactly the multivariate polynomials.
 \end{theorem}
 
 \begin{corollary}
@@ -578,9 +583,9 @@ a $\mathcal{L}$-labelled tree defined from its $\eta$-normal form as follows:
 where $s:o$ is not an abstraction and $x$ is a variable.
 \end{definition}
 
-At even levels there are the $\lambda$-nodes. A single $\lambda$-node can represent several consecutive variable abstractions or it can just be
+Even-level nodes are $\lambda$-nodes. A single $\lambda$-node can represent several consecutive variable abstractions or it can just be
 a \textsl{dummy lambda} if the corresponding subterm is of ground type.
-At odd levels, there are the variable and application nodes.
+Odd-level nodes are variable or application nodes.
 
 We write $N$ for the set of nodes of $\tau$, $N_@$ for the set of @-labelled nodes,
 $N_{var}$ for the set of variable nodes,
@@ -1148,19 +1153,18 @@ by Proposition \ref{prop:incrbound_imp_incrjustified}, $\sem{f (\lambda
 y .x)}$ is not incrementally-justified (although $\sem{f}$ and $\sem{\lambda y. x}$ are).
 %\end{example}
 
-\begin{lemma}[Safety and incremental-binding]
-\label{lem:safe_imp_incrbound}
+\begin{proposition}[Safety and incremental-binding]
+\label{prop:safe_imp_incrbound}
 The computation tree of a a safe term is incrementally-bound.
 Reciprocally, a \emph{closed} simply typed term with an incrementally-bound computation tree has a safe $\eta$-normal form.
-\end{lemma}
+\end{proposition}
 
 The hypothesis that $M$ is closed is necessary, for instance for $x,y:o$, $\tau(\lambda x y .x) = \tau(\lambda y . x)$
 are incrementally-bound but $\lambda x y .x$ is safe and not $\lambda y . x$.
 
 
 
-Putting proposition \ref{prop:incrbound_imp_incrjustified} and lemma
-\ref{lem:safe_imp_incrbound} together gives:
+Putting propositions \ref{prop:incrbound_imp_incrjustified} and \ref{prop:safe_imp_incrbound} together gives:
 \begin{corollary}[Safety and incremental-justification]
 A closed simply typed term has an
 incrementally-justified denotation if and only the $\eta$-normal form of
@@ -1173,7 +1177,7 @@ Safe $\lambda$-terms are unnecessary i.e. uniquely recoverable from the underlyi
 \end{theorem}
 \begin{proof}
 Let $M$ be a safe simply typed term. Its $\beta$-normal form $M'$
-is also safe. By Lemma \ref{lem:safe_imp_incrbound}
+is also safe. By Proposition \ref{prop:safe_imp_incrbound}
 (i), $\tau(M')$ is incrementally-bound and by Proposition
 \ref{prop:incrbound_imp_incrjustified}, $\sem{M'}$ is an
 incrementally-justified strategy. The soundness of the game model gives $\sem{M} = \sem{M'}$.
@@ -1210,7 +1214,7 @@ function $\travset^{\upharpoonright r}$ from the set of sets of justified sequen
 is continuous.
 
 
-Although \pcf\ computation trees can be infinite, lemma \ref{lem:safe_imp_incrbound} still holds:
+Although \pcf\ computation trees can be infinite, Proposition \ref{prop:safe_imp_incrbound} still holds:
 Safe \pcf\ computation trees are incrementally-bound.
 Moreover since \pcf\ traversal rules are \emph{well-behaved}, lemma \ref{lem:redtrav_trav} remains true in the presence of
 constants and therefore the game-semantic analysis of safety remains valid for \pcf:
@@ -1389,7 +1393,7 @@ Reynolds, J.C.:
 \end{thebibliography}
 
 
-\section*{Appendix : Proof of Lemma \ref{lem:safe_imp_incrbound}}
+\section*{Appendix : Proof of Proposition \ref{prop:safe_imp_incrbound}}
 (i) Suppose that $M$ is safe. Safety is preserved after
 taking the $\eta$-normal form, therefore $\tau(M)$ is the tree representation of a safe term.
 

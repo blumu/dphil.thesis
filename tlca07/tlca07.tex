@@ -334,7 +334,7 @@ We write $M\captsubst{N}{x}$ to denote the capture-permitting substitution of $N
 by textually replacing all free occurrences of $x$ in $M$ by $N$ without performing variable renaming.
 In particular for the abstraction case
 $(\lambda \overline{y} . P)\captsubst{N}{x}$ is
-equal to $\lambda \overline{y} . P\captsubst{N}{x}$ if $x\not\in \overline{y}$ and $\lambda \overline{y} . P$ elsewhere.}
+defined as $\lambda \overline{y} . P\captsubst{N}{x}$ if $x\not\in \overline{y}$ and $\lambda \overline{y} . P$ elsewhere.}
 
 \begin{lemma}[No variable capture]
 \label{lem:homog_nocapture} There is
@@ -423,7 +423,7 @@ The relation $\beta_s$ is defined on the set of safe redex as:
 \{ \ (\lambda \overline{x} : \overline{A} . T) N_1 \ldots N_l \mapsto T\subst{\overline{N}}{\overline{x}} N_{n+1} \ldots N_l
 \mbox{, for $n\leq l$} \} \ .
 \end{eqnarray*}
-
+where $T\subst{\overline{N}}{\overline{x}}$ denotes the simultaneous substitution of $N_1,\ldots,N_n$ for $x_1, \ldots, x_n$ in $T$.
 The \defname{safe $\beta$-reduction}, written $\betasred$, is the closure of
 the relation $\beta_s$ by compatibility with the formation rules of
 the safe $\lambda$-calculus.
@@ -548,9 +548,8 @@ Natural numbers are encoded using Church Numerals: $\encode{n} = \lambda s z. s^
 Addition: for $n,m \in \nat$, $\encode{n+m} = \lambda \alpha^{(o,o)} x^o . (\encode{n} \alpha) (\encode{m} \alpha x)$. Multiplication: $\encode{n . m} = \lambda \alpha^{(o,o)} . \encode{n} (\encode{m} \alpha)$.
 All these terms are safe and clearly any multivariate polynomial $P(n_1, \ldots, n_k)$ can be computed by composing the addition and multiplication terms as appropriate.
 
-We now prove the converse. We consider safe lambda terms of type $I\rightarrow I  \rightarrow I$ which corresponds to polynomials with 2 variables. The generalisation to terms of type $I^n \rightarrow I$ for $n>2$ is immediate (they correspond to polynomials with $n$ variables).
- 
-Consider a safe $\lambda$-term $U:I\rightarrow I\rightarrow I$. Without lose of generality we can assume that $U = \lambda x y \alpha z. u$ where $u$ is a safe term of ground type in $\beta$-normal form with $fv(u) \subseteq \{ x, y : I, z :o, \alpha : o\rightarrow o \}$.
+We now prove the converse. Let $U$ be a safe $\lambda$-term of type $I\rightarrow I\rightarrow I$. 
+The generalisation to terms of type $I^n \rightarrow I$ for $n>2$ is immediate (they correspond to polynomials with $n$ variables). Without lose of generality we can assume that $U = \lambda x y \alpha z. u$ where $u$ is a safe term of ground type in $\beta$-normal form with $fv(u) \subseteq \{ x, y : I, z :o, \alpha : o\rightarrow o \}$.
 
 \emph{Notation:} Let $T$ be a set of terms of type $\tau \rightarrow \tau$ and $T'$ be a set of terms of type $\tau$ then $T \cdot T'$ denotes the set of terms $\{ s s' : \tau \ | \ s \in T \wedge s' \in T' \}$. We also define 
 $T^k \cdot T'$ recursively as follows:  $T^0 \cdot T' = T'$ and
@@ -566,14 +565,12 @@ It is easy to see that the following equations hold:
 \mathcal{N}^{(o,o)} &=& B \union \mathcal{A}^I \cdot
 \mathcal{N}^{(o,o)} = (\mathcal{A}^I)^* \cdot B \\
 \mathcal{A}^{(o,o)} &=& \{ \alpha \} \union (\mathcal{A}^I)^+ \cdot B \\
-\mathcal{A}^o = \mathcal{N}^o &=& \{ z \} \union \mathcal{A}^{(o,o)} \cdot \mathcal{N}^o = (\mathcal{A}^{(o,o)})^* \cdot \{ z \} \\
+\mathcal{A}^o = \mathcal{N}^o &=& \{ z \} \union \mathcal{A}^{(o,o)} \cdot \mathcal{N}^o = (\mathcal{A}^{(o,o)})^* \cdot \{ z \}
 \end{eqnarray*}
-
 Consequently, $\mathcal{A}^o = \left( \{\alpha \} \union \{x,y\}^+ \cdot \left( \{\alpha \} \union \{\lambda a.b \ | \ b \in \{a,z\}, a \neq z \} \right) \right)^* \cdot \{ z \}$.
 
-We have $u \in \mathcal{A}^o$. Moreover since $u$ is a safe term,
-terms of the form $\lambda a . z$ with $a \neq z$ cannot occur at an
-operand position in $u$. Therefore:
+$u$ belongs to $\mathcal{A}^o$ and since it is safe,
+terms of the form $\lambda a . z$ with $a \neq z$ cannot occur at an operand position in $u$. Therefore:
 \begin{equation}
 u \in \left( \{\alpha\} \union \{x,y\}^+ \cdot \{\alpha,
 \underline{i} \} \right)^* \cdot \{ z \} \label{eqn:u}
@@ -591,7 +588,7 @@ $\encode{k_1}\ldots \encode{k_l} \alpha =_\beta
 \{ \encode{m^i n^j} \alpha \ |\ i+j \geq 1 \} \nonumber \\
 &= \{ \encode{m^i n^j} \alpha \ |\ i,j \geq 0 \} & ( \mbox{since } \encode{0} \alpha = \underline{i}) \label{eqn:intermediate}
 \end{align}
-and we have:
+and therefore:
 \begin{align*}
 u[\encode{m} \encode{n}/x,y] &\in \left( \{ \alpha \} \union \{\encode{m},\encode{n}\}^+ \cdot \{\alpha, \underline{i} \} \right)^* \cdot \{ z \}  & \mbox{(by eq. \ref{eqn:u})} \\
 &=_\beta \left( \{\alpha \} \union \{ \encode{m^i n^j}
@@ -632,7 +629,7 @@ A strategy $\sigma$ is said to be \defname{P-incrementally-justified}
 if for any play $s q \in \sigma$ where $q$ is a P-question,
 $q$ points to the last O-move in $\pview{?(s)}$ with order strictly greater than $\ord{q}$.
 \end{definition}
-
+Note that P-incremental-justification does not imply innocence: the pointer is determined by the P-view but the choice of the move itself can be based on the whole history of the play.
 \begin{example}
 Take the evaluation map $ev : (o^1 \Rightarrow o^2) \times  o^3 \rightarrow o^4$ and
 the play $s = q^4 q^2 q^1 q^3 \in \sem{ev}$. We have $\ord{q^4} = \ord{q^2} = 1 > \ord{q^1} = \ord{q^3} = 0$.
@@ -692,12 +689,13 @@ To which extend incrementally-justified strategy compose? Can we obtain a fully 
 
 More generally, it would be nice to have a better understanding of the class of languages for which pointers are uniquely recoverable. We name this class PUR for ``Pointers Uniquely Recoverable''. PUR-languages are good candidates of languages with decidable observational equivalence.
 
-Serially Re-entrant Idealized Algol proposed by Abramsky  in \cite{abramsky:mchecking_ia} is an example of PUR language: it allows multiple occurrences or uses of arguments, as long as they do not overlap in time. Therefore in the game denotation, a given question occurs pending at most once at any time hence each move has a unique justifier. Another way to generate PUR-languages consists in constraining types. For instance the finitary fragment of Idealized Algol \cite{Reynolds81}  limited to order $2$ types ($\ialgol_2$ for short) is a PUR-language for which observational equivalence is decidable.
+Serially Re-entrant Idealized Algol proposed by Abramsky  in \cite{abramsky:mchecking_ia} is an example of PUR language: it allows multiple occurrences or uses of arguments, as long as they do not overlap in time. Therefore in the game denotation, a given question occurs pending at most once at any time hence each move has a unique justifier. Another way to generate PUR-languages consists in constraining types. For instance the finitary fragment of Idealized Algol \cite{Reynolds81}  limited to order $2$ types ($\ialgol_2$ for short) is a PUR-language for which observational equivalence is decidable \cite{ghicamccusker00}.
 
-It is already known that finitary $\ialgol_3$ is decidable and in EXPTIME \cite{DBLP:conf/fossacs/MurawskiW05}. 
-Provided that the redundancy of pointers happening in order $3$ safe \pcf\ remains in safe $\ialgol_3$, we can expect to obtain a lower complexity for observational equivalence of the safe fragment.
-Murawski showed in \cite{murawski03program} the undecidability of finitary $\ialgol_i$ for $i\geq4$.
-It would be interesting to know whether this is still true for the corresponding safe fragments.
+
+It is already known that observational equivalence for finitary $\ialgol_3$ is decidable and in EXPTIME \cite{DBLP:conf/fossacs/MurawskiW05}. 
+Provided that the redundancy of pointers happening in order $3$ safe \pcf\ remains in safe $\ialgol_3$, we can expect to obtain a lower complexity when considering the safe fragment.
+Finitary $\ialgol_i$ was shown to be undecidable for $i\geq4$ \cite{murawski03program}.
+It would be interesting to know whether this remains true for the corresponding safe fragments.
 
 Adapting the game-semantic correspondence and safety characterisation to \ialgol\ seems feasible although the presence of the base type \iavar, whose game arena $\iacom^{\nat} \times \iaexp$ has infinitely many initial moves, causes a mismatch between the simple tree representation of the term and its game arena (this suggests the use of ``computation directed acyclic graphs'' instead of computation trees). 
 
@@ -896,7 +894,7 @@ If  \raisebox{0cm}[0.5cm]{$t' \cdot \rnode{n}{n} \cdot
 \end{definition}
 
 \begin{wrapfigure}[7]{r}{3.8cm}
-$% \rput[t](2cm,0.9cm)
+$ \rput[t](2cm,0.9cm)
 {\tree[levelsep=3ex,treesep=0.5cm]{\lambda} {
     \tree{@}{
         \pstree[linestyle=dotted]{\TR{\lambda y}\arclabel{0} }{
@@ -1067,8 +1065,8 @@ CSP-like ``composition + hiding''. If the internal moves are not hidden
 then we obtain an alternative semantics called \emph{interaction}
 semantics in \cite{DBLP:conf/sas/DimovskiGL05} and \emph{revealed
 semantics} in \cite{willgreenlandthesis}.
-The \defname{revealed strategy} of a term $\Gamma \vdash M$, written $\intersem{\Gamma \vdash M}$, is obtained by uncovering\footnote{In Part II of \cite{hylandong_pcf} an algorithm is described that
-uniquely recovers the moves hidden during composition.} the
+The \defname{revealed strategy} of a term $\Gamma \vdash M$, written $\intersem{\Gamma \vdash M}$, is obtained by uncovering\footnote{An algorithm 
+that uniquely recovers the hidden during composition is given in Part II of \cite{hylandong_pcf}.} the
 internal moves from $\sem{\Gamma \vdash M}$ that are generated by the composition with the evaluation map $ev$ at each @-node of the computation tree.
 The standard semantics can be recovered from the interaction semantics by filtering out the internal moves.
 
@@ -1198,7 +1196,7 @@ is P-incrementally-justified.
 %\end{floatingfigure}
 
 \begin{wrapfigure}[5]{r}{0.6cm}
-$%\rput[b](0.1cm,-1cm)
+$\rput[b](0.1cm,-1cm)
 {\tree{\lambda^3}{\tree{f^2}{ \tree{\lambda y^1}{ \TR{x^0} }}}}$
 \end{wrapfigure}
 \noindent \emph{Example:} %\begin{example}
@@ -1274,7 +1272,7 @@ Proposition \ref{prop:incrbound_imp_incrjustified}  and
 
 \subsection{Proof of Theorem \ref{thm:safepcfpincr}}
 
-We define the computation tree of a \pcf\ term $M$ to be the least upper-bound of
+The computation tree of a \pcf\ term is defined as the least upper-bound of
 the chain of computation trees of its \emph{syntactic approximants} \cite{abramsky:game-semantics-tutorial}.
 It is obtained by infinitely expanding terms that use the $Y$ combinator, for instance
 $\tau(Y (\lambda f x. f x))$ is

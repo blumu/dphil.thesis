@@ -1,7 +1,7 @@
 % the LaTeX macro package from Springer-Verlag for Lecture Notes in Computer Science,
 % version 2.2 for LaTeX2e
 \documentclass{llncs}
-\usepackage{amsmath,amssymb}
+\usepackage{amssymb}
 \usepackage{pst-tree}
 \usepackage[all]{xy}
 \usepackage{wrapfig}
@@ -423,7 +423,7 @@ The relation $\beta_s$ is defined on the set of safe redex as:
 \{ \ (\lambda \overline{x} : \overline{A} . T) N_1 \ldots N_l \mapsto T\subst{\overline{N}}{\overline{x}} N_{n+1} \ldots N_l
 \mbox{, for $n\leq l$} \} \ .
 \end{eqnarray*}
-where $T\subst{\overline{N}}{\overline{x}}$ denotes the simultaneous substitution of $N_1,\ldots,N_n$ for $x_1, \ldots, x_n$ in $T$.
+with $T\subst{\overline{N}}{\overline{x}}$ being the simultaneous substitution of $N_1,\ldots,N_n$ for $x_1, \ldots, x_n$ in $T$.
 The \defname{safe $\beta$-reduction}, written $\betasred$, is the closure of
 the relation $\beta_s$ by compatibility with the formation rules of
 the safe $\lambda$-calculus.
@@ -582,20 +582,23 @@ For two sets of terms $T$ and $T'$, we use the notation $T =_\beta T'$ expressin
 We observe that for all $m \in \nat$, we have $\encode{m} \underline{i} =_\beta \underline{i}$ and for $l\geq 1$, for all $k_1, \ldots k_l \in \nat$, 
 $\encode{k_1}\ldots \encode{k_l} \alpha =_\beta
 \encode{k_1\times \ldots \times k_l} \alpha$. Hence
-\begin{align}
+\begin{equation}
+\begin{array}{llr}
 \{\encode{m},\encode{n}\}^+ \cdot \{\alpha, \underline{i} \} &=_\beta
 \{ \underline{i} \} \union
 \{ \encode{m^i n^j} \alpha \ |\ i+j \geq 1 \} \nonumber \\
-&= \{ \encode{m^i n^j} \alpha \ |\ i,j \geq 0 \} & ( \mbox{since } \encode{0} \alpha = \underline{i}) \label{eqn:intermediate}
-\end{align}
+&= \{ \encode{m^i n^j} \alpha \ |\ i,j \geq 0 \} & ( \mbox{since } \encode{0} \alpha = \underline{i}) %\label{eqn:intermediate}
+\end{array} 
+\label{eqn:intermediate}
+\end{equation}
 and therefore:
-\begin{align*}
+$$\begin{array}{llr}
 u[\encode{m} \encode{n}/x,y] &\in \left( \{ \alpha \} \union \{\encode{m},\encode{n}\}^+ \cdot \{\alpha, \underline{i} \} \right)^* \cdot \{ z \}  & \mbox{(by eq. \ref{eqn:u})} \\
 &=_\beta \left( \{\alpha \} \union \{ \encode{m^i n^j}
 \alpha \ | \ i,j \geq 0 \} \right)^* \cdot \{ z \} & \mbox{(by eq. \ref{eqn:intermediate})}  \\
 &=_\beta \left\{ \encode{m^i n^j}
 \alpha \ | \ i,j \geq 0 \right\}^* \cdot \{ z \} & \mbox{($\alpha z =_\beta \encode{1} \alpha z$)}
-\end{align*} 
+\end{array}$$
 
 Furthermore, for all $m,n,r,i,j\in \nat$ 
 we have $\encode{m^i n^j} \alpha (\alpha^r z) =_\beta
@@ -673,12 +676,28 @@ The following counter-example shows that this is not true anymore at order $4$. 
 
 \pcf\ is the $\lambda$-calculus augmented with the ground type of natural numbers, first-order arithmetic operators, if-then-else branching
 and a family of recursion combinator $Y_A : ((A,A),A)$ for any type $A$.
-Safe \pcf\ is \pcf\ where the application and abstraction rules are restricted as in the safe $\lambda$-calculus.
-It inherits the good properties of the safe $\lambda$-calculus: no variable capture occurs when performing substitution on a safe term and safety is preserved by the reduction rules of the small-step semantics of \pcf\ constants. Using a \pcf\ version of the Correspondence Theorem we can prove the following:
+We can define safe \pcf\ to be \pcf\ where the application and abstraction rules are restricted as in the safe $\lambda$-calculus.
+This language inherits the good properties of the safe $\lambda$-calculus: no variable capture occurs when performing substitution and safety is preserved by the reduction rules of the small-step semantics of \pcf\ constants. Using a \pcf\ version of the Correspondence Theorem we can prove the following:
 \begin{theorem}
 \label{thm:safepcfpincr}
 Safe PCF terms are denoted by P-incrementally justified strategies.
 \end{theorem}
+
+Similarly, we can define safe \ialgol\ to be safe \pcf\ augmented with the imperative features of Idealized Algol (\ialgol\ for short) \cite{Reynolds81}.  Adapting the game-semantic correspondence and safety characterisation to \ialgol\ seems feasible although the presence of the base type \iavar, whose game arena $\iacom^{\nat} \times \iaexp$ has infinitely many initial moves, causes a mismatch between the simple tree representation of the term and its game arena. This suggests the use of ``computation directed acyclic graphs'' instead of computation trees. 
+
+The pointer economy obtained by imposing the safety condition suggests potential application in algorithmic game semantics. 
+By remarking that pointers are unnecessary up to order $2$,
+it was shown in \cite{ghicamccusker00} that observational equivalence is decidable (and in PSPACE) for the order $2$ finitary fragment of Idealized Algol ($\ialgol_2$ for short). 
+At order $3$, although pointers are necessary, it was shown
+that observational equivalence is in EXPTIME \cite{DBLP:conf/fossacs/MurawskiW05}. 
+Provided that the redundancy of pointers happening in order $3$ safe \pcf\ remains in safe $\ialgol_3$, we can expect to obtain a lower complexity when considering the safe fragment
+(note that it is unlikely to obtain the PSPACE complexity since the complete plays of the safe term $\lambda f^{(o,o),o} . f (\lambda x^o . x)$ is not regular, see \cite{DBLP:journals/apal/Ong04}).
+
+Finitary $\ialgol_i$ was shown to be undecidable for $i\geq4$ \cite{murawski03program}.
+It would also be interesting to know whether this remains true for the corresponding safe fragments.
+
+%In \cite{Ong02}, one of us showed that observational equivalence for finitary second-order \ialgol\ with recursion ($\ialgol_2 + Y_1$) is undecidable. The proof consists in reducing the Queue-Halting problem to the observational equivalence of two $\ialgol_2 + Y_1$ terms. The same reduction is still valid in the safe fragment of $\ialgol_2 + Y_1$.
+%Consequently, observational equivalence of safe $\ialgol_2 + Y_1$ is also undecidable.
 
 
 \section{Further Work and Open Problems}
@@ -689,15 +708,7 @@ To which extend incrementally-justified strategy compose? Can we obtain a fully 
 
 More generally, it would be nice to have a better understanding of the class of languages for which pointers are uniquely recoverable. We name this class PUR for ``Pointers Uniquely Recoverable''. PUR-languages are good candidates of languages with decidable observational equivalence.
 
-Serially Re-entrant Idealized Algol proposed by Abramsky  in \cite{abramsky:mchecking_ia} is an example of PUR language: it allows multiple occurrences or uses of arguments, as long as they do not overlap in time. Therefore in the game denotation, a given question occurs pending at most once at any time hence each move has a unique justifier. Another way to generate PUR-languages consists in constraining types. For instance the finitary fragment of Idealized Algol \cite{Reynolds81}  limited to order $2$ types ($\ialgol_2$ for short) is a PUR-language for which observational equivalence is decidable \cite{ghicamccusker00}.
-
-
-It is already known that observational equivalence for finitary $\ialgol_3$ is decidable and in EXPTIME \cite{DBLP:conf/fossacs/MurawskiW05}. 
-Provided that the redundancy of pointers happening in order $3$ safe \pcf\ remains in safe $\ialgol_3$, we can expect to obtain a lower complexity when considering the safe fragment.
-Finitary $\ialgol_i$ was shown to be undecidable for $i\geq4$ \cite{murawski03program}.
-It would be interesting to know whether this remains true for the corresponding safe fragments.
-
-Adapting the game-semantic correspondence and safety characterisation to \ialgol\ seems feasible although the presence of the base type \iavar, whose game arena $\iacom^{\nat} \times \iaexp$ has infinitely many initial moves, causes a mismatch between the simple tree representation of the term and its game arena (this suggests the use of ``computation directed acyclic graphs'' instead of computation trees). 
+Serially Re-entrant Idealized Algol proposed by Abramsky  in \cite{abramsky:mchecking_ia} is an example of PUR language: it allows multiple occurrences or uses of arguments, as long as they do not overlap in time. Therefore in the game denotation, a given question occurs pending at most once at any time hence each move has a unique justifier. Another way to generate PUR-languages consists in constraining types. For instance the finitary fragment of order $2$ Idealized Algol ($\ialgol_2$ for short) is a PUR-language (for which observational equivalence is decidable \cite{ghicamccusker00}). There are strong suggestions that Safe $\ialgol_3$ is also a PUR language.
 
 \bibliographystyle{splncs}
 \bibliography{../bib/higherorder,../bib/gamesem,../bib/lambdacalculus}

@@ -66,11 +66,47 @@
 \newcommand{\oview}[1]{\llcorner #1 \lrcorner}
 \newcommand{\pview}[1]{\ulcorner #1 \urcorner}
 
+% We define a new pstricks command: ncArc
+% the difference with ncarc is that the parameter angle
+% angleA (resp. angleB) gives the angle between the X axis
+% and the tangent to the arrow at point A (resp B) whereas
+% with ncarc then angle specifies instead
+% the angle between the line (AB) and the tangent of the arrow 
+% at A (or B).
+%
+% This kind of arc is not really usefull for graphs however it is easier to specify angles like this for links in justified sequences.
+\edef\TheAtCode{\the\catcode`\@}
+\catcode`\@=11
+\def\ncArc{\pst@object{ncArc}}
+\def\ncArc@i{\check@arrow{\ncArc@ii}}
+\def\ncArc@ii#1#2{\nc@object{Open}{#1}{#2}{.5}{%
+%yB yA sub xB xA sub \tx@Atan
+  180 
+\psk@arcangleA\space sub /AngleA ED
+\psk@arcangleB\space %sub 180 add
+/AngleB ED
+\psk@ncurvB\space \psk@ncurvA\space
+\tx@NCCurve}}
+
 % links using psttricks
-\newcommand{\link}[2][nodesep=0pt]{\ncarc[linewidth=0.4pt,offset=-2pt,nodesep=0pt,arcangleA=-#2, arcangleB=-#2,#1]{->}}
-\newcommand{\lnklabel}[1]{\mput*{\mbox{{\tiny $#1$}}}}
-\newcommand{\lnklabelc}[1]{\Bput[1pt]{\mbox{{\tiny $#1$}}}}
+\newcommand{\link}{\@ifstar
+                     \linkStar%
+                     \linkNoStar%
+}
+\newcommand{\linkNoStar}[2][nodesep=0pt]{\ncarc[linewidth=0.4pt,offset=-2pt,nodesep=0pt,arcangleA=-#2, arcangleB=-#2,#1]{->}}
+% the starred version uses ncArc instead of ncarc.
+\newcommand{\linkStar}[2][nodesep=0pt]{\ncArc[linewidth=0.4pt,offset=-2pt,nodesep=0pt,arcangleA=#2, arcangleB=#2,#1]{->}}
+
+\newcommand{\lnklabel}{\@ifstar
+                     \lnklabelStar%
+                     \lnklabelNoStar%
+}
+\newcommand{\lnklabelStar}[1]{\mput*{\mbox{{\tiny $#1$}}}}
+\newcommand{\lnklabelNoStar}[1]{\Bput[1pt]{\mbox{{\tiny $#1$}}}}
 \newcommand{\arclabel}[1]{\mput*{\mbox{{\small $#1$}}}}
+\catcode`\@=\TheAtCode\relax
+
+
 
 % trees
 \newcommand{\tree}[2][levelsep=3.5ex]{\pstree[levelsep=3.5ex,#1]{\TR{#2}}}
@@ -1539,7 +1575,7 @@ pointers such that each variable or $\lambda$-node $n$ different from
 the root has a pointer to a node $m$ occurring before it the sequence
 such that $m \vdash n$.  We represent the pointer in the sequence as
 follows \raisebox{0cm}[0.4cm]{$\rnode{m}{m} \ldots \rnode{n}{n}
-  \link[nodesep=0.5pt]{20}{n}{m} \lnklabelc{i}$}.  where the label
+  \link*{45}{n}{m} \lnklabel*{i}$}.  where the label
 indicates that either $n$ is labelled with the $i$th variable
 abstracted by the $\lambda$-node $m$ or that $n$ is the $i^{\sf th}$
 child of $m$.  Children nodes are numbered from $1$ onward except for
@@ -1560,7 +1596,8 @@ sequences of moves in Game Semantics:\footnote{ The equalities in the
   points to that occurrence of the node in $\pview{s}$.}
 $$\begin{array}{rclrcl}
 \pview{\epsilon} &=&  \epsilon
-& \pview{s \cdot \rnode{m}{m} \cdot \ldots \cdot \rnode{lmd}{\lambda \overline{\xi}}} &=& \pview{s} \cdot \rnode{m2}{m} \cdot \rnode{lmd2}{\lambda \overline{\xi}}   \link[nodesep=1pt]{25}{lmd}{m}    \link[nodesep=1pt]{60}{lmd2}{m2}\\
+& \pview{s \cdot \rnode{m}{m} \cdot \ldots \cdot \rnode{lmd}{\lambda \overline{\xi}}} &=& \pview{s} \cdot \rnode{m2}{m} \cdot \rnode{lmd2}{\lambda \overline{\xi}}   \link*{40}{lmd}{m}
+\link*{70}{lmd2}{m2}\\
 \mbox{for $n \notin N_\lambda$, } \pview{s \cdot n }  &=&  \pview{s} \cdot n \qquad
 & \pview{s \cdot r }  &=&  r
 \end{array}$$
@@ -1588,7 +1625,7 @@ computation tree. A value-leaf has order $0$. The enabling relation
 $\vdash$ is extended so that every leaf is enabled by its parent node.
 A link going from a value-leaf $v_n$ to a node $n$ is labelled by $v$:
 \raisebox{0cm}[0.4cm]{$\rnode{n}{n} \ldots \rnode{vn}{v_n}
-  \link[nodesep=0.5pt]{25}{vn}{n} \lnklabelc{v}$}.  For the definition
+  \link*{30}{vn}{n} \lnklabel*{v}$}.  For the definition
 of P-view and visibility, value-leaves are treated as $\lambda$-nodes
 if they are at an odd level in the computation tree, and as variable
 nodes if they are at an even level.
@@ -1619,63 +1656,63 @@ The set $\travset(M)$ of \defname{traversals} over $\tau(M)$ is defined by induc
 $t \cdot \lambda \overline{\xi} \cdot n$
 where $n$ is $\lambda \overline{\xi}$'s child and points to the only occurrence of its enabler that is still present in $\pview{t \cdot \lambda \overline{\xi}}$.
 
-\item[{\bf (App)}] If $t \cdot @$ is a traversal then so is $t \cdot \rnode{m}{@} \cdot \rnode{n}{n}\link[nodesep=0.5pt]{25}{n}{m} \lnklabelc{0}$.
+\item[{\bf (App)}] If $t \cdot @$ is a traversal then so is $t \cdot \rnode{m}{@} \cdot \rnode{n}{n}\link*{20}{n}{m} \lnklabel{0}$.
 
 \item[{\bf (InputVar$^{val}$)}] If $t_1 \cdot x \cdot t_2$ is a traversal
 with $x \in N_{var}^{\upharpoonright r}$ and $?(t_1 \cdot x \cdot t_2)=?(t_1) \cdot x$ then so is
-\raisebox{0cm}[0.4cm]{$t_1 \cdot \rnode{x}{x} \cdot t_2 \cdot \rnode{xv}{v_x} \link[nodesep=0.5pt]{25}{xv}{x} \lnklabelc{v}$}
+\raisebox{0cm}[0.4cm]{$t_1 \cdot \rnode{x}{x} \cdot t_2 \cdot \rnode{xv}{v_x} \link*{30}{xv}{x} \lnklabel*{v}$}
 for all $v \in \mathcal{D}$.
 
 \item[{\bf (InputVar)}] If $t_1 \cdot x \cdot t_2$ is a traversal with
   $x \in N_{var}^{\upharpoonright r}$ and $?(t_1 \cdot x \cdot
   t_2)=?(t_1) \cdot x$ then so is \raisebox{0cm}[0.4cm]{$t_1 \cdot
     \rnode{m}{x} \cdot t_2 \cdot \rnode{n}{n}
-    \link[nodesep=0.5pt]{25}{n}{m} \lnklabelc{i}$} for all
+    \link*{30}{n}{m} \lnklabel*{i}$} for all
   $\lambda$-node $n$ whose parent occurs in $\oview{t_1 \cdot x}$, $n$
   pointing to some occurrence of its parent node in $\oview{t_1 \cdot
     x}$.
 
 
 \item[{\bf (Copycat$^@$)}]
-  If $t \cdot \rnode{app}{@} \cdot \rnode{lz}{\lambda \overline{z}}  \ldots  \rnode{lzv}{v_{\lambda \overline{z}}}
-              \link[nodesep=0.5pt]{30}{lzv}{lz} \lnklabelc{v}
-              \link[nodesep=0.5pt]{40}{lz}{app} \lnklabelc{0}$
+  If $t \cdot \rnode{app}{@} \cdot \rnode{lz}{\lambda \overline{z}}  \ldots  \rnode{lzv}{v}_{\lambda \overline{z}}
+              \link*{55}{lzv}{lz} \lnklabel*{v}
+              \link*{45}{lz}{app} \lnklabel{0}$
               is a traversal then so is
-              \raisebox{0cm}[0.6cm]{$t \cdot \rnode{app}{@} \cdot \rnode{lz}{\lambda \overline{z}}  \ldots  \rnode{lzv}{v_{\lambda \overline{z}}} \cdot \rnode{appv}{v_@}
-              \link[nodesep=0.5pt]{25}{lzv}{lz} \lnklabelc{v}
-              \link[nodesep=0.5pt]{40}{lz}{app} \lnklabelc{0}
-              \link[nodesep=0.5pt]{25}{appv}{app} \lnklabelc{v}$}.
+              \raisebox{0cm}[0.6cm]{$t \cdot \rnode{app}{@} \cdot \rnode{lz}{\lambda \overline{z}}  \ldots  \rnode{lzv}{v}_{\lambda \overline{z}} \cdot \rnode{appv}{v}_@
+              \link*{35}{lzv}{lz} \lnklabel*{v}
+              \link*{55}{lz}{app} \lnklabel{0}
+              \link*{35}{appv}{app} \lnklabel*{v}$}.
 
-\item[{\bf (Copycat$^\lambda$)}] If \raisebox{0cm}[0.4cm]{$t \cdot \lambda \overline{\xi} \cdot \rnode{x}{x}  \ldots   \rnode{xv}{v_x}
-              \link[nodesep=0.5pt]{30}{xv}{x} \lnklabelc{v}$}
+\item[{\bf (Copycat$^\lambda$)}] If \raisebox{0cm}[0.4cm]{$t \cdot \lambda \overline{\xi} \cdot \rnode{x}{x}  \ldots   \rnode{xv}{v}_x
+              \link*{45}{xv}{x} \lnklabel*{v}$}
               is a traversal then so is
-              \raisebox{0cm}[0.5cm]{$t \cdot \rnode{lmd}{\lambda \overline{\xi}} \cdot \rnode{x}{x}  \ldots  \rnode{xv}{v_x} \cdot
-              \rnode{lmdv}{v_{\lambda \overline{\xi}}}
-              \link[nodesep=0.5pt]{20}{xv}{x} \lnklabelc{v}
-                \link[nodesep=0.5pt]{20}{lmdv}{lmd} \lnklabelc{v}$}.
+              \raisebox{0cm}[0.5cm]{$t \cdot \rnode{lmd}{\lambda \overline{\xi}} \cdot \rnode{x}{x}  \ldots  \rnode{xv}{v}_x \cdot
+              \rnode{lmdv}{v}_{\lambda \overline{\xi}}
+              \link*{45}{xv}{x} \lnklabel*{v}
+                \link*{35}{lmdv}{lmd} \lnklabel*{v}$}.
 
 \item[{\bf (Copycat$^{var}$)}] \raisebox{0cm}[0.4cm]{If $t \cdot y \cdot \rnode{lmd}{\lambda \overline{\xi}}
-                   \ldots \rnode{lmdv}{v_{\lambda \overline{\xi}}} \link[nodesep=1pt]{30}{lmdv}{lmd} \lnklabelc{v}$}
+                   \ldots \rnode{lmdv}{v}_{\lambda \overline{\xi}} \link*{35}{lmdv}{lmd} \lnklabel*{v}$}
                    is a traversal for some variable $y$ not in $N_{var}^{\upharpoonright r}$ then so is
         \raisebox{0cm}[0.6cm]{$t \cdot \rnode{y}{y}
             \cdot \rnode{lmd}{\lambda \overline{\xi}}
              \ldots
-             \rnode{lmdv}{v_{\lambda \overline{\xi}}}
-            \cdot \rnode{yv}{v_y}
-                \link[nodesep=3pt]{25}{yv}{y} \lnklabelc{v}
-                \link[nodesep=1pt]{25}{lmdv}{lmd} \lnklabelc{v}$}.
+             \rnode{lmdv}{v}_{\lambda \overline{\xi}}
+            \cdot \rnode{yv}{v}_y
+                \link*{45}{yv}{y} \lnklabel*{v}
+                \link*{40}{lmdv}{lmd} \lnklabel*{v}$}.
 \item[{\bf (Var)}]
 If  \raisebox{0cm}[0.5cm]{$t' \cdot \rnode{n}{n} \cdot
     \rnode{lx}{\lambda \overline{x}}  \ldots
-    \rnode{x}{x_i}  \link[ncurv=0.6]{50}{x}{lx} \lnklabel{i}$} is a traversal for some variable $x_i$ not in $N_{var}^{\upharpoonright r}$ then
+    \rnode{x}{x_i}  \link*{50}{x}{lx} \lnklabel*{i}$} is a traversal for some variable $x_i$ not in $N_{var}^{\upharpoonright r}$ then
     so is
 \raisebox{0cm}[0.6cm]{
     $t' \cdot \rnode{n}{n} \cdot
     \rnode{lx}{\lambda \overline{x}}  \ldots
     \rnode{x}{x_i} \cdot
     \rnode{letai}{\lambda \overline{\eta_i}}
-    \link[ncurv=0.45]{45}{letai}{n} \lnklabelc{i}
-    \link[ncurv=0.5]{45}{x}{lx} \lnklabelc{i}$}.
+    \link*{40}{letai}{n} \lnklabel*{i}
+    \link*{30}{x}{lx} \lnklabel*{i}$}.
 \end{description}
 \end{definition}
 
@@ -1708,10 +1745,10 @@ The sequence \raisebox{0cm}[0.6cm]{$ \lambda \cdot
 \rnode{lx}{\lambda \overline{x}}  \ldots
 \rnode{x}{x_i} \cdot
 \rnode{leta}{\lambda \overline{\eta_i} }  \ldots
-\link[ncurv=1,nodesep=0.5pt]{25}{x}{lx}  \lnklabel{i}
-\link[ncurv=1]{20}{leta}{y}  \lnklabelc{i}
-\link[ncurv=1,nodesep=0.5pt]{25}{y}{ly}  \lnklabelc{1}
-\link[ncurv=1]{20}{lx}{app}  \lnklabelc{1}$} is an example of traversal of the computation tree shown on the right.
+\link*{30}{x}{lx}  \lnklabel*{i}
+\link*{40}{leta}{y}  \lnklabel*{i}
+\link*{35}{y}{ly}  \lnklabel*{1}
+\link*{40}{lx}{app}  \lnklabel*{1}$} is an example of traversal of the computation tree shown on the right.
 
 \begin{proposition}[counterpart of proposition 6 from \cite{OngHoMchecking2006}]
 \label{prop:pviewtrav_is_path}
@@ -1759,7 +1796,7 @@ traversal rule is \defname{well-behaved} if it can be stated under the
 form ``$t = t_1\cdot n \cdot t_2 \in \travset \zand ?(t) = ?(t_1)
 \cdot x \zand n \in N_{\Sigma}\union N_{var} \zand P(t) \zand m\in
 S(t) \imp t_1\cdot \rnode{n}{n} \cdot t_2 \cdot \rnode{m}{m} \in
-\travset \link[nodesep=1pt]{26}{m}{n}$'' for some expression $P$
+\travset \link*{25}{m}{n}$'' for some expression $P$
 expressing a condition on $t$ and function $S$ mapping traversals of
 the form of $t$ to a subset of the children of $n$.}
 
@@ -1943,36 +1980,36 @@ t = \rnode{n}{\lambda f z} \
 \rnode{n9}{\lambda^{[5]}} \
 \rnode{n10}{z}
 \psset{ncurv=0.4}
-\link{35}{n3}{n2}
-\link{50}{n4}{n}
-\link{40}{n5}{n4}
-\link{53}{n6}{n3}
-\link{35}{n7}{n2}
-\link{35}{n8}{n}
-\link{50}{n9}{n8}
-\link{40}{n10}{n}$}
+\link*{60}{n3}{n2}
+\link*{50}{n4}{n}
+\link*{45}{n5}{n4}
+\link*{55}{n6}{n3}
+\link*{35}{n7}{n2}
+\link*{35}{n8}{n}
+\link*{45}{n9}{n8}
+\link*{40}{n10}{n}$}
 
 \item \raisebox{0cm}[0.8cm]{$
 t\upharpoonright r = \rnode{n}{\lambda f z} \
 \rnode{n4}{f}^{[1]} \
-\rnode{n5}{\lambda^{[2]}} \
+\rnode{n5}{\lambda}^{[2]} \
 \rnode{n8}{f}^{[4]} \
-\rnode{n9}{\lambda^{[5]}} \
+\rnode{n9}{\lambda}^{[5]} \
 \rnode{n10}{z}
 \psset{ncurv=0.4}
-\link{50}{n4}{n}
-\link{50}{n5}{n4}
-\link{50}{n8}{n}
-\link{50}{n9}{n8}
-\link{50}{n10}{n}$}
+\link*{50}{n4}{n}
+\link*{60}{n5}{n4}
+\link*{50}{n8}{n}
+\link*{60}{n9}{n8}
+\link*{50}{n10}{n}$}
 \item \raisebox{0cm}[0.8cm]{$
-\psi_M(t\upharpoonright r) = \rnode{n}{q^0}\ \rnode{n4}{q^1}\ \rnode{n5}{q^2}\ \rnode{n8}{q^1}\ \rnode{n9}{q^2}\ \rnode{n10}{q}^3
+\psi_M(t\upharpoonright r) = \rnode{n}{q^0}\ \rnode{n4}{q^1}\ \rnode{n5}{q^2}\ \rnode{n8}{q^1}\ \rnode{n9}{q^2}\ \rnode{n10}{q^3}
 \psset{ncurv=0.4}
-\link{50}{n4}{n}
-\link{50}{n5}{n4}
-\link{50}{n8}{n}
-\link{50}{n9}{n8}
-\link{50}{n10}{n} \in \sem{M}\ .$}
+\link*{50}{n4}{n}
+\link*{50}{n5}{n4}
+\link*{50}{n8}{n}
+\link*{60}{n9}{n8}
+\link*{50}{n10}{n} \in \sem{M}\ .$}
 \end{asparablank}
 \end{tabular}
 \end{example}

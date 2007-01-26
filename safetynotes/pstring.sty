@@ -1,0 +1,121 @@
+\NeedsTeXFormat{LaTeX2e}
+
+\ProvidesClass{pstring}
+          [2007/01/26]
+
+\RequirePackage{pstricks}
+\RequirePackage{pst-node}
+
+\edef\TheAtCode{\the\catcode`\@}
+\catcode`\@=11
+
+% We define a new pstricks command: ncArc
+% the difference with ncarc is that the parameter angle
+% angleA (resp. angleB) gives the angle between the X axis
+% and the tangent to the arrow at point A (resp B) whereas
+% with ncarc then angle specifies instead
+% the angle between the line (AB) and the tangent of the arrow 
+% at A (or B).
+%
+% This kind of arc is not really usefull for graphs however it is easier to specify angles like this for links in justified sequences.
+\def\ncArc{\pst@object{ncArc}}
+\def\ncArc@i{\check@arrow{\ncArc@ii}}
+\def\ncArc@ii#1#2{\nc@object{Open}{#1}{#2}{.5}{%
+%yB yA sub xB xA sub \tx@Atan
+  180 
+\psk@arcangleA\space sub /AngleA ED
+\psk@arcangleB\space %sub 180 add
+/AngleB ED
+\psk@ncurvB\space \psk@ncurvA\space
+\tx@NCCurve}}
+
+
+% links using psttricks
+\newcommand{\link}{\@ifstar
+                     \linkStar%
+                     \linkNoStar%
+}
+\newcommand{\linkNoStar}[2][nodesep=0pt]{\ncarc[linewidth=0.4pt,offset=-2pt,nodesep=0pt,arcangleA=-#2, arcangleB=-#2,#1]{->}}
+% the starred version uses ncArc instead of ncarc.
+\newcommand{\linkStar}[2][nodesep=0pt]{\ncArc[linewidth=0.4pt,offset=-2pt,nodesep=0pt,arcangleA=#2, arcangleB=#2,#1]{->}}
+
+
+\newcommand{\lnklabel}{\@ifstar
+                     \lnklabelStar%
+                     \lnklabelNoStar%
+}
+\newcommand{\lnklabelStar}[1]{\mput*{\mbox{{\tiny $#1$}}}}
+\newcommand{\lnklabelNoStar}[1]{\Bput[1pt]{\mbox{{\tiny $#1$}}}}
+\newcommand{\arclabel}[1]{\mput*{\mbox{{\small $#1$}}}}
+
+
+
+
+
+\edef\OpenSqBrCode{\the\catcode`\[}
+%\edef\CloseSqBrCode{\the\catcode`\]}
+
+\newbox\pstr@tempbox
+\newdimen\pstr@tempdim
+%\newtoks\lastsrc
+%\newtoks\lastdst
+%\newtoks\content
+%\newcount\lastangle
+%\lastsrc={@}
+%\lastdst={@}
+%\content={@}
+\begingroup
+\catcode`\@=11
+\catcode`&=\active
+\catcode`\[=\active
+%\catcode`\]=\active
+%\catcode`-=\active
+
+\gdef\pstr#1{%    note the global \gdef
+\begingroup
+  \catcode`\[=\active
+%  \catcode`\]=\active
+  \catcode`&=\active
+ % \catcode`-=\active
+  \def&{\ }%
+%  \def-{\newlink}%
+  \def[{\newlink}%
+%  \def]{B}%
+\setlength\pstr@tempdim{#1}
+\setbox\pstr@tempbox\hbox\bgroup$
+}
+
+\gdef\newlink#1-#2,#3]#4&{ 
+%\creatependinglink
+%\lastangle = #4
+%\lastsrc={#2}
+%\lastdst={#3}
+\rnode{#1}{#4} 
+\edef\angle{#3}
+\ifx\angle\@empty
+\else 
+ \link*{\angle}{#1}{#2} 
+\fi
+}
+
+%\gdef\creatependinglink{
+%\ifx\lastsrc @
+% \number\lastangle  
+%\link*{\number\lastangle}{\the\lastsrc }{\the\lastdst} 
+%}
+
+\gdef\endpstr{%    note the global \gdef
+%\creatependinglink
+$\egroup
+\ht\pstr@tempbox\pstr@tempdim \box\pstr@tempbox
+\endgroup
+  \catcode`\[ = \OpenSqBrCode
+%  \catcode`\] = \CloseSqBrCode
+  \catcode`\&=4
+%  \catcode`-=7
+}
+
+\endgroup
+
+
+\catcode`\@=\TheAtCode\relax

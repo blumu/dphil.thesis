@@ -30,7 +30,8 @@
 \tx@NCCurve}}
 
 
-% links using psttricks
+
+% Create a link using psttricks
 \newcommand{\link}{\@ifstar
                      \linkStar%
                      \linkNoStar%
@@ -39,81 +40,100 @@
 % the starred version uses ncArc instead of ncarc.
 \newcommand{\linkStar}[2][nodesep=0pt]{\ncArc[linewidth=0.4pt,offset=-2pt,nodesep=0pt,arcangleA=#2, arcangleB=#2,#1]{->}}
 
-
+% Label the last link created
 \newcommand{\lnklabel}{\@ifstar
                      \lnklabelStar%
                      \lnklabelNoStar%
 }
 \newcommand{\lnklabelStar}[1]{\mput*{\mbox{{\tiny $#1$}}}}
 \newcommand{\lnklabelNoStar}[1]{\Bput[1pt]{\mbox{{\tiny $#1$}}}}
-\newcommand{\arclabel}[1]{\mput*{\mbox{{\small $#1$}}}}
 
 
 
 
 
-\edef\OpenSqBrCode{\the\catcode`\[}
+%\edef\OpenSqBrCode{\the\catcode`\[}
 %\edef\CloseSqBrCode{\the\catcode`\]}
-
-\newbox\pstr@tempbox
-\newdimen\pstr@tempdim
-%\newtoks\lastsrc
-%\newtoks\lastdst
-%\newtoks\content
-%\newcount\lastangle
-%\lastsrc={@}
-%\lastdst={@}
-%\content={@}
 \begingroup
-\catcode`\@=11
-\catcode`&=\active
-\catcode`\[=\active
+%\catcode`\@=11
+%\catcode`&=\active
+%\catcode`\[=\active
 %\catcode`\]=\active
 %\catcode`-=\active
 
-\gdef\pstr#1{%    note the global \gdef
-\begingroup
-  \catcode`\[=\active
-%  \catcode`\]=\active
-  \catcode`&=\active
- % \catcode`-=\active
-  \def&{\ }%
-%  \def-{\newlink}%
-  \def[{\newlink}%
-%  \def]{B}%
-\setlength\pstr@tempdim{#1}
-\setbox\pstr@tempbox\hbox\bgroup$
+
+\newbox\pstr@tempbox
+\newdimen\pstr@tempdim
+
+% create a new node together with a link
+% #1 node name
+% #2 link destination name
+% #3 link arc angle 
+% #4 node content
+\gdef\newnode#1#2#3#4{%
+\rnode{#1}{#4}% 
+\edef\angle{#3}%
+\ifx\angle\@empty\else\link*{\angle}{#1}{#2}\fi
 }
 
-\gdef\newlink#1-#2,#3]#4&{ 
-%\creatependinglink
-%\lastangle = #4
-%\lastsrc={#2}
-%\lastdst={#3}
-\rnode{#1}{#4} 
-\edef\angle{#3}
-\ifx\angle\@empty
-\else 
- \link*{\angle}{#1}{#2} 
+%%%%%%%%%%%%%%%%
+%% First way of creating a pointer string:
+%  \Pstr[0.4cm]{ (b) this (a-b,45) that } 
+
+% note the global \gdef
+\gdef\Pstr{\@ifnextchar[{\@Pstr}{\@Pstr[0cm]}}
+% pstr with optional parameter
+\gdef\@Pstr[#1]#2{%
+\begingroup
+ \setlength\pstr@tempdim{#1}%
+\setbox\pstr@tempbox\hbox\bgroup$%
+\@@Pstr#2(@-@,@){}\@nil
+ %\@@Pstr#2(@-@,@){@}\@nil\ignorespaces
+$\egroup%
+ \ht\pstr@tempbox\pstr@tempdim
+ \box\pstr@tempbox
+\endgroup
+}
+% #1 stuff to be typset in the pointer string
+% #2 a new node definition
+% #3 node content
+\gdef\@@Pstr#1(#2)#3{%
+ #1%dump the stuff
+ \@@@Pstr#2-,#3\@nil
+ \@ifnextchar\@nil{\@gobble}{\@@Pstr}%parse the rest
+}
+% parse the parameter for the creation of a node
+\gdef\@@@Pstr#1-#2,{%
+% create the node only if it is not the dummy node (@-@,@){@}
+\if#1@ \pstr@skipdummynode \else
+  \def\dest{#2}
+  \ifx\dest\@empty \pstr@skipdstangle{#1}  %
+  \else \aux{#1}{#2}
+  \fi
 \fi
 }
-
-%\gdef\creatependinglink{
-%\ifx\lastsrc @
-% \number\lastangle  
-%\link*{\number\lastangle}{\the\lastsrc }{\the\lastdst} 
-%}
-
-\gdef\endpstr{%    note the global \gdef
-%\creatependinglink
-$\egroup
-\ht\pstr@tempbox\pstr@tempdim \box\pstr@tempbox
-\endgroup
-  \catcode`\[ = \OpenSqBrCode
-%  \catcode`\] = \CloseSqBrCode
-  \catcode`\&=4
-%  \catcode`-=7
+\gdef\pstr@skipdummynode#1-,#2\@nil{}
+\gdef\pstr@skipdstangle#1#2\@nil{ \rnode{#1}{#2} }
+\gdef\aux#1#2#3-,#4\@nil{\newnode{#1}{#2}{#3}{#4}
 }
+
+%%%%%%%%%%%%%%%%
+%%Second way of creating a pointer string
+%  \pstr[0.4cm]{ \nd(b) this \lnk(a-b,45) that } 
+
+\gdef\pstr{\@ifnextchar[{\@pstr}{\@pstr[0cm]}}
+% pstr with optional parameter
+\gdef\@pstr[#1]#2{%
+\begingroup
+ \setlength\pstr@tempdim{#1}%
+ \setbox\pstr@tempbox\hbox{$#2$}%
+ \ht\pstr@tempbox\pstr@tempdim
+ \box\pstr@tempbox
+\endgroup
+}
+\gdef\nd(#1){\rnode{#1}}
+\gdef\lnk(#1-#2,#3)#4{\newnode{#1}{#2}{#3}{#4}}
+
 
 \endgroup
 

@@ -1,9 +1,8 @@
 \NeedsTeXFormat{LaTeX2e}
-% Created by William Blum
-% 28 Januray 2007
-% Version 0.01
+% Created by William Blum on 28 January 2007
+% Version 0.02
 
-\ProvidesClass{pstring}[2007/01/28 Package for representing pointer-strings]
+\ProvidesClass{pstring}[2007/02/14 Package for representing pointer-strings]
 
 \RequirePackage{pstricks}
 \RequirePackage{pst-node}
@@ -117,9 +116,26 @@ curveto
                      \linkStar%
                      \linkNoStar%
 }
-\newcommand{\linkNoStar}[2][linewidth=0.4pt]{\ncarc[linewidth=0.4pt,offset=-2pt,nodesep=0pt,arcangleA=-#2, arcangleB=-#2,#1]{->}}
+\newcommand{\linkNoStar}[2][]{
+\edef\options{#1}
+\ifx\options\@empty 
+\def\opt{[linewidth=0.4pt,offset=-2pt,nodesep=0pt,arcangleA=-#2, arcangleB=-#2]}
+\else 
+\def\opt{[linewidth=0.4pt,offset=-2pt,nodesep=0pt,arcangleA=-#2, arcangleB=-#2,#1]}
+\fi
+\expandafter\ncarc\opt{->}
+}
+
 % the starred version uses ncHarc instead of ncarc.
-\newcommand{\linkStar}[2][linewidth=0.4pt]{\ncHarc[linewidth=0.4pt,offsetA=0pt,offsetB=2pt,nodesep=1pt,arcangleA=#2, arcangleB=#2,#1]{->}}
+\newcommand{\linkStar}[2][]{
+\edef\options{#1}
+\ifx\options\@empty 
+\def\opt{[linewidth=0.4pt,offsetA=0pt,offsetB=2pt,nodesep=1pt,arcangleA=#2, arcangleB=#2]}
+\else 
+\def\opt{[linewidth=0.4pt,offsetA=0pt,offsetB=2pt,nodesep=1pt,arcangleA=#2, arcangleB=#2, #1]}
+\fi
+\expandafter\ncHarc\opt{->}
+}
 
 % Label the last link created
 \newcommand{\lnklabel}{\@ifstar
@@ -146,32 +162,24 @@ curveto
 \newbox\pstr@tempbox
 \newdimen\pstr@tempdim
 
-% create a new node together with a link
-% #1 node name
-% #2 link destination name
-% #3 link arc angle 
-% #4 node content
-\gdef\newnode#1#2#3#4{%
-\rnode{#1}{#4}% 
-\edef\angle{#3}%
-\ifx\angle\@empty\else\link*{\angle}{#1}{#2}\fi
-}
-
 %%%%%%%%%%%%%%%%
 %% First way of creating a pointer string:
-%  \Pstr[0.4cm]{ (b) this (a-b,45) that } 
+%  \Pstr[0.4cm][1pt]{ (b) this (a-b,45) that } 
 
-\gdef\Pstr{\@ifnextchar[{\@Pstr}{\@Pstr[0cm]}}
-
-% Pstr with optional parameter in [#1] specifying
-% the amount of vertical space to add to the box
+\gdef\Pstr{\@ifnextchar[{\Pstr@i}{\Pstr@ii[0cm][1pt]}}
+% Pstr with one optional parameter
+\gdef\Pstr@i[#1]{\@ifnextchar[{\Pstr@ii[#1]}{\Pstr@ii[#1][1pt]}}
+% Pstr with two optional parameters
+% [#1] specifies the amount of vertical space to add to the box
 % containing the pointer string.
-% #2 contains the specification of the nodes and pointers of the sequence.
-\gdef\@Pstr[#1]#2{%
+% [#2] specifies the distance between the node and the arc
+% #3 contains the specification of the nodes and pointers of the sequence.
+\gdef\Pstr@ii[#1][#2]#3{%
 \begingroup
  \setlength\pstr@tempdim{#1}%
+ \def\pstr@arcoptions{#2}%
 \setbox\pstr@tempbox\hbox\bgroup$%
-\@@Pstr#2(@-@,@){}\@nil
+\@@Pstr#3(@-@,@){}\@nil
  %\@@Pstr#2(@-@,@){@}\@nil\ignorespaces
 $\egroup%
  \ht\pstr@tempbox\pstr@tempdim
@@ -205,29 +213,40 @@ $\egroup%
   \fi
 \fi
 }
-% auxiliary macros for node specification parsing
+%%%%% auxiliary macros for node specification parsing
 \gdef\pstr@skipdummynode#1-,#2\@nil{}
 \gdef\pstr@skipdstangle#1#2\@nil{ \rnode{#1}{#2} }
-\gdef\pstr@createlink#1#2#3-,#4\@nil{\newnode{#1}{#2}{#3}{#4}
+% create a new node together with a link
+%  #1 node name
+%  #2 link destination name
+%  #3 link arc angle 
+%  #4 node content
+\gdef\pstr@createlink#1#2#3-,#4\@nil{
+\rnode{#1}{#4}% 
+\edef\angle{#3}%
+\ifx\angle\@empty\else\link*[nodesep=\pstr@arcoptions]{\angle}{#1}{#2}\fi
 }
 
 %%%%%%%%%%%%%%%%
-%%Second way of creating a pointer string
-%  \pstr[0.4cm]{ \nd(b) this \lnk(a-b,45) that } 
+%%Second way of creating a pointer string:
+%  \pstr[raiseamount][nodesep]{ sequencespecification }
+% example:
+%  \pstr[0.4cm][1pt]{ \lnk(b) this \lnk(a-b,45) that } 
 
-\gdef\pstr{\@ifnextchar[{\@pstr}{\@pstr[0cm]}}
-% pstr with optional parameter
-\gdef\@pstr[#1]#2{%
+\gdef\pstr{\@ifnextchar[{\pstr@i}{\pstr@ii[0cm][1pt]}}
+% pstr with one optional parameter
+\gdef\pstr@i[#1]{\@ifnextchar[{\pstr@ii[#1]}{\pstr@ii[#1][1pt]}}
+% pstr with two optional parameters
+\gdef\pstr@ii[#1][#2]#3{%
 \begingroup
  \setlength\pstr@tempdim{#1}%
- \setbox\pstr@tempbox\hbox{$#2$}%
+ \def\pstr@arcoptions{#2}%
+ \setbox\pstr@tempbox\hbox{$#3$}%
  \ht\pstr@tempbox\pstr@tempdim
  \box\pstr@tempbox
 \endgroup
 }
-\gdef\nd(#1){\rnode{#1}}
-\gdef\lnk(#1-#2,#3)#4{\newnode{#1}{#2}{#3}{#4}}
-
+\gdef\lnk(#1)#2{\@@@Pstr#1-,#2\@nil}
 
 \endgroup
 

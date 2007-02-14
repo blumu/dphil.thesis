@@ -2,8 +2,9 @@
 \usepackage{pstricks}  
 \usepackage{pstring}
 
-\usepackage{amssymb}
-\usepackage{amsmath}
+\usepackage{amsmath, amsthm, amssymb}
+%usepackage{amssymb}
+%\usepackage{amsmath}
 %\usepackage{qsymbols}
 
 \definecolor{darkGreen}{rgb}{0.03,0.35,0.05}
@@ -14,6 +15,29 @@
 \newcommand{\extomove}{\textcolor{orange}}
 \newcommand{\extpmove}{\textcolor{darkGreen}}
 
+\newcommand{\ord}[1]{{\sf ord}(#1)}
+
+% highlight for definition names
+\newcommand\defname[1]{{\bf\em #1}\index{#1}}
+
+
+\newtheorem{theorem}{Theorem}[section]
+\newtheorem{corollary}[theorem]{Corollary}
+
+\newtheorem{lemma}{Lemma}[section]
+\newtheorem{proposition}{Proposition}[section]
+
+\theoremstyle{remark}
+\newtheorem{remark}{Remark}[section]
+\newtheorem{example}{Example}[section]
+\newtheorem{property}{Property}[section]
+
+\theoremstyle{definition}
+\newtheorem{definition}{Definition}[section]
+\newtheorem{algorithm}{Algorithm}[section]
+
+
+
 \title{Compositionality of P-incrementally justified strategies}
 
 \begin{document}
@@ -21,12 +45,119 @@
 The P-view of an interaction sequence $u \in Int(A,B,C)$ is defined as:
 \begin{align*}
 \pview{u\cdot \extomove{n}} &= \extomove{n} &
-\mbox{ if \extomove{$m$} is an \extomove{external O-move} initial in C}\\
-\pview{\Pstr{u\cdot (m)m\cdot v \cdot (n-m,45){\extomove{n}} }} &= \extomove{n} &\mbox{ if \extomove{$m$} is an \extomove{external O-move} non initial in C}\\
-\pview{u \cdot \extpmove{m}} &= \pview{u}\cdot \extpmove{m} & \mbox{ if \extpmove{$m$} is a \extpmove{generalized P-move}}\\
+\mbox{ if \extomove{$m$} is an \extomove{external O-move} initial in C,}\\
+\pview{\Pstr{u\cdot (m)m\cdot v \cdot (n-m,45){\extomove{n}} }} &= \extomove{n} &\mbox{ if \extomove{$m$} is an \extomove{external O-move} non initial in C,}\\
+\pview{u \cdot \extpmove{m}} &= \pview{u}\cdot \extpmove{m} & \mbox{ if \extpmove{$m$} is a \extpmove{generalized P-move}.}\\
 \end{align*}
 
 We can show the following property by an easy induction :
-$$ \pview{u} \upharpoonright A,C = \pview{u \upharpoonright A,C}$$
+\begin{lemma}
+\label{lem:interaction_projection}
+ Let $u$ be an interaction sequence in $Int(A,B,C)$ then
+$$\pview{u} \upharpoonright A,C = \pview{u \upharpoonright A,C} \ .$$
+\end{lemma}
+
+
+We consider an arena $A$ and make the following two assumptions on it:
+\begin{itemize}
+\item (A1) Except if the arena is $\bot$ (the arena with a single initial question), each question move in the arena enables at least one answer move.
+\item (A2) Answer moves do not enable any other move.
+\end{itemize}
+
+We define the \defname{order} of a move $m$, written $\ord{m}$, as
+the length of the path from $m$ to its furthest leaf in the arena minus 1
+({\it i.e.} the height of the subarena rooted at $m$ minus 2.).
+Because of assumptions (A1) and (A2), for any question move $q$, $\ord{q} \geq 0$ and for any move $m$ in $A$, $m$ is an answer move if and only if $\ord{m} = -1$.
+
+
+
+\begin{definition}\rm
+  A strategy $\sigma$ is said to be \defname{P-incrementally
+    justified} if for any play $s \, q \in \sigma$ where $q$ is a
+  P-question, $q$ points to the last unanswered O-question in $\pview{s}$ with
+  order strictly greater than $\ord{q}$.
+\end{definition}
+
+
+
+\begin{lemma}
+\label{lem:justfied_by_unanswered}
+Under assumption (A2), if $s$ be a justified sequence of moves satisfying alternation and visibility then any O-move (resp. P-move) in $s$ points to an \emph{unanswered} P question (resp. O-question).
+\end{lemma}
+\begin{proof}
+Suppose that an O-move $c$ points to a P-move $d$ that has already been answered by the O-move $a$. The sequence $s$ as the following form:
+$$ s= \ldots \Pstr{(d){d}  \ldots  (a-d,20){a}  \ldots  (c-d,20){c}}$$
+
+By O-visibility, $d$ must belong to $\oview{s_{<c}}$. But since $a$ is an answer, by assumption (A2), it cannot justify any P-move, therefore 
+$\oview{s_{<q}}$ must contain an OP-arc ``hoping'' over $a$. We name the nodes of this arc $d^1$ and $c^1$:
+$$ s = \ldots \Pstr{(d){d}  \ldots  (d1){d^1} \ldots (a-d,20){a} \ldots
+ (c1-d1,20){c^1} \ldots (c-d,25){c}}$$
+
+
+By P-visibility, $d^1$ must belong to $\pview{s_{<c^1}}$.
+Consequently, $a$ does not belong to $\pview{s_{<c^1}}$ (otherwise the PO-arc 
+$\Pstr[0.5cm]{(d){d} \quad (a-d,45){a}}$ would cause the P-view to jump over $d^1$).
+Therefore there must be a PO-arc $\Pstr[0.5cm]{(d2){d^2} \quad (c2-d2,45){c^2}}$ in
+$\pview{s_{<c^1}}$ hoping over $a$:
+$$ s = \ldots \Pstr[0.7cm]{(d){d}  \ldots  
+(d1){d^1} \ldots (d2){c^2} \ldots
+(a-d,20){a} \ldots
+ (c2-d2,20){d^2} \ldots (c1-d1,20){c^1} \ldots (c-d,25){c}}$$
+
+This process can be repeated infinitely often by using alternatively O-visibility and P-visibility. This gives a contradiction since the sequence of moves $s_{<c}$ has finite length.
+Hence $d$ cannot point to a question that has already been answered. Since, by assumption (A2), a question is enabled by another question, $d$ is necessarily justified by an unanswered question.
+\end{proof}
+
+
+We call \defname{pending question} of a sequence of moves $s \in L_A$ the last unanswered question in $s$. 
+
+\begin{definition}\rm
+A strategy $\sigma$ is said to be \defname{P-well-bracketed} if for any play $s \, a \in \sigma$ where $a$ is a  P-answer, $a$ points to the pending question in $s$. 
+\end{definition}
+
+
+\begin{lemma}
+We make assumption (A2). Let $s$ be a justified sequence of moves satisfying alternation and visibility then
+if $|s|$ is odd then 
+all O-questions occurring in $\pview{s}$ are unanswered in $s$.
+Respectively, if $|s|$ is even then 
+all P-questions occurring in $\oview{s}$ are unanswered in $s$
+.
+\end{lemma}
+\begin{proof}
+We proof the first part by induction on $s$.
+The base case ($s = q$ with $q$ initial O-move) is trivial.
+
+Suppose $\Pstr{ s = s' \cdot (n)n \cdot u \cdot (m-n,45){m} }$.
+Let $r$ be an O-question in $\pview{s} = \pview{s'} \cdot n \cdot m$.
+If $r$ is the last move $m$ then it is necessarily unanswered.
+If $r \in \pview{s'}$ then by the induction hypothesis, $r$ is unanswered in $s'$.
+Suppose that $r$ is answered in $s$. This implies that some answer move $a$ in $u$ points to $r$:
+$$\pstr[0.5cm][5pt]{ s = \underbrace{\cdots\ \lnk(r){r}^O \cdots }_{s'} \ 
+\lnk(n){n}^P \ 
+\underbrace{\cdots\ \lnk(a-r,35){a}^P \cdots }_{u}
+\  \lnk(m-n,30){m}^O } \ .$$
+Since $m$ points to $n$, by lemma \ref{lem:justfied_by_unanswered}, $n$ is still unanswered at $s_{\leq a}$. Therefore the pending question at $s_{\leq a}$ 
+cannot be $r$. But $a$ is justified by $r$, therefore the well-bracketing condition is violated. Hence $r$ is unanswered in $s$.
+\end{proof}
+
+P-well-bracketing can be restated differently as the following proposition shows:
+\begin{proposition}\rm
+Let $\sigma$ be a strategy on an arena $A$.
+The following statements are all equivalent:
+\begin{enumerate}
+\item[(i)] $\sigma$ is \defname{P-well-bracketed},
+\item[(ii)] for any play $s \, a \in \sigma$ where $a$ is a P-answer, $a$ points to the pending question in $\pview{s}$.
+\end{enumerate}
+\end{proposition}
+\begin{proof}
+(ii) is a consequence of Lemma 2.1 from \cite{McC96b} which shows that if P is to move then the pending question in $s$ is the same as that of $\pview{s}$. \end{proof}
+
+
+
+\bibliographystyle{plain}
+\bibliography{../bib/higherorder,../bib/gamesem,../bib/lambdacalculus}
+
 
 \end{document}
+

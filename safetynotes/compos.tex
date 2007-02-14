@@ -20,6 +20,8 @@
 % highlight for definition names
 \newcommand\defname[1]{{\bf\em #1}\index{#1}}
 
+%\newcommand{\iff}{\Leftrightarrow}
+
 
 \newtheorem{theorem}{Theorem}[section]
 \newtheorem{corollary}[theorem]{Corollary}
@@ -37,46 +39,61 @@
 \newtheorem{algorithm}{Algorithm}[section]
 
 
-
+\author{William Blum}
 \title{Compositionality of P-incrementally justified strategies}
 
 \begin{document}
+\maketitle
 
-The P-view of an interaction sequence $u \in Int(A,B,C)$ is defined as:
-\begin{align*}
-\pview{u\cdot \extomove{n}} &= \extomove{n} &
-\mbox{ if \extomove{$m$} is an \extomove{external O-move} initial in C,}\\
-\pview{\Pstr{u\cdot (m)m\cdot v \cdot (n-m,45){\extomove{n}} }} &= \extomove{n} &\mbox{ if \extomove{$m$} is an \extomove{external O-move} non initial in C,}\\
-\pview{u \cdot \extpmove{m}} &= \pview{u}\cdot \extpmove{m} & \mbox{ if \extpmove{$m$} is a \extpmove{generalized P-move}.}\\
-\end{align*}
-
-We can show the following property by an easy induction :
-\begin{lemma}
-\label{lem:interaction_projection}
- Let $u$ be an interaction sequence in $Int(A,B,C)$ then
-$$\pview{u} \upharpoonright A,C = \pview{u \upharpoonright A,C} \ .$$
-\end{lemma}
-
+\section{Well-bracketing and incremental-justification}
 
 We consider an arena $A$ and make the following two assumptions on it:
 \begin{itemize}
-\item (A1) Except if the arena is $\bot$ (the arena with a single initial question), each question move in the arena enables at least one answer move.
+\item (A1) For $A \neq \bot$ (the arena with a single initial question), each question move in the arena enables at least one answer move.
 \item (A2) Answer moves do not enable any other move.
 \end{itemize}
 
 We define the \defname{order} of a move $m$, written $\ord{m}$, as
 the length of the path from $m$ to its furthest leaf in the arena minus 1
 ({\it i.e.} the height of the subarena rooted at $m$ minus 2.).
-Because of assumptions (A1) and (A2), for any question move $q$, $\ord{q} \geq 0$ and for any move $m$ in $A$, $m$ is an answer move if and only if $\ord{m} = -1$.
+Because of assumptions (A1) and (A2),  
+for any move $m$ of $A \neq \bot$, $m$ is question move if and only if $\ord{m} \geq 0$, and $m$ is an answer move if and only if $\ord{m} = -1$.
 
 
+
+
+
+We call \defname{pending question} of a sequence of moves $s \in L_A$ the last unanswered question in $s$. 
 
 \begin{definition}\rm
-  A strategy $\sigma$ is said to be \defname{P-incrementally
-    justified} if for any play $s \, q \in \sigma$ where $q$ is a
-  P-question, $q$ points to the last unanswered O-question in $\pview{s}$ with
-  order strictly greater than $\ord{q}$.
+A strategy $\sigma$ is said to be \defname{P-well-bracketed} if for any play $s \, a \in \sigma$ where $a$ is a  P-answer, $a$ points to the pending question in $s$. 
 \end{definition}
+
+
+
+P-well-bracketing can be restated differently as the following proposition shows:
+\begin{proposition}
+\label{prop:char_wellbrack}
+\rm We make assumption (A1) and (A2).
+Let $\sigma$ be a strategy on an arena $A\neq \bot$.
+The following statements are equivalent:
+\begin{enumerate}
+\item[(i)] $\sigma$ is P-well-bracketed,
+\item[(ii)] for $s \, a \in \sigma$ with $a$ a P-answer, $a$ points to the pending question in $\pview{s}$,
+\item[(iii)] for $s \, a \in \sigma$ with $a$ a P-answer, $a$ points to the last O-question in $\pview{s}$.
+\item[(iv)] for $s \, a \in \sigma$ with $a$ a P-answer, $a$ points to the last O-move in $\pview{s}$ with order $>\ord{a}$.
+\end{enumerate}
+\end{proposition}
+\begin{proof}
+$(i)\iff(ii)$: \cite[Lemma 2.1]{McC96b} states that if P is to move then the pending question in $s$ is the same as that of $\pview{s}$.
+
+$(ii)\iff(iii)$: Assumption (A2) implies that the pending question in $\pview{s}$ is also the last O-question occurring in $\pview{s}$.
+
+$(iii)\iff(iv)$: Because of assumption (A1) and (A2),
+for any move $m$, we have $m$ is a question move 
+if and only if $\ord{m} \geq 0$ if and only if $\ord{m} > \ord{a} = -1$.
+\end{proof}
+
 
 
 
@@ -109,26 +126,15 @@ Hence $d$ cannot point to a question that has already been answered. Since, by a
 \end{proof}
 
 
-We call \defname{pending question} of a sequence of moves $s \in L_A$ the last unanswered question in $s$. 
-
-\begin{definition}\rm
-A strategy $\sigma$ is said to be \defname{P-well-bracketed} if for any play $s \, a \in \sigma$ where $a$ is a  P-answer, $a$ points to the pending question in $s$. 
-\end{definition}
-
-
 \begin{lemma}
-We make assumption (A2). Let $s$ be a justified sequence of moves satisfying alternation and visibility then
-if $|s|$ is odd then 
-all O-questions occurring in $\pview{s}$ are unanswered in $s$.
-Respectively, if $|s|$ is even then 
-all P-questions occurring in $\oview{s}$ are unanswered in $s$
-.
+\label{lem:oq_in_pview_unanswered}
+Under assumption (A2), if $s$ is a P-well-bracketed justified sequence of moves of odd length satisfying alternation and visibility then  all O-questions occurring in $\pview{s}$ are unanswered in $s$.
 \end{lemma}
 \begin{proof}
 We proof the first part by induction on $s$.
 The base case ($s = q$ with $q$ initial O-move) is trivial.
 
-Suppose $\Pstr{ s = s' \cdot (n)n \cdot u \cdot (m-n,45){m} }$.
+Suppose $\Pstr[0.4cm]{ s = s' \cdot (n)n \cdot u \cdot (m-n,45){m} }$.
 Let $r$ be an O-question in $\pview{s} = \pview{s'} \cdot n \cdot m$.
 If $r$ is the last move $m$ then it is necessarily unanswered.
 If $r \in \pview{s'}$ then by the induction hypothesis, $r$ is unanswered in $s'$.
@@ -141,19 +147,59 @@ Since $m$ points to $n$, by lemma \ref{lem:justfied_by_unanswered}, $n$ is still
 cannot be $r$. But $a$ is justified by $r$, therefore the well-bracketing condition is violated. Hence $r$ is unanswered in $s$.
 \end{proof}
 
-P-well-bracketing can be restated differently as the following proposition shows:
-\begin{proposition}\rm
-Let $\sigma$ be a strategy on an arena $A$.
-The following statements are all equivalent:
+
+
+
+
+\begin{definition}\rm
+  A strategy $\sigma$ is said to be \defname{P-incrementally
+    justified} if for any play $s \, q \in \sigma$ where $q$ is a
+  P-question, $q$ points to the last unanswered O-question in $\pview{s}$ with
+  order strictly greater than $\ord{q}$.
+\end{definition}
+
+\begin{proposition}
+\label{prop:char_pincr}
+\rm We make assumption (A1) and (A2).
+Let $\sigma$ be a \emph{P-well-bracketed} strategy on an arena $A\neq \bot$.
+The following statements are equivalent:
 \begin{enumerate}
-\item[(i)] $\sigma$ is \defname{P-well-bracketed},
-\item[(ii)] for any play $s \, a \in \sigma$ where $a$ is a P-answer, $a$ points to the pending question in $\pview{s}$.
+\item[(i)] $\sigma$ is P-incrementally-justified,
+\item[(ii)] for $s \, q \in \sigma$ with $q$ a P-question, $q$ points to the last O-question in $\pview{s}$ with order $>\ord{q}$,
+\item[(iii)] for $s \, q \in \sigma$ with $q$ a P-question, $q$ points to the last O-move in $\pview{s}$ with order $>\ord{q}$.
 \end{enumerate}
 \end{proposition}
 \begin{proof}
-(ii) is a consequence of Lemma 2.1 from \cite{McC96b} which shows that if P is to move then the pending question in $s$ is the same as that of $\pview{s}$. \end{proof}
+$(i)\iff(ii)$: By lemma \ref{lem:oq_in_pview_unanswered}, O-question occurring in $\pview{s}$ are all unanswered.
 
+$(ii)\iff(iii)$: Because of (A1) and (A2), $\ord{q} \geq 0$ thus an O-move with order $>\ord{q}$ is necessarily an O-question.
+\end{proof}
 
+Putting proposition \ref{prop:char_pincr} and
+\ref{prop:char_wellbrack} together we obtain:
+\begin{proposition}
+Under assumption (A1) and (A2).
+A strategy $\sigma$ on $A\neq \bot$
+is \emph{P-well-bracketed} and 
+ \emph{P-incrementally-justified} if and only if
+for $s \, m \in \sigma$, $m$ points to the last O-move in $\pview{s}$ with order $>\ord{m}$.
+\end{proposition}
+
+\section{Compositionality}
+We can show the following property by an easy induction :
+\begin{lemma}
+\label{lem:interaction_projection}
+ Let $u$ be an interaction sequence in $Int(A,B,C)$ then
+$$\pview{u} \upharpoonright A,C = \pview{u \upharpoonright A,C} \ .$$
+\end{lemma}
+
+The P-view of an interaction sequence $u \in Int(A,B,C)$ is defined as:
+\begin{align*}
+\pview{u\cdot \extomove{n}} &= \extomove{n} &
+\mbox{ if \extomove{$m$} is an \extomove{external O-move} initial in C,}\\
+\pview{\Pstr{u\cdot (m)m\cdot v \cdot (n-m,45){\extomove{n}} }} &= \extomove{n} &\mbox{ if \extomove{$m$} is an \extomove{external O-move} non initial in C,}\\
+\pview{u \cdot \extpmove{m}} &= \pview{u}\cdot \extpmove{m} & \mbox{ if \extpmove{$m$} is a \extpmove{generalized P-move}.}\\
+\end{align*}
 
 \bibliographystyle{plain}
 \bibliography{../bib/higherorder,../bib/gamesem,../bib/lambdacalculus}

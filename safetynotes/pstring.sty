@@ -179,8 +179,8 @@ curveto
  \setlength\pstr@tempdim{#1}%
  \def\pstr@arcoptions{#2}%
 \setbox\pstr@tempbox\hbox\bgroup$%
-\@@Pstr#3(@-@,@){}\@nil
- %\@@Pstr#2(@-@,@){@}\@nil\ignorespaces
+\Pstr@ParseSpecification#3(@-@,@){}\@nil
+ %\Pstr@ParseSpecification#2(@-@,@){@}\@nil\ignorespaces
 $\egroup%
  \ht\pstr@tempbox\pstr@tempdim
  \box\pstr@tempbox
@@ -191,37 +191,37 @@ $\egroup%
 % #1 stuff to be typset in the pointer string
 % #2 a new node definition
 % #3 node content
-\gdef\@@Pstr#1(#2)#3{%
+\gdef\Pstr@ParseSpecification#1(#2)#3{%
  #1% dump the stuff
  % parse the node specification
- \@@@Pstr#2-,#3\@nil
+ \Pstr@ParseNodeSpecif#2-,#3\@nil
  % proceeds to the rest of the specification.
- \@ifnextchar\@nil{\@gobble}{\@@Pstr}
+ \@ifnextchar\@nil{\@gobble}{\Pstr@ParseSpecification}
 }
 
 % Parse a node specification
-\gdef\@@@Pstr#1-#2,{%
+\gdef\Pstr@ParseNodeSpecif#1-#2,{%
 % create the node only if it is not the dummy node (@-@,@){@}
 \if#1@
- \expandafter\pstr@skipdummynode
+ \expandafter\Pstr@skipdummynode
 \else
   % test whether a destination node is specified
   % in which case a link needs to be created:
   \def\dst{#2}
-  \ifx\dst\@empty \pstr@skipdstangle{#1}%
-  \else \pstr@createlink{#1}{#2}
+  \ifx\dst\@empty \Pstr@skipdstangle{#1}%
+  \else \Pstr@createlink{#1}{#2}
   \fi
 \fi
 }
 %%%%% auxiliary macros for node specification parsing
-\gdef\pstr@skipdummynode#1-,#2\@nil{}
-\gdef\pstr@skipdstangle#1#2\@nil{ \rnode{#1}{#2} }
+\gdef\Pstr@skipdummynode#1-,#2\@nil{}
+\gdef\Pstr@skipdstangle#1#2\@nil{ \rnode{#1}{#2} }
 % create a new node together with a link
 %  #1 node name
 %  #2 link destination name
 %  #3 link arc angle 
 %  #4 node content
-\gdef\pstr@createlink#1#2#3-,#4\@nil{
+\gdef\Pstr@createlink#1#2#3-,#4\@nil{
 \rnode{#1}{#4}% 
 \edef\angle{#3}%
 \ifx\angle\@empty\else\link*[nodesep=\pstr@arcoptions]{\angle}{#1}{#2}\fi
@@ -246,7 +246,7 @@ $\egroup%
  \box\pstr@tempbox
 \endgroup
 }
-\gdef\lnk(#1)#2{\@@@Pstr#1-,#2\@nil}
+\gdef\lnk(#1)#2{\Pstr@ParseNodeSpecif#1-,#2\@nil}
 
 \endgroup
 

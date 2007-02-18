@@ -1,6 +1,7 @@
 \documentclass{article}
 \usepackage{pstricks}  
 \usepackage{pstring}
+\usepackage[defblank]{paralist}
 
 \usepackage{amsmath, amsthm, amssymb}
 %\usepackage{qsymbols}
@@ -9,6 +10,13 @@
 
 % game semantics
 \newcommand{\sem}[1]{{[\![ #1 ]\!]}}
+
+% pcf
+\newcommand\pcf{\textsf{PCF}}
+\newcommand\pcfcond{\texttt{cond}}
+\newcommand\pcfsucc{\texttt{succ}}
+\newcommand\pcfpred{\texttt{pred}}
+
 
 % justified sequence of moves
 \newcommand{\oview}[1]{\llcorner #1 \lrcorner}
@@ -250,15 +258,38 @@ safe term $N$. Semi-safe terms are either safe or ``almost safe'' in the sense t
 If $M$ is of the first form $N_0 N_1 \ldots N_k : (A_1,\ldots,A_n)$ with $k\geq 1$ then let $\varphi_i:A_i$ be fresh variables for $i\in\{1..n\}$, using the (app) rule we can build the safe term $N_0 N_1 \ldots N_k \varphi_1 \ldots \varphi_n$. If $M$ is of the second form $\lambda \overline{x} . N$ then using the abstraction rule we can build the safe term $\lambda \overline{y} \overline{x}. N$  where $\overline{y} = fv(\lambda \overline{x}. N)$.
 
 
+The correspondence between safety and P-incremental-justification for the simply typed lambda calculus was shown
+in \cite{blumong:safelambdacalculus}, Theorem 3(ii):
 
-\begin{proposition}[Definability for safe terms]
+\begin{theorem}[Safety and P-incremental justification]
+\label{thm:safeincrejust} In the simply typed lambda calculus:
+\begin{enumerate}[(i)]
+\item If $M$ is safe then $\sem{M}$ is P-incrementally justified.
+\item If $M$ is a closed term and $\sem{M}$ is
+  P-incrementally justified then the $\eta$-long form of the
+  $\beta$-normal form of $M$ is safe.
+\end{enumerate}
+\end{theorem}
+In the context of \pcf\, only the first part of the theorem holds (see \cite{blumtransfer} for the proof). However (ii) does not hold. Indeed, take the closed \pcf\ term $M = \lambda f x y. f (\lambda z. \pcfcond (x=x+1) y z )$ where $x,y,z:o$ and $f:((o,o),o)$. $M$ cannot be reduced further since the equality test can only be reduced after $x$ is evaluated, thus $M$ is in normal form. The $\eta$-long form of the $\beta$-normal form of $M$ is therefore $M$ itself which is unsafe.
+Clearly $\sem{M} = \sem{\lambda f x y. f (\lambda z. z)}$. Thus by (i), since  $\lambda f x y. f (\lambda z. z)$ is safe, $\sem{M}$ is P-incrementally justified.
+
+Such counter-example arise because the conditional operator
+of \pcf\ permits us to build terms in normal form containing ``dead code'' {\it i.e.} some  subterm that will never be evaluated for any assignment of the free variables. In the example given above, the dead code consists in the subterm $y$. If the dead-code part of the computation tree contains variables that are not incrementally bound then the resulting term will be unsafe even if the rest of the tree is incrementally bound.
+
+In the example above, the term $\lambda f x y. f (\lambda z. z)$ is obtained by eliminating the dead code from $M$. Clearly, this technique can be generalized to any \pcf\ term: if $M$ is a closed \pcf\ term and 
+$\sem{M}$ is P-incrementally justified then 
+ the $\eta$-long form of the $\beta$-normal form of $M^*$ is safe
+where $M^*$ is obtained by pruning  the dead code from $M$. Although dead code detection can be hard to achieve in practice, in theory it can be easily defined: the term $M^*$ is obtained by performing the following transformation recursively. Any sub term of the form $\Gamma \vdash \pcfcond\ C M N$ is replaced by $M$ if $\Gamma \vdash C$ evaluates to $0$ for any assignment of the context variables $\Gamma$, replaced by $N$ if $\Gamma \vdash C$ does not evaluate to $0$ for any assignment of $\Gamma$ and is kept unmodified otherwise.
+
+This observation leads to the following definability result for safe \pcf:
+\begin{proposition}[Definability for safe \pcf\ terms]
 \label{prop:safetydefinability}
 Let $\sigma$ be a P-incrementally-justified strategy defined on the game $A$. There exists a \emph{safe} closed PCF term $\vdash_s M : A$ in $\eta$-long normal form such that:
 $$ \sem{M_\sigma} = \sigma $$
 \end{proposition}
 \begin{proof}
 By the standard definability result for PCF, we know that there is a closed term $\vdash N : A$ such that $\sem{N} = \sigma$.
-Take $M_\sigma$ to be the $\eta$-long normal form of $N$.
+Take $M_\sigma$ to be the $\eta$-long normal form of the $\beta$-normal form of $N^*$.
 Clearly $\sem{ M_\sigma} = \sem{N} = \sigma$, and by Theorem 3(ii) of \cite{blumong:safelambdacalculus}, $M_\sigma$ is safe.
 \end{proof}
 

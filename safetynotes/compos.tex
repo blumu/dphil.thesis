@@ -2,7 +2,7 @@
 \usepackage{pstricks}  
 \usepackage{pstring}
 \usepackage[defblank]{paralist}
-
+\usepackage{url}
 \usepackage{amsmath, amsthm, amssymb}
 %\usepackage{qsymbols}
 
@@ -16,6 +16,13 @@
 \newcommand\pcfcond{\texttt{cond}}
 \newcommand\pcfsucc{\texttt{succ}}
 \newcommand\pcfpred{\texttt{pred}}
+
+% computation tree, eta normal form, traversals
+\def\elnf#1{\lceil #1\rceil}
+\def\etanf#1{\eta_{\sf nf}(#1)}
+\def\betanf#1{\beta_{\sf nf}(#1)}
+\def\etabetanf#1{\eta\beta_{\sf nf}(#1)}
+\newcommand\travset{\mathcal{T}rav}
 
 
 % justified sequence of moves
@@ -31,6 +38,15 @@
 \newcommand\defname[1]{{\bf\em #1}\index{#1}}
 
 %\newcommand{\iff}{\Leftrightarrow}
+
+% set theory
+\newcommand{\makeset}[1]{\{\,{#1}\,\}}
+\newcommand\inter{\cap}
+\newcommand\union{\cup}
+\newcommand\Union{\bigcup}
+\newcommand\prefset{\textsf{Pref}}
+\newcommand{\relimg}[1]{{(\!| #1 |\!)}}
+\newcommand\nat{\mathbb{N}}
 
 
 \newtheorem{theorem}{Theorem}[section]
@@ -257,6 +273,13 @@ $N_i$ is safe or if it can be written $\lambda \overline{x} . N$ for some
 safe term $N$. Semi-safe terms are either safe or ``almost safe'' in the sense that they can be turned safe by applying one more time the (app) rule or the (abs) rule. Indeed, let $M$ be an semi-safe term that is unsafe.
 If $M$ is of the first form $N_0 N_1 \ldots N_k : (A_1,\ldots,A_n)$ with $k\geq 1$ then let $\varphi_i:A_i$ be fresh variables for $i\in\{1..n\}$, using the (app) rule we can build the safe term $N_0 N_1 \ldots N_k \varphi_1 \ldots \varphi_n$. If $M$ is of the second form $\lambda \overline{x} . N$ then using the abstraction rule we can build the safe term $\lambda \overline{y} \overline{x}. N$  where $\overline{y} = fv(\lambda \overline{x}. N)$.
 
+The $\beta$-normal form of a \pcf\ term is the possibly infinite term obtained by reducing all the redexes in $M$.
+
+%We say that a \pcf\ term is in $\beta$-normal form it does not contain 
+%any $\beta$-redex but may contain other redexes (in particular it may contain
+%an occurrence of the Y combinator, which would produce a $\beta$-redex if it was reduced). The $\beta$-normal form of a \pcf\ term can be obtained by 
+%computing the $\beta$-normal form of the term treated as a simply typed term  where Y, \pcfcond, \pcfsucc and \pcfpred\ are treated as ordinary constants.
+
 
 The correspondence between safety and P-incremental-justification for the simply typed lambda calculus was shown
 in \cite{blumong:safelambdacalculus}, Theorem 3(ii):
@@ -270,27 +293,113 @@ in \cite{blumong:safelambdacalculus}, Theorem 3(ii):
   $\beta$-normal form of $M$ is safe.
 \end{enumerate}
 \end{theorem}
-In the context of \pcf\, only the first part of the theorem holds (see \cite{blumtransfer} for the proof). However (ii) does not hold. Indeed, take the closed \pcf\ term $M = \lambda f x y. f (\lambda z. \pcfcond (x=x+1) y z )$ where $x,y,z:o$ and $f:((o,o),o)$. $M$ cannot be reduced further since the equality test can only be reduced after $x$ is evaluated, thus $M$ is in normal form. The $\eta$-long form of the $\beta$-normal form of $M$ is therefore $M$ itself which is unsafe.
-Clearly $\sem{M} = \sem{\lambda f x y. f (\lambda z. z)}$. Thus by (i), since  $\lambda f x y. f (\lambda z. z)$ is safe, $\sem{M}$ is P-incrementally justified.
+
+In the context of \pcf\, only the first part of the theorem holds (see \cite{blumtransfer} for the proof). However (ii) does not hold. Indeed, take the closed \pcf\ term $M = \lambda f x y. f (\lambda z. \pcfcond (\pcfsucc\ x) y z )$ where $x,y,z:o$ and $f:((o,o),o)$. $M$ is in normal form (the conditional  could  only be reduced if $x$ were first evaluated). The $\eta$-long form of the $\beta$-normal form of $M$ is therefore $M$ itself which is unsafe.
+But clearly we have $\sem{M} = \sem{\lambda f x y. f (\lambda z. z)}$, and since  $\lambda f x y. f (\lambda z. z)$ is safe, by (i), $\sem{M}$ is P-incrementally justified.
 
 Such counter-example arise because the conditional operator
-of \pcf\ permits us to build terms in normal form containing ``dead code'' {\it i.e.} some  subterm that will never be evaluated for any assignment of the free variables. In the example given above, the dead code consists in the subterm $y$. If the dead-code part of the computation tree contains variables that are not incrementally bound then the resulting term will be unsafe even if the rest of the tree is incrementally bound.
+of \pcf\ permits us to build terms in normal form containing ``dead code'' {\it i.e.} some  subterm that will never be evaluated for any value of M's parameters. In the example given above, the dead code consists in the subterm $y$. In general, if the dead code part of the computation tree contains a variable that is not incrementally bound then the resulting term will be unsafe even if the rest of the tree is incrementally bound. 
+In the example above, it was possible to turn $M$ into the equivalent safe term $\lambda f x y. f (\lambda z. z)$ by eliminating the dead code from $M$. 
+We shall see how to generalise this to any \pcf\ term with a P-incrementally justified denotation. 
 
-In the example above, the term $\lambda f x y. f (\lambda z. z)$ is obtained by eliminating the dead code from $M$. Clearly, this technique can be generalized to any \pcf\ term: if $M$ is a closed \pcf\ term and 
-$\sem{M}$ is P-incrementally justified then 
- the $\eta$-long form of the $\beta$-normal form of $M^*$ is safe
-where $M^*$ is obtained by pruning  the dead code from $M$. Although dead code detection can be hard to achieve in practice, in theory it can be easily defined: the term $M^*$ is obtained by performing the following transformation recursively. Any sub term of the form $\Gamma \vdash \pcfcond\ C M N$ is replaced by $M$ if $\Gamma \vdash C$ evaluates to $0$ for any assignment of the context variables $\Gamma$, replaced by $N$ if $\Gamma \vdash C$ does not evaluate to $0$ for any assignment of $\Gamma$ and is kept unmodified otherwise.
+Dead code elimination can be difficult to achieve in practice but the formal definition is not difficult to formulate. We say that a subterm $N$ occurring
+in a context $C[-]$ in $M : (A_1, \ldots, A_n,o)$ is
+part of the \defname{dead code} of $M$ if for any term $T_0$ of the form $M M_1 \ldots M_n$,
+any reduction sequence starting from $T_0$ does not involve a reduction of the subterm $N$ {\it i.e.} for any reduction sequence $T_0 \rightarrow T_1 \rightarrow \ldots \rightarrow T_k$, there is no $j\in \{0.. k-1\}$ such that $T_j = C[N]$ and $T_{j+1} = C[N']$ for some term $N'$.
 
-This observation leads to the following definability result for safe \pcf:
+
+An occurrence of a variable $x$ in $M$ is said to be a \defname{dead occurrence}
+if it occurs in the dead code of $M$. In other words, it is a 
+dead occurrence of $x$ if its corresponding node in the computation tree does not appear in any traversal of $\travset(M)$. Equivalently, thanks to the Correspondence Theorem, an occurrence of $x:B$ is dead if and only if the initial move
+of the arena $\sem{B}$ does not appear in any play of $\sem{M}$.
+
+
+Let $M$  be a \pcf\ term.
+We define $M^*$ as the term obtained from $M$ after substituting
+each dead variable occurrence $x:(B_1,\ldots, B_k, o)$ by
+$\lambda \varphi^1 \ldots \varphi^k . 0$ for some fresh variables $\varphi^1:B_1$,\ldots,$\varphi^k:B_k$.
+This process is called \defname{dead variable elimination}.
+
+
+
+\begin{proposition}[Incremental-binding and P-incremental-justification coincide] \
+\label{prop:incrbound_imp_incrjustified_pcf} Let $M$ be a \pcf\ term in $\beta$-normal form.
+\begin{enumerate}[(i)]
+\item  If $\tau(M)$ is incrementally-bound then $\sem{M}$ is P-incrementally-justified,
+\item  if $\sem{M}$ is P-incrementally-justified 
+then $\tau(M^*)$ is incrementally-bound.
+\end{enumerate}
+\end{proposition}
+\begin{proof}
+(i) The proof is exactly the same as in the simply typed lambda calculus case,
+see \cite[Proposition 4.1.5(i)]{blumtransfer}.
+
+\noindent (ii)
+Take $M$ a \pcf\ term in $\beta$-normal form denoted by
+$\sem{M}$ P-incrementally-justified. Let $r$ denote the root of $\tau(M^*)$.
+Let $n$ be a node of $\tau(M^*)$ labelled by the variable $x$. $M^*$ is free from dead code therefore $n$ is not a dead occurrence of $x$ and there exists a traversal of $\tau(M^*)$ of the form $t \cdot x$. 
+
+\pcf\ constants are of order $1$ at most therefore they cannot hereditarily justify a variable node, thus $x$ is necessarily hereditarily justified by the root $r$ of the computation tree.
+
+
+The correspondence theorem gives $\varphi((t \cdot x) \upharpoonright r) = \varphi((t \upharpoonright r) \cdot x) \in \sem{M}$. Since $\sem{M}$ is P-incrementally-justified, $\varphi(x)$
+must point to the last O-move in $\pview{?(\varphi(t \upharpoonright
+r))}$ with order strictly greater than $\ord{\varphi(x)}$.
+Consequently $x$ points to the last node in $\pview{?(t
+\upharpoonright r)} \inter N^{\lambda}$ with order strictly greater than $\ord{x}$. We have:
+\begin{align*}
+\pview{?(t \upharpoonright r)} &= \pview{?(t) \upharpoonright r} = \pview{?(t)} \upharpoonright r & (\mbox{by \cite[lemma 3.1.23]{blumtransfer}}) \\
+& = [r,x[ \ \upharpoonright r & (\mbox{by \cite[proposition 3.1.20]{blumtransfer}})
+\end{align*}
+Since $M$ is in $\beta$-nf, the set of nodes
+not hereditarily justified by $r$ is exactly the set of nodes hereditarily justified by $N_{\Sigma}$ thus
+$[r,x[ \ \upharpoonright r = [r,x[\ \setminus\  N^{\upharpoonright \Sigma}$.
+Moreover \pcf\ constants are of order $1$ at most therefore
+$N^{\upharpoonright \Sigma} = N_{\Sigma} \union N^c_{\Sigma}$
+where $N^c_{\Sigma}$ is the set of children nodes of $N_{\Sigma}$.
+Thus $(\pview{?(t \upharpoonright r)}\upharpoonright r) \inter N^{\lambda} =
+([r,x[\ \setminus\  N_{\Sigma} \setminus N^c_{\Sigma} ) \inter N^{\lambda} = 
+([r,x[\ \setminus\  N^c_{\Sigma} )  \inter N^{\lambda}$, and
+since $N^c_{\Sigma}$ is constituted of order $0$ lambda-nodes only we have that
+$x$ points to the last node in $[r,x[ \inter N^{\lambda}$ with order strictly greater than $\ord{x}$.
+
+Hence if $x$ is a bound variable node then it is bound by the
+last $\lambda$-node in $[r,x[$ with order strictly greater than
+$\ord{x}$ and if $x$ is a free variable then it points to $r$ and
+therefore all the $\lambda$-node in $]r,x[$ have order smaller than
+$\ord{x}$. Thus $\tau(M)$ is incrementally-bound.
+
+\end{proof}
+
+\begin{theorem}[Safety and P-incremental justification]
+\label{thm:safeincrejust_pcf} In \pcf:
+\begin{enumerate}[(i)]
+\item If $M$ is safe then $\sem{M}$ is P-incrementally justified;
+\item if $M$ is a closed term and $\sem{M}$ is
+  P-incrementally justified then $\etanf{\betanf{M}^*}$ is safe.
+\end{enumerate}
+\end{theorem}
+\begin{proof}
+\noindent(i)
+This is proved in  \cite[Theorem 4.2.10]{blumtransfer}.
+
+\noindent(ii) Suppose $M$ is a closed \pcf\ term with a P-incrementally justified strategy denotation. By Proposition \ref{prop:incrbound_imp_incrjustified_pcf}(ii), $\tau(\betanf{M}^*)$ is incrementally-bound.
+
+Lemma 4.1.6(ii) from \cite{blumtransfer} states that in the simply typed $\lambda$ calculus, if $M$ is closed and $\tau(M)$ is incrementally-bound then the $\etanf{M}$ is safe.
+This lemma remains valid for infinite closed \pcf\ terms in normal form.
+Thus $\etanf{\betanf{M}^*}$ is safe.
+\end{proof}
+
+This last theorem leads to the following definability result for safe \pcf:
 \begin{proposition}[Definability for safe \pcf\ terms]
 \label{prop:safetydefinability}
-Let $\sigma$ be a P-incrementally-justified strategy defined on the game $A$. There exists a \emph{safe} closed PCF term $\vdash_s M : A$ in $\eta$-long normal form such that:
+Let $\sigma$ be a P-incrementally-justified strategy with finite view function defined on the game $A$. There exists a \emph{safe} closed PCF term $\vdash_s M : A$ in $\eta$-long normal form such that:
 $$ \sem{M_\sigma} = \sigma $$
 \end{proposition}
 \begin{proof}
-By the standard definability result for PCF, we know that there is a closed term $\vdash N : A$ such that $\sem{N} = \sigma$.
-Take $M_\sigma$ to be the $\eta$-long normal form of the $\beta$-normal form of $N^*$.
-Clearly $\sem{ M_\sigma} = \sem{N} = \sigma$, and by Theorem 3(ii) of \cite{blumong:safelambdacalculus}, $M_\sigma$ is safe.
+By the standard definability result for PCF, there is a closed term $\vdash N : A$ such that $\sem{N} = \sigma$.
+Take $M_\sigma = \etanf{\betanf{N}^*}$.
+Clearly $\sem{ M_\sigma} = \sem{N} = \sigma$, and by Theorem \ref{thm:safeincrejust_pcf}(ii), $M_\sigma$ is safe.
 \end{proof}
 
 

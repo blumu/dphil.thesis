@@ -11,6 +11,11 @@
 % game semantics
 \newcommand{\sem}[1]{{[\![ #1 ]\!]}}
 
+% reduction, substitution
+\newcommand\betared{\rightarrow_\beta}
+\newcommand\betaredtr{\twoheadrightarrow_\beta} % transitive closure of the beta reduction
+\newcommand\betaredtrref{\rightarrow^*_\beta}
+
 % pcf
 \newcommand\pcf{\textsf{PCF}}
 \newcommand\pcfcond{\texttt{cond}}
@@ -309,17 +314,21 @@ part of the \defname{dead code} of $M$ if for any term $T_0$ of the form $M M_1 
 any reduction sequence starting from $T_0$ does not involve a reduction of the subterm $N$ {\it i.e.} for any reduction sequence $T_0 \rightarrow T_1 \rightarrow \ldots \rightarrow T_k$, there is no $j\in \{0.. k-1\}$ such that $T_j = C[N]$ and $T_{j+1} = C[N']$ for some term $N'$.
 
 
+Let $M$  be a \pcf\ term in $\eta$-nf.
 An occurrence of a variable $x$ in $M$ is said to be a \defname{dead occurrence}
 if it occurs in the dead code of $M$. In other words, it is a 
-dead occurrence of $x$ if its corresponding node in the computation tree does not appear in any traversal of $\travset(M)$. Equivalently, thanks to the Correspondence Theorem, an occurrence of $x:B$ is dead if and only if the initial move
+dead occurrence of $x$ if the corresponding node in the computation tree does not appear in any traversal of $\travset(M)$. Equivalently, thanks to the Correspondence Theorem, an occurrence of $x:B$ is dead if and only if the initial move
 of the arena $\sem{B}$ does not appear in any play of $\sem{M}$.
 
 
-Let $M$  be a \pcf\ term.
 We define $M^*$ as the term obtained from $M$ after substituting
-each dead variable occurrence $x:(B_1,\ldots, B_k, o)$ by
-$\lambda \varphi^1 \ldots \varphi^k . 0$ for some fresh variables $\varphi^1:B_1$,\ldots,$\varphi^k:B_k$.
-This process is called \defname{dead variable elimination}.
+all subterms of the form  $x N_1 \dots N_k$ for some
+dead variable occurrence $x:(B_1,\ldots, B_k, o)$ by the constant $0$. This process is called \defname{dead variable elimination}.
+Note that if $M$ is in $\eta\beta$-nf then so is $M^*$.
+
+We also write $\tau(M)^*$ to denote the equivalent transformation
+on the computation tree. Since the computation tree is constructed from the $\eta$-nf of $M$, we will use this notation even 
+when $M$ is not in $\eta$-nf.
 
 
 
@@ -328,7 +337,7 @@ This process is called \defname{dead variable elimination}.
 \begin{enumerate}[(i)]
 \item  If $\tau(M)$ is incrementally-bound then $\sem{M}$ is P-incrementally-justified,
 \item  if $\sem{M}$ is P-incrementally-justified 
-then $\tau(M^*)$ is incrementally-bound.
+then $\tau(M)^*$ is incrementally-bound.
 \end{enumerate}
 \end{proposition}
 \begin{proof}
@@ -337,13 +346,14 @@ see \cite[Proposition 4.1.5(i)]{blumtransfer}.
 
 \noindent (ii)
 Take $M$ a \pcf\ term in $\beta$-normal form denoted by
-$\sem{M}$ P-incrementally-justified. Let $r$ denote the root of $\tau(M^*)$.
-Let $n$ be a node of $\tau(M^*)$ labelled by the variable $x$. $M^*$ is free from dead code therefore $n$ is not a dead occurrence of $x$ and there exists a traversal of $\tau(M^*)$ of the form $t \cdot x$. 
+$\sem{M}$ P-incrementally-justified. Let $r$ denote the root of $\tau(M)^*$.
+Let $n$ be a node of $\tau(M)^*$ labelled by the variable $x$. 
+$\tau(M)^*$ is free from dead code therefore $n$ is not a dead occurrence of $x$ and there exists a traversal of $\tau(M)^*$ of the form $t \cdot x$. 
 
 \pcf\ constants are of order $1$ at most therefore they cannot hereditarily justify a variable node, thus $x$ is necessarily hereditarily justified by the root $r$ of the computation tree.
 
 
-The correspondence theorem gives $\varphi((t \cdot x) \upharpoonright r) = \varphi((t \upharpoonright r) \cdot x) \in \sem{M}$. Since $\sem{M}$ is P-incrementally-justified, $\varphi(x)$
+By considering $t\cdot x$ as a traversal of $\tau(M)$,  the correspondence theorem gives $\varphi((t \cdot x) \upharpoonright r) = \varphi((t \upharpoonright r) \cdot x) \in \sem{M}$. Since $\sem{M}$ is P-incrementally-justified, $\varphi(x)$
 must point to the last O-move in $\pview{?(\varphi(t \upharpoonright
 r))}$ with order strictly greater than $\ord{\varphi(x)}$.
 Consequently $x$ points to the last node in $\pview{?(t
@@ -368,7 +378,7 @@ Hence if $x$ is a bound variable node then it is bound by the
 last $\lambda$-node in $[r,x[$ with order strictly greater than
 $\ord{x}$ and if $x$ is a free variable then it points to $r$ and
 therefore all the $\lambda$-node in $]r,x[$ have order smaller than
-$\ord{x}$. Thus $\tau(M)$ is incrementally-bound.
+$\ord{x}$. Thus $\tau(M)^*$ is incrementally-bound.
 
 \end{proof}
 
@@ -377,18 +387,19 @@ $\ord{x}$. Thus $\tau(M)$ is incrementally-bound.
 \begin{enumerate}[(i)]
 \item If $M$ is safe then $\sem{M}$ is P-incrementally justified;
 \item if $M$ is a closed term and $\sem{M}$ is
-  P-incrementally justified then $\etanf{\betanf{M}^*}$ is safe.
+  P-incrementally justified then $\etanf{\betanf{M}}^*$ is safe.
 \end{enumerate}
 \end{theorem}
 \begin{proof}
 \noindent(i)
 This is proved in  \cite[Theorem 4.2.10]{blumtransfer}.
 
-\noindent(ii) Suppose $M$ is a closed \pcf\ term with a P-incrementally justified strategy denotation. By Proposition \ref{prop:incrbound_imp_incrjustified_pcf}(ii), $\tau(\betanf{M}^*)$ is incrementally-bound.
+\noindent(ii) Suppose $M$ is a closed \pcf\ term with a P-incrementally justified strategy denotation. By Proposition \ref{prop:incrbound_imp_incrjustified_pcf}(ii), $\tau(\betanf{M})^* = \tau(\etanf{\betanf{M}}^*)$ is incrementally-bound. 
 
 Lemma 4.1.6(ii) from \cite{blumtransfer} states that in the simply typed $\lambda$ calculus, if $M$ is closed and $\tau(M)$ is incrementally-bound then the $\etanf{M}$ is safe.
 This lemma remains valid for infinite closed \pcf\ terms in normal form.
-Thus $\etanf{\betanf{M}^*}$ is safe.
+
+Thus $\etanf{\etanf{\betanf{M}}^*} = \etanf{\betanf{M}}^*$ is safe.
 \end{proof}
 
 This last theorem leads to the following definability result for safe \pcf:
@@ -399,7 +410,7 @@ $$ \sem{M_\sigma} = \sigma $$
 \end{proposition}
 \begin{proof}
 By the standard definability result for PCF, there is a closed term $\vdash N : A$ such that $\sem{N} = \sigma$.
-Take $M_\sigma = \etanf{\betanf{N}^*}$.
+Take $M_\sigma = \etanf{\betanf{N}}^*$.
 Clearly $\sem{ M_\sigma} = \sem{N} = \sigma$, and by Theorem \ref{thm:safeincrejust_pcf}(ii), $M_\sigma$ is safe.
 \end{proof}
 
@@ -425,25 +436,25 @@ The term $M_f$ and $M_g$ being in $\eta$-nf are of the following forms:
 \vdash M_f &=& \lambda x^A \varphi_1^{B_1} \ldots \varphi_l^{B_l} . N_f^o\\
 \vdash  M_g &=& \lambda y^B \phi_1^{C_1} \ldots \phi_k^{C_k} . N_g^o
 \end{eqnarray*}
-for some variables $u,v,\varphi_1, \ldots \varphi_l, \phi_1, \phi_k$ and 
+for some distinct variables $x,y,\varphi_1, \dots \varphi_l, \phi_1, \dots \phi_k$ and 
 terms $N_f$ and $N_g$ in $\eta$-nf:
 \begin{eqnarray*}
 x:A, \varphi_1:B_1, \dots, \varphi_l:B_l &\vdash& N_f :o \\
 y:B, \phi_1:C_1, \dots, \phi_l:C_l &\vdash& N_g :o
 \end{eqnarray*}
 
-Clearly we have $f;g = \sem{\lambda x:A . M_g (M_f x)}$.
-Unfortunately, the term $\lambda x:A . M_g (M_f x)$ is not necessarily safe
-even if $M_f$ and $M_g$ are. Take $M_f = \lambda x^o z^o.x$ and
+Let us define the term $M_{f;g} = \lambda x . M_g (M_f x)$. Clearly we have $\sem{M_{f;g}} = \sem{M_f} ; \sem{M_g} = f;g$.
+
+Unfortunately, the term $M_{f;g}$ is not necessarily safe even if $M_f$ and $M_g$ are. Take $M_f = \lambda x^o z^o.x$ and
 $M_g = \lambda y^{(o,o)} . y a$ for some constant $a\in \Sigma$.
 Then $\lambda x:A . M_g (M_f x) = \lambda x . (\lambda y . y a) ( \underline{(\lambda x z.x) x} )$ which is unsafe because of the underlined subterm. Therefore we cannot conclude at this point that $f;g$ is P-incrementally-bound.
 
-However we remark that:
+However we have:
 \begin{align*}
 f;g &= \sem{\lambda x . M_g (M_f x)} \\
- &=_\beta \sem{\lambda x . (\lambda \phi_1\ldots \phi_k . N_g) [(M_f x) / y]} \\
+ &= \sem{\lambda x . (\lambda \phi_1\ldots \phi_k . N_g) [(M_f x) / y]} \\
 &= \sem{\lambda x \phi_1 \dots \phi_k. N_g [(M_f x) / y]}
-& \mbox{(up to renaming $\forall i: x\neq \varphi_i$)}.
+& \mbox{($x\neq\phi_i$ for all $i$)}.
 \end{align*}
 
 \begin{lemma}
@@ -471,6 +482,40 @@ to form the safe term $x:A,\Sigma \vdash \lambda \overline{\xi} . S [(M x)/y]$.
 \end{proof}
 
 Hence by the previous lemma, provided that $\ord{A}\geq\ord{B}$, the term  $\lambda x \phi_1 \dots \phi_k. N_g [(M_f x) / y]$ is safe and therefore $f;g = \sem{\vdash \lambda x \phi_1 \dots \phi_k. N_g [(M_f x) / y]}$ is P-incrementally justified.
+
+
+\subsection{Counter-example}
+\subsubsection{First attempt:}
+
+Take $A=o$, $B=(o,o)$, $C=o$. Let $x,u,v:o$, $y:(o,o)$ be variables and $\varphi:((o,o),o)$ and $a:o$ be $\Sigma$-constants.
+
+Remark that we use of a constant $\varphi$ of order greater than $2$ therefore we are not working in the context of the simply typed lambda calculus, nor \pcf.
+
+Take the two safe terms $\vdash  M_f = \lambda xv.x$ and $\vdash M_g = \lambda y . \varphi (\lambda u . y a)$. 
+The $\eta\beta$-nf of $M_{f;g}$ is 
+$\vdash \lambda x . \varphi (\underline{\lambda u . x})$ which is unsafe
+because of the underlined term. It is then tempting to use 
+Theorem \ref{thm:safeincrejust}(ii) (or Theorem \label{thm:safeincrejust_pcf}(ii) in the case of \pcf) to conclude that
+$f;g$ is not P-incrementally justified. However as we remarked before,
+the term we are dealing with are neither part of the 
+simply typed $\lambda$-calculus nor \pcf\ because of the presence of the
+order $2$ constants $\varphi$.
+
+\subsubsection{Second attempt:}
+The previous example can be easily changed into a working counter-example: we just need to elevate $\varphi$ from constant to variable status. 
+
+We then have $A=o$, $B=(o,o)$, $C=(((o,o),o),o)$, variables
+$x,u,v:o$, $y:(o,o)$ and 
+and $\varphi:((o,o),o)$ and the $\Sigma$-constant $a:o$.
+
+Take the two safe terms $\vdash  M_f = \lambda xv.x$ and
+ $\vdash M_g = \lambda y \varphi. \varphi (\lambda u . y a)$. 
+The $\eta\beta$-nf of $M_{f;g}$ is 
+$\vdash \lambda x \varphi. \varphi (\underline{\lambda u . x})$ which is unsafe because of the underlined term. By 
+Theorem \ref{thm:safeincrejust}(ii) we conclude that
+$f;g$ is not P-incrementally justified. 
+
+
 
 \bibliographystyle{plain}
 \bibliography{../bib/higherorder,../bib/gamesem,../bib/lambdacalculus}

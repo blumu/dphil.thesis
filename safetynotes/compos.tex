@@ -270,8 +270,9 @@ The P-view of an interaction sequence $u \in Int(A,B,C)$ is defined as:
 We say that a PCF term is \defname{semi-safe} if
 it is of the form $N_0 N_1 \ldots N_k$ for $k\geq 1$ where each of the
 $N_i$ is safe or if it can be written $\lambda \overline{x} . N$ for some
-safe term $N$. Semi-safe terms are either safe or ``almost safe'' in the sense that they can be turned safe by applying one more time the (app) rule or the (abs) rule. Indeed, let $M$ be an semi-safe term that is unsafe.
-If $M$ is of the first form $N_0 N_1 \ldots N_k : (A_1,\ldots,A_n)$ with $k\geq 1$ then let $\varphi_i:A_i$ be fresh variables for $i\in\{1..n\}$, using the (app) rule we can build the safe term $N_0 N_1 \ldots N_k \varphi_1 \ldots \varphi_n$. If $M$ is of the second form $\lambda \overline{x} . N$ then using the abstraction rule we can build the safe term $\lambda \overline{y} \overline{x}. N$  where $\overline{y} = fv(\lambda \overline{x}. N)$.
+safe term $N$. Semi-safe terms are either safe or ``almost safe'' in the sense that they can be turned into an equivalent (i.e. preserving
+the semantics) safe term  by performing $\eta$-expansions. Indeed, let $M$ be an semi-safe term that is unsafe.
+If $M$ is of the first form $N_0 N_1 \ldots N_k : (A_1,\ldots,A_n)$ with $k\geq 1$ then let $\varphi_i:A_i$ for $i\in\{1..n\}$ be fresh variables , using the (app) and (abs) rules we can build the safe term $\lambda \varphi_1 \ldots \varphi_n . N_0 N_1 \ldots N_k \varphi_1 \ldots \varphi_n$. If $M$ is of the second form $\lambda \overline{x} . N$ then using the abstraction rule we can build the equivalent safe term $\lambda \overline{y} \overline{x}. N$  where $\overline{y} = fv(\lambda \overline{x}. N)$.
 
 The $\beta$-normal form of a \pcf\ term is the possibly infinite term obtained by reducing all the redexes in $M$.
 
@@ -393,7 +394,7 @@ Thus $\etanf{\betanf{M}^*}$ is safe.
 This last theorem leads to the following definability result for safe \pcf:
 \begin{proposition}[Definability for safe \pcf\ terms]
 \label{prop:safetydefinability}
-Let $\sigma$ be a P-incrementally-justified strategy with finite view function defined on the game $A$. There exists a \emph{safe} closed PCF term $\vdash_s M : A$ in $\eta$-long normal form such that:
+Let $\sigma$ be a well-bracketed P-incrementally-justified strategy with finite view function defined on the game $A$. There exists a \emph{safe} closed PCF term $\vdash_s M : A$ in $\eta$-long normal form such that:
 $$ \sem{M_\sigma} = \sigma $$
 \end{proposition}
 \begin{proof}
@@ -403,7 +404,73 @@ Clearly $\sem{ M_\sigma} = \sem{N} = \sigma$, and by Theorem \ref{thm:safeincrej
 \end{proof}
 
 
+\subsection{Beginning of a proof of compositionality}
 
+Let $f:A\rightarrow B$ and $g:B\rightarrow C$ be two innocent well-bracketed and P-incrementally-justified strategies with finite view function.
+We would like to prove that $f;g$ is also P-incrementally-justified.
+
+By the definability result, there are two closed terms (in $\eta$-nf) $\vdash M_f :A\rightarrow B$  and $\vdash M_g :A\rightarrow B$ such that $\sem{M_f} = f$
+and $\sem{M_f} = g$.
+
+Suppose $A=I$, where $I$ denotes the empty arena, then $f;g = \sem{M_g M_f}$ and
+since $M_g$ and $M_f$ are safe, $M_g M_f$ is semi-safe therefore $f;g$ is P-incrementally-justified.
+If $B=I$ then $f;g = g$ which is P-incrementally-justified.
+If $C=I$ then $f;g = \{ \epsilon \}$.
+
+We now assume that $A$,$B$ and $C$ are not the empty arena.
+
+We have $B=(B_1,\ldots,B_l,o)$ and $C=(C_1,\ldots,C_k,o)$ for some $l,k\geq 0$.
+The term $M_f$ and $M_g$ being in $\eta$-nf are of the following forms:
+\begin{eqnarray*}
+\vdash M_f &=& \lambda x^A \varphi_1^{B_1} \ldots \varphi_l^{B_l} . N_f^o\\
+\vdash  M_g &=& \lambda y^B \phi_1^{C_1} \ldots \phi_k^{C_k} . N_g^o
+\end{eqnarray*}
+for some variables $u,v,\varphi_1, \ldots \varphi_l, \phi_1, \phi_k$ and 
+terms $N_f$ and $N_g$ in $\eta$-nf:
+\begin{eqnarray*}
+x:A, \varphi_1:B_1, \dots, \varphi_l:B_l &\vdash& N_f :o \\
+y:B, \phi_1:C_1, \dots, \phi_l:C_l &\vdash& N_g :o
+\end{eqnarray*}
+
+Clearly we have $f;g = \sem{\lambda x:A . M_g (M_f x)}$.
+Unfortunately, the term $\lambda x:A . M_g (M_f x)$ is not necessarily safe
+even if $M_f$ and $M_g$ are. Take $M_f = \lambda x^o z^o.x$ and
+$M_g = \lambda y^{(o,o)} . y a$ for some constant $a\in \Sigma$.
+Then $\lambda x:A . M_g (M_f x) = \lambda x . (\lambda y . y a) ( \underline{(\lambda x z.x) x} )$ which is unsafe because of the underlined subterm. Therefore we cannot conclude at this point that $f;g$ is P-incrementally-bound.
+
+However we remark that:
+\begin{align*}
+f;g &= \sem{\lambda x . M_g (M_f x)} \\
+ &=_\beta \sem{\lambda x . (\lambda \phi_1\ldots \phi_k . N_g) [(M_f x) / y]} \\
+&= \sem{\lambda x \phi_1 \dots \phi_k. N_g [(M_f x) / y]}
+& \mbox{(up to renaming $\forall i: x\neq \varphi_i$)}.
+\end{align*}
+
+\begin{lemma}
+If $y:B, \Sigma \vdash N : T$ is a safe term in $\eta$-nf
+and $\vdash M : A \rightarrow B$ is a safe term with $\ord{A} \geq \ord{B}$
+then $x:A, \Sigma \vdash N[(M x)/y] :T$ is also safe. 
+\end{lemma}
+\begin{proof}
+By induction on the $\eta$-normal structure of $N$.
+
+Suppose $N= y N_1 \dots N_l :o$ where  for $1\leq i \leq l$, $y:B, \Sigma \vdash N_i$ is safe.
+By the induction hypothesis, $x:A, \Sigma \vdash N_i[(M x)/y]$ is safe for $1\leq i \leq l$ and since $M$ is safe, using the (app) rule we have that
+$M x N_1[(M x)/y] \dots N_l[(M x)/y] = N[(M x)/y]$ is safe.
+
+The case $N= z N_1 \dots N_l :o$ for $z\neq y$ is treated identically.
+
+Suppose $N =\lambda \overline{\xi} . S$ with $S:o$. We suppose that
+$y\notin  \overline{\xi}$ and $y\in fv(S)$ (otherwise no substitution happens
+and the proof becomes trivial). 
+By the induction hypothesis 
+$x:A,\Sigma, \overline{\xi} \vdash S [(M x)/y]$ is safe. 
+By safety of $N$, since $y$ occurs free in $S$, we have
+$\ord{C} \leq \ord{y}$, moreover by assumption, $\ord{y} = \ord{B} \leq \ord{A} = \ord{x}$ thus $\ord{C} \leq \ord{x}$ which permits us to use the (abs) rule
+to form the safe term $x:A,\Sigma \vdash \lambda \overline{\xi} . S [(M x)/y]$.
+\end{proof}
+
+Hence by the previous lemma, provided that $\ord{A}\geq\ord{B}$, the term  $\lambda x \phi_1 \dots \phi_k. N_g [(M_f x) / y]$ is safe and therefore $f;g = \sem{\vdash \lambda x \phi_1 \dots \phi_k. N_g [(M_f x) / y]}$ is P-incrementally justified.
 
 \bibliographystyle{plain}
 \bibliography{../bib/higherorder,../bib/gamesem,../bib/lambdacalculus}

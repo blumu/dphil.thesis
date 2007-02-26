@@ -15,8 +15,8 @@
     \RequirePackage{pstricks}
     \RequirePackage{pst-node}
 \else
-    % Implement pointer string using pgf and tikz
-    \RequirePackage{tikz}
+    % Implement pointer string using pgf
+    \RequirePackage{pgf}
 \fi
 
 \edef\TheAtCode{\the\catcode`\@}
@@ -28,7 +28,7 @@
 \ifpstricks
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%%% Version of the package relying PSTRICKS
+%%% Version of the package relying on PSTRICKS
 
 %%%% If the prologue .pro file is not present then
 % we need to include the definitions of our custom Postscript procedures in the dvi file itself.
@@ -221,8 +221,7 @@ $\egroup%
 \if#1@
  \expandafter\Pstr@skipdummynode
 \else
-  % test whether a destination node is specified
-  % in which case a link needs to be created:
+  % if a target node is specified then create a link for it:
   \def\dst{#2}
   \ifx\dst\@empty \Pstr@skipdstangle{#1}%
   \else \Pstr@createlink{#1}{#2}
@@ -272,80 +271,118 @@ $\egroup%
 
 \else
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%%% Version of the package relying PGF
+%%% Version of the package relying on PGF (the Tikz interface is not used)
 
-\tikzstyle{linklabel}=[rectangle,fill=white, inner sep=1pt, minimum height = 0cm, minimum width = 0cm]
-\tikzstyle{nn}=[inner sep=1pt, minimum height = 0cm, minimum width = 0cm
-%,rectangle,draw=blue!50,fill=blue!20,thick
-]
+% Create a new node with pgf:
+%   #1 text preceding the node
+%   #2 name of the node
+%   #3 content of the node
+\def\pstr@createpgfnode#1#2#3{%
+  \pgfsetfillcolor{white!100}%
+  \pgfsetshapeinnerxsep{1pt}%
+  \pgfsetshapeinnerysep{0.6pt}%
+  \pgfnode{rectangle}{base west}{\color{black}${}#1{}$}{#2@Next}{\pgfusepath{discard}}%
+  \pgftransformshift{\pgfpointanchor{#2@Next}{base east}}%
+
+  \pgfnode{rectangle}{base west}{\color{black}${}#3{}$}{#2}{\pgfusepath{discard}}%
+  \pgftransformshift{\pgfpointanchor{#2}{base east}}% 
+}
 
 
-% create a new node:
-%   #1 name of the node
-%   #2 content
-%   #3 text following the node
-\def\pstr@newnode#1#2#3{%
-node[nn] (#1) {$#2$} (#1.base east) node[nn] (#1t) {$#3 $} (#1t.base east) }
+% Draw an arrow with PGF
+%    #1 angle
+%    #2 source node name
+%    #3 target node name
+%    #4 label
+\def\pstr@createpgfarrow#1#2#3#4{%
+\def\angleB{#1}
+\count255=180 \advance \count255 by -\angleB
+\def\angleA{\number\count255}
+\def\ptA{\pgfpointdiff{\pgfpoint{0.5pt}{0pt}}{\pgfpointanchor{#2}{north}}}% shift the end of the arrow a bit to the right
+\def\ptB{\pgfpointanchor{#3}{north}}
+\def\bendpt{ \pgfpointintersectionoflines
+{\ptA}{\pgfpointadd{\ptA}{\pgfpointpolar{\angleA}{1cm}}}
+{\ptB}{\pgfpointadd{\ptB}{\pgfpointpolar{\angleB}{1cm}}}}
+% control points
+%\def\cptC{\bendpt}
+%\def\cptD{\bendpt}
 
-% create a link (first method):
-%   #1 source node
-%   #2 target node
-%   #3 arc control point distance
-%   #3 arc label
-\def\pstr@link#1#2#3#4{%
-\draw[line width=0.3pt,arrows=-stealth](#1.120 )  .. controls +(120:#2) and +(60:#2) .. node[linklabel] {#4} (#2.north)}
+\pgfextracty{\pstr@mydimA}{\ptA}
+\pgfextracty{\pstr@mydimB}{\ptB}
+\pgfextracty{\pstr@mydimC}{\bendpt}
+\def\maxdim{\ifdim\pstr@mydimA>\pstr@mydimB \pstr@mydimA \else \pstr@mydimB \fi}
+\advance \pstr@mydimC by \maxdim
+\divide \pstr@mydimC by 2 % mydimC now contains (max(y_A, y_B) + y_C)/2
 
-% create a link (second method):
-%   #1 source node
-%   #2 target node
-%   #3 arc angle
-%   #4 arc label
-\def\pstr@linkb#1#2#3#4{%
-\count255 = 180 \advance \count255 by -#3%
-\path[line width=0.3pt,arrows=-stealth] ([xshift=-0.5pt] #1.north)  edge[out=\number\count255,in=#3] node[linklabel] {#4} (#2.north)}
+% control points
+\def\cptC{ \pgfpointintersectionoflines{\ptA}{\bendpt}
+{\pgfpoint{0pt}{\pstr@mydimC}}{\pgfpoint{16pt}{\pstr@mydimC}}}
+\def\cptD{ \pgfpointintersectionoflines{\ptB}{\bendpt}
+{\pgfpoint{0pt}{\pstr@mydimC}}{\pgfpoint{16pt}{\pstr@mydimC}}}
 
+
+%%%% draw using two halves of parabolas
+  %\pgfpathmoveto{\ptA}\pgfpathparabola{\pgfpointdiff{\ptA}{\bendpt}}{\pgfpointdiff{\bendpt}{\ptB}}%
+  %\color{orange} \pgfusepath{stroke}%
+%%%%
+%%%% draw using lines
+  %\pgfpathmoveto{\ptA}\pgflineto{\bendpt}\pgflineto{\ptB}%
+  %\color{black} \pgfusepath{stroke}%
+%%%%
+%%%% draw using bezier curves
+  \pgfpathmoveto{\ptA}\pgfpathcurveto{\cptC}{\cptD}{\ptB}%
+  \color{red} \pgfusepath{stroke}%
+%%%%
+
+
+
+%%% Put the label on the link if there is one
+\def\label{#4}%
+\ifx\label\@empty%
+\else%
+  \pgfsetfillcolor{white!100}
+  \pgfsetshapeinnerxsep{1pt}%
+  \pgfsetshapeinnerysep{0pt}%
+  %\pgftransformshift{\bendpt} % position the label at the bendpoint
+  \pgftransformshift{\pgfpointcurveattime{0.5}{\ptA}{\cptC}{\cptD}{\ptB}} % position the label at half-way on the curve
+  \pgfnode{rectangle}{mid}{\color{black} \label}{}{\pgfusepath{fill}}%
+\fi
+}
+
+\newdimen\pstr@mydimA
+\newdimen\pstr@mydimB
+\newdimen\pstr@mydimC
+\newtoks\pstr@ptrlist
 
 \begingroup
 
-%\newbox\pstr@tempbox
-%\newdimen\pstr@tempdim
-
 %%%%%%%%%%%%%%%%
-%% First way of creating a pointer string:
-%  \Pstr[0.4cm][1pt]{ (b) this (a-b,45) that }
+%% Parser for the succint syntax. 
+
+%  Example of use: \Pstr[0.4cm][1pt]{ (b) this (a-b,45,label) that }
 
 \gdef\Pstr{\@ifnextchar[{\Pstr@i}{\Pstr@ii[0cm][1pt]}}
 % Pstr with one optional parameter
 \gdef\Pstr@i[#1]{\@ifnextchar[{\Pstr@ii[#1]}{\Pstr@ii[#1][1pt]}}
 % Pstr with two optional parameters
-% [#1] specifies the amount of vertical space to add to the box
-% containing the pointer string.
-% [#2] specifies the distance between the node and the arc
-% #3 contains the specification of the nodes and pointers in the sequence.
+% [#1] ignored in this mode (in pstricks mode: specifies the amount of vertical space to add to the box
+% containing the pointer string).
+% [#2] ignored in this mode (in pstricks mode: specifies the distance between the node and the arc
+% #3 contains the specification of the nodes and pointers in the sequence).
 \gdef\Pstr@ii[#1][#2]#3{%
-\begingroup
-%%\setlength\pstr@tempdim{#1}%
-%%\def\pstr@arcoptions{#2}%
-%%\setbox\pstr@tempbox\hbox\bgroup$%
-\def\tikzspecif{%
-     node[nn] (ref) {REF}%
-%    \Pstr@ParseSpecification#3(@-@,@,@){}\@nil% 
-    ;%
+\begin{pgfpicture}%
+  \pgfsetbaseline{0pt}%
+  \pgfsetshapeminwidth{0cm}%
+  \pgfsetshapeminheight{0cm}%
+  \pgfsetshapeinnerxsep{0pt}%
+  \pgfsetshapeinnerysep{0.3pt}%
+  \pgfsetarrows{-stealth}%
+  \pgfsetlinewidth{0.3pt}%
+  \pstr@ptrlist={}% Create an empty list of links.
+  \Pstr@ParseSpecification#3(@-@,@,@){}\@nil%
+  \the\pstr@ptrlist% dump the list of links.
+\end{pgfpicture}%
 }
-
-%\def\path{path} \tikzspecif
-
-%\tikz\tikzspecif
-\def\ttikz{\tikz[baseline=(ref.base)]}
-\def\tikzspecif{ \expandafter\tutu \toto\@nil ; }
-\expandafter\ttikz\tikzspecif
-%%$\egroup%
-%%\ht\pstr@tempbox\pstr@tempdim
-%%\box\pstr@tempbox
-\endgroup
-}
-\gdef\tutu{\path[anchor = base west]}
-\gdef\toto{ \@ifnextchar\@nil{\@gobble}{} }
 
 % Parse the specification of the pointer string.
 % #1 stuff to be typset in the pointer string
@@ -353,42 +390,59 @@ node[nn] (#1) {$#2$} (#1.base east) node[nn] (#1t) {$#3 $} (#1t.base east) }
 % #3 node content
 \gdef\Pstr@ParseSpecification#1(#2)#3{%
  % parse the node specification
-% \Pstr@ParseNodeSpecif#1(#2-,)#3\@nil
+ \Pstr@ParseNodeSpecif#1(#2-,,)#3\@nil
  % proceeds to the rest of the specification.
-% \@gobble
-% \@ifnextchar\@nil{\@gobble}{\@gobble}
-% \@ifnextchar\@nil{\@gobble}{\Pstr@ParseSpecification}
+ \@ifnextchar\@nil{\@gobble}{\Pstr@ParseSpecification}
 }
 
 % Parse a node specification
 % #1  stuff to be dumped (not part of the node specification)
 % #2-#3,   node specification: #2 source #3 target
 \gdef\Pstr@ParseNodeSpecif#1(#2-#3,{%
-% create the node only if it is not the dummy node (@-@,@,@){@}
+% if it is the the dummy node (@-@,@,@){@} then skip it
 \if#2@
- \expandafter\Pstr@skipdummynode
+  \def\suite{\Pstr@skipdummynode}
 \else
-  % test whether a destination node is specified
-  % in which case a link needs to be created:
-  \def\dst{#3}
-  \ifx\dst\@empty \Pstr@skiplinkparam{#2}%
-  \else \Pstr@createlink{#2}{#3}
+  % if a target node is specified then create the link for it.
+  \edef\target{#3}
+  \ifx\target\@empty
+    \def\suite{\Pstr@skiplinkparam{#1}{#2}}
+  \else 
+    \def\suite{\Pstr@parselinkparam{#1}{#2}{#3}}
   \fi
 \fi
+\suite
 }
+
 %%%%% auxiliary macros for parsing node specification
-\gdef\Pstr@skipdummynode#1-,)#2\@nil{}
-\gdef\Pstr@skiplinkparam#1#2,#3\@nil{ \pstr@newnode{#1}{#3}{} }
-% create a new node together with a link
-%  #1 source node name
-%  #2 target node name
-%  #3 link arc angle
-%  #4 link arc label
-%  #5 node content
-\gdef\Pstr@createlink#1#2#3#4-,#5\@nil{
-\pstr@newnode{#1}{#5}{}
-\edef\angle{#3}%
-\ifx\angle\@empty\else \relax %\linkb{\angle}{#1}{#2}
+% In the following, #1 should contains: @,@){@}
+\gdef\Pstr@skipdummynode#1-,,)#2\@nil{}
+
+% In the following #1 and #2 have been parsed already
+%  #1 dump
+%  #2 source node
+%   #3 link angle parameter (should be empty)
+%   #4 link label parameter (should be empty)
+%   #5 node content
+\gdef\Pstr@skiplinkparam#1#2#3,#4)#5\@nil{%
+\pstr@createpgfnode{#1}{#2}{#5}
+}
+
+% In the following, #1, #2 and #3 have been parsed already, we are now parsing the link parameters
+%  #1 dump
+%  #2 source node
+%  #3 target node name
+%   #4 link arc angle
+%   #5 link arc label
+%   #6 node content
+\gdef\Pstr@parselinkparam#1#2#3#4,#5-,,)#6\@nil{%
+\pstr@createpgfnode{#1}{#2}{#6}
+\edef\angle{#4}%
+\ifx\angle\@empty \else 
+% add the arrow to the list of arrows
+\toks0={\pstr@createpgfarrow{#4}{#2}{#3}{#5}}%
+\edef\act{\noexpand\pstr@ptrlist={\the\pstr@ptrlist \the\toks0}}%
+\act
 \fi
 }
 
@@ -396,30 +450,33 @@ node[nn] (#1) {$#2$} (#1.base east) node[nn] (#1t) {$#3 $} (#1t.base east) }
 %%Second way of creating a pointer string:
 %  \pstr[raiseamount][nodesep]{ sequencespecification }
 % example:
-%  \pstr[0.4cm][1pt]{ \lnk(b) this \lnk(a-b,45) that }
+%  \pstr[IGNORED][IGNORED]{ \lnk(b) this \lnk(a-b,45) that }
 
 \gdef\pstr{\@ifnextchar[{\pstr@i}{\pstr@ii[0cm][1pt]}}
 % pstr with one optional parameter
 \gdef\pstr@i[#1]{\@ifnextchar[{\pstr@ii[#1]}{\pstr@ii[#1][1pt]}}
 % pstr with two optional parameters
 \gdef\pstr@ii[#1][#2]#3{%
-\begingroup
-%%\setlength\pstr@tempdim{#1}%
- \def\pstr@arcoptions{#2}%
-%%\setbox\pstr@tempbox\hbox{$#3$}%
-$#3$
-%%\ht\pstr@tempbox\pstr@tempdim
-%%\box\pstr@tempbox
-\endgroup
+\begin{pgfpicture}%
+  \pgfsetbaseline{0pt}%
+  \pgfsetshapeminwidth{0cm}%
+  \pgfsetshapeminheight{0cm}%
+  \pgfsetarrows{-stealth}%
+  \pgfsetlinewidth{0.3pt}%
+  #3%
+\end{pgfpicture}%
 }
-\gdef\lnk(#1)#2{\Pstr@ParseNodeSpecif#1-,#2\@nil}
+
+% Commands to be used directly by the user of the package
+\gdef\nd#1(#2){\pstr@createpgfnode{#1}{#2}}
+\gdef\lnk{\pstr@createpgfarrow}
+
+%\gdef\lnk(#1)#2{\Pstr@ParseNodeSpecif#1-,#2\@nil}
 
 \endgroup
 
 
- 
-
-\fi %%% \ifpstricks
+\fi %%% \ifpstricks  ... \else ...
 
 
 \catcode`\@=\TheAtCode\relax

@@ -4,16 +4,35 @@
 
 \ProvidesClass{pstring}[2007/02/14 Package for representing pointer-strings]
 
-\RequirePackage{pstricks}
-\RequirePackage{pst-node}
+\newif\ifpstricks
+\DeclareOption{pstricks}{\pstrickstrue}
+\DeclareOption{pgf}{\pstricksfalse}
+\ExecuteOptions{pstricks}
+\ProcessOptions
+
+\ifpstricks
+    % Implement pointer string using pstricks
+    \RequirePackage{pstricks}
+    \RequirePackage{pst-node}
+\else
+    % Implement pointer string using pgf and tikz
+    \RequirePackage{tikz}
+\fi
 
 \edef\TheAtCode{\the\catcode`\@}
 \catcode`\@=11
 
-%%%% If the prologue .pro file is not present then 
+\newif\ifwriteprologue
+
+\def\@nil{}
+\ifpstricks
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%% Version of the package relying PSTRICKS
+
+%%%% If the prologue .pro file is not present then
 % we need to include the definitions of our custom Postscript procedures in the dvi file itself.
 % The drawback is that the code for the postscript procedures will be copied for each use of the procedure.
-\newif\ifwriteprologue
 \IfFileExists{pstring.pro}{\writeprologuefalse}{\writeprologuetrue}
 
 \ifwriteprologue
@@ -38,7 +57,7 @@
 
 
 % TODO : I should move the following 3 macros to a prologue .pro file in order to avoid multiple instanciation of them for each link that is created in the document!
-\pstr@def{pstr@GetEdge}< dup 0 eq 
+\pstr@def{pstr@GetEdge}< dup 0 eq
 { pop begin
 %%%%% WB: the cosinus and the sinus are set to 1 and 0 which correspond to a direction going toward the top of the page. This way, the node position computed by the procedure NodePos will correspond exactly to the middle of the top line of the node box (the coordinates returned by NodePos are relative to the center of the node box).
   %1 0 NodeMtrx dtransform CM idtransform
@@ -47,27 +66,27 @@
  pop 1 /Sin ED 0 /Cos ED /NodeSep ED NodePos
 %%%%%
 NodeMtrx dtransform CM idtransform
-end } 
+end }
 { 1 eq {{exch}} {{}} ifelse /Do ED pop XYPos } ifelse >
 
 
-\pstr@def{pstr@GetEdgeA}< NodeSepA AngleA NodeA NodeSepTypeA \pstr@GetEdge 
+\pstr@def{pstr@GetEdgeA}< NodeSepA AngleA NodeA NodeSepTypeA \pstr@GetEdge
 %%%% WB: The offset is not computed the same way as in pst-node: it is an horizontal offset instead of an offset along the line (AB). Thus the line
 %   OffsetA AngleA AddOffset yA add /yA1 ED xA add /xA1 ED
 %%%% becomes:
-yA add /yA1 ED xA add OffsetA add /xA1 ED 
+yA add /yA1 ED xA add OffsetA add /xA1 ED
 % This last line computes the absolute position of the connector ending by adding up its relative position to the position of the center of the node box plus the horizontal offset.
 %%%%
 >
 
-\pstr@def{pstr@GetEdgeB}< NodeSepB AngleB NodeB NodeSepTypeB \pstr@GetEdge 
-% OffsetB AngleB AddOffset yB add /yB1 ED xB add /xB1 ED 
- yB add /yB1 ED xB add OffsetB sub /xB1 ED 
+\pstr@def{pstr@GetEdgeB}< NodeSepB AngleB NodeB NodeSepTypeB \pstr@GetEdge
+% OffsetB AngleB AddOffset yB add /yB1 ED xB add /xB1 ED
+ yB add /yB1 ED xB add OffsetB sub /xB1 ED
 >
 
 
 \pstr@def{pstr@NCCurve}<%
-%%%%%% Redirect the call to \pstr@GetEdgeA  and \pstr@GetEdgeB instead of \tx@GetEdgeA and \tx@GetEdgeB 
+%%%%%% Redirect the call to \pstr@GetEdgeA  and \pstr@GetEdgeB instead of \tx@GetEdgeA and \tx@GetEdgeB
 \pstr@GetEdgeA \pstr@GetEdgeB
 xA1 xB1 sub yA1 yB1 sub Pyth
 2 div dup
@@ -78,7 +97,7 @@ xB2 yB2 xB1 yB1 tx@Dict begin ArrowB end
 curveto
 /LPutVar [ xA1 yA1 xA2 yA2 xB2 yB2 xB1 yB1 ] cvx def
 /LPutPos { t LPutVar BezierMidpoint } def
-/HPutPos { { HPutLines } HPutCurve } def 
+/HPutPos { { HPutLines } HPutCurve } def
 /VPutPos { { VPutLines } HPutCurve } def>
 
 
@@ -91,7 +110,7 @@ curveto
 
 % We define a new pstricks command: ncHarc.
 % The H is for "horizontal". It acts as ncarc
-% except that the angle parameter 
+% except that the angle parameter
 % angleA (resp. angleB) specifies the angle between the X axis
 % and the tangent to the arrow at point A (resp B) instead
 % of the angle between the line (AB) and the tangent of the arrow  at A (or B).
@@ -101,15 +120,13 @@ curveto
 \def\ncHarc@i{\check@arrow{\ncHarc@ii}}
 \def\ncHarc@ii#1#2{\nc@object{Open}{#1}{#2}{.5}{%
 %yB yA sub xB xA sub \tx@Atan
-  180 
+  180
 \psk@arcangleA\space sub /AngleA ED
 \psk@arcangleB\space %sub 180 add
 /AngleB ED
-\psk@ncurvB\space \psk@ncurvA\space \pstr@NCCurve 
+\psk@ncurvB\space \psk@ncurvA\space \pstr@NCCurve
 %\tx@NCCurve
 }}
-
-
 
 % Create a link using psttricks
 \newcommand{\link}{\@ifstar
@@ -118,9 +135,9 @@ curveto
 }
 \newcommand{\linkNoStar}[2][]{
 \edef\options{#1}
-\ifx\options\@empty 
+\ifx\options\@empty
 \def\opt{[linewidth=0.4pt,offset=-2pt,nodesep=0pt,arcangleA=-#2, arcangleB=-#2]}
-\else 
+\else
 \def\opt{[linewidth=0.4pt,offset=-2pt,nodesep=0pt,arcangleA=-#2, arcangleB=-#2,#1]}
 \fi
 \expandafter\ncarc\opt{->}
@@ -129,9 +146,9 @@ curveto
 % the starred version uses ncHarc instead of ncarc.
 \newcommand{\linkStar}[2][]{
 \edef\options{#1}
-\ifx\options\@empty 
+\ifx\options\@empty
 \def\opt{[linewidth=0.4pt,offsetA=0pt,offsetB=2pt,nodesep=1pt,arcangleA=#2, arcangleB=#2]}
-\else 
+\else
 \def\opt{[linewidth=0.4pt,offsetA=0pt,offsetB=2pt,nodesep=1pt,arcangleA=#2, arcangleB=#2, #1]}
 \fi
 \expandafter\ncHarc\opt{->}
@@ -158,13 +175,12 @@ curveto
 %\catcode`\]=\active
 %\catcode`-=\active
 
-
 \newbox\pstr@tempbox
 \newdimen\pstr@tempdim
 
 %%%%%%%%%%%%%%%%
 %% First way of creating a pointer string:
-%  \Pstr[0.4cm][1pt]{ (b) this (a-b,45) that } 
+%  \Pstr[0.4cm][1pt]{ (b) this (a-b,45) that }
 
 \gdef\Pstr{\@ifnextchar[{\Pstr@i}{\Pstr@ii[0cm][1pt]}}
 % Pstr with one optional parameter
@@ -219,10 +235,10 @@ $\egroup%
 % create a new node together with a link
 %  #1 node name
 %  #2 link destination name
-%  #3 link arc angle 
+%  #3 link arc angle
 %  #4 node content
 \gdef\Pstr@createlink#1#2#3-,#4\@nil{
-\rnode{#1}{#4}% 
+\rnode{#1}{#4}%
 \edef\angle{#3}%
 \ifx\angle\@empty\else\link*[nodesep=\pstr@arcoptions]{\angle}{#1}{#2}\fi
 }
@@ -231,7 +247,7 @@ $\egroup%
 %%Second way of creating a pointer string:
 %  \pstr[raiseamount][nodesep]{ sequencespecification }
 % example:
-%  \pstr[0.4cm][1pt]{ \lnk(b) this \lnk(a-b,45) that } 
+%  \pstr[0.4cm][1pt]{ \lnk(b) this \lnk(a-b,45) that }
 
 \gdef\pstr{\@ifnextchar[{\pstr@i}{\pstr@ii[0cm][1pt]}}
 % pstr with one optional parameter
@@ -253,5 +269,159 @@ $\egroup%
 \@addtofilelist{pstring.pro}
 \special{header=pstring.pro}
 
+
+\else
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%% Version of the package relying PGF
+
+\tikzstyle{linklabel}=[rectangle,fill=white, inner sep=1pt, minimum height = 0cm, minimum width = 0cm]
+\tikzstyle{nn}=[inner sep=1pt, minimum height = 0cm, minimum width = 0cm
+%,rectangle,draw=blue!50,fill=blue!20,thick
+]
+
+
+% create a new node:
+%   #1 name of the node
+%   #2 content
+%   #3 text following the node
+\def\pstr@newnode#1#2#3{%
+node[nn] (#1) {$#2$} (#1.base east) node[nn] (#1t) {$#3 $} (#1t.base east) }
+
+% create a link (first method):
+%   #1 source node
+%   #2 target node
+%   #3 arc control point distance
+%   #3 arc label
+\def\pstr@link#1#2#3#4{%
+\draw[line width=0.3pt,arrows=-stealth](#1.120 )  .. controls +(120:#2) and +(60:#2) .. node[linklabel] {#4} (#2.north)}
+
+% create a link (second method):
+%   #1 source node
+%   #2 target node
+%   #3 arc angle
+%   #4 arc label
+\def\pstr@linkb#1#2#3#4{%
+\count255 = 180 \advance \count255 by -#3%
+\path[line width=0.3pt,arrows=-stealth] ([xshift=-0.5pt] #1.north)  edge[out=\number\count255,in=#3] node[linklabel] {#4} (#2.north)}
+
+
+\begingroup
+
+%\newbox\pstr@tempbox
+%\newdimen\pstr@tempdim
+
+%%%%%%%%%%%%%%%%
+%% First way of creating a pointer string:
+%  \Pstr[0.4cm][1pt]{ (b) this (a-b,45) that }
+
+\gdef\Pstr{\@ifnextchar[{\Pstr@i}{\Pstr@ii[0cm][1pt]}}
+% Pstr with one optional parameter
+\gdef\Pstr@i[#1]{\@ifnextchar[{\Pstr@ii[#1]}{\Pstr@ii[#1][1pt]}}
+% Pstr with two optional parameters
+% [#1] specifies the amount of vertical space to add to the box
+% containing the pointer string.
+% [#2] specifies the distance between the node and the arc
+% #3 contains the specification of the nodes and pointers in the sequence.
+\gdef\Pstr@ii[#1][#2]#3{%
+\begingroup
+%%\setlength\pstr@tempdim{#1}%
+%%\def\pstr@arcoptions{#2}%
+%%\setbox\pstr@tempbox\hbox\bgroup$%
+\def\tikzspecif{%
+     node[nn] (ref) {REF}%
+%    \Pstr@ParseSpecification#3(@-@,@,@){}\@nil% 
+    ;%
+}
+
+%\def\path{path} \tikzspecif
+
+%\tikz\tikzspecif
+\def\ttikz{\tikz[baseline=(ref.base)]}
+\def\tikzspecif{ \expandafter\tutu \toto\@nil ; }
+\expandafter\ttikz\tikzspecif
+%%$\egroup%
+%%\ht\pstr@tempbox\pstr@tempdim
+%%\box\pstr@tempbox
+\endgroup
+}
+\gdef\tutu{\path[anchor = base west]}
+\gdef\toto{ \@ifnextchar\@nil{\@gobble}{} }
+
+% Parse the specification of the pointer string.
+% #1 stuff to be typset in the pointer string
+% #2 a new node definition
+% #3 node content
+\gdef\Pstr@ParseSpecification#1(#2)#3{%
+ % parse the node specification
+% \Pstr@ParseNodeSpecif#1(#2-,)#3\@nil
+ % proceeds to the rest of the specification.
+% \@gobble
+% \@ifnextchar\@nil{\@gobble}{\@gobble}
+% \@ifnextchar\@nil{\@gobble}{\Pstr@ParseSpecification}
+}
+
+% Parse a node specification
+% #1  stuff to be dumped (not part of the node specification)
+% #2-#3,   node specification: #2 source #3 target
+\gdef\Pstr@ParseNodeSpecif#1(#2-#3,{%
+% create the node only if it is not the dummy node (@-@,@,@){@}
+\if#2@
+ \expandafter\Pstr@skipdummynode
+\else
+  % test whether a destination node is specified
+  % in which case a link needs to be created:
+  \def\dst{#3}
+  \ifx\dst\@empty \Pstr@skiplinkparam{#2}%
+  \else \Pstr@createlink{#2}{#3}
+  \fi
+\fi
+}
+%%%%% auxiliary macros for parsing node specification
+\gdef\Pstr@skipdummynode#1-,)#2\@nil{}
+\gdef\Pstr@skiplinkparam#1#2,#3\@nil{ \pstr@newnode{#1}{#3}{} }
+% create a new node together with a link
+%  #1 source node name
+%  #2 target node name
+%  #3 link arc angle
+%  #4 link arc label
+%  #5 node content
+\gdef\Pstr@createlink#1#2#3#4-,#5\@nil{
+\pstr@newnode{#1}{#5}{}
+\edef\angle{#3}%
+\ifx\angle\@empty\else \relax %\linkb{\angle}{#1}{#2}
+\fi
+}
+
+%%%%%%%%%%%%%%%%
+%%Second way of creating a pointer string:
+%  \pstr[raiseamount][nodesep]{ sequencespecification }
+% example:
+%  \pstr[0.4cm][1pt]{ \lnk(b) this \lnk(a-b,45) that }
+
+\gdef\pstr{\@ifnextchar[{\pstr@i}{\pstr@ii[0cm][1pt]}}
+% pstr with one optional parameter
+\gdef\pstr@i[#1]{\@ifnextchar[{\pstr@ii[#1]}{\pstr@ii[#1][1pt]}}
+% pstr with two optional parameters
+\gdef\pstr@ii[#1][#2]#3{%
+\begingroup
+%%\setlength\pstr@tempdim{#1}%
+ \def\pstr@arcoptions{#2}%
+%%\setbox\pstr@tempbox\hbox{$#3$}%
+$#3$
+%%\ht\pstr@tempbox\pstr@tempdim
+%%\box\pstr@tempbox
+\endgroup
+}
+\gdef\lnk(#1)#2{\Pstr@ParseNodeSpecif#1-,#2\@nil}
+
+\endgroup
+
+
+ 
+
+\fi %%% \ifpstricks
+
+
 \catcode`\@=\TheAtCode\relax
+
 

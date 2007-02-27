@@ -285,7 +285,7 @@ $\egroup%
   \pgftransformshift{\pgfpointanchor{#2@Next}{base east}}%
 
   \pgfnode{rectangle}{base west}{\color{black}${}#3{}$}{#2}{\pgfusepath{discard}}%
-  \pgftransformshift{\pgfpointanchor{#2}{base east}}% 
+  \pgftransformshift{\pgfpointanchor{#2}{base east}}%
 }
 
 
@@ -357,9 +357,9 @@ $\egroup%
 \begingroup
 
 %%%%%%%%%%%%%%%%
-%% Parser for the succint syntax. 
+%% Parser for the succint syntax.
 
-%  Example of use: \Pstr[0.4cm][1pt]{ (b) this (a-b,45,label) that }
+%  Example of use: \Pstr[0.4cm][1pt]{ (b) this (a-b,45:label) that }
 
 \gdef\Pstr{\@ifnextchar[{\Pstr@i}{\Pstr@ii[0cm][1pt]}}
 % Pstr with one optional parameter
@@ -379,7 +379,7 @@ $\egroup%
   \pgfsetarrows{-stealth}%
   \pgfsetlinewidth{0.3pt}%
   \pstr@ptrlist={}% Create an empty list of links.
-  \Pstr@ParseSpecification#3(@-@,@,@){}\@nil%
+  \Pstr@ParseSpecification#3(@-@){}\@nil%
   \the\pstr@ptrlist% dump the list of links.
 \end{pgfpicture}%
 }
@@ -390,61 +390,147 @@ $\egroup%
 % #3 node content
 \gdef\Pstr@ParseSpecification#1(#2)#3{%
  % parse the node specification
- \Pstr@ParseNodeSpecif#1(#2-,,)#3\@nil
+ \Pstr@ParseNodeSpecif#1(#2-)#3\@nil
  % proceeds to the rest of the specification.
  \@ifnextchar\@nil{\@gobble}{\Pstr@ParseSpecification}
 }
 
 % Parse a node specification
-% #1  stuff to be dumped (not part of the node specification)
-% #2-#3,   node specification: #2 source #3 target
-\gdef\Pstr@ParseNodeSpecif#1(#2-#3,{%
-% if it is the the dummy node (@-@,@,@){@} then skip it
+% #1 stuff to be dumped (not part of the node specification)
+% #2 source
+% #3 link parameters (target,angle:label)
+\gdef\Pstr@ParseNodeSpecif#1(#2-#3){%
+% if it is the the dummy node (@-@){} then skip it
 \if#2@
   \def\suite{\Pstr@skipdummynode}
 \else
   % if a target node is specified then create the link for it.
-  \edef\target{#3}
-  \ifx\target\@empty
+  \edef\linkparam{#3}
+  \ifx\linkparam\@empty
     \def\suite{\Pstr@skiplinkparam{#1}{#2}}
-  \else 
-    \def\suite{\Pstr@parselinkparam{#1}{#2}{#3}}
+  \else
+    \def\suite{\Pstr@parselinkparam{#1}{#2}#3} % #3 contains the link parameters with
+                                                 %the symbol '-' append at the end (see \Pstr@ParseSpecification)
   \fi
 \fi
 \suite
 }
 
-%%%%% auxiliary macros for parsing node specification
-% In the following, #1 should contains: @,@){@}
-\gdef\Pstr@skipdummynode#1-,,)#2\@nil{}
+%%%%% Auxiliary macros for parsing node specification
+
+% In the following, #1 should contains: {}
+\gdef\Pstr@skipdummynode#1\@nil{}
 
 % In the following #1 and #2 have been parsed already
 %  #1 dump
 %  #2 source node
-%   #3 link angle parameter (should be empty)
-%   #4 link label parameter (should be empty)
-%   #5 node content
-\gdef\Pstr@skiplinkparam#1#2#3,#4)#5\@nil{%
-\pstr@createpgfnode{#1}{#2}{#5}
+%   #3 node content
+\gdef\Pstr@skiplinkparam#1#2#3\@nil{%
+\pstr@createpgfnode{#1}{#2}{#3}
+}
+\gdef\defaultarrowangle{45}
+
+
+
+% look for the '-' that has been appended to the link parameters in order to extract them (in #3)
+\gdef\Pstr@parselinkparam#1#2#3-{
+\def\parami{\getparamComma{Targ}{#3}}
+\def\paramii{\getparamComma{Angle}}
+\def\paramiii{\getparamComma{Label}}
+%\expandafter
+\pstr@createpgfnode{#1}{#2}{ \getparamComma{take}{Targ}{#3} }
+%\pstr@createpgfnode{#1}{#2}{[#3][{\parami{#3}}]-[1($#1$) 2($#2$)  3($#3$)]}
+%\Pstr@parselinkparam@ii{#1}{#2}#3\@nil,@:@\@nil
+%\Pstr@parselinkparam@I{#1}{#2}#3,:\@nil,@:@\@nil
 }
 
-% In the following, #1, #2 and #3 have been parsed already, we are now parsing the link parameters
-%  #1 dump
-%  #2 source node
-%  #3 target node name
-%   #4 link arc angle
-%   #5 link arc label
-%   #6 node content
-\gdef\Pstr@parselinkparam#1#2#3#4,#5-,,)#6\@nil{%
-\pstr@createpgfnode{#1}{#2}{#6}
-\edef\angle{#4}%
-\ifx\angle\@empty \else 
-% add the arrow to the list of arrows
-\toks0={\pstr@createpgfarrow{#2}{#3}{#4}{#5}}%
-\edef\act{\noexpand\pstr@ptrlist={\the\pstr@ptrlist \the\toks0}}%
-\act
+
+%%% Utilities
+%%
+% \getparamComma{Default}{toto,tutu, 654} gives {tutu,654} {toto}
+% \getparamComma{Default}{toto,654}       gives {654}      {toto}
+% \getparamComma{Default}{654}            gives {654}      {Default}
+
+\gdef\@RemoveExtraComma#1,\@nil{#1}
+
+% #1 is the default value #2 is the string to parse
+\gdef\getparamComma#1#2#3{%
+\getparamComma@i{#1}{#2}#3,\@nil% append a , at the end
+}
+
+\gdef\getparamComma@i#1#2#3,#4\@nil{%
+  \edef\stuff{#4}%
+  \ifx\stuff\@empty% no comma in the original string: return the default value
+    \def\ret{\getSndparamComma{#1}{DEF2}{#3}{#2}}%
+  \else% there is a comma in the original string
+    \def\chopped{\@RemoveExtraComma #4\@nil}%
+    \def\ret{\getSndparamComma{#1}{DEF2}{\chopped}{#3}}%
+  \fi%
+  \ret%
+}
+
+
+\gdef\getSndparamComma#1#2#3{%
+\getSndparamComma@i{#1}{#2}#3,\@nil% append a , at the end
+}
+
+\gdef\getSndparamComma@i#1#2#3,#4\@nil{%
+  \edef\stuff{#4}%
+  \ifx\stuff\@empty% no comma in the original string: return the default value
+    \def\ret{\next{#3}{#2}}%
+  \else% there is a comma in the original string
+    \def\chopped{\@RemoveExtraComma #4\@nil}%
+    \def\ret{\next{\chopped}{#3}}%
+  \fi%
+  \ret%
+}
+
+
+\gdef\next#1#2{[#1*#2]}
+
+
+\gdef\Pstr@parselinkparam@I#1#2#3,#4:#5\@nil#6\@nil#7\@nil{
+\pstr@createpgfnode{s}{s}{[1($#1$) 2($#2$)  3($#3$)4(#4) 5(#5) 6(#6) 7(#7)]}
+}
+
+\gdef\Pstr@parselinkparam@ii#1#2#3,#4:#5\@nil#6\@nil#7\@nil{
+\pstr@createpgfnode{s}{s}{[1($#1$) 2($#2$)  3($#3$)4(#4) 5(#5) 6(#6) 7(#7)]}
+
+\if#4@ % no angle and no label specified
+%\pstr@createpgfnode{s}{s}{[1($#1$) 2($#2$)  3($#3$)4(#4) 5(#5) 6(#6) 7(#7)]}
+\else
+    \if#5@ % no label specified, but angle specified in #4 with ,@ append at the end
+    \else % angle specified in #4 and  label specified in #5
+    \Pstr@parselinkparam@i{#1}{#2}{#3}{#4}{#5}{#7}
+    \fi
 \fi
 }
+
+% In the following, #1 and #2 have been parsed already, we are now parsing the link parameters
+%  #1 dump
+%  #2 source node name
+%   #3 target node name
+%   #4 arrow angle
+%   #5 link label
+%   #6 node content
+
+\gdef\Pstr@parselinkparam@i#1#2#3#4#5#6{%
+\pstr@createpgfnode{#1}{#2}{#6}
+%\if#4@%  if dummy link params then set them to default
+%   \edef\angle{\defaultarrowangle}%
+%   \def\label{}%
+%\else
+%  \edef\angle{#4}%
+%  \ifx\angle\@empty \else \edef\angle{\defaultarrowangle} \fi
+%  \def\label{#5}
+%\fi
+%% add the arrow to the list of arrows
+\toks0={\pstr@createpgfarrow{#2}{#3}{#4}{#5}}%
+\edef\act{\noexpand\pstr@ptrlist={\the\pstr@ptrlist \the\toks0}}%
+%\act
+}
+
+
 
 %%%%%%%%%%%%%%%%
 %%Second way of creating a pointer string:

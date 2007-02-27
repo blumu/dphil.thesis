@@ -1,31 +1,58 @@
 \NeedsTeXFormat{LaTeX2e}
 % Created by William Blum on 28 January 2007
-% Version 0.02
+% Version 0.03
 
 \ProvidesClass{pstring}[2007/02/14 Package for representing pointer-strings]
 
-\newif\ifpstricks
-\DeclareOption{pstricks}{\pstrickstrue}
-\DeclareOption{pgf}{\pstricksfalse}
+\newif\ifpstrpstricks
+\newif\ifwriteprologue
+
+\DeclareOption{pstricks}{\pstrpstrickstrue}
+\DeclareOption{pgf}{\pstrpstricksfalse}
 \ExecuteOptions{pstricks}
 \ProcessOptions
-
-\ifpstricks
-    % Implement pointer string using pstricks
-    \RequirePackage{pstricks}
-    \RequirePackage{pst-node}
-\else
-    % Implement pointer string using pgf
-    \RequirePackage{pgf}
-\fi
 
 \edef\TheAtCode{\the\catcode`\@}
 \catcode`\@=11
 
-\newif\ifwriteprologue
+\ifpstrpstricks
+    % Implement pointer string using pstricks
+    \RequirePackage{pstricks}
+    \RequirePackage{pst-node}
+
+    % Draw the node and link arrows using pstricks
+    \gdef\@engine{pstr@PS}
+
+\else
+    % Implement pointer string using pgf
+    \RequirePackage{pgf}
+
+    % Draw the node and link arrows using PGF
+    \gdef\@engine{pstr@PGF}
+\fi
+
+% Default value for the arrow parameters
+\gdef\pstr@DefaultArrowAngle{45}
+\gdef\pstr@DefaultArrowLabel{}
+
+% routines used to draw the nodes and arrow
+\gdef\pstr@createarrow{\csname\@engine @createarrow\endcsname}
+\gdef\pstr@createnode{\csname\@engine @createnode\endcsname}
+
 
 \def\@nil{}
-\ifpstricks
+
+
+% define a command \percentchar which can be used to write the percent symbol '%' in the .pro file
+\chardef\letter = 11 \chardef\other = 12
+{\catcode`\% = \other \gdef\percentchar{%}}%
+\def^^L{\par
+}%
+
+
+
+
+\ifpstrpstricks
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%% Version of the package relying on PSTRICKS
@@ -39,19 +66,18 @@
   \newwrite\prologuefile
   \openout\prologuefile = pstring.pro
   \newlinechar = `\^^J
-  %\chardef\percent = `\%
- 	%\write\prologuefile{\percent!^^J}
-   %\write\prologuefile{\percent PostScript prologue for pstring.sty.^^J}
-  %\write\prologuefile{\percentFor distribution, see pstring.^^J}
+  \write\prologuefile{\percentchar }
+  \write\prologuefile{\percentchar PostScript prologue for pstring.sty.}
+  \write\prologuefile{\percentchar For distribution, see pstring.^^J}
 \fi
 
 % The macro \pstr@def creates a macro named #1 where #1 is the name of a postscript procedure and #2 is the postscript code for the procedure.
 \def\pstr@def#1<#2>{\ifwriteprologue
-	% prologue absent: dump the content of the postscript code
-	\write\prologuefile{/#1 { #2 } def}
-	\fi
-	% prologue present: just dump the name of the postscript command (the code being already defined in the .pro file)
-	\@namedef{#1}{#1 }
+    % prologue absent: dump the content of the postscript code
+    \write\prologuefile{/#1 { #2 } def}
+    \fi
+    % prologue present: just dump the name of the postscript command (the code being already defined in the .pro file)
+    \@namedef{#1}{#1 }
 }
 
 
@@ -277,7 +303,7 @@ $\egroup%
 %   #1 text preceding the node
 %   #2 name of the node
 %   #3 content of the node
-\def\pstr@createpgfnode#1#2#3{%
+\def\pstr@PGF@createnode#1#2#3{%
   \pgfsetfillcolor{white!100}%
   \pgfsetshapeinnerxsep{1pt}%
   \pgfsetshapeinnerysep{0.6pt}%
@@ -288,13 +314,12 @@ $\egroup%
   \pgftransformshift{\pgfpointanchor{#2}{base east}}%
 }
 
-
 % Draw an arrow with PGF
 %    #1 source node name
 %    #2 target node name
 %    #3 angle
 %    #4 label
-\def\pstr@createpgfarrow#1#2#3#4{%
+\def\pstr@PGF@createarrow#1#2#3#4{%
 \def\angleB{#3}
 \count255=180 \advance \count255 by -\angleB
 \def\angleA{\number\count255}
@@ -303,9 +328,6 @@ $\egroup%
 \def\bendpt{ \pgfpointintersectionoflines
 {\ptA}{\pgfpointadd{\ptA}{\pgfpointpolar{\angleA}{1cm}}}
 {\ptB}{\pgfpointadd{\ptB}{\pgfpointpolar{\angleB}{1cm}}}}
-% control points
-%\def\cptC{\bendpt}
-%\def\cptD{\bendpt}
 
 \pgfextracty{\pstr@mydimA}{\ptA}
 \pgfextracty{\pstr@mydimB}{\ptB}
@@ -331,14 +353,14 @@ $\egroup%
 %%%%
 %%%% draw using bezier curves
   \pgfpathmoveto{\ptA}\pgfpathcurveto{\cptC}{\cptD}{\ptB}%
-  \color{red} \pgfusepath{stroke}%
+  \color{black} \pgfusepath{stroke}%
 %%%%
 
 
 
 %%% Put the label on the link if there is one
 \def\label{#4}%
-\ifx\label\@empty%
+\ifx\label\empty%
 \else%
   \pgfsetfillcolor{white!100}
   \pgfsetshapeinnerxsep{1pt}%
@@ -356,10 +378,17 @@ $\egroup%
 
 \begingroup
 
-%%%%%%%%%%%%%%%%
-%% Parser for the succint syntax.
 
-%  Example of use: \Pstr[0.4cm][1pt]{ (b) this (a-b,45:label) that }
+%%%%%%%%%%%%%%%%%%%%%
+%%%% Code for the parser (succint syntax).
+%%%%
+%%%%  Examples of use:
+%%%%        \Pstr[0.4cm][1pt]{ (b) this (a-b,45:label) that }
+%%%%        \Pstr[0.4cm][1pt]{ (b) this (a-b,45) that }
+%%%%        \Pstr[0.4cm][1pt]{ (b) this (a-b) that }
+%%%%        \Pstr[0.4cm][1pt]{ (b) this (a) that }
+
+
 
 \gdef\Pstr{\@ifnextchar[{\Pstr@i}{\Pstr@ii[0cm][1pt]}}
 % Pstr with one optional parameter
@@ -390,145 +419,89 @@ $\egroup%
 % #3 node content
 \gdef\Pstr@ParseSpecification#1(#2)#3{%
  % parse the node specification
- \Pstr@ParseNodeSpecif#1(#2-)#3\@nil
+ \Pstr@ParseNodeSpecif{#1}{#2}{#3}\@nil
  % proceeds to the rest of the specification.
  \@ifnextchar\@nil{\@gobble}{\Pstr@ParseSpecification}
+}
+
+\gdef\Pstr@ParseNodeSpecif#1#2#3{
+ \Pstr@parselinkparam@Target{#1}(#2-){#3}
 }
 
 % Parse a node specification
 % #1 stuff to be dumped (not part of the node specification)
 % #2 source
 % #3 link parameters (target,angle:label)
-\gdef\Pstr@ParseNodeSpecif#1(#2-#3){%
+\gdef\Pstr@parselinkparam@Target#1(#2-#3){%
 % if it is the the dummy node (@-@){} then skip it
 \if#2@
-  \def\suite{\Pstr@skipdummynode}
+  \def\suite{\Pstr@skipcontent}
 \else
   % if a target node is specified then create the link for it.
-  \edef\linkparam{#3}
-  \ifx\linkparam\@empty
+  \def\linkparam{#3}
+  \ifx\linkparam\empty
     \def\suite{\Pstr@skiplinkparam{#1}{#2}}
   \else
-    \def\suite{\Pstr@parselinkparam{#1}{#2}#3} % #3 contains the link parameters with
-                                                 %the symbol '-' append at the end (see \Pstr@ParseSpecification)
+    \def\suite{\Pstr@parselinkparam@Target@i{#1}{#2}#3} % #3 contains an extra '-' at the end that will be removed by this command
   \fi
 \fi
 \suite
 }
+% remove the extra '-' (which was appended before) and then goes on with the parsing by adding an extra at the end ',' and looking for the next ','
+\gdef\Pstr@parselinkparam@Target@i#1#2#3-{\Pstr@parselinkparam@Angle{#1}{#2}#3,\@nil}
 
-%%%%% Auxiliary macros for parsing node specification
+\gdef\Pstr@skipcontent#1\@nil{}
 
-% In the following, #1 should contains: {}
-\gdef\Pstr@skipdummynode#1\@nil{}
+% Parameters #1 and #2 have been parsed already
+%  #1 dump   #2 source node  #3 node content
+\gdef\Pstr@skiplinkparam#1#2#3\@nil{\pstr@createnode{#1}{#2}{#3}}
 
-% In the following #1 and #2 have been parsed already
-%  #1 dump
-%  #2 source node
-%   #3 node content
-\gdef\Pstr@skiplinkparam#1#2#3\@nil{%
-\pstr@createpgfnode{#1}{#2}{#3}
+
+\gdef\Pstr@parselinkparam@Angle#1#2#3,#4\@nil{
+  \def\reste{#4}
+  \ifx\reste\empty
+    \def\suite{\Pstr@parseNodeContent{#1}{#2}{#3}{\pstr@DefaultArrowAngle}{\pstr@DefaultArrowLabel}}
+  \else
+    \def\suite{\Pstr@parselinkparam@Angle@i{#1}{#2}{#3}#4} % #4 contains an extra ',' at the end that will be removed by this command
+  \fi
+  \suite
 }
-\gdef\defaultarrowangle{45}
+% remove the extra ',' (which was appended before) and then goes on with the parsing by adding an extra at the end ':' and looking for the next ':'
+\gdef\Pstr@parselinkparam@Angle@i#1#2#3#4,{\Pstr@parselinkparam@Label{#1}{#2}{#3}#4:\@nil}
 
-
-
-% look for the '-' that has been appended to the link parameters in order to extract them (in #3)
-\gdef\Pstr@parselinkparam#1#2#3-{
-\def\parami{\getparamComma{Targ}{#3}}
-\def\paramii{\getparamComma{Angle}}
-\def\paramiii{\getparamComma{Label}}
-%\expandafter
-\pstr@createpgfnode{#1}{#2}{ \getparamComma{take}{Targ}{#3} }
-%\pstr@createpgfnode{#1}{#2}{[#3][{\parami{#3}}]-[1($#1$) 2($#2$)  3($#3$)]}
-%\Pstr@parselinkparam@ii{#1}{#2}#3\@nil,@:@\@nil
-%\Pstr@parselinkparam@I{#1}{#2}#3,:\@nil,@:@\@nil
+\gdef\Pstr@parselinkparam@Label#1#2#3#4:#5\@nil{
+  \def\reste{#5}
+  \ifx\reste\empty
+    \def\suite{\Pstr@parseNodeContent{#1}{#2}{#3}{#4}{\pstr@DefaultArrowLabel}}
+  \else
+    \def\suite{\Pstr@parselinkparam@Label@i{#1}{#2}{#3}{#4}#5} % #5 contains an extra ':' at the end that will be removed by this command
+  \fi
+  \suite
 }
+% remove the extra ':' (which was appended before) and then goes on with the parsing
+\gdef\Pstr@parselinkparam@Label@i#1#2#3#4#5:{\Pstr@parseNodeContent{#1}{#2}{#3}{#4}{#5}}
 
-
-%%% Utilities
-%%
-% \getparamComma{Default}{toto,tutu, 654} gives {tutu,654} {toto}
-% \getparamComma{Default}{toto,654}       gives {654}      {toto}
-% \getparamComma{Default}{654}            gives {654}      {Default}
-
-\gdef\@RemoveExtraComma#1,\@nil{#1}
-
-% #1 is the default value #2 is the string to parse
-\gdef\getparamComma#1#2#3{%
-\getparamComma@i{#1}{#2}#3,\@nil% append a , at the end
-}
-
-\gdef\getparamComma@i#1#2#3,#4\@nil{%
-  \edef\stuff{#4}%
-  \ifx\stuff\@empty% no comma in the original string: return the default value
-    \def\ret{\getSndparamComma{#1}{DEF2}{#3}{#2}}%
-  \else% there is a comma in the original string
-    \def\chopped{\@RemoveExtraComma #4\@nil}%
-    \def\ret{\getSndparamComma{#1}{DEF2}{\chopped}{#3}}%
-  \fi%
-  \ret%
-}
-
-
-\gdef\getSndparamComma#1#2#3{%
-\getSndparamComma@i{#1}{#2}#3,\@nil% append a , at the end
-}
-
-\gdef\getSndparamComma@i#1#2#3,#4\@nil{%
-  \edef\stuff{#4}%
-  \ifx\stuff\@empty% no comma in the original string: return the default value
-    \def\ret{\next{#3}{#2}}%
-  \else% there is a comma in the original string
-    \def\chopped{\@RemoveExtraComma #4\@nil}%
-    \def\ret{\next{\chopped}{#3}}%
-  \fi%
-  \ret%
-}
-
-
-\gdef\next#1#2{[#1*#2]}
-
-
-\gdef\Pstr@parselinkparam@I#1#2#3,#4:#5\@nil#6\@nil#7\@nil{
-\pstr@createpgfnode{s}{s}{[1($#1$) 2($#2$)  3($#3$)4(#4) 5(#5) 6(#6) 7(#7)]}
-}
-
-\gdef\Pstr@parselinkparam@ii#1#2#3,#4:#5\@nil#6\@nil#7\@nil{
-\pstr@createpgfnode{s}{s}{[1($#1$) 2($#2$)  3($#3$)4(#4) 5(#5) 6(#6) 7(#7)]}
-
-\if#4@ % no angle and no label specified
-%\pstr@createpgfnode{s}{s}{[1($#1$) 2($#2$)  3($#3$)4(#4) 5(#5) 6(#6) 7(#7)]}
-\else
-    \if#5@ % no label specified, but angle specified in #4 with ,@ append at the end
-    \else % angle specified in #4 and  label specified in #5
-    \Pstr@parselinkparam@i{#1}{#2}{#3}{#4}{#5}{#7}
-    \fi
-\fi
-}
-
-% In the following, #1 and #2 have been parsed already, we are now parsing the link parameters
+% End of the parsing of the link parameter, we just need to parse the node content (#6)
+% and we have all the parameters necessary to create the node and the link.
 %  #1 dump
 %  #2 source node name
-%   #3 target node name
-%   #4 arrow angle
-%   #5 link label
-%   #6 node content
-
-\gdef\Pstr@parselinkparam@i#1#2#3#4#5#6{%
-\pstr@createpgfnode{#1}{#2}{#6}
-%\if#4@%  if dummy link params then set them to default
-%   \edef\angle{\defaultarrowangle}%
-%   \def\label{}%
-%\else
-%  \edef\angle{#4}%
-%  \ifx\angle\@empty \else \edef\angle{\defaultarrowangle} \fi
-%  \def\label{#5}
-%\fi
-%% add the arrow to the list of arrows
-\toks0={\pstr@createpgfarrow{#2}{#3}{#4}{#5}}%
-\edef\act{\noexpand\pstr@ptrlist={\the\pstr@ptrlist \the\toks0}}%
-%\act
+%  #3 target node name
+%  #4 arrow angle
+%  #5 link label
+%  #6 node content
+\gdef\Pstr@parseNodeContent#1#2#3#4#5#6\@nil{%
+    %\pstr@createpgfnode{s}{s}{\mbox{C[1($#1$)  2($#2$) 3($#3$) 4(#4) 5(#5) 6(#6)]} }
+    \pstr@createnode{#1}{#2}{#6}%
+    % add the arrow to the list of arrows
+    \toks0={\pstr@createarrow{#2}{#3}{#4}{#5}}%
+    \edef\act{\noexpand\pstr@ptrlist={\the\pstr@ptrlist \the\toks0}}%
+    \act%
 }
+
+%%%%
+%%%%%%%%%%%%%%%%%%%%% END OF THE CODE FOR THE PARSER
+
+
 
 
 
@@ -549,15 +522,22 @@ $\egroup%
   \pgfsetshapeminheight{0cm}%
   \pgfsetarrows{-stealth}%
   \pgfsetlinewidth{0.3pt}%
+  \pstr@ptrlist={}% Create an empty list of links.
   #3%
+  \the\pstr@ptrlist% dump the list of links.
 \end{pgfpicture}%
 }
 
-% Commands to be used directly by the user of the package
-\gdef\nd#1(#2){\pstr@createpgfnode{#1}{#2}}
-\gdef\lnk{\pstr@createpgfarrow}
+% Commands to be used directly by the package user
 
-%\gdef\lnk(#1)#2{\Pstr@ParseNodeSpecif#1-,#2\@nil}
+%\gdef\nd#1(#2){\pstr@PGF@createnode{#1}{#2}}
+%%\gdef\lnk{\pstr@PGF@createarrow}
+
+\gdef\nd#1(#2)#3{%
+ % parse the node specification
+ \Pstr@ParseNodeSpecif{#1}{#2}{#3}\@nil
+}
+
 
 \endgroup
 
@@ -567,4 +547,8 @@ $\egroup%
 
 \catcode`\@=\TheAtCode\relax
 
+\endinput
 
+Change log:
+
+Version 0.3, 27 feb 2007: added support for pgf as a drawing engine instead of the (hacked) pstricks

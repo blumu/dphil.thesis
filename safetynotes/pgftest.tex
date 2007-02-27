@@ -1,69 +1,92 @@
 \input{preamble.tex}
 \usepackage[pgf]{pstring}
 
+\usepackage{tikz}
 
 \begin{document}
 A sequence
 \pstr{
-\nd{t = \lambda \cdot}(app){@}
-\nd{\cdot}(ly){\lambda y}
-\nd{\ldots}(y){y}
-\nd{\cdot}(lx){\lambda \overline{x}}
-\nd{\ldots}(x){x_i}
-\nd{\cdot}(leta){\lambda \overline{\eta_i}} % {\ldots}
-\lnk{y}{ly}  {35} {\tiny 1}
-\lnk{lx}{app}{38} {\tiny 1}
-\lnk{x}{lx}  {30} {\tiny i}
-\lnk{leta}{y}{40} {\tiny i}
+\nd t = \lambda \cdot (app){@}
+\nd \cdot (ly){\lambda y}
+\nd \ldots (y-ly,35:{\tiny 1}) {y}
+\nd \cdot (lx-app,38:{\tiny 1}){\lambda \overline{x}}
+\nd \ldots (x-lx,30:{\tiny i}){x_i}
+\nd \cdot (leta-y,40:{\tiny i}){\lambda \overline{\eta_i}} % {\ldots}
 }.
 
-\getparamComma{}{Targ}{15,2,3}
-
-The same one with the succinct syntax:
+and $t$ again with the succinct syntax:
 \Pstr{
-\lambda\cdot (app)               {@}
-\cdot        (ly)                {\lambda y}
-{\ldots}     (y-ly,45,2)   {Cont}
-%{\ldots}     (y-ly,35:{\tiny i1})   {y}
-%{\cdot}      (lx-app,38,{\tiny 1}) {\lambda \overline{x}}
-%{\ldots}     (x-lx,30,{\tiny i})   {x_i}
-%{\cdot}      (leta-y,40,{\tiny i}) {\lambda \overline{\eta_i} }{\ldots}
+\lambda\cdot (app)                    {@}
+\cdot(ly)                     {\lambda y}
+\ldots     (y-ly,35:{\tiny 1})      {y}
+\cdot      (lx-app,38:{\tiny 1})    {\lambda \overline{x}}
+\ldots     (x-lx,30:{\tiny i})      {x_i}
+\cdot      (leta-y,40:{\tiny i})    {\lambda \overline{\eta_i} }{\ldots}
 }.
 
 Another example
 \pstr{
-\nd{t=}(n){\lambda f z}{}
+\nd t_2= (n){\lambda f z}{}
 \nd(n2){@}{}
-\nd(n3){\lambda g x}{}
-\nd(n4){f^{[1]}}{}
-\nd(n5){\lambda^{[2]}}{}
-\nd(n6){x}{}
-\nd(n7){\lambda^{[3]}}{}
-\nd(n8){f^{[4]}}{}
-\nd(n9){\lambda^{[5]}}{}
-\nd(n10){z}{}
-\lnk{n3}{n2}{60}{}
-\lnk{n4}{n} {45}{}
-\lnk{n5}{n4}{45}{}
-\lnk{n6}{n3}{45}{}
-\lnk{n7}{n2}{35}{}
-\lnk{n8}{n} {35}{}
-\lnk{n9}{n8}{45}{}
-\lnk{n10}{n}{35}{}
+\nd(n3-n2,60){\lambda g x}{}
+\nd(n4-n,45){f^{[1]}}{}
+\nd(n5,n4,45){\lambda^{[2]}}{}
+\nd(n6-n3,45){x}{}
+\nd(n7-n2,35){\lambda^{[3]}}{}
+\nd(n8-n,35){f^{[4]}}{}
+\nd(n9-n8,45){\lambda^{[5]}}{}
+\nd(n10,n,35){z}{}
+},
+and the same with succinct syntax
+\Pstr[0.7cm]{
+t_2 = (n){\lambda f z}
+(n2){@}
+(n3-n2,60){\lambda g x}
+(n4-n,45){f^{[1]}}
+(n5-n4,45){\lambda^{[2]}}
+(n6-n3,45){x}
+(n7-n2,35){\lambda^{[3]}}
+(n8-n,35){f^{[4]}}
+(n9-n8,45){\lambda^{[5]}}
+(n10-n,35){z}
 }.
 
-%\Pstr[0.7cm]{
-%t = (n){\lambda f z} \
-%(n2){@} \
-%(n3-n2,60,){\lambda g x} \
-%(n4-n,45,){f^{[1]}} \
-%(n5-n4,45,){\lambda^{[2]}} \
-%(n6-n3,45,){x} \
-%(n7-n2,35,){\lambda^{[3]}} \
-%(n8-n,35,){f^{[4]}} \
-%(n9-n8,45,){\lambda^{[5]}} \
-%(n10-n,35,){z}
-%}
+\Pstr[0.8cm]{ \psi = (n){q^0}  (n4-n,60){q^1}  \ (n5-n4,60){q^2} \  (n8-n,50){q^1}  \ (n9-n8,60){q^2}   \ (n10-n,40){q^3}  \ .}
+and \pstr[0.8cm]{ \nd \psi = (n){q^0} \nd (n4-n,60){q^1}  \nd\ (n5-n4,60){q^2} \nd\  (n8-n,50){q^1}  \nd\ (n9-n8,60){q^2} \nd\ (n10-n,40){q^3} . }
 
+
+
+%%% tests using Tikz and overlays 
+
+\pgfsetshapeinnerxsep{0pt}%
+\pgfsetshapeinnerysep{5.3pt}%
+\pgfsetbaseline{0pt}%
+\pgfsetshapeminwidth{0cm}%
+\pgfsetshapeminheight{0cm}%
+\pgfsetarrows{-stealth}%
+\pgfsetlinewidth{0.3pt}%
+\tikzstyle{every picture}+=[remember picture]
+
+
+$\underbrace{\tikz{\node [fill=blue!20,draw,circle] (n1) {};}
+\tikz{
+    \pgfnode{rectangle}{base west}{\color{black}MACHIN}{aa}{\pgfusepath{stroke}}
+    \pgftransformshift{\pgfpointanchor{aa}{base east}}%
+    \pgfnode{rectangle}{base west}{\color{red}inside}{c}{\pgfusepath{stroke}}
+%                          \pgfpathmoveto{\pgfpointanchor{a}{north}}
+%                               \pgflineto{\pgfpointanchor{c}{east}}%
+%                                  \color{green} \pgfusepath{stroke}%
+;
+}
+dsdf %\qquad
+\tikz{
+  \pgfnode{rectangle}{base west}{\color{black}CHOSE}{b}{\pgfusepath{stroke}}
+%  \pgfpathmoveto{\pgfpointanchor{n1}{north west}}\pgflineto{\pgfpointanchor{b}{south}}%  \color{blue} \pgfusepath{stroke}
+  %
+%\node [fill=blue!20,draw,circle] (b) {};
+\draw [overlay,->,very thick,red,opacity=.5] (b.north) to[bend right] (aa.north);
+;
+}
+}^{toto}$
 
 \end{document}

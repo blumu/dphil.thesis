@@ -2,40 +2,62 @@
 \NeedsTeXFormat{LaTeX2e}
 \ProvidesClass{pstring}[2007/02/28 Package for representing pointer-strings]
 
-\newif\ifPSengine
-\newif\ifPGFengine
+\newif\ifRequestPSengine
+\newif\ifRequestPGFengine
+\newif\ifLoadPSengine
+\newif\ifLoadPGFengine
 \newif\ifwriteprologuefile
 
-\DeclareOption{pstricks}{\PSenginetrue \PGFenginefalse}
-\DeclareOption{pgf}{\PSenginefalse \PGFenginetrue}
-\ExecuteOptions{pstricks}
+
+\DeclareOption{pstricks}{\RequestPSenginetrue}
+\DeclareOption{pgf}{\RequestPGFenginetrue}
 \ProcessOptions
 
 \edef\TheAtCode{\the\catcode`\@}
 \catcode`\@=11
 
-\ifPSengine
-    \RequirePackage{ifpdf}
-       \ifpdf
-            \errmessage{You have requested to use the pstricks engine when you have loaded the pstring package,
-            moreover you seem to be running pdflatex to produce a pdf file. Since pstricks is not compatible with pdflatex,
-            I automatically switch to the pgf engine.}
 
-            \PSenginefalse \PGFenginetrue
-       \else
-            % Implement pointer string using pstricks
-            \RequirePackage{pstricks}
-            \RequirePackage{pst-node}
+\RequirePackage{ifpdf}
 
-            % Set the default drawing engine to pstricks
-            \gdef\@engine{PS}
-
-            % Declare the use of the prologue file (for dvips)
-            \pstheader{pstring.pro} %\@addtofilelist{pstring.pro} \special{header=pstring.pro}
-       \fi
+\ifRequestPSengine
+    \ifpdf
+        \errmessage{You have requested to use the pstricks engine when you have loaded the pstring package,
+        moreover you seem to be running pdflatex to produce a pdf file. Since pstricks is not compatible with pdflatex,
+        I automatically switch to the pgf engine.}
+        \LoadPGFenginetrue
+        \LoadPSenginefalse
+    \else
+        \LoadPSenginetrue
+    \fi
 \fi
 
-\ifPGFengine
+\ifRequestPGFengine
+    \LoadPGFenginetrue
+\fi
+
+% If no engine is selected then take PStricks if latex is running and PGF if it is pdflatex
+\ifRequestPGFengine \else\ifRequestPSengine \else
+\ifpdf
+    \LoadPGFenginetrue
+\else
+    \LoadPSenginetrue
+\fi
+\fi\fi
+
+
+\ifLoadPSengine
+    % Implement pointer string using pstricks
+    \RequirePackage{pstricks}
+    \RequirePackage{pst-node}
+
+    % Declare the use of the prologue file (for dvips)
+    \pstheader{pstring.pro} %\@addtofilelist{pstring.pro} \special{header=pstring.pro}
+
+    % Set the default drawing engine to pstricks
+    \gdef\@engine{PS}
+\fi
+
+\ifLoadPGFengine
     % Implement pointer string using pgf
     \RequirePackage{pgf}
 
@@ -77,7 +99,7 @@
 
 
 
-\ifPSengine
+\ifLoadPSengine
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%% Version of the package relying on PSTRICKS
@@ -240,7 +262,7 @@ curveto
 \begingroup%
  \setlength\pstr@tempdim{#1}%
  \def\pstr@arcoptions{#2}%
- \setbox\pstr@tempbox=\hbox{$\Pstr@ParseSpecification#3(@-@){}\@nil$}
+ \setbox\pstr@tempbox=\hbox{$\Pstr@ParseSpecification#3(@-@){}\@nil$}%
  \ht\pstr@tempbox\pstr@tempdim%
  \leavevmode\box\pstr@tempbox%
 \endgroup%
@@ -296,15 +318,15 @@ curveto
  \setlength\pstr@tempdim{#1}%
  \def\pstr@arcoptions{#2}%
  \pstr@defineUserCommands% define the command \nd and \txt that the package user can use to define the sequence
- \setbox\pstr@tempbox\hbox{a$#3$}%
-\ht\pstr@tempbox\pstr@tempdim%
-A\leavevmode\box\pstr@tempbox%
-\endgroup
+ \setbox\pstr@tempbox\hbox{$#3$}%
+ \ht\pstr@tempbox\pstr@tempdim%
+ \leavevmode\box\pstr@tempbox%
+\endgroup%
 }
 \fi
 
 
-\ifPGFengine
+\ifLoadPGFengine
 
 \newdimen\pstr@mydimA
 \newdimen\pstr@mydimB
@@ -472,7 +494,7 @@ A\leavevmode\box\pstr@tempbox%
   \pgfsetarrows{-stealth}%
   \pgfsetlinewidth{0.3pt}%
   \pstr@ptrlist={}% Create an empty list of links.
-  \pstr@defineUserCommands % define the command \nd and \txt that the package user can use to define the sequence
+  \pstr@defineUserCommands% define the command \nd and \txt that the package user can use to define the sequence
   #3%
   \the\pstr@ptrlist% dump the list of links.
 \end{pgfpicture}%
@@ -492,17 +514,17 @@ A\leavevmode\box\pstr@tempbox%
 % for the definition of the sequence within a \pstr{ } command.
 %
 % It is called in the \pstr@PS and \pstr@PGF macros.
-\gdef\pstr@defineUserCommands{
+\gdef\pstr@defineUserCommands{%
     \def\nd##1(##2)##3{%
      % print out the text preceding the node specification
      \pstr@printText{##1}%
      % parse the node specification
      \Pstr@ParseNodeSpecif{##1}{##2}{##3}\@nil%
-    }
+    }%
     \def\txt##1{%
      % print out text
      \pstr@printText{##1}%
-    }
+    }%
 }
 
 %%%%

@@ -1,32 +1,67 @@
+% Copyright 2007 by William Blum (http://william.famille-blum.org/software/latex/index.html)
 \NeedsTeXFormat{LaTeX2e}
-% Created by William Blum on 28 January 2007
-% Version 0.03
+\ProvidesClass{pstring}[2007/02/28 Package for representing pointer-strings]
 
-\ProvidesClass{pstring}[2007/02/14 Package for representing pointer-strings]
-
-\newif\ifoptPstricks
+\newif\ifRequestPSengine
+\newif\ifRequestPGFengine
+\newif\ifLoadPSengine
+\newif\ifLoadPGFengine
 \newif\ifwriteprologuefile
 
-\DeclareOption{pstricks}{\optPstrickstrue}
-\DeclareOption{pgf}{\optPstricksfalse} \ExecuteOptions{pstricks}
+
+\DeclareOption{pstricks}{\RequestPSenginetrue}
+\DeclareOption{pgf}{\RequestPGFenginetrue}
 \ProcessOptions
 
 \edef\TheAtCode{\the\catcode`\@}
 \catcode`\@=11
 
-\ifoptPstricks
+
+\RequirePackage{ifpdf}
+
+\ifRequestPSengine
+    \ifpdf
+        \errmessage{You have requested to use the pstricks engine when you have loaded the pstring package,
+        moreover you seem to be running pdflatex to produce a pdf file. Since pstricks is not compatible with pdflatex,
+        I automatically switch to the pgf engine.}
+        \LoadPGFenginetrue
+        \LoadPSenginefalse
+    \else
+        \LoadPSenginetrue
+    \fi
+\fi
+
+\ifRequestPGFengine
+    \LoadPGFenginetrue
+\fi
+
+% If no engine is selected then take PStricks if latex is running and PGF if it is pdflatex
+\ifRequestPGFengine \else\ifRequestPSengine \else
+\ifpdf
+    \LoadPGFenginetrue
+\else
+    \LoadPSenginetrue
+\fi
+\fi\fi
+
+
+\ifLoadPSengine
     % Implement pointer string using pstricks
     \RequirePackage{pstricks}
     \RequirePackage{pst-node}
 
-    % Set the engine to draw the node and link arrows to pstricks
-    \gdef\@engine{PS}
+    % Declare the use of the prologue file (for dvips)
+    \pstheader{pstring.pro} %\@addtofilelist{pstring.pro} \special{header=pstring.pro}
 
-\else
+    % Set the default drawing engine to pstricks
+    \gdef\@engine{PS}
+\fi
+
+\ifLoadPGFengine
     % Implement pointer string using pgf
     \RequirePackage{pgf}
 
-    % Set the engine to draw the node and link arrows to PGF
+    % Set the default drawing engine to PGF
     \gdef\@engine{PGF}
 \fi
 
@@ -64,9 +99,7 @@
 
 
 
-
-
-\ifoptPstricks
+\ifLoadPSengine
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%% Version of the package relying on PSTRICKS
@@ -92,10 +125,10 @@
 % but as a drawback the postscript code would be copied for each use of the procedure and the
 % resulting ps file would be huge.
 \def\pstr@def#1<#2>{%
-\ifwriteprologuefile
-    % Add the code to the postscript prologue  file
-    \write\prologuefile{/#1 { #2 } def}
-\fi
+    \ifwriteprologuefile%
+        % Add the code to the postscript prologue  file
+        \write\prologuefile{/#1 { #2 } def}
+    \fi
     % prologue present: just dump the name of the postscript command (the code being already defined in the .pro file)
     \@namedef{#1}{#1 }
 }
@@ -229,7 +262,7 @@ curveto
 \begingroup%
  \setlength\pstr@tempdim{#1}%
  \def\pstr@arcoptions{#2}%
- \setbox\pstr@tempbox=\hbox{$\Pstr@ParseSpecification#3(@-@){}\@nil$}
+ \setbox\pstr@tempbox=\hbox{$\Pstr@ParseSpecification#3(@-@){}\@nil$}%
  \ht\pstr@tempbox\pstr@tempdim%
  \leavevmode\box\pstr@tempbox%
 \endgroup%
@@ -252,7 +285,7 @@ curveto
 %    #3 angle
 %    #4 label
 \def\pstr@PS@drawArrow#1#2#3#4{%
-  \link*[nodesep=\pstr@arcoptions]{#3}{#1}{#2} \lnklabel{#4}
+  \link*[nodesep=\pstr@arcoptions]{#3}{#1}{#2} \lnklabel{#4}%
 }
 
 % Create the node and store the commands for the creation of the link in the list of tokens tok0
@@ -284,17 +317,16 @@ curveto
 \begingroup%
  \setlength\pstr@tempdim{#1}%
  \def\pstr@arcoptions{#2}%
- \pstr@defineUserCommands % define the command \nd and \txt that the package user can use to define the sequence
+ \pstr@defineUserCommands% define the command \nd and \txt that the package user can use to define the sequence
  \setbox\pstr@tempbox\hbox{$#3$}%
  \ht\pstr@tempbox\pstr@tempdim%
- \box\pstr@tempbox%
-\endgroup
+ \leavevmode\box\pstr@tempbox%
+\endgroup%
 }
+\fi
 
-\@addtofilelist{pstring.pro} \special{header=pstring.pro}
 
-
-\else
+\ifLoadPGFengine
 
 \newdimen\pstr@mydimA
 \newdimen\pstr@mydimB
@@ -462,7 +494,7 @@ curveto
   \pgfsetarrows{-stealth}%
   \pgfsetlinewidth{0.3pt}%
   \pstr@ptrlist={}% Create an empty list of links.
-  \pstr@defineUserCommands % define the command \nd and \txt that the package user can use to define the sequence
+  \pstr@defineUserCommands% define the command \nd and \txt that the package user can use to define the sequence
   #3%
   \the\pstr@ptrlist% dump the list of links.
 \end{pgfpicture}%
@@ -482,17 +514,17 @@ curveto
 % for the definition of the sequence within a \pstr{ } command.
 %
 % It is called in the \pstr@PS and \pstr@PGF macros.
-\gdef\pstr@defineUserCommands{
+\gdef\pstr@defineUserCommands{%
     \def\nd##1(##2)##3{%
      % print out the text preceding the node specification
      \pstr@printText{##1}%
      % parse the node specification
      \Pstr@ParseNodeSpecif{##1}{##2}{##3}\@nil%
-    }
+    }%
     \def\txt##1{%
      % print out text
      \pstr@printText{##1}%
-    }
+    }%
 }
 
 %%%%
@@ -594,9 +626,12 @@ curveto
 
 Change log:
 
-Version 0.3, 27 feb 2007: added support for pgf as a drawing engine instead of the (hacked) pstricks
+Version 0.3, 27 Feb 2007:
+- added support for pgf as a drawing engine instead of the (hacked) pstricks
+- incompatibility with LatexDaemon fixed: before when loading the pstring package from a precompiled
+preamble, the prologue file was not included properly during the dvips conversion.
 
-
+Version 0.1, 28 Jan 2007
 
 
 

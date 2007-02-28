@@ -5,7 +5,7 @@
 \ProvidesClass{pstring}[2007/02/14 Package for representing pointer-strings]
 
 \newif\ifoptPstricks
-\newif\ifwriteprologue
+\newif\ifwriteprologuefile
 
 \DeclareOption{pstricks}{\optPstrickstrue}
 \DeclareOption{pgf}{\optPstricksfalse} \ExecuteOptions{pstricks}
@@ -43,6 +43,14 @@
 % external commands available to the package user (in pgf and pstricks mode)
 \gdef\pstr{\csname pstr@\@engine\endcsname}
 \gdef\Pstr{\csname Pstr@\@engine\endcsname}
+\gdef\pstrSetLabelStyle#1{\gdef\pstr@LabelStyle{#1}}
+\gdef\pstrSetArrowColor#1{\gdef\pstr@ArrowColor{#1}}
+\gdef\pstrSetArrowLineWidth#1{\gdef\pstr@ArrowLineWidth{#1}}
+
+% Default style value
+\pstrSetLabelStyle{\color{blue} \tiny}
+\pstrSetArrowColor{orange}
+\pstrSetArrowLineWidth{0.3pt}
 
 
 \def\@nil{}
@@ -63,13 +71,10 @@
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%% Version of the package relying on PSTRICKS
 
-%%%% If the prologue .pro file is not present then
-% we need to include the definitions of our custom Postscript procedures in the dvi file itself.
-% The drawback is that the code for the postscript procedures will be copied for each use of the procedure.
-%\IfFileExists{pstring.pro}{\writeprologuefalse}{\writeprologuetrue}
-\writeprologuetrue
+% If the postscript prologue file does not exist then it needs to be created.
+\IfFileExists{pstring.pro}{\writeprologuefilefalse}{\writeprologuefiletrue}
 
-\ifwriteprologue
+\ifwriteprologuefile
   \newwrite\prologuefile
   \openout\prologuefile = pstring.pro
   \newlinechar = `\^^J
@@ -78,11 +83,19 @@
   \write\prologuefile{\percentchar For distribution, see pstring.^^J}
 \fi
 
-% The macro \pstr@def creates a macro named #1 where #1 is the name of a postscript procedure and #2 is the postscript code for the procedure.
-\def\pstr@def#1<#2>{\ifwriteprologue
-    % prologue absent: dump the content of the postscript code
+
+% Calling the following macro with \pstr@def{PROCNAME}<PSCODE> will:
+%    - create a ps procedure with name PROCNAME and code PSCODE and writes it to the prologue file,
+%    - define a latex macro with name \PROCNAME containing PROCNAME (the name of the ps procedure).
+%
+% We could have chosen to include the definitions of our custom Postscript procedures in the dvi file itself
+% but as a drawback the postscript code would be copied for each use of the procedure and the
+% resulting ps file would be huge.
+\def\pstr@def#1<#2>{%
+\ifwriteprologuefile
+    % Add the code to the postscript prologue  file
     \write\prologuefile{/#1 { #2 } def}
-    \fi
+\fi
     % prologue present: just dump the name of the postscript command (the code being already defined in the .pro file)
     \@namedef{#1}{#1 }
 }
@@ -132,8 +145,8 @@ curveto
 /VPutPos { { VPutLines } HPutCurve } def>
 
 
-\ifwriteprologue
-  %\write\prologuefile{^^J\% END pstring.pro^^J}
+\ifwriteprologuefile
+  \write\prologuefile{^^J\percentchar END pstring.pro^^J}
   \closeout\prologuefile
 \fi
 
@@ -167,9 +180,9 @@ curveto
 \newcommand{\linkNoStar}[2][]{
 \edef\options{#1}
 \ifx\options\@empty
-\def\opt{[linewidth=0.4pt,offset=-2pt,nodesep=0pt,arcangleA=-#2, arcangleB=-#2]}
+\def\opt{[linecolor=\pstr@ArrowColor,linewidth=\pstr@ArrowLineWidth,offset=-2pt,nodesep=0pt,arcangleA=-#2, arcangleB=-#2]}
 \else
-\def\opt{[linewidth=0.4pt,offset=-2pt,nodesep=0pt,arcangleA=-#2, arcangleB=-#2,#1]}
+\def\opt{[linecolor=\pstr@ArrowColor,linewidth=\pstr@ArrowLineWidth,offset=-2pt,nodesep=0pt,arcangleA=-#2, arcangleB=-#2,#1]}
 \fi
 \expandafter\ncarc\opt{->}
 }
@@ -178,9 +191,9 @@ curveto
 \newcommand{\linkStar}[2][]{
 \edef\options{#1}
 \ifx\options\@empty
-\def\opt{[linewidth=0.4pt,offsetA=0pt,offsetB=2pt,nodesep=1pt,arcangleA=#2, arcangleB=#2]}
+\def\opt{[linecolor=\pstr@ArrowColor,linewidth=\pstr@ArrowLineWidth,offsetA=0pt,offsetB=2pt,nodesep=1pt,arcangleA=#2, arcangleB=#2]}
 \else
-\def\opt{[linewidth=0.4pt,offsetA=0pt,offsetB=2pt,nodesep=1pt,arcangleA=#2, arcangleB=#2, #1]}
+\def\opt{[linecolor=\pstr@ArrowColor,linewidth=\pstr@ArrowLineWidth,offsetA=0pt,offsetB=2pt,nodesep=1pt,arcangleA=#2, arcangleB=#2, #1]}
 \fi
 \expandafter\ncHarc\opt{->}
 }
@@ -190,8 +203,8 @@ curveto
                      \lnklabelStar%
                      \lnklabelNoStar%
 }
-\newcommand{\lnklabelStar}[1]{\mput*{\mbox{{\tiny $#1$}}}}
-\newcommand{\lnklabelNoStar}[1]{\Bput[1pt]{\mbox{{\tiny $#1$}}}}
+\newcommand{\lnklabelStar}[1]{\mput*{\mbox{\pstr@LabelStyle $#1$}}}
+\newcommand{\lnklabelNoStar}[1]{\Bput[1pt]{\mbox{\pstr@LabelStyle $#1$}}}
 
 
 
@@ -213,15 +226,13 @@ curveto
 % [#2] specifies the distance between the node and the arc
 % #3 contains the specification of the nodes and pointers of the sequence.
 \gdef\Pstr@PS@ii[#1][#2]#3{%
-\begingroup
+\begingroup%
  \setlength\pstr@tempdim{#1}%
  \def\pstr@arcoptions{#2}%
- \setbox\pstr@tempbox\hbox\bgroup$%
- \Pstr@ParseSpecification#3(@-@){}\@nil%
-$\egroup%
+ \setbox\pstr@tempbox=\hbox{$\Pstr@ParseSpecification#3(@-@){}\@nil$}
  \ht\pstr@tempbox\pstr@tempdim%
- \box\pstr@tempbox%
-\endgroup
+ \leavevmode\box\pstr@tempbox%
+\endgroup%
 }
 
 % Prints some text in the sequence (using PSTricks)
@@ -270,20 +281,17 @@ $\egroup%
 \gdef\pstr@PS@i[#1]{\@ifnextchar[{\pstr@PS@ii[#1]}{\pstr@PS@ii[#1][1pt]}}
 % pstr with two optional parameters
 \gdef\pstr@PS@ii[#1][#2]#3{%
-\begingroup
+\begingroup%
  \setlength\pstr@tempdim{#1}%
  \def\pstr@arcoptions{#2}%
+ \pstr@defineUserCommands % define the command \nd and \txt that the package user can use to define the sequence
  \setbox\pstr@tempbox\hbox{$#3$}%
  \ht\pstr@tempbox\pstr@tempdim%
  \box\pstr@tempbox%
 \endgroup
 }
 
-
-
-
-\@addtofilelist{pstring.pro}
-\special{header=pstring.pro}
+\@addtofilelist{pstring.pro} \special{header=pstring.pro}
 
 
 \else
@@ -355,27 +363,25 @@ $\egroup%
 
     %%%% draw using two halves of parabolas
       %\pgfpathmoveto{\ptA}\pgfpathparabola{\pgfpointdiff{\ptA}{\bendpt}}{\pgfpointdiff{\bendpt}{\ptB}}%
-      %\color{orange} \pgfusepath{stroke}%
     %%%%
     %%%% draw using lines
       %\pgfpathmoveto{\ptA}\pgflineto{\bendpt}\pgflineto{\ptB}%
-      %\color{black} \pgfusepath{stroke}%
     %%%%
     %%%% draw using bezier curves
       \pgfpathmoveto{\ptA}\pgfpathcurveto{\cptC}{\cptD}{\ptB}%
-      \color{black} \pgfusepath{stroke}%
     %%%%
+    \color{\pstr@ArrowColor} \pgfusepath{stroke}%
 
-    %%% Put the label on the link if there is one
+   %%% Put the label on the link if there is one
     \def\label{#4}%
     \ifx\label\empty%
     \else%
-      \pgfsetfillcolor{white!100}%
-      \pgfsetshapeinnerxsep{1pt}%
-      \pgfsetshapeinnerysep{0pt}%
+%      \pgfsetfillcolor{white!100}%
+%      \pgfsetshapeinnerxsep{1pt}%
+      \pgfsetshapeinnerysep{1pt}%
       %\pgftransformshift{\bendpt} % position the label at the bendpoint
       \pgftransformshift{\pgfpointcurveattime{0.5}{\ptA}{\cptC}{\cptD}{\ptB}} % position the label at half-way on the curve
-      \pgfnode{rectangle}{mid}{\color{black} \label}{}{\pgfusepath{fill}}%
+      \pgfnode{rectangle}{south}{\color{black} {\pstr@LabelStyle $\label$}}{}{\pgfusepath{discard}}%
     \fi%
 }
 
@@ -383,7 +389,6 @@ $\egroup%
 
 
 
-%%%%%%%%%%%%%%%%
 %%%%%%% First way of creating a pointer string: user command \Pstr
 %%%%%%% (version for the PGF engine mode)
 %%%%
@@ -409,7 +414,7 @@ $\egroup%
   \pgfsetshapeinnerxsep{0pt}%
   \pgfsetshapeinnerysep{0.3pt}%
   \pgfsetarrows{-stealth}%
-  \pgfsetlinewidth{0.3pt}%
+  \pgfsetlinewidth{\pstr@ArrowLineWidth}%
   \pstr@ptrlist={}% Create an empty list of links.
   \Pstr@ParseSpecification#3(@-@){}\@nil%
   \the\pstr@ptrlist% dump the list of links.
@@ -435,7 +440,6 @@ $\egroup%
 }
 
 
-%%%%%%%%%%%%%%%%
 %%%%%%% Second way of creating a pointer string: user command \pstr
 %%%%%%% (version for the PGF engine mode)
 %%%%
@@ -458,6 +462,7 @@ $\egroup%
   \pgfsetarrows{-stealth}%
   \pgfsetlinewidth{0.3pt}%
   \pstr@ptrlist={}% Create an empty list of links.
+  \pstr@defineUserCommands % define the command \nd and \txt that the package user can use to define the sequence
   #3%
   \the\pstr@ptrlist% dump the list of links.
 \end{pgfpicture}%
@@ -470,22 +475,24 @@ $\egroup%
 
 
 
-
 %%%%%%%%%%%%%%%%%%%%%
-%%%% External commands available to the package user (in pgf and pstricks mode)
-%%%%
+%%%% Functions common to all rendering modes
 
-% Command for the package user
-\gdef\nd#1(#2)#3{%
- % print out the text preceding the node specification
- \pstr@printText{#1}%
- % parse the node specification
- \Pstr@ParseNodeSpecif{#1}{#2}{#3}\@nil%
-}
-% Command for the package user
-\gdef\txt#1{%
- % print out text
- \pstr@printText{#1}%
+% When executed, the following macro will define two commands which will become available to the package user
+% for the definition of the sequence within a \pstr{ } command.
+%
+% It is called in the \pstr@PS and \pstr@PGF macros.
+\gdef\pstr@defineUserCommands{
+    \def\nd##1(##2)##3{%
+     % print out the text preceding the node specification
+     \pstr@printText{##1}%
+     % parse the node specification
+     \Pstr@ParseNodeSpecif{##1}{##2}{##3}\@nil%
+    }
+    \def\txt##1{%
+     % print out text
+     \pstr@printText{##1}%
+    }
 }
 
 %%%%

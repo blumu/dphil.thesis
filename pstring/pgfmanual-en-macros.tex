@@ -1,0 +1,152 @@
+% Copyright 2006 by Till Tantau
+%
+% This file may be distributed and/or modified
+%
+% 1. under the LaTeX Project Public License and/or
+% 2. under the GNU Free Documentation License.
+%
+% See the file doc/generic/pgf/licenses/LICENSE for more details.
+
+% $Header: /cvsroot/pgf/pgf/doc/generic/pgf/macros/pgfmanual-en-macros.tex,v 1.8 2006/10/11 15:00:27 tantau Exp $
+
+\providecommand\href[2]{\texttt{#1}}
+
+\colorlet{examplefill}{yellow!80!black}
+\definecolor{graphicbackground}{rgb}{0.96,0.96,0.8}
+\definecolor{codebackground}{rgb}{0.8,0.8,1}
+
+\makeatletter
+
+\ifx\scantokens\@undefined
+  \PackageError{pgfmanual-macros}{You need to use extended latex
+    (elatex) or (pdfelatex) to process this document}{}
+\fi
+
+\begingroup
+\catcode`|=0
+\catcode`[= 1
+\catcode`]=2
+\catcode`\{=12
+\catcode `\}=12
+\catcode`\\=12 |gdef|find@example#1\end{codeexample}[|endofcodeexample[#1]]
+|endgroup
+
+\begingroup
+\catcode`\^=7
+\catcode`\^^M=13
+\catcode`\ =13%
+\gdef\returntospace{\catcode`\ =13\def {\space}\catcode`\^^M=13\def^^M{}}%
+\endgroup
+
+\begingroup
+\catcode`\%=13
+\catcode`\^^M=13
+\gdef\commenthandler{\catcode`\%=13\def%{\@gobble@till@return}}
+\gdef\@gobble@till@return#1^^M{}
+\gdef\typesetcomment{\catcode`\%=13\def%{\@typeset@till@return}}
+\gdef\@typeset@till@return#1^^M{{\def%{\char`\%}\textsl{\char`\%#1}}\par}
+\endgroup
+
+\def\code@pre{}
+\def\code@post{}
+
+\newdimen\codeexamplewidth
+\newif\ifcode@execute
+\newbox\codeexamplebox
+\def\codeexample[#1]{%
+  \code@executetrue
+  \setlength\codeexamplewidth{4cm+7pt}
+  \parindent0pt
+  \begingroup%
+  \par%
+  \medskip%
+  \let\do\@makeother%
+  \dospecials%
+  \obeylines%
+  \@vobeyspaces%
+  \catcode`\%=13%
+  \catcode`\^^M=13%
+  \find@example}
+\def\endofcodeexample#1{%
+  \endgroup%
+  \ifcode@execute%
+    \setbox\codeexamplebox=\hbox{%
+      {%
+        {%
+          \returntospace%
+          \commenthandler%
+          \xdef\code@temp{#1}% removes returns and comments
+        }%
+        \colorbox{graphicbackground}{\color{black}\ignorespaces%
+          \code@pre\expandafter\scantokens\expandafter{\code@temp\ignorespaces}\code@post\ignorespaces}%
+      }%
+    }%
+    \ifdim\wd\codeexamplebox>\codeexamplewidth%
+      \def\code@start{\par}%
+      \def\code@flushstart{}\def\code@flushend{}%
+      \def\code@mid{\parskip2pt\par\noindent}%
+      \def\code@width{\linewidth-6pt}%
+      \def\code@end{}%
+    \else%
+      \def\code@start{%
+        \linewidth=\textwidth%
+        \parshape \@ne 0pt \linewidth
+        \leavevmode%
+        \hbox\bgroup}%
+      \def\code@flushstart{\hfill}%
+      \def\code@flushend{\hbox{}}%
+      \def\code@mid{\hskip6pt}%
+      \def\code@width{\linewidth-12pt-\codeexamplewidth}%
+      \def\code@end{\egroup}%
+    \fi%
+    \code@start%
+    \noindent%
+    \begin{minipage}[t]{\codeexamplewidth}\raggedright
+      \hrule width0pt%
+      \footnotesize\vskip-1em%
+      \code@flushstart\box\codeexamplebox\code@flushend%
+      \vskip-1ex
+      \leavevmode%
+    \end{minipage}%
+  \else%
+    \def\code@mid{\par}
+    \def\code@width{\linewidth-6pt}
+    \def\code@end{}
+  \fi%
+  \code@mid%
+  \colorbox{codebackground}{%
+    \begin{minipage}[t]{\code@width}%
+      {%
+        \let\do\@makeother
+        \dospecials
+        \frenchspacing\@vobeyspaces
+        \normalfont\ttfamily\footnotesize
+        \typesetcomment%
+        \@tempswafalse
+        \def\par{%
+          \if@tempswa
+          \leavevmode \null \@@par\penalty\interlinepenalty
+          \else
+          \@tempswatrue
+          \ifhmode\@@par\penalty\interlinepenalty\fi
+          \fi}%
+        \obeylines
+        \everypar \expandafter{\the\everypar \unpenalty}%
+        #1}
+    \end{minipage}}%
+  \code@end%
+  \par%
+  \medskip
+  \end{codeexample}
+}
+
+\def\endcodeexample{}
+
+
+\makeatother
+
+
+%%% Local Variables:
+%%% mode: latex
+%%% TeX-master: "beameruserguide"
+%%% End:

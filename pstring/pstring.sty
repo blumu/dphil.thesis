@@ -1,32 +1,45 @@
+% Copyright 2007 by William Blum (http://william.famille-blum.org/software/latex/index.html)
 \NeedsTeXFormat{LaTeX2e}
-% Created by William Blum on 28 January 2007
-% Version 0.03
+\ProvidesClass{pstring}[2007/02/28 Package for representing pointer-strings]
 
-\ProvidesClass{pstring}[2007/02/14 Package for representing pointer-strings]
-
-\newif\ifoptPstricks
+\newif\ifPSengine
+\newif\ifPGFengine
 \newif\ifwriteprologuefile
 
-\DeclareOption{pstricks}{\optPstrickstrue}
-\DeclareOption{pgf}{\optPstricksfalse} \ExecuteOptions{pstricks}
+\DeclareOption{pstricks}{\PSenginetrue \PGFenginefalse}
+\DeclareOption{pgf}{\PSenginefalse \PGFenginetrue}
+\ExecuteOptions{pstricks}
 \ProcessOptions
 
 \edef\TheAtCode{\the\catcode`\@}
 \catcode`\@=11
 
-\ifoptPstricks
-    % Implement pointer string using pstricks
-    \RequirePackage{pstricks}
-    \RequirePackage{pst-node}
+\ifPSengine
+    \RequirePackage{ifpdf}
+       \ifpdf
+            \errmessage{You have requested to use the pstricks engine when you have loaded the pstring package,
+            moreover you seem to be running pdflatex to produce a pdf file. Since pstricks is not compatible with pdflatex,
+            I automatically switch to the pgf engine.}
 
-    % Set the engine to draw the node and link arrows to pstricks
-    \gdef\@engine{PS}
+            \PSenginefalse \PGFenginetrue
+       \else
+            % Implement pointer string using pstricks
+            \RequirePackage{pstricks}
+            \RequirePackage{pst-node}
 
-\else
+            % Set the default drawing engine to pstricks
+            \gdef\@engine{PS}
+
+            % Declare the use of the prologue file (for dvips)
+            \pstheader{pstring.pro} %\@addtofilelist{pstring.pro} \special{header=pstring.pro}
+       \fi
+\fi
+
+\ifPGFengine
     % Implement pointer string using pgf
     \RequirePackage{pgf}
 
-    % Set the engine to draw the node and link arrows to PGF
+    % Set the default drawing engine to PGF
     \gdef\@engine{PGF}
 \fi
 
@@ -64,9 +77,7 @@
 
 
 
-
-
-\ifoptPstricks
+\ifPSengine
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%% Version of the package relying on PSTRICKS
@@ -92,10 +103,10 @@
 % but as a drawback the postscript code would be copied for each use of the procedure and the
 % resulting ps file would be huge.
 \def\pstr@def#1<#2>{%
-\ifwriteprologuefile
-    % Add the code to the postscript prologue  file
-    \write\prologuefile{/#1 { #2 } def}
-\fi
+    \ifwriteprologuefile%
+        % Add the code to the postscript prologue  file
+        \write\prologuefile{/#1 { #2 } def}
+    \fi
     % prologue present: just dump the name of the postscript command (the code being already defined in the .pro file)
     \@namedef{#1}{#1 }
 }
@@ -252,7 +263,7 @@ curveto
 %    #3 angle
 %    #4 label
 \def\pstr@PS@drawArrow#1#2#3#4{%
-  \link*[nodesep=\pstr@arcoptions]{#3}{#1}{#2} \lnklabel{#4}
+  \link*[nodesep=\pstr@arcoptions]{#3}{#1}{#2} \lnklabel{#4}%
 }
 
 % Create the node and store the commands for the creation of the link in the list of tokens tok0
@@ -284,17 +295,16 @@ curveto
 \begingroup%
  \setlength\pstr@tempdim{#1}%
  \def\pstr@arcoptions{#2}%
- \pstr@defineUserCommands % define the command \nd and \txt that the package user can use to define the sequence
- \setbox\pstr@tempbox\hbox{$#3$}%
- \ht\pstr@tempbox\pstr@tempdim%
- \box\pstr@tempbox%
+ \pstr@defineUserCommands% define the command \nd and \txt that the package user can use to define the sequence
+ \setbox\pstr@tempbox\hbox{a$#3$}%
+\ht\pstr@tempbox\pstr@tempdim%
+A\leavevmode\box\pstr@tempbox%
 \endgroup
 }
+\fi
 
-\@addtofilelist{pstring.pro} \special{header=pstring.pro}
 
-
-\else
+\ifPGFengine
 
 \newdimen\pstr@mydimA
 \newdimen\pstr@mydimB
@@ -594,9 +604,12 @@ curveto
 
 Change log:
 
-Version 0.3, 27 feb 2007: added support for pgf as a drawing engine instead of the (hacked) pstricks
+Version 0.3, 27 Feb 2007:
+- added support for pgf as a drawing engine instead of the (hacked) pstricks
+- incompatibility with LatexDaemon fixed: before when loading the pstring package from a precompiled
+preamble, the prologue file was not included properly during the dvips conversion.
 
-
+Version 0.1, 28 Jan 2007
 
 
 

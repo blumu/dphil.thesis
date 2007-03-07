@@ -1,6 +1,21 @@
 \input{compos.pre}
     
 \definecolor{darkGreen}{rgb}{0.03,0.35,0.05}
+
+
+% use \stk{text}_{underneath} to write 'underneath' underneath 'text'
+%\def\stk#1{\mathop{\vtop{\ialign{##\crcr
+%$\hfil\displaystyle{#1}\hfil$\crcr\noalign{\kern2pt\nointerlineskip}
+%\crcr\noalign{\kern2pt}}}}\limits}
+
+% use \stk{text}{underneath} to write 'underneath' underneath 'text'
+\def\stk#1#2{%
+\setbox0=\hbox{$#1$}
+\setbox1=\hbox{\small $#2$}
+\dimen0=-\wd1 \advance \dimen0 by \wd0 \divide \dimen0 by 2
+\lower\baselineskip\vbox{\copy0 \moveright\dimen0\box1}
+}
+
    
 % game semantics 
 \newcommand{\sem}[1]{{[\![ #1 ]\!]}}
@@ -30,9 +45,10 @@
 \newcommand{\pview}[1]{\ulcorner #1 \urcorner}
 \newcommand{\extomove}{\textcolor{orange}}
 \newcommand{\extpmove}{\textcolor{darkGreen}}
+\newcommand{\filter}{\upharpoonright}
 
-\newcommand{\ord}[1]{{\sf ord}(#1)}
-\newcommand{\ordx}[2]{{\sf ord}_{#1}(#2)}
+\newcommand{\ord}{\mathop{\mathrm{ord}}}
+%\newcommand{\ord}[1]{{\sf ord}(#1)}
 
 % highlight for definition names
 \newcommand\defname[1]{{\bf\em #1}\index{#1}}
@@ -214,21 +230,21 @@ for $s \, m \in \sigma$, $m$ points to the last O-move in $\pview{s}$ with order
 Let $X$ and $Y$ be two arenas.
 For any move $m$ of the arena $X$ we write $m^{X\rightarrow Y}$ to denote the same move seen as move of the component $X$ of the arena $X\rightarrow Y$.
 Similarly we use the notation $m^{Y\rightarrow X}$.
-We write $\ordx{X}{m}$ to denote $\ord{m}$, the order of the move $m$ in the arena $X$, $\ordx{X\rightarrow Y}{m}$ to denote the order of $m^{X\rightarrow Y}$ (in the arena $X\rightarrow Y$) and $\ordx{Y\rightarrow X}{m}$ to denote the order of $m^{Y\rightarrow X}$.
+We write $\ord_X{m}$ to denote $\ord{m}$, the order of the move $m$ in the arena $X$, $\ord_{X\rightarrow Y}{m}$ to denote the order of $m^{X\rightarrow Y}$ (in the arena $X\rightarrow Y$) and $\ord_{Y\rightarrow X}{m}$ to denote the order of $m^{Y\rightarrow X}$.
 
 \begin{lemma}
 %Let $A \stackrel{\sigma}{\rightarrow} B$ and $B \stackrel{\mu}{\rightarrow} C$ be two strategies for some games $A$, $B$ and $C$.
 Let $A$, $B$ and $C$ be three arenas. We have:
 $$\begin{array}{lll}
 \forall m \in A:
-    &  \ord{m}_{A\rightarrow B} = \ord{m}_{A\rightarrow C} \ ,\\
+    &  \ord_{A\rightarrow B}{m} = \ord_{A\rightarrow C}{m} \ ,\\
 \forall m \in B:
-    & \ord{m}_{A\rightarrow B} \geq \ord{m}_{B\rightarrow C}  & \mbox{for $m$ initial,}\\
-    & \ord{m}_{A\rightarrow B} = \ord{m}_{B\rightarrow C} & \mbox{for $m$ non initial,} \\
+    & \ord_{A\rightarrow B}{m} \geq \ord_{B\rightarrow C}{m}  & \mbox{for $m$ initial,}\\
+    & \ord_{A\rightarrow B}{m} = \ord_{B\rightarrow C}{m} & \mbox{for $m$ non initial,} \\
 \forall m \in C:
-    & \ord{m}_{A\rightarrow C} \geq \ord{m}_{B\rightarrow C} \iff
+    & \ord_{A\rightarrow C}{m} \geq \ord_{B\rightarrow C}{m} \iff
 \ord{A} \geq \ord{B}\ & \mbox{for $m$ initial,}\\
-    & \ord{m}_{A\rightarrow C} = \ord{m}_{B\rightarrow C}   & \mbox{for $m$ non initial.}
+    & \ord_{A\rightarrow C}{m} = \ord_{B\rightarrow C}{m}   & \mbox{for $m$ non initial.}
 \end{array}
 $$
 \end{lemma}
@@ -242,7 +258,8 @@ $$
 Type homogeneity is not preserved after composition. Indeed the types  $o \longrightarrow (o \rightarrow o)$ and $(o \rightarrow o) \longrightarrow \left((o \rightarrow o) \rightarrow o \right)$ are homogeneous
 but $o \longrightarrow \left((o \rightarrow o) \rightarrow o\right)$ is not.
 
-
+If $A\rightarrow B$ and $B \rightarrow C$ are homogeneous then 
+as sufficient condition for $A\rightarrow C$ to be homogeneous is to have $\ord{A} \geq \ord{B}$.
 
 \subsection{Interaction sequences}
 
@@ -318,6 +335,41 @@ We can show the following property by an easy induction :
  Let $u$ be an interaction sequence in $Int(A,B,C)$ then
 $$\pview{u} \upharpoonright A,C = \pview{u \upharpoonright A,C} \ .$$
 \end{lemma}
+
+Let $\sigma : A \rightarrow B$ and $\mu : B \rightarrow C$ be two P-ij strategies.
+
+Let $u$ be a play of the interaction between $\sigma$ and $\mu$ :
+$u \in \sigma \| \mu$ and $m$ be a P-move in $u$.
+
+
+Suppose $m$ points in $\pview{u_{<m} \upharpoonright A , C}$ to a move $n_1$.
+
+Let $n_1, n_2, \ldots, n_g$ be the O-moves of order $> \ord{m}$ 
+occurring in that order in $\pview{u_{<m} \filter A,C }$.
+
+To prove that $\pview{u_{<m} \filter A,C}$ is incrementally justified, we just
+need to prove that $g=1$. We have:
+$$ \pview{u_{\leq m} \filter A,C} =  
+\Pstr[0.5cm][2pt]{ \ldots (n1){\stk {n_1} O}  n_1^+ \ldots
+ {\stk {n_g} O} n_g^+ \ldots m^- (m-n1,30){\stk m P}
+}
+$$
+
+Since $n_2, \ldots, n_g$ are O-moves occurring in the P-view at $m$, they are not initial in C, therefore $\ord_{B\rightarrow C}{n_i} = \ord_{A\rightarrow C} (n_k)$ for $k\in \{2..i\}$.
+
+Suppose $m$ is played in $C$ then $m$ is not initial in $C$ and therefore
+$\ord_{A\rightarrow C}{m} = \ord_{B \rightarrow C}{m}$.
+
+Since $\mu$ is P-ij, $n_g$ cannot occur in the P-view $\pview{u_{\leq m} \filter B,C}$, $n_i$ must occurs underneath a PO arc, let us name the nodes of this arc $\beta$ and $\alpha$ :
+
+$$ u_{\leq m} = \ldots 
+\Pstr[0.7cm]{
+ (n1){\stk{n_1} O } \ldots (b){\stk\beta P} \ldots \stk{n_i} O  
+\ldots (a-b){\stk\alpha O}  \ldots (m-n1){\stk m  P }
+} 
+$$
+ 
+
 
 
 \section{Compositionnality - Syntactic approach}

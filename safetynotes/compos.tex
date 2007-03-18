@@ -2,6 +2,7 @@
 
 \definecolor{darkGreen}{rgb}{0.03,0.35,0.05}
 
+\pstrSetArrowColor{darkGreen}
 
 % use \stk{text}_{underneath} to write 'underneath' underneath 'text'
 %\def\stk#1{\mathop{\vtop{\ialign{##\crcr
@@ -22,6 +23,9 @@
 \newcommand{\sem}[1]{{[\![ #1 ]\!]}}
 \def\omove{\bullet}
 \def\pmove{\circ}
+\def\opmove{{\tiny \LEFTcircle}}
+\def\pomove{{\tiny \RIGHTcircle}}
+
   
 % reduction, substitution       
 \newcommand\betared{\rightarrow_\beta}
@@ -46,8 +50,10 @@
 % justified sequence of moves
 \newcommand{\oview}[1]{\llcorner #1 \lrcorner}
 \newcommand{\pview}[1]{\ulcorner #1 \urcorner}
-\newcommand{\extomove}{\textcolor{orange}}
-\newcommand{\extpmove}{\textcolor{darkGreen}}
+\newcommand{\extomovecolor}{orange}
+\newcommand{\genpmovecolor}{blue!60}
+\newcommand{\extomove}{\textcolor{\extomovecolor}}
+\newcommand{\genpmove}{\textcolor{\genpmovecolor}}
 \newcommand{\filter}{\upharpoonright}
 
 \newcommand{\ord}{\mathop{\mathrm{ord}}}
@@ -85,7 +91,7 @@
 
 
 \author{William Blum}
-\title{Compositionality of P-incrementally justified strategies}
+\title{P-incrementally justified strategies}
 
 \begin{document}
 \maketitle 
@@ -227,8 +233,22 @@ is \emph{P-well-bracketed} and
 for $s \, m \in \sigma$, $m$ points to the last O-move in $\pview{s}$ with order $>\ord{m}$.
 \end{proposition}
 
+
+\section{Remarks}
+\subsection{Homogeneity constraint}
+
+Type homogeneity is not preserved after composition. Indeed the types  $o \longrightarrow (o \rightarrow o)$ and $(o \rightarrow o) \longrightarrow \left((o \rightarrow o) \rightarrow o \right)$ are homogeneous
+but $o \longrightarrow \left((o \rightarrow o) \rightarrow o\right)$ is not.
+
+If $A\rightarrow B$ and $B \rightarrow C$ are homogeneous then 
+as sufficient condition for $A\rightarrow C$ to be homogeneous is to have $\ord{A} \geq \ord{B}$.
+
+
 \section{Compositionality - semantic approach}
+
+\subsection{Preliminaries}
  
+\subsubsection{Nodes order after composition}
 
 Let $X$ and $Y$ be two arenas.
 For any move $m$ of the arena $X$ we write $m^{X\rightarrow Y}$ to denote the same move seen as move of the component $X$ of the arena $X\rightarrow Y$.
@@ -255,26 +275,18 @@ $$
 
 
 
-\section{Remarks}
-\subsection{Homogeneity constraint}
 
-Type homogeneity is not preserved after composition. Indeed the types  $o \longrightarrow (o \rightarrow o)$ and $(o \rightarrow o) \longrightarrow \left((o \rightarrow o) \rightarrow o \right)$ are homogeneous
-but $o \longrightarrow \left((o \rightarrow o) \rightarrow o\right)$ is not.
-
-If $A\rightarrow B$ and $B \rightarrow C$ are homogeneous then 
-as sufficient condition for $A\rightarrow C$ to be homogeneous is to have $\ord{A} \geq \ord{B}$.
-
-\subsection{Interaction sequences}
+\subsubsection{Interaction sequences}
 
 The diagram below shows the structure of the interaction of two strategies. There are four states represented by the rectangular boxes. The content of the state shows who is to play in each of the game $A\rightarrow B$, $B\rightarrow C$ and $A\rightarrow C$.
 For instance in state $OPP$, it is O's turn to play in 
 $A\rightarrow B$ and P's turn to play in $B\rightarrow C$ and $A\rightarrow C$.
 
 \tikzstyle{state}=[rectangle,draw=blue!50,fill=blue!20,thick,minimum height = 4ex, text width=4cm]
-\tikzstyle{move}=[->,shorten <=1pt,>=latex',line width=1.5pt,line width=1.5pt]
-\tikzstyle{extomove}=[style=move,color=orange] 
-\tikzstyle{genpmove}=[style=move,color=darkGreen]
-\tikzstyle{genomove}=[style=move,dashed]
+\tikzstyle{move}=[->,shorten <=1pt,>=latex',line width=1pt,color=\genpmovecolor]
+\tikzstyle{extomove}=[color=\extomovecolor] 
+\tikzstyle{genpmove}=[]
+\tikzstyle{genomove}=[dashed]
 \def\sep{1.5cm} 
 \begin{table}[h]
 \begin{center}
@@ -314,19 +326,31 @@ $A\rightarrow B$ and P's turn to play in $B\rightarrow C$ and $A\rightarrow C$.
   (pop) to node {\bf A} (oooB)
 
 % arrows representing the moves
-  (opp.20)    edge[genpmove]  node[right] {$\mu$}  (oooT.-20)
-  (oooT.-160) edge[extomove, genomove] node[left] {$env_\mu$} (opp.160)
-  (pop.20)    edge[genpmove,genomove]  node[right] {$\sigma$}  (opp.-20)
-  (opp.-160)  edge[genpmove, genomove] node[left] {$\mu$}  (pop.160)
-  (oooB.20)   edge[extomove,genomove] node[right] {$env_\sigma$} (pop.-20)
-  (pop.-160)  edge[genpmove] node[left] {$\sigma$}     (oooB.160);
+  (opp.20)    edge[move, genpmove]
+		node[right] {$\mu$}
+		node[left]{$\pmove$} (oooT.-20)
+  (oooT.-160) edge[move, extomove, genomove]
+		node[left] {$env_\mu$}
+		node[right]{$\omove$} (opp.160)
+  (pop.20)    edge[move, genomove,genpmove]
+		node[right] {$\sigma$}
+		node[left]{$\pomove$} (opp.-20)
+  (opp.-160)  edge[move, genomove, genpmove]
+		node[left] {$\mu$} 
+		node[right]{$\opmove$}  (pop.160)
+  (oooB.20)   edge[move, extomove,genomove]
+		node[right] {$env_\sigma$}
+		node[left]{$\omove$} (pop.-20)
+  (pop.-160)  edge[move, genpmove]
+		node[left] {$\sigma$}
+		node[right]{$\pmove$} (oooB.160);
 
-\draw[genpmove] (3.5cm,-1cm) -- +(1,0) node[right] {Generalised P-move};
-\draw[genomove,->] (3.5cm,-2cm) -- +(1,0) node[right] {Generalised O-move};
-\draw[extomove] (3.5cm,-3cm) -- +(1,0) node[right] {External O-move};
+\draw[move, genpmove] (3.5cm,-1cm) -- +(1,0) node[right] {Generalised P-move \& External P-move };
+\draw[move, genomove,genpmove] (3.5cm,-2cm) -- +(1,0) node[right] {Generalised O-move \& Generalised P-move};
+\draw[move, genomove,extomove] (3.5cm,-3cm) -- +(1,0) node[right] {Generalised O-move \& External O-move};
 \end{tikzpicture}
 \end{center}
-\caption{Structure of interaction sequences}
+\caption{Structure of an interaction sequence.}
 \label{tab:interseq}
 \end{table}
 
@@ -342,7 +366,7 @@ The P-view of an interaction sequence $u \in Int(A,B,C)$, written $\overline{u}$
 \pview{u\cdot \extomove{n}} &= \extomove{n} &
 \mbox{ if \extomove{$m$} is an \extomove{external O-move} initial in C,}\\
 \pview{\Pstr{u\cdot (m)m\cdot v \cdot (n-m,45){\extomove{n}} }} &= \extomove{n} &\mbox{ if \extomove{$m$} is an \extomove{external O-move} non initial in C,}\\
-\pview{u \cdot \extpmove{m}} &= \pview{u}\cdot \extpmove{m}  & \mbox{ if \extpmove{$m$} is a \extpmove{generalised P-move}.}\\ 
+\pview{u \cdot \genpmove{m}} &= \pview{u}\cdot \genpmove{m}  & \mbox{ if \genpmove{$m$} is a \genpmove{generalised P-move}.}\\ 
 \end{align*}
 
 We can show the following property by an easy induction :
@@ -414,6 +438,7 @@ the move $n'$, which lies  underneath $\beta$-$\alpha$, is absent of $\pview{u_{
 \begin{itemize}
 \item[(C2a)] Suppose $n' \in A$.
 
+\psset{linecolor=darkGreen,linewidth=0.5pt}
 $$ 
 \begin{array}{ccccccc}
 A & \stackrel\sigma{\longrightarrow} & B & & B & \stackrel\mu{\longrightarrow} & C \\
@@ -572,6 +597,8 @@ $n'$ does not appear in the P-view  $\pview{u_{\leq \alpha} \upharpoonright A,C}
 
 
 \section{Compositionnality - Syntactic approach}
+
+\subsection{Definability result for Safe PCF}
 
 We say that a PCF term is \defname{semi-safe} if it is of the form $N_0 N_1 \ldots N_k$ for $k\geq 1$ where each of the $N_i$ is safe or if it can be written $\lambda \overline{x} . N$ for some safe term $N$. Semi-safe terms are either safe or ``almost safe'' in the sense that they can be turned into an equivalent (i.e. preserving the semantics) safe term  by performing $\eta$-expansions. Indeed, let $M$ be an semi-safe term that is unsafe.
 If $M$ is of the first form $N_0 N_1 \ldots N_k : (A_1,\ldots,A_n)$ with $k\geq 1$ then let $\varphi_i:A_i$ for $i\in\{1..n\}$ be fresh variables , using the (app) and (abs) rules we can build the safe term $\lambda \varphi_1 \ldots \varphi_n . N_0 N_1 \ldots N_k \varphi_1 \ldots \varphi_n$. If $M$ is of the second form $\lambda \overline{x} . N$ then using the abstraction rule we can build the equivalent safe term $\lambda \overline{y} \overline{x}. N$  where $\overline{y} = fv(\lambda \overline{x}. N)$.

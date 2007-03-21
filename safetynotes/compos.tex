@@ -1,94 +1,5 @@
 \input{compos.pre}
-
-\definecolor{darkGreen}{rgb}{0.03,0.35,0.05}
-
-\pstrSetArrowColor{darkGreen}
-
-% use \stk{text}_{underneath} to write 'underneath' underneath 'text'
-%\def\stk#1{\mathop{\vtop{\ialign{##\crcr
-%$\hfil\displaystyle{#1}\hfil$\crcr\noalign{\kern2pt\nointerlineskip}
-%\crcr\noalign{\kern2pt}}}}\limits}
-
-% use \stk{text}{underneath} to write 'underneath' underneath 'text'
-\def\stk#1#2{%
-\setbox0=\hbox{$#1$}
-\setbox1=\hbox{\small $#2$}
-\dimen0=-\wd1 \advance \dimen0 by \wd0 \divide \dimen0 by 2
-\lower\baselineskip\vbox{\copy0 \moveright\dimen0\box1}
-}
-
-\def\stkt#1#2#3{\stk{#1}{\stk{#2}{#3}}}
-   
-% game semantics 
-\newcommand{\sem}[1]{{[\![ #1 ]\!]}}
-\def\omove{\bullet}
-\def\pmove{\circ}
-\def\opmove{{\tiny \LEFTcircle}}
-\def\pomove{{\tiny \RIGHTcircle}}
-
-  
-% reduction, substitution       
-\newcommand\betared{\rightarrow_\beta}
-\newcommand\betaredtr{\twoheadrightarrow_\beta} % transitive closure of the beta reduction 
-\newcommand\betaredtrref{\rightarrow^*_\beta}
-
-% pcf
-\newcommand\pcf{\textsf{PCF}}
-\newcommand\pcfcond{\texttt{cond}}
-\newcommand\pcfsucc{\texttt{succ}}
-\newcommand\pcfpred{\texttt{pred}}
-\newcommand\pcfcase{\texttt{case}} % part of PCF'
-
-% computation tree, eta normal form, traversals
-\def\elnf#1{\lceil #1\rceil}
-\def\etanf#1{\eta_{\sf nf}(#1)}
-\def\betanf#1{\beta_{\sf nf}(#1)}
-\def\etabetanf#1{\eta\beta_{\sf nf}(#1)}
-\newcommand\travset{\mathcal{T}rav}
-
-
-% justified sequence of moves
-\newcommand{\oview}[1]{\llcorner #1 \lrcorner}
-\newcommand{\pview}[1]{\ulcorner #1 \urcorner}
-\newcommand{\extomovecolor}{orange}
-\newcommand{\genpmovecolor}{blue!60}
-\newcommand{\extomove}{\textcolor{\extomovecolor}}
-\newcommand{\genpmove}{\textcolor{\genpmovecolor}}
-\newcommand{\filter}{\upharpoonright}
-
-\newcommand{\ord}{\mathop{\mathrm{ord}}}
-%\newcommand{\ord}[1]{{\sf ord}(#1)}
-
-% highlight for definition names
-\newcommand\defname[1]{{\bf\em #1}\index{#1}}
-
-%\newcommand{\iff}{\Leftrightarrow}
-
-% set theory
-\newcommand{\makeset}[1]{\{\,{#1}\,\}}
-\newcommand\inter{\cap}
-\newcommand\union{\cup}
-\newcommand\Union{\bigcup}
-\newcommand\prefset{\textsf{Pref}}
-\newcommand{\relimg}[1]{{(\!| #1 |\!)}}
-\newcommand\nat{\mathbb{N}}
-
-
-\newtheorem{theorem}{Theorem}[section]
-\newtheorem{corollary}[theorem]{Corollary}
-
-\newtheorem{lemma}{Lemma}[section]
-\newtheorem{proposition}{Proposition}[section]
-
-\theoremstyle{remark}
-\newtheorem{remark}{Remark}[section]
-\newtheorem{example}{Example}[section]
-\newtheorem{property}{Property}[section]
-
-\theoremstyle{definition}
-\newtheorem{definition}{Definition}[section]
-\newtheorem{algorithm}{Algorithm}[section]
-
+\usepackage[defblank]{paralist}
 
 \author{William Blum}
 \title{P-incrementally justified strategies}
@@ -377,74 +288,193 @@ $$\pview{u} \upharpoonright A,C = \pview{u \upharpoonright A,C} \ .$$
 \end{lemma}
 
 \subsection{Unfinished proof of compositionnality} 
-Notation: we use the symbol $\omove$ to represent an O-move and $\pmove$ to represent a P-move.
- 
+{\bf Notation} We use the symbol $\omove$ to represent an O-move and $\pmove$ to represent a P-move.
 
-Let $\sigma : A \rightarrow B$ and $\mu : B \rightarrow C$ be two P-ij strategies. Let $u$ be a play of the interaction $u \in \sigma \| \mu$ between $\sigma$ and $\mu$,
-and $m$ be a P-move in $u \upharpoonright A,C$
+Let us fix two strategies $\sigma : A \rightarrow B$ and $\mu : B \rightarrow C$. Let $u$ be a play of the interaction $u \in \sigma \| \mu$ between $\sigma$ and $\mu$,
+Moves played in the game $A\rightarrow B$ are said to belong to  the \defname{component $\mathcal{L}$} whereas
+moves played in $B\rightarrow C$ are said to belong to the \defname{component $\mathcal{R}$}.
+For any move $m$ in $A\union C$, $Cmp_x$ 
+denotes the component $\mathcal{L}$ if $x\in A$ and $\mathcal{R}$ if $x\in C$.
+
+We write $s \sqsubseteq t$ to say that $s$ is a subsequence
+of $t$.
+
+
+
+
+\begin{lemma}
+\label{lem:interjump}
+Let $X$ be a component (either  $\mathcal{L}$ or  $\mathcal{R}$).
+Let $u$ be an interaction sequence of the form:
+$$ u =  
+\Pstr[0.5cm][2pt]{ \ldots (y){\stk y \pmove}  \ldots
+ {\stk b\omove}  \ldots  (x-y,30){\stk x\omove}
+\ldots z \ .}
+$$
+where
+\begin{itemize}[-]
+\item $x,y$ are external moves in component $X$ (necessarily both played in $A$ or in $C$),
+\item  $z$ is a generalized P-move ($z \in \{ \pmove, \opmove, \pomove \}$) in $X$,
+\item  $x$ is visible at $z$ in $X$ \emph{i.e.}~$x\in \pview{u \upharpoonright X}$ (consequently $y$ is also visible).
+\end{itemize}
+Then $b \not\in \pview{u \upharpoonright A, C}$.
+\end{lemma}
+\begin{proof}
+Since $x$ is an O-move, $x$ and $y$ are necessarily played in the same arena ($A$ or $C$).
+We define the interaction sequence $v$ as 
+$v = u_{<z}$ if $z$ is a P-move in $A$ or $C$, and
+$v = u$ if $z\in B$.
+In both cases, the last move of $v$ is a generalized O-move
+in the component $X$ (see diagram of Table \ref{tab:interseq}).
+Therefore by \cite[Lemma 3.3.1]{Harmer2005}
+we have $\pview{v \filter X} = \pview{\overline{v} \filter X}$.
+
+Clearly since $x$ and $y$ are visible at $u$ they
+must also be visible at $v$. Hence we have: 
+\begin{align*}
+x,y &\in \pview{v \upharpoonright X}
+& \mbox{($x,y$ visible at $v$)} \\
+&= \pview{\overline{v} \upharpoonright X} & \mbox{(last move of $v$ is a generalized O-move, \cite[Lemma 3.3.1]{Harmer2005})} \\ 
+& \sqsubseteq \overline{v} \ .
+\end{align*}
+Since $x,y$ are played in $A$ or $C$ we have 
+$x,y  \in \overline{v} \upharpoonright A,C 
+= \pview{v \upharpoonright A,C}$ (lemma \ref{lem:interaction_projection}).
+The move $b$ lies underneath the PO-arc $y$-$x$ therefore $b$ does not appear in the P-view  $\pview{v \upharpoonright A,C}$.
+
+Finally we have $\pview{u\filter A,C}=
+\pview{v\filter A,C} \cdot 
+\left\{ \begin{array}{ll} \epsilon & \mbox{ if $z\in B$} \\
+z & \mbox{ elsewhere.}  \end{array} \right.$. Thus
+$b$ does not appear in $\pview{ u \filter A,C}$ either.
+\end{proof}
+
+
+
+
+
+
+
+
+
+Suppose $\sigma$ and $\mu$ are P-ij. 
+Let $m$ be a P-move in $u \upharpoonright A,C$
 justified by $n$ in $\pview{u_{<m} \upharpoonright A , C}$.
-
 Suppose a move $n'$ with order $> \ord_{A\rightarrow C}{m}$ occurs between $n$ and $m$ in $u_{<m} \filter A,C $.
 
 To show that $\pview{u_{<m} \filter A,C}$ is incrementally justified, we just
 need to prove that it necessary to have $n\not\in \pview{u_{<m} \filter A,C}$. We have:
 $$ u_{\leq m} \filter A,C =  
-\Pstr[0.5cm][2pt]{ \ldots (n){\stk {n} O}  \ldots
- {\stk {n'} O}  \ldots  (m-n,30){\stk m P}
+\Pstr[0.5cm][2pt]{ \ldots (n){\stk {n} \omove}  \ldots
+ {\stk {n'} \omove}  \ldots  (m-n,30){\stk m \pmove}
 }
 $$
 
-The move $n'$ is not the first
-move of $ u_{\leq m} \filter A,C$  therefore it is not initial in C and we have $\ord_{B\rightarrow C}{n'} = \ord_{A\rightarrow C} {n'}$.
+Since $m$ is a P-move, it is not an initial move in $C$  and therefore Lemma \ref{lem:compositionorder} gives $\ord_{A\rightarrow C}{m} = \ord_{B \rightarrow C}{m}$.
+Similarly, since $n'$ is not the first
+move of $ u_{\leq m} \filter A,C$  it cannot be an initial move in C
+so we have $\ord_{B\rightarrow C}{n'} = \ord_{A\rightarrow C} {n'}$.
 
-\begin{itemize}
-\item[(C)] Suppose $m$ is played in $C$ then $m$ is not initial in $C$ and therefore
-$\ord_{A\rightarrow C}{m} = \ord_{B \rightarrow C}{m}$.
+\begin{enumerate}[I.]
+\item \label{case:mC}
+Suppose $m \in C$, then $n$ must also be in $C$.
 
-Since $\mu$ is P-ij, $n'$ cannot occur in the P-view $\pview{u_{\leq m} \filter B,C}$, $n'$ must occurs underneath a PO arc occurring in $\pview{u_{\leq m} \filter B,C}$. Let us denote this arc by $\beta$-$
-\alpha$ where $\beta$ and $\alpha$ denote the arc's nodes:
+\begin{enumerate}[{\ref{case:mC}}.1]
+\item \label{case:mCnpC} Suppose $n'\in C$. The projection of $u$ on the game $B\rightarrow C$ has the following form:
+$$ u_{\leq m} \filter B,C =  
+\Pstr[0.5cm][2pt]{ \ldots (n){\stk {n} \omove}  \ldots
+ {\stk {n'} \omove}  \ldots  (m-n,30){\stk m \pmove}
+}$$
 
+Since $\mu$ is P-ij, $n'$ must not occur in the P-view $\pview{u_{\leq m} \filter B,C}$, thus $n'$ lies underneath a PO arc occurring in $\pview{u_{\leq m} \filter B,C}$. Let us denote this arc by $\beta$-$\alpha$ where $\beta$ and $\alpha$ denote the arc's nodes:
 $$ u_{\leq m} \filter B,C = \ldots  
 \Pstr[0.5cm]{
- (n){\stk{n} O } \ldots (b){\stk\beta P} \ldots \stk{n'} O  
-\ldots (a-b){\stk\alpha O}  \ldots (m-n){\stk m  P }
+ (n){\stk{n} \omove } \ldots (b){\stk\beta \pmove} \ldots \stk{n'} \omove  
+\ldots (a-b){\stk\alpha \omove}  \ldots (m-n){\stk m  \pmove }
 } \ .
 $$
+  
+\begin{enumerate}[{\ref{case:mCnpC}}.i]
+\item Suppose $\alpha \in C$ then $\beta\in C$ (since $\alpha$ is an O-move).
 
-\begin{itemize}
-\item[(C1)] Suppose $\alpha \in C$ then $\beta\in C$.
+By instancing Lemma \ref{lem:interjump} with
+$X\leftarrow \mathcal{R}$ and $y,b,x,z \leftarrow \beta, n', \alpha, m$ we obtain that $n' \not\in\pview{u_{\leq m} \filter A,C}$.
 
-By looking at the diagram of Table \ref{tab:interseq} we observe that the move preceding $m$ in $u$ is necessarily a generalised O-move in the component $B,C$, therefore by \cite[Lemma 3.3.1]{Harmer2005}
-we have $\pview{u_{<m} \filter B,C} = \pview{\overline{u_{<m}} \filter B,C}$ which is a subsequence of $\overline{u}_{<m}$.
+\item Suppose $\alpha \in B$ then $\beta \in B$.
 
-Hence $\beta$-$\alpha$ occurs in $\overline{u}_{<m}$ and since $\alpha,\beta \in C$, the arc also occurs in
-$\overline{u}_{<m} \filter A,C = \pview{u_{<m} \filter A,C}$ (lemma \ref{lem:interaction_projection}).
-
-Since $\alpha$ is an O-move in $A\rightarrow C$ and $\beta$ is a P-move in $A\rightarrow C$, $\beta$-$\alpha$ is also a PO-arc 
-in $\pview{u_{\leq m} \filter A,C}$. Consequently
-the move $n'$, which lies  underneath $\beta$-$\alpha$, is absent of $\pview{u_{\leq m} \filter A,C}$.
+\ldots
+\end{enumerate}
 
 
-\item[(C2)] Suppose $\alpha \in B$. $\alpha$ cannot be initial in $B$ since it is an O-move therefore $\beta$ must also belong to $B$.
-
-%$$ u_{\leq m} \filter B,C = \ldots 
-%\Pstr[0.7cm]{
-% (n){\stkt{n} O \bullet} \ldots (b){\stkt\beta P O} \ldots \stkt{n'} O \bullet
-%\ldots (a-b){\stkt\alpha O P}  \ldots (m-n1){\stkt m  P O} 
-%\qquad\qquad\stkt{}{B\rightarrow C}{A \rightarrow B}
-%} 
-%$$
-
-\begin{itemize}
-\item[(C2a)] Suppose $n' \in A$.
-
+\item Suppose $n'\in A$. 
+The interaction sequence $u$ has the following form:
 \psset{linecolor=darkGreen,linewidth=0.5pt}
 $$ 
 \begin{array}{ccccccc}
 A & \stackrel\sigma{\longrightarrow} & B & & B & \stackrel\mu{\longrightarrow} & C \\
 &\vdots&&& & \vdots\\
-&&\omove & \rnode{b}{\beta} & \pmove \\
+&& &  & && \rnode{n}{n}\omove \\
+&\vdots& & &&\vdots & \\
+n' \omove && & &  \\
 &\vdots& & &&\vdots  \\
+&& & &&&  \rnode{m}{m} \pmove \\
+\end{array}
+\ncarc[arcangleA=30,arcangleB=30]{->}{m}{n}
+ $$  
+\ldots
+\end{enumerate}
+
+\item \label{case:mA} Suppose $m\in A$ ...
+\begin{enumerate}[{\ref{case:mA}}.1]
+\item \label{case:mAnC} Suppose  $n$ initial in $C$
+	\begin{enumerate}[{\ref{case:mAnC}}.i]
+	\item Suppose $n'\in C$ \ldots
+	\item Suppose  $n'\in A$, then necessarily $\ord_{A\rightarrow C}{n'} <
+\ord_{A\rightarrow C}{n}$ \ldots
+	\end{enumerate}
+\item \label{case:mAnA} Suppose $n\in A$
+	\begin{enumerate}[{\ref{case:mAnA}}.i]
+	\item \label{case:mAnAnpC} Suppose $n'\in C$ \ldots 
+	\item \label{case:mAnAnpA} Suppose $n'\in A$
+ 
+Since $\sigma$ is P-ij, $n'$ cannot occur in the P-view $\pview{u_{\leq m} \filter A,B}$ thus $n'$ must occurs underneath a PO arc occurring in $\pview{u_{\leq m} \filter A,B}$. Let us denote this arc $\beta$-$\alpha$:
+$$ u_{\leq m} \filter A,B = \ldots  
+\Pstr[0.5cm]{
+ (n){\stk{n} \omove } \ldots (b){\stk\beta \pmove} \ldots \stk{n'} \omove  
+\ldots (a-b){\stk\alpha \omove}  \ldots (m-n){\stk m  \pmove }
+} \ .
+$$
+
+\begin{enumerate}[{\ref{case:mAnA}ii}.a]
+\item \label{case:mAnAnpAalphaB} Suppose $\alpha \in A$ then $\beta\in A$.
+
+By instancing Lemma \ref{lem:interjump} with
+$X\leftarrow \mathcal{L}$ and $y,b,x,z \leftarrow \beta, n', \alpha, m$ we obtain that $n' \not\in\pview{u_{\leq m} \filter A,C}$.
+
+
+\item Suppose $\alpha \in B$. $\alpha$ cannot be initial in $B$ since it is an O-move therefore $\beta$ must also belong to $B$.
+
+We have
+\begin{align}
+\ord_{A\rightarrow B} \alpha
+ & \leq  \ord_{A\rightarrow B} m 
+& \mbox{($\sigma$ is P-ij and $\alpha$ is visible from $m$ in $A\rightarrow B$)}  \nonumber \\
+&= \ord_{A\rightarrow C} m 
+& \mbox{(Lemma \ref{lem:compositionorder}, $m \in A$)}  \nonumber \\
+&<  \ord_{A\rightarrow C} n'  & \mbox{(by assumption)} \nonumber \\
+&=  \ord_{A\rightarrow B} n'  & \mbox{(Lemma \ref{lem:compositionorder}, $n' \in A$)}  \nonumber 
+\end{align}
+This case corresponds to the situation 
+analysed in the next sub case.
+
+\item Consider the following situation:
+\label{case:situation}
+$$ 
+\begin{array}{cccccccl}
+A & \stackrel\sigma{\longrightarrow} & B & & B & \stackrel\mu{\longrightarrow} & C \\
+&\vdots&&& & \vdots\\
+&&\omove & \rnode{b}{\beta} & \pmove \\
+&\vdots& & &&\vdots && \mbox{with $\ord_{A\rightarrow B} \alpha < \ord_{A\rightarrow B} n'$.} \\
 n' \omove && & &  \\
 &\vdots& & &&\vdots  \\
 &&\pmove & \rnode{a}{\alpha} & \omove \\
@@ -452,27 +482,15 @@ n' \omove && & &  \\
 \ncarc[arcangleA=30,arcangleB=30]{->}{a}{b}
  $$  
 
-We have
-\begin{align}
-\ord_{A\rightarrow B} \alpha & =  \ord_{B\rightarrow C} \alpha 
-& \mbox{(Lemma \ref{lem:compositionorder}, $\alpha$ non initial in $B$)}  \nonumber \\
- & \leq  \ord_{B\rightarrow C} m 
-& \mbox{($\mu$ is P-ij and $\alpha$ is visible from $m$ in $B\rightarrow C$)}  \nonumber \\
-&= \ord_{A\rightarrow C} m 
-& \mbox{(Lemma \ref{lem:compositionorder}, $m$ non initial in C)}  \nonumber \\
-&<  \ord_{A\rightarrow C} n'  & \mbox{(by assumption)} \nonumber \\
-&=  \ord_{A\rightarrow B} n'  & \mbox{(Lemma \ref{lem:compositionorder}, $n' \in A$)} \label{eq:alphaLTnprime}
-\end{align}
-
-Thus $\ord_{A\rightarrow B} \alpha < \ord_{A\rightarrow B} n'$
-and since $\sigma$ is P-ij and $\alpha$ points to $\beta$, $n'$ must not be visible from $\alpha$ in $A\rightarrow B$. Consequently there must be a PO-arc $\beta^2$-$\alpha^2$ jumping over $n'$ and visible from $\alpha$ in $A\rightarrow B$
+Since $\ord_{A\rightarrow B} \alpha < \ord_{A\rightarrow B} n'$
+and $\alpha$ points to $\beta$, by P-ij of $\sigma$, $n'$ must not be visible from $\alpha$ in $A\rightarrow B$. Hence there must be a PO-arc $\beta^2$-$\alpha^2$ jumping over $n'$ and visible from $\alpha$ in $A\rightarrow B$
 verifying $\ord_{A \rightarrow B} \alpha^2 
-\leq \ord_{A \rightarrow B} \alpha$ (by P-ij of $\sigma$, since $\alpha^2$ is visible from $\alpha$ but $\alpha$ points to $\beta$). 
+\leq \ord_{A \rightarrow B} \alpha$ (by P-ij of $\sigma$, since $\alpha^2$ is visible from $\alpha$ and $\alpha$ points to $\beta$). 
 
 
-\begin{itemize}
-\item[(C2a.i)] Suppose that $\alpha^2 \in A$. Since $\alpha^2$ is an O-move,
-$\beta^2$ is necessarily also in $A$:
+\begin{itemize} %[{\ref{case:situation}}.A]
+ \item \label{case:situation:base} Suppose that $\alpha^2 \in A$. 
+Then $\beta^2 \in A$ (since $\alpha^2$ is an O-move).
 $$ 
 \begin{array}{ccccccc}
 A & \stackrel\sigma{\longrightarrow} & B & & B & \stackrel\mu{\longrightarrow} & C \\
@@ -490,20 +508,11 @@ n' \omove && & &  \\
 \ncarc[arcangleA=30,arcangleB=30]{->}{a}{b}
 \ncarc[arcangleA=90,arcangleB=90]{->}{a2}{b2}
  $$  
-Then we have 
-\begin{align*}
-\alpha^2,\beta^2 &\in \pview{u_{\leq \alpha} \upharpoonright A, B}
-& \mbox{($\alpha^2,\beta^2$ visible from $\alpha$)} \\
-&= \pview{\overline{u}_{\leq \alpha} \upharpoonright A,B} & \mbox{($\alpha$ generalized O-move, \cite[Lemma 3.3.1]{Harmer2005})} \\ 
-& \sqsubseteq \overline{u}_{\leq \alpha}
-\end{align*}
-and since $\alpha^2,\beta^2$ belong to $A$ we have 
-$\alpha^2,\beta^2  \in 
-\overline{u}_{\leq \alpha} \upharpoonright A,C 
-= \pview{u_{\leq \alpha} \upharpoonright A,C}$ (lemma \ref{lem:interaction_projection}).
-Hence, since the PO-arc $\beta^2$-$\alpha^2$ jumps over $n'$, $n'$ does not appear in the P-view  $\pview{u_{\leq \alpha} \upharpoonright A,C}$.
+By instancing Lemma \ref{lem:interjump} with
+$X\leftarrow \mathcal{L}$ and $y,b,x,z \leftarrow \beta^2, n', \alpha^2, \alpha$ we obtain that $n' \not\in\pview{u_{\leq \alpha} \filter A,C}$ and since $\alpha$ is visible at $m$ in the game $A\rightarrow C$, $n'$ does not appear in $\pview{u_{\leq m} \filter A,C}$ 
+either. 
 
-\item[(C2a.ii)] Suppose that $\alpha^2 \in B$ then $\beta^2$ is necessarily also in $B$:
+\item Suppose that $\alpha^2 \in B$ then $\beta^2 \in B$:
 $$ 
 \begin{array}{ccccccc}
 A & \stackrel\sigma{\longrightarrow} & B & & B & \stackrel\mu{\longrightarrow} & C \\
@@ -550,6 +559,7 @@ u_{\leq \alpha^2} \upharpoonright {A, B}
 }\ .
 $$
 
+%The move $\alpha^3$ is P-visible from
 
 Moreover, O-moves (resp. P-moves) in the $B$ component of the game $A\rightarrow B$ become P-moves (resp. O-moves) in the game $B \rightarrow C$, therefore:
 $$ 
@@ -575,25 +585,20 @@ $$
 $$
 
 By substituting
-$\alpha^3$ and $\beta^3$ for $\alpha$ and $\beta$
-we fall back to the case (C2a) and the same case analysis 
-can be carried on. 
+$\alpha$ and $\beta$ for $\alpha^3$ and $\beta^3$  
+we fall back to the situation of case \ref{case:situation} and
+the same case analysis can be carried on. 
 Since the segment $u_{\leq \alpha}$ is of finite length,
-the case analysis must come to an end and reach the subcase (C2a.i) eventually. 
+the case analysis must come to an end and reach the sub case \ref{case:situation:base}  eventually. 
 We can therefore conclude that
 $n'$ does not appear in the P-view  $\pview{u_{\leq \alpha} \upharpoonright A,C}$.
 \end{itemize}
+\end{enumerate}
 
+	\end{enumerate}
+\end{enumerate}
 
-\item[(C2b)] Suppose $n' \in C$. The proof is symmetrical to the previous case.
-\end{itemize}
-\end{itemize}
-
-\item[(A)] Suppose $m$ is played in $A$ ...
-
-
-
-\end{itemize} 
+\end{enumerate} 
 
 
 \section{Compositionnality - Syntactic approach}
@@ -754,10 +759,7 @@ Suppose $A=I$, where $I$ denotes the empty arena, then $f;g = \sem{M_g M_f}$ and
 If $B=I$ then $f;g = g$ which is P-incrementally-justified.
 If $C=I$ then $f;g = \{ \epsilon \}$.
 
-We now assume that $A$,$B$ and $C$ are not the empty arena.
-
-We have $B=(B_1,\ldots,B_l,o)$ and $C=(C_1,\ldots,C_k,o)$ for some $l,k\geq 0$.
-The term $M_f$ and $M_g$ being in $\eta$-nf are of the following forms:
+We now assume that $A$,$B$ and $C$ are not the empty arena. We have $B=(B_1,\ldots,B_l,o)$ and $C=(C_1,\ldots,C_k,o)$ for some $l,k\geq 0$. The term $M_f$ and $M_g$, being in $\eta$-nf, are of the following forms:
 \begin{eqnarray*}
 \vdash M_f &=& \lambda x^A \varphi_1^{B_1} \ldots \varphi_l^{B_l} . N_f^o\\
 \vdash  M_g &=& \lambda y^B \phi_1^{C_1} \ldots \phi_k^{C_k} . N_g^o
@@ -784,7 +786,7 @@ f;g &= \sem{\lambda x . M_g (M_f x)} \\
 & \mbox{($x\neq\phi_i$ for all $i$)}.
 \end{align*}
 
-Hence if the term  $\lambda x \phi_1 \dots \phi_k. N_g [(M_f x) / y]$ is safe the $f;g$ is P-incrementally justified.
+So if the term  $\lambda x \phi_1 \dots \phi_k. N_g [(M_f x) / y]$ is safe then $f;g$ is P-incrementally justified.
 
 \subsubsection{A sufficient condition}
 \begin{lemma}
@@ -800,9 +802,9 @@ Since $M$ is in $\eta$-nf, all the application to the variable $y$ are total (i.
 some variable free in $N$ becomes not safely bound in $\tau(M)$.
 \end{proof}
 
-Therefore by taking $R= M_f x$, if the condition in the right-hand side of the equivalence in the previous lemma is verified  then the term   $\lambda x \phi_1 \dots \phi_k. N_g [(M_f x) / y]$ is safe and consequently $f;g$ is P-incrementally justified.
+Let us apply the previous lemma with $R= M_f x$. If the condition in the right-hand side of the equivalence in the lemma is verified then the term  $\lambda x \phi_1 \dots \phi_k. N_g [(M_f x) / y]$ is safe which in turn implies that $f;g$ is P-incrementally justified.
 
-This gives us a sufficient condition, however it is not necessary since the term $N_g[(M_f x)/y]$ is not in $\beta\eta$-normal form: it could be the case that $\etabetanf{N_g[(M_f x) /y]}$ is safe although  $N_g[(M_f x) /y]$ is not.
+This gives us a sufficient condition, however it is not necessary since the term $N_g[(M_f x)/y]$ is not in $\beta\eta$-normal form: we could have $\etabetanf{N_g[(M_f x) /y]}$ safe with $N_g[(M_f x) /y]$ unsafe.
 
 \subsubsection{A simpler sufficient condition}
 % The following commented lemma has been simplified into
@@ -846,12 +848,11 @@ Using the substitution lemma we have that $N[(M x)/y]$ is safe.
 
 From this lemma we obtain that $\ord{A}\geq\ord{B}$ is
 a sufficient condition for $f;g$ to be P-incrementally justified.
-Indeed if $\ord{A}\geq\ord{B}$ then the previous lemma implies that the term $\vdash \lambda x \phi_1 \dots \phi_k. N_g [(M_f x) / y]$
-is safe, therefore $f;g = \sem{\vdash \lambda x \phi_1 \dots \phi_k. N_g [(M_f x) / y]}$
-is P-incrementally justified.
+Since if $\ord{A}\geq\ord{B}$ then the previous lemma implies that $\vdash \lambda x \phi_1 \dots \phi_k. N_g [(M_f x) / y]$
+is safe and therefore $f;g = \sem{\vdash \lambda x \phi_1 \dots \phi_k. N_g [(M_f x) / y]}$ is P-incrementally justified.
 
 
-Of course this condition is not necessary. For instance take $A=o$, $B=(o,o)$, $C=(o,o)$ and consider the two safe terms $M_f = \lambda x u.u$ and $M_g = \lambda y . y a$ for $x,u:o$, $y:B$ and constants $a:o$. Then the term $M_{f;g} = \lambda x . a$ is safe therefore $f;g$ is P-incrementally justified although $\ord{A} < \ord{B}$.
+Of course this condition is not necessary. For instance take $A=o$, $B=(o,o)$, $C=(o,o)$ and consider the two safe terms $M_f = \lambda x u.u$ and $M_g = \lambda y . y a$ for $x,u:o$, $y:B$ and constants $a:o$. Since $M_{f;g} = \lambda x . a$ is safe, $f;g$ is P-incrementally justified although $\ord{A} < \ord{B}$.
 
 
 
@@ -876,10 +877,30 @@ We then have $A=o$, $B=(o,o)$, $C=(((o,o),o),o)$, variables
 $x,u,v:o$, $y:B$ and $\varphi:((o,o),o)$ and the $\Sigma$-constant $a:o$.
 
 Take the two safe terms $\vdash  M_f = \lambda xv.x$ and  $\vdash M_g = \lambda y \varphi. \varphi (\lambda u . y a)$.
-The $\eta\beta$-nf of $M_{f;g}$ is $\vdash \lambda x \varphi. \varphi (\underline{\lambda u . x})$ which is unsafe because of the underlined term. By
-Theorem \ref{thm:safeincrejust}(ii) we conclude that $f;g$ is not P-incrementally justified.
+The $\eta\beta$-nf of $M_{f;g}$ is $\vdash \lambda x \varphi. \varphi (\underline{\lambda u . x})$ which is unsafe because of the underlined term, thus by Theorem \ref{thm:safeincrejust}(ii), $f;g$ is not P-incrementally justified. The following diagram illustrates  a play of $f;g$ that is not P-ij.
 
-
+\begingroup
+\def\sigcol#1{{\color{gray} #1}}
+\def\mucol#1{{\color{red} #1}}
+\def\sigmucol#1{{\color{black} #1}}
+$$
+\begin{array}{ccccccccc}
+A &  & \multicolumn{2}{c}{B} && \multicolumn{4}{c}{C}\\
+\cline{1-1} \cline{3-4} \cline{6-9}
+o & \stackrel{\sigcol f}\longrightarrow & o, & o & \stackrel{\mucol g}\longrightarrow & ((o, &o),& o),& o \\ \\
+&&&&&&&&\rnode{n0}{\lambda x \varphi \omove  \mucol {\lambda y \varphi}}\\
+&&&&&&&\rnode{n1}{\varphi  \pmove \mucol \varphi}\\
+&&&&&&\rnode{n2}{\lambda u \omove  \mucol {\lambda u}} \\
+&&&  \rnode{n3}{\omove \sigcol {\lambda v} \pmove \mucol y} \\
+\rnode{n4}{x \pmove \sigcol x}
+\end{array}
+\ncarc[arcangleA=20,arcangleB=20]{->}{n4}{n0}
+\ncarc[arcangleA=30,arcangleB=20,linecolor=red]{->}{n2}{n1}
+\ncarc[arcangleA=30,arcangleB=20,linecolor=red]{->}{n1}{n0}
+\ncarc[arcangleA=20,arcangleB=20,linecolor=red]{->}{n3}{n0}
+\ncarc[arcangleA=20,arcangleB=20,linecolor=gray]{->}{n4}{n3}
+$$
+\endgroup
 
 \subsubsection{Another counter-example where $\ord{B} = \ord{C}$}
 

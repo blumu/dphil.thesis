@@ -1,6 +1,7 @@
 \input{compos.pre}
 \newcommand{\subseqof}{\sqsubseteq}
 \newcommand{\prefixof}{\leqslant}
+\psset{linecolor=darkGreen,linewidth=0.5pt}
 
 
 \author{William Blum}
@@ -383,8 +384,9 @@ Thus $y$ points to a move in $A$ and again we can conclude using the induction h
 
 
 \begin{lemma}
+\label{lem:middlepomove}
 Let $u = \ldots n' \cdot r \cdot m \in Int(A,B,C)$ where
-$n' \in A$ and $m$ is either a P-move in $C$ or a $B$ move ($\opmove$ or $\pomove$). Then there is a move $\gamma = \pomove \in B$ in $r$ such that $\gamma \in \pview{u\filter B,C}$ and $n' \in \pview{u_{\leq \delta} \filter A,B}$.
+$n'$ is an O-move in $A$ and $m$ is either a P-move in $C$ or a $B$ move ($\opmove$ or $\pomove$) verifying $n' \in \pview{u\filter A,C}$. Then there is a $\pomove$-move $\gamma$ in $r \cdot m$ such that $\gamma \in \pview{u\filter B,C}$ , $n' \in \pview{u_{\leq \delta} \filter A,B}$ and $\delta$ is justified by a move occurring before $n'$.
 \end{lemma}
 \begin{proof}
 By induction on $|r|$.
@@ -393,13 +395,50 @@ If $|r|=1$ then either
 $u = \ldots \stk \omove {n'} \pomove~\stk \pmove m$
 or $u = \ldots \stk \omove {n'} \pomove~\stk \opmove m$.
 In both cases we can take $\gamma$ to be $\pomove$, the move between $n'$ and $m$.
-Suppose $|r|>1|$ then we do a case analysis on $m$:
+Suppose $|r|>1$. Let $m^-$ denote the move preceding $m$ in $u$.
+We proceed by case analysis:
 \begin{enumerate}[i.]
-\item Suppose $m = \pmove \in C$.
-\item Suppose $m = \pomove \in B$.
-\item Suppose $m = \opmove \in B$.
-\end{enumerate}
+\item Suppose $m = \pmove \in C$ and $m^- = \omove \in C$.
+Let $q$ be the external O-move that justifies $m^-$.
+Since $n' \in \pview{u\filter A,C}$, $q$ must occur after $n'$ in $u$:
+$$ 
+\begin{array}{ccccl}
+A & \stackrel\sigma{\longrightarrow} & B & \stackrel\mu{\longrightarrow} & C \\
+&\vdots&&\vdots\\
+n' \omove\\
+&\vdots&&\vdots  \\
+&& & &  \rnode{q}{\pmove}q  \\
+&\vdots&&\vdots  \\
+&& & &  \rnode{mp}{\omove}m^-  \\
+&& & &  \rnode{m}{\pmove}m  \\
+\end{array}
+\ncarc[arcangleA=60,arcangleB=60]{->}{mp}{q}
+ $$  
+Thus we can use the induction hypothesis (with $u\leftarrow u_{\prefixof q}$): there is a $\pomove$-move $\gamma$ 
+in $u_{]n',q]}$ pointing before $n'$ such that $\gamma \in \pview{u_{\prefixof q} \filter B,C}$, $n' \in \pview{u_{\prefixof \gamma} \filter A,B}$.
+Moreover $\pview{u_{\prefixof q} \filter B,C} \prefixof \pview{u_{\prefixof m} \filter B,C}$ (since $q$ is visible from $m$ in $B,C$) thus we have $\gamma \in \pview{u_{\prefixof m} \filter B,C}$ as required.
 
+\item Suppose $m = \pmove \in C$ and $m^- = \pomove \in B$.
+Again we can conclude using 
+the induction hypothesis with $u \leftarrow u_{\prefixof m^-}$.
+
+\item Suppose $m = \pomove \in B$.
+
+Suppose that all the moves in $r$ are in $A$. Then $r$ is of the form $(\pmove \omove)^*$ (where $(\cdot)^*$ denotes the Kleenee star operator). 
+Then we must have $n'\in \pview{u\filter A,B}$
+(for if $n'$ lies underneath some PO arc in $A$ occurring in $\pview{u\filter A,B}$ then the same PO arc 
+also appears in $\pview{u}\filter A,C = \pview{u\filter A,C}$,
+but this contradicts with the hypothesis that $n' \in \pview{u\filter A,C}$). Moreover since $m$ is a $\pomove$-move, it must be justified by a $\opmove$ and since $r$ contains only moves of the type $\omove$ and $\pmove$, $m$'s justifier must occur before $n'$.
+Hence we just need to take $\gamma = m$. 
+
+Suppose that $r$ contains some move in $B$. Let $b$ be the last such move. Then $u$ is of the form $u = \ldots n' \cdot \ldots \cdot \stk\opmove  b \cdot \underbrace{(\pmove \omove)^*}_{\in A} \cdot\ \stk\pomove m $. We then have
+$u\filter B,C = \ldots n' \cdot \ldots \cdot \stk\opmove  b \cdot \stk\pomove m $ therefore $b \in \pview{u\filter B,C}$. We can conclude by applying the induction hypothesis with $u \leftarrow u_{\prefixof q}$.
+
+\item Suppose $m = \opmove \in B$.
+If $m^- = \opmove \in B$ then the I.H. with $u \leftarrow u_{\prefixof m^-}$ permits us to conclude.
+If $m^- = \omove \in C$ then we conlude by applying  the I.H. on $u \leftarrow u_{\prefixof q}$ where $q$ is the external P-move in $C$ justifying
+$m^-$.
+\end{enumerate}
 \end{proof}
 
 \begin{conjecture}
@@ -412,12 +451,32 @@ is P-incrementally-justified.
 
 \begin{proof}[Beginning of a proof]
 Let $u$ be a play of the interaction $u \in \sigma \| \mu$ between $\sigma$ and $\mu$.
+
+%%%%%%%%%%%%%%%%
+%\hrulefill
+%First method:
+%Let $n$ be the last external O-move in $u_{]n,m[}$
+%such that $n\in \pview{u_{\prefixof m} \filter A,C}$
+%with $\ord_{A\rightarrow C} n > \ord_{A\rightarrow C} m$.
+%We want to prove that $m$ must necessarily point to $m$.
+%
+%Suppose that $m \in C$ and $n\in C$.
+%
+%Let us consider the game in the $B,C$ component.
+%Then we have $\ord_{B\rightarrow C} n > \ord_{B\rightarrow C} m$.
+%Indeed this is clearly true if $n$ is an initial move in $C$
+%and if it is not then by Lemma \ref{lem:compositionorder} we have
+%$\ord_{B\rightarrow C} n = \ord_{A\rightarrow C} n > \ord_{B\rightarrow C} m = \ord_{B\rightarrow C} m$.
+%
+% Suppose that $n$ is non initial
+%
+%\hrulefill
+%%%%%%%%%%%%%%%%%%%%%%
+
 Let $m$ be a P-move in $u \upharpoonright A,C$
 justified by $n$ in $\pview{u_{<m} \upharpoonright A , C}$.
-Suppose a move $n'$ with order $> \ord_{A\rightarrow C}{m}$ occurs between $n$ and $m$ in $u_{<m} \filter A,C $.
-
-To show that $\pview{u_{<m} \filter A,C}$ is incrementally justified, we just
-need to prove that it necessary to have $n\not\in \pview{u_{<m} \filter A,C}$. We have:
+Let $n'$ be an external O-move occurring betweeen $n$ and $m$.
+To show that $\pview{u_{<m} \filter A,C}$ is incrementally justified, we just need to prove that either $n\not\in \pview{u_{<m} \filter A,C}$ or $\ord_{A\rightarrow C} n' \leq \ord _{A\rightarrow C} m$. We have:
 $$ u_{\prefixof m} \filter A,C =  
 \Pstr[0.5cm][2pt]{ \ldots (n){\stk {n} \omove}  \ldots
  {\stk {n'} \omove}  \ldots  (m-n,30){\stk m \pmove}
@@ -499,21 +558,38 @@ $$
 
 
 \item Suppose $n'\in A$. 
-The interaction sequence $u$ has the following form:
-\psset{linecolor=darkGreen,linewidth=0.5pt}
+
+Suppose that $n' \in \pview{u\filter A,C}$, then by lemma \ref{lem:middlepomove}
+there must be some $\pomove$-move $\gamma$ 
+occurring between $n'$ and $m$ and pointing before $n'$
+such that $\gamma \in \pview{u\filter B,C}$ and $n' \in \pview{u_{\leq \delta} \filter A,B}$:
 $$ 
-\begin{array}{ccccccc}
-A & \stackrel\sigma{\longrightarrow} & B & & B & \stackrel\mu{\longrightarrow} & C \\
-&\vdots&&& & \vdots\\
-&& &  & && \rnode{n}{n}\omove \\
-&\vdots& & &&\vdots & \\
-n' \omove && & &  \\
-&\vdots& & &&\vdots  \\
-&& & &&&  \rnode{m}{m} \pmove \\
+\begin{array}{ccccc}
+A & \stackrel\sigma{\longrightarrow} & B & \stackrel\mu{\longrightarrow} & C \\
+&\vdots&&\vdots\\
+&&&& \rnode{n}{n}\omove \\
+&\vdots&\rnode{gj}{\cdot}&\vdots\\
+n' \omove \\
+&\vdots&&\vdots  \\
+&&\rnode{g}{\gamma} \pomove \\
+&\vdots&&\vdots  \\
+&&&&\rnode{m}{m} \pmove \\
 \end{array}
 \ncarc[arcangleA=30,arcangleB=30]{->}{m}{n}
+\ncarc[arcangleA=30,arcangleB=30]{->}{g}{gj}
  $$  
-\ldots
+
+Since $n'$ is visible from $\gamma$ in $A,B$
+but $\gamma$ is justified by a move occurring before $n'$,
+by P-incrementally-justification of $\sigma$
+we must have:
+$$ \ord_{A\rightarrow B} n'  \leq \ord_{A\rightarrow B} \gamma \ .$$
+Similarly, since $\gamma$ is visible from $m$ in $B,C$ and
+$m$ is justified by $n$ occurring before $\gamma$, by P-incrementally-justification of $\mu$ we have:
+$$ \ord_{B\rightarrow C} \gamma  \leq \ord_{B\rightarrow C} m \ .$$
+
+Hence since $\ord_{B\rightarrow C} m = \ord_{A\rightarrow C} m$ and $\ord_{A\rightarrow B} m = \ord_{A\rightarrow C} m$ we conclude:
+$$ \ord_{A\rightarrow C} n' \leq \ord_{A\rightarrow C} m \ .$$
 \end{enumerate}
 
 \item \label{case:mA} Suppose $m\in A$.

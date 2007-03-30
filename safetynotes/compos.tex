@@ -287,11 +287,11 @@ We sometimes add a subscript to the symbols $\pmove$ and $\omove$ to denote the 
 %\draw[move, genpmove] (3.5cm,-1cm) -- +(1,0) node[right] {Generalised P-move \& External P-move };
 %\draw[move, genomove,genpmove] (3.5cm,-2cm) -- +(1,0) node[right] {Generalised O-move \& Generalised P-move};
 %\draw[move, genomove,extomove] (3.5cm,-3cm) -- +(1,0) node[right] {Generalised O-move \& External O-move};
-\draw[move] (3.5cm,-1cm) -- +(1,0) node[right] {External move};
-\draw[move,intmove] (3.5cm,-2cm) -- +(1,0) node[right] {Internal move};
-\draw[line width=1pt,extomove] (3.5cm,-3cm) -- +(1,0) node[right] {External O-move};
-\draw[line width=1pt,genpmove] (3.5cm,-4cm) -- +(1,0) node[right] {Generalised P-move};
-\end{tikzpicture}
+\draw[move] (3.5cm,-1cm) -- +(1cm,0cm) node[right] {External move};
+\draw[move,intmove] (3.5cm,-2cm) -- +(1cm,0cm) node[right] {Internal move};
+\draw (3.5cm,-3cm) node[anchor=west] {\textcolor{\extomovecolor}{External O-moves: $\omove$}};
+\draw (3.5cm,-4cm) node[anchor=west] {\textcolor{\genpmovecolor}Generalised P-move: $\opmove, \pomove, \pmove$};
+\end{tikzpicture} 
 \end{center}
 \caption{Structure of an interaction sequence.}
 \label{tab:interseq}
@@ -335,7 +335,7 @@ We can show the following property by an easy induction :
 $$\pview{u} \upharpoonright A,C = \pview{u \upharpoonright A,C} \ .$$
 \end{lemma}
 
-\subsection{Proof of compositionality when $\ord{A}\geq\ord{B}$}
+\subsection{Safe strategies and compositionality}
 {\bf Notation} In plays representations,
 the symbol $\omove$ stands for an
 O-move and $\pmove$ for
@@ -348,8 +348,23 @@ then denotes the other component.
 We write $s \subseqof t$ to say that $s$ is a subsequence (with pointers) of $t$, $s \prefixof t$ to say that $s$ is a prefix (with pointers)
 of $t$ and  $s \suffixof t$ to say that $s$ is a suffix of $t$.
 
+\begin{definition}
+\label{def:safe_strategy}
+A strategy $\sigma : A \fngamear B$ is said to be \defname{safe} if 
+it is P-incrementally justified and if for
+every initial move $m$ of $A$ such that some play $s\in\sigma$ contains $m$, we have $\ord_A{m} \geq \ord{B}$. 
+\end{definition}
+We observe that every P-i.j. strategy $\sigma$ on the game $I \fngamear A$ (and not $A$) is safe.
+Consequently, every P-i.j. strategy $\sigma : A$ where $A = A_1 \otimes \ldots \otimes A_n$, is isomorphic, up to arena-tagging of the moves, to the safe strategy $\Lambda^n(\sigma)$ on the game $I \fngamear A$, where $\Lambda$ denotes the usual currying isomorphism. 
+However $\sigma : A$ is not necessarily safe. This is because 
+the definition of safe strategy specifically refers to the moves of  the arena in the left-hand side of the function space arrow $\fngamear$. Hence the definition does not survive an isomorphism
+that retags the moves such as {\it currying}.
 
-We start by proving several useful lemmas.
+Later on we will define a category of safe strategy. A consequence of the previous remark is that this category cannot be a closed category (neither monoidal closed nor cartesian closed).
+In particular this category has only a weak form of curry isomorphism.
+
+
+We now prove several useful lemmas which will become useful when studying compositionality of P-i.j. strategies.
 \begin{lemma}
 \label{lem:interjump}
 Let $X$ be a component (either  $A,B$ or  $B,C$).
@@ -546,14 +561,14 @@ $$
 \begin{array}{rcccl}
 A & \stackrel\sigma{\longrightarrow} & B & \stackrel\mu{\longrightarrow} & C \\
 &\vdots&&\vdots\\
-&&&& \omove n'\\
+&&&& \omove\ n'\\
 &\vdots&&\vdots  \\
 q\rnode{q}{\pmove}  \\
 &\vdots&&\vdots  \\
-m^-\rnode{mp}{\omove}  \\
+m^- \rnode{mp}{\omove}  \\
 m \rnode{m}{\pmove}  \\
 \end{array}
-\ncarc[arcangleA=60,arcangleB=60]{->}{mp}{q}
+\ncarc[arcangleA=-45,arcangleB=-45]{->}{mp}{q}
  $$  
 Thus we can use the induction hypothesis (with $u\assignar u_{\prefixof q}$): there is a $\opmove$-move $\gamma$ 
 in $u_{]n',q]}$ pointing before $n'$ such that $\gamma \in \pview{u_{\prefixof q} \filter A,B}$, $n' \in \pview{u_{\prefixof \gamma} \filter B,C}$.
@@ -685,16 +700,15 @@ Hence:
 \begin{proposition}
 \label{prop:pijcompose_when_orda_geq_ordb}
 Let $\sigma : A \fngamear B$ and $\mu : B \fngamear C$
-be two P-incrementally-justified well-bracketed
-strategies. 
-If $\ord{A} \geq \ord{B}$ then $\sigma ; \mu : A \fngamear C$
-is a well-bracketed P-incrementally-justified
+be two well-bracketed safe strategies
+then $\sigma ; \mu : A \fngamear C$ 
+is a well-bracketed and safe.
 \end{proposition}
 
 \begin{proof}
 We already know that well-bracketness
 is preserved by strategy composition (see \cite[Proposition 2.5]{abramsky94full}).
-It remains to prove that $\sigma ; \mu$ is P-i.j..
+Let us prove that $\sigma ; \mu$ is P-i.j..
 Let $u$ be a play of the interaction $\sigma\ \|\ \mu$ between $\sigma$ and $\mu$
 ending with an external P-move $m$
 justified by $n$ in $\pview{u \upharpoonright A , C}$.
@@ -704,7 +718,7 @@ $$ u \filter A,C =
  {\stk {n'} \omove}  \ldots  (m-n,30){\stk m \pmove}
 }
 $$
-To show that $u \filter A,C$ is incrementally justified, we just need to prove that either $n'\not\in \pview{u \filter A,C}$ or $\ord_{A\fngamear C} n' \leq \ord_{A\fngamear C} m$. 
+To show that $u \filter A,C$ is P-incrementally justified, we just need to prove that either $n'\not\in \pview{u \filter A,C}$ or $\ord_{A\fngamear C} n' \leq \ord_{A\fngamear C} m$. 
 Note that if $n'\in \pview{u \filter A,C}$ 
 then necessarily $n'$ is not initial 
 in $C$ because $n$ occurs before $n'$ in
@@ -812,22 +826,39 @@ $\ord_{A\fngamear C} n' \leq \ord_{A\fngamear C} m$.
 		If $n'$ occurs before $b_0$ then 
 		we cannot use Lemma \ref{lem:increasing_order}
 		since $m$ does not point before $b_0$.
-		The assumption that $\ord{A} \geq \ord{B}$ becomes
-		crucial now (note that we have not used it yet):
+Up to now we have only used the fact that $\sigma$ and $\mu$ are P-i.j. The assumption that $\sigma$ and $\mu$ are safe now becomes crucial. We have:
+		\begin{align}
+		\ord_{A\fngamear B} b_0 
+		& = \max(\ord A +1, \ord_B b_0) & \mbox{($b_0$ initial in $B$)} \nonumber \\
+		& \geq \ord_B b_0 \nonumber  \\
+		& \geq \ord C & \mbox{($\sigma$ is safe \& $b_0 \in u \filter  B,C \in \mu$)} \nonumber  \\
+		& \geq \ord_C n' +1 & \mbox{($n'$ not initial in $C$)} \nonumber  \\
+		& = \ord_{A\fngamear C} n' +1 & \mbox{(Lemma \ref{lem:compositionorder} \& \mbox{n' not initial})}. \label{eq:b0gtnp}
+		\end{align}
+Thus:
 		\begin{align*}
 		\ord_{A\fngamear C} m 
 		& = \ord_{A\fngamear B} m & \mbox{(Lemma \ref{lem:compositionorder})} \\
-		& = \ord_{A\fngamear B} b_0 -1  & \mbox{($b_0$ initial in $B$)} \\
-		& \geq \ord_{B\fngamear C} b_0 & \mbox{($b_0$ initial in $B$ \& $\ord{A} \geq \ord{B}$)} \\
-		& \geq \ord_{B\fngamear C} n' & \mbox{($\mu$ P-i.j.
-		 \& $n' \in \pview{u_{\prefixof b_0}\filter A,C}$ \& 
-		$b_0$ points before $n'$)} \\
-		& = \ord_{A\fngamear C} n' & \mbox{(Lemma \ref{lem:compositionorder})} \ .
+		& = \ord_{A\fngamear B} b_0 -1  & \mbox{($m$ justified by $b_0$ initial in $B$)} \\
+		& \geq \ord_{B\fngamear C} b_0 -1 & \mbox{($b_0$ initial in $B$)} \\
+		& \geq \ord_{A\fngamear C} n' & \mbox{(By Eq. \ref{eq:b0gtnp})} \ .
 		\end{align*}
 		\end{enumerate}
 
 \end{enumerate} 
 \end{enumerate} 
+To conclude that $\sigma;\mu$ is safe it remains to verify that for all initial move in $A$ occurring in some play of $\sigma ; \mu$ has order in $A$ greater or equal to $\ord C$.
+Take an initial move $m \in A$ such that $m$ occurs in $s \in \sigma ; \mu$. Then $s = u \filter A,C$ for some $u \in \sigma 
+\ \|\ \mu$. Let $n$ be the initial move of $B$ justifying $m$.
+ We have:
+\begin{align*}
+\ord_A m & \geq \ord B & \mbox{($\sigma$ is safe \& $m \in u
+\filter A,B \in \sigma$)} \\
+ & \geq \ord_B n & \mbox{($n 
+\in B$)} \\
+ & \geq \ord C & \mbox{($\mu$ is safe \& $n \in u
+\filter B,C \in \mu$)}.
+\end{align*}
 \end{proof}
 We recall some definitions. Let $A$ and $B$ be two well-opened games. Given a strategy  $\sigma :\ !A \fngamear B$, its promotion $\sigma^\dag :\ !A\fngamear !B$ is defined as
 $$ \sigma^\dag = \{ s \in L_{!A\fngamear !B}\ |\ \mbox{for all inital $m$ in $B$, } s\filter m \in \sigma \}$$
@@ -846,8 +877,8 @@ By the visibility condition,
 
 From the last two propositions we obtain:
 \begin{corollary}
-Let $A$ and $B$ be two well-opened games with $\ord{A} \geq \ord{B}$. Let
-$\sigma :\ !A \fngamear B$ and $\mu :\ !B\fngamear C$ be two well-bracketed and P-incrementally justified strategies then $\sigma \fatcompos \mu :\ !A \fngamear C$ is also well-bracketed and P-incrementally justified.
+Let $A$ and $B$ be two well-opened games. Let
+$\sigma :\ !A \fngamear B$ and $\mu :\ !B\fngamear C$ be two well-bracketed and safe justified strategies then $\sigma \fatcompos \mu :\ !A \fngamear C$ is also well-bracketed and safe.
 \end{corollary}
 
 \section{Compositionnality - Syntactic approach}
@@ -1122,7 +1153,7 @@ Take the two safe terms $\vdash  M_f = \lambda xv.x$ and  $\vdash M_g = \lambda 
 The $\eta\beta$-nf of $M_{f\fatcompos g}$ is $\vdash \lambda x \varphi. \varphi (\underline{\lambda u . x})$ which is unsafe because of the underlined term, thus by Theorem \ref{thm:safeincrejust}(ii), $f\fatcompos g$ is not P-incrementally justified. The following diagram illustrates  a play of $f\fatcompos g$ that is not P-i.j..
 
 \begingroup
-\def\sigcol#1{{\color{darkGreen} #1}}
+\def\sigcol#1{{\color{gray} #1}}
 \def\mucol#1{{\color{red} #1}}
 \def\sigmucol#1{{\color{black} #1}}
 $$
@@ -1140,7 +1171,7 @@ o & \stackrel{\sigcol f}\longrightarrow & o, & o & \stackrel{\mucol g}\longright
 \ncarc[arcangleA=30,arcangleB=20,linecolor=red]{->}{n2}{n1}
 \ncarc[arcangleA=30,arcangleB=20,linecolor=red]{->}{n1}{n0}
 \ncarc[arcangleA=20,arcangleB=20,linecolor=red]{->}{n3}{n0}
-\ncarc[arcangleA=20,arcangleB=20,linecolor=darkGreen]{->}{n4}{n3}
+\ncarc[arcangleA=20,arcangleB=20,linecolor=gray]{->}{n4}{n3}
 $$
 \endgroup
 

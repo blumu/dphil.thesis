@@ -769,20 +769,15 @@ $\not \vdash \lambda x^o . (\lambda y^o z^o . y) x : (o,o,o)$.
 However safety is preserved by $\eta$-reduction:
 
 \begin{lemma}[$\eta$-reduction preserves safety]
-  $\Gamma \vdash \lambda \varphi . s \varphi $ with $\varphi$ not
-  occurring free in $s$ implies $\Gamma \vdash s$.
+  $\Gamma \vdash \lambda \varphi . s \varphi :A $ with $\varphi$ not
+  occurring free in $s$ implies $\Gamma \vdash s :A$.
 \end{lemma}
 \begin{proof}
-  Suppose $\Gamma \vdash \lambda \varphi . s \varphi $. If $s$ is an
-  abstraction then by construction of the safe term $\lambda \varphi
-  . s \varphi$, $s$ is necessarily safe.  If $s = N_0 \ldots N_p$ with
+  Suppose $\Gamma \vdash \lambda \varphi . s \varphi :A$. If $s$ is an  abstraction then by construction of the safe term $\lambda \varphi . s \varphi$, $s$ is necessarily safe.  If $s = N_0 \ldots N_p$ with
   $p\geq 1$ then again, since $\lambda \varphi . N_0 \ldots N_p
   \varphi$ is safe, each of the $N_i$ is safe for $0 \leq i \leq p$
   and for any $z\in fv(\lambda \varphi . s \varphi)$, $\ord{z} \geq
-  \ord{\lambda \varphi . s \varphi} = \ord{s}$. Since $\varphi \not\in
-  fv(s)$, we have $fv(s) = fv(\lambda \varphi . s \varphi)$ thus we
-  obtain $fv(s) \vdash N_0 \ldots N_p = s$ using the application rule
-  and $\Gamma \vdash s$ by weakening. \qed
+  \ord{\lambda \varphi . s \varphi} = \ord{s}$. Since  $\varphi$ does not occur free in $s$ we have $fv(s) = fv(\lambda \varphi . s \varphi)$, thus we can use the application rule to form $fv(s) \vdash N_0 \ldots N_p : A$. The weakening rules permits us to conclude $\Gamma \vdash s :A$. \qed
 \end{proof}
 
 
@@ -810,57 +805,50 @@ where $m \geq 0$, $p\geq 1$, $x$ is a  variable or constant, $\overline{\varphi}
 
 \begin{lemma}[$\eta$-long normalisation preserves safety]
 \label{lem:elnf_preserves_safety}
-If $\Gamma \vdash s$ then $\Gamma \vdash \elnf{s}$.
+If $\Gamma \vdash s :A$ then $\Gamma \vdash \elnf{s} :A$.
 \end{lemma}
 \begin{proof}
 
-  First we observe that for any variable or constant $x$ we have $x
-  \vdash \elnf{x}$. The proof is by induction on $\ord{x}$. Base case:
-  $x$ is of ground type and we have $x \vdash x = \elnf{x}$. Step
-  case: $x:(A_1, \ldots, A_n,o)$ with $n>0$. Let $\varphi_i:A_i$ be
+  First we observe that for any variable or constant $x:A$ we have $x:A
+  \vdash \elnf{x} :A$. The proof is by induction on $\ord{x}$. It is true for the base case since
+for any ground type variable $x$ we have $x = \elnf{x}$. Step
+  case: $x:A$ with $A=(A_1, \ldots, A_n,o)$ and $n>0$. Let $\varphi_i:A_i$ be
   fresh variables for $1\leq i\leq n$. The (var) rules gives
-  $\varphi_i \vdash \varphi_i$ and since $\ord{A_i} < \ord{x}$ the
-  induction hypothesis gives $\varphi_i \vdash
-  \elnf{\varphi_i}$. Using (wk) we obtain $x, \overline{\varphi}
-  \vdash \elnf{\varphi_i}$.  The application rule gives $x,
-  \overline{\varphi} \vdash x \elnf{\varphi_1} \ldots \elnf{\varphi_n}
-  : o$ and the abstraction rule gives $ x \vdash \lambda
+  $\varphi_i :A_i \vdash \varphi_i : A_i$ and since $\ord{A_i} < \ord{x}$ the
+  induction hypothesis gives $\varphi_i :A_i \vdash
+  \elnf{\varphi_i} : A_i$. Using (wk) we obtain $x:A, \overline{\varphi} : \overline{A}
+  \vdash \elnf{\varphi_i} :A_i$.  The application rule gives $x :A, \overline{\varphi} : \overline{A} \vdash x \elnf{\varphi_1} \ldots \elnf{\varphi_n}
+  : o$ and the abstraction rule gives $ x :A \vdash \lambda
   \overline{\varphi} . x \elnf{\varphi_1} \ldots \elnf{\varphi_n} =
-  \elnf{x}$.
+  \elnf{x} :A$.
 
 
 We now prove the lemma by induction on $s$.
 The base case is covered by the previous observation.
 \emph{Step case:}
 \begin{compactitem}
-\item $s = x s_1 \ldots s_m$ with $x: (B_1, \ldots, B_m, A_1, \ldots,
-  A_n, o)$ with $m\geq 0$, $n>0$ and $s_i : B_i$ for $1 \leq i \leq
+\item $s = x s_1 \ldots s_m$ with $x: (B_1, \ldots, B_m, A)$, $A = (A_1, \ldots, A_n, o)$ for some $m\geq 0$, $n>0$ and $s_i : B_i$ for $1 \leq i \leq
   m$.  Let $\varphi_i: A_i$ be fresh variables for $1\leq i \leq
-  n$. By the previous observation we have $\varphi_i \vdash
-  \elnf{\varphi_i}$ which in turn gives $\Gamma , \overline{\varphi}
-  \vdash \elnf{\varphi_i}$ using the weakening rule.  The judgement
-  $\Gamma \vdash x s_1 \ldots s_m$ is formed using the (app) rule
-  therefore each $s_j$ is safe for $1\leq j \leq m$. By the induction
-  hypothesis we have $\Gamma \vdash \elnf{s_j}$ and by weakening we
-  get $\Gamma, \overline{\varphi} \vdash \elnf{s_j}$.  The application
-  rule gives $\Gamma, \overline{\varphi} \vdash x \elnf{s_1} \ldots
-  \elnf{s_m} \elnf{\varphi_1} \ldots \elnf{\varphi_n} : o$. Finally
-  the (abs) rule gives $\Gamma \vdash \lambda \overline{\varphi} . x
+  n$. By the previous observation we have $\varphi_i :A_i \vdash \elnf{\varphi_i} :A_i$, the weakening rule then gives us $\Gamma , \overline{\varphi} : \overline{A}
+  \vdash \elnf{\varphi_i} : A_i$.  Since the judgement
+  $\Gamma \vdash x s_1 \ldots s_m : A$ is formed using the {\sf (app)} rule, each $s_j$ must be safe for $1\leq j \leq m$, thus by the induction hypothesis we have $\Gamma \vdash \elnf{s_j} : B_j$ and by weakening we get $\Gamma, \overline{\varphi} :\overline{A} \vdash \elnf{s_j} : B_j$.  The {\sf (app)}
+  rule then gives $\Gamma, \overline{\varphi} :\overline{A} \vdash x \elnf{s_1} \ldots \elnf{s_m} \elnf{\varphi_1} \ldots \elnf{\varphi_n} : o$. Finally
+  the {\sf (abs)} rule gives $\Gamma \vdash \lambda \overline{\varphi} . x
   \elnf{s_1} \ldots \elnf{s_m} \elnf{\varphi_1} \ldots
-  \elnf{\varphi_n} = \elnf{s}$, the side-condition of (abs) being met
-  since $\ord{\elnf{s}} = \ord{s}$.
+  \elnf{\varphi_n} = \elnf{s} : A$, the side-condition of {\sf (abs)} being verified since $\ord{\elnf{s}} = \ord{s}$.
 
 
-\item $s = t s_0 \ldots s_m$ where $t$ is an abstraction. Again, using
-  the induction hypothesis it is easy to show that $\Gamma \vdash
-  \elnf{s} = \elnf{t} \elnf{s_0} \ldots \elnf{s_m} \elnf{\varphi_1}
-  \ldots \elnf{\varphi_n}$ holds for some fresh variables $\varphi_1$,
-  \ldots, $\varphi_n$.
+\item $s = t s_0 \ldots s_m$ where $t$ is an abstraction. The $\eta$-normal form of $s$ is
+$\elnf{s} = \lambda \overline{\varphi}. \elnf{t} \elnf{s_0} \ldots \elnf{s_m} \elnf{\varphi_1}
+  \ldots \elnf{\varphi_n}$ for some fresh variables $\varphi_1$,
+  \ldots, $\varphi_n$. Again, we easily derive $\Gamma \vdash
+ \lambda \overline{\varphi}. \elnf{t} \elnf{s_0} \ldots \elnf{s_m} \elnf{\varphi_1}
+  \ldots \elnf{\varphi_n} : A$ with the induction hypothesis .
 
-\item $s = \lambda \overline{\eta} . t$ where $t$ is not an
-  abstraction. By the induction hypothesis we have $\Gamma,
-  \overline{\eta} \vdash \elnf{t}$ and by the abstraction rule we have
-  $\Gamma \vdash \lambda \overline{\eta} . \elnf{t} = \elnf{s}$.\qed
+\item $s = \lambda \overline{\eta} . t $ where 
+$\overline{\eta} : \overline{B}$ and $t:C$ is not an abstraction. By the induction hypothesis we have $\Gamma,
+  \overline{\eta} : \overline{B} \vdash \elnf{t} : C$ and by the abstraction rule we conclude
+  $\Gamma \vdash \lambda \overline{\eta} . \elnf{t} = \elnf{s} : A$.\qed
 \end{compactitem}
 \end{proof}
 
@@ -1108,14 +1096,16 @@ arena minus 1.
   P-question, $q$ points to the last unanswered O-question in $\pview{s}$ with
   order strictly greater than $\ord{q}$.
 \end{definition}
-\begin{example}
-  Take the evaluation map $ev : (o^1 \Rightarrow o^2) \times o^3
-  \rightarrow o^4$ and the play $s = q^4 q^2 q^1 q^3 \in \sem{ev}$. We
-  have $\ord{q^2} = 1 > \ord{q^1} = \ord{q^3} = 0$. Now $q^3$ points
-  to $q^4$ but $q^2$ is the last unanswered O-question in $\pview{s}=
-  s$ with order $>\ord{q^3}$, hence $\sem{ev}$ is not P-incrementally
-  justified.
-\end{example}
+%%%% the following example is wrong : ev is P-ij.
+%
+%\begin{example}
+%  Take the evaluation map $ev : (o^1 \Rightarrow o^2) \times o^3
+%  \rightarrow o^4$ and the play $s = q^4 q^2 q^1 q^3 \in \sem{ev}$. We
+%  have $\ord{q^2} = 1 > \ord{q^1} = \ord{q^3} = 0$. Now $q^3$ points
+%  to $q^4$ but $q^2$ is the last unanswered O-question in $\pview{s}=
+%  s$ with order $>\ord{q^3}$, hence $\sem{ev}$ is not P-incrementally
+%  justified.
+%\end{example}
 Note that although the pointer is determined by the P-view, the choice of the move itself
 can be based on the whole history of the play. Thus P-incremental justification does not imply innocence.
 
@@ -1198,12 +1188,12 @@ Putting Theorem \ref{thm:safeincrejust}(i) and Lemma
 %   since $M_1$ is safe whereas $M_2$ is not.
 % \end{example}
 
-In fact, as the last example highlights, pointers are superfluous at
-order $3$ for safe terms. Indeed, up to order $2$ of an order $3$
-arena, the pointers associated to question moves are recoverable by
-visibility.  At the last order, the question moves are P-moves
-therefore their associated pointers are uniquely recoverable by
-P-incremental justification. This is not true anymore at order $4$.
+In fact, as the last example highlights, pointers are entirely superfluous at 
+order $3$ for safe terms. This is because for 
+question moves in the first two levels of an arena, 
+the associated pointers are uniquely recoverable (thanks to 
+the visibility condition). At the third level, the question moves are all P-moves therefore their associated pointers are uniquely recoverable by
+P-incremental justification. This is not true anymore at order $4$:
 Take the safe term $M = \lambda f . f (\lambda \varphi x . \varphi x)
 : ((((o^4,o^3),o^{3'},o^2),o^1),o^0)$ where $f:(((o,o),o,o),o)$,
 $\varphi:(o,o)$, $x:o$. There are two different plays of $\sem{M}$
@@ -1291,7 +1281,7 @@ With a view to algorithmic game semantics and its applications, it
 would be interesting to identify sublanguages of Idealised Algol whose
 game semantics enjoy the property that pointers in a play are uniquely
 recoverable from the underlying sequence of moves. We name this class
-PUR. Observational equivalence for such PUR fragments are likely to be
+PUR. Observational equivalence for such PUR fragments are more likely to be
 decidable. $\ialgol_2$ is the paradigmatic example of a
 PUR-language. Another example is \emph{Serially Re-entrant Idealized
   Algol} \cite{abramsky:mchecking_ia}, a version of \ialgol\ where

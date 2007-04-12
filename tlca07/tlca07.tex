@@ -74,6 +74,9 @@
         \newcommand\mng[1]{{\mathopen{[\![}\,#1\,\mathclose{]\!]}}}
 
 
+\definecolor{darkGreen}{rgb}{0.03,0.35,0.05}
+\pstrSetArrowColor{darkGreen}
+
 \begin{document}
 
 \frontmatter          % for the preliminaries
@@ -715,8 +718,6 @@ We are now in a position to define a notion of reduction for safe terms.
 \label{dfn:safereduction} We use the
 abbreviations $\overline{x} = x_1 \ldots x_n$,
 $\overline{N} = N_1 \ldots N_l$.
-%, and when $n\geq l$, $\overline{x_L}
-%= x_1 \ldots x_l$ and $\overline{x_R} = x_{l+1} \ldots x_n$.
 The relation $\beta_s$ is defined on the set of safe redex as:
 \begin{eqnarray*}
   \beta_s &=&
@@ -971,8 +972,8 @@ order $0$.
 Our aim here is to characterise safety, which is a syntactic property,
 by game semantics. Because of length restriction, we shall assume that
 the reader is familiar with the basics of game semantics.  (For an
-introduction, we recommend the survey chapter
-\cite{ghicamccusker00}). Recall that a \emph{justified sequence} over
+introduction, we recommend the survey paper
+\cite{abramsky:game-semantics-tutorial}). Recall that a \emph{justified sequence} over
 an arena is an alternating sequence of O-moves and P-moves such that
 every move $m$, except the opening move, has a pointer to some earlier
 occurrence of the move $m_0$ such that $m_0$ enables $m$ in the
@@ -990,8 +991,7 @@ points to the last pending O-question (in the P-view) of a greater
 order.
 
 The proof of Theorem~\ref{thm:safeincrejust} depends on a
-Correspondence Theorem (Theorem~\ref{thm:correspondence} in the
-Appendix) that relates the strategy denotation of a $\lambda$-term $M$
+Correspondence Theorem (see the long version of this paper) that relates the strategy denotation of a $\lambda$-term $M$
 to the set of \emph{traversals} over a certain abstract syntax tree of
 the $\eta$-long form of $M$. In the parlance of game semantics,
 traversals are just (concrete representations of) the
@@ -1008,14 +1008,7 @@ order 1, and \emph{uninterpreted}).
 % true free variables and are limited to order $1$ at most. Also,
 % although the grammar can perform higher-order computations, the
 % structure being studied is itself of ground type.
-In Appendix A, we present an extension of this framework to the
-general case of the simply-typed lambda calculus with free variables
-of any order. A new traversal rule is introduced to handle nodes
-labelled with free variables. Also new nodes are added to the
-computation tree to account for the answer moves of the game
-semantics, thus enabling the framework to model languages with
-interpreted constants such as \pcf~(by adding traversal rules to
-handle constant nodes).
+The long version of the paper presents an extension of this framework to the general case of the simply-typed lambda calculus with free variables of any order. A new traversal rule is introduced to handle nodes labelled with free variables. Also new nodes are added to the computation tree to account for the answer moves of the game semantics, thus enabling the framework to model languages with interpreted constants such as \pcf~(by adding traversal rules to handle constant nodes).
 
 \subsection*{Incrementally-bound computation tree}
 
@@ -1081,7 +1074,8 @@ is incrementally-bound then the $\eta$-long form of $M$ is safe.
 \end{proposition}
 
 The assumption that $M$ is closed is necessary. For instance for
-$x,y:o$, we have $\tau(\lambda x y .x) = \tau(\lambda y . x)$ are
+$x,y:o$, the two identical computation trees $\tau(\lambda x y .x)$
+and $\tau(\lambda y . x)$ are
 incrementally-bound but $\lambda x y .x$ is safe and $\lambda y . x$
 is not.
 
@@ -1089,7 +1083,7 @@ is not.
 The \defname{order} of a question move $q$, written $\ord{q}$, is
 defined as the length of the path from $q$ to its furthest leaf in the
 arena minus 1.
-%height of the subarena rooted at $q$ minus 2.
+%{\it i.e.}~height of the subarena rooted at $q$ minus 2.
 
 \begin{definition}\rm
   A strategy $\sigma$ is said to be \defname{P-incrementally
@@ -1097,15 +1091,13 @@ arena minus 1.
   P-question, $q$ points to the last unanswered O-question in $\pview{s}$ with
   order strictly greater than $\ord{q}$.
 \end{definition}
+\begin{example}
+It is easy to check that copycat strategies, such as the identity strategy $id_A$ on the game $A$ or the evaluation map $ev_{A,B}$ of type $(A \Rightarrow B) \times A \typear B$, are all P-incrementally justified.\footnote{In such strategies, a P-move $m$ is justified as follows: either $m$ points to the preceding move in the P-view or the preceding move is of smaller order and $m$ is justified by the second last O-move in the P-view.}
+\end{example}
 %%%% the following example is wrong : ev is P-ij.
 %
 %\begin{example}
-%  Take the evaluation map $ev : (o^1 \Rightarrow o^2) \times o^3
-%  \rightarrow o^4$ and the play $s = q^4 q^2 q^1 q^3 \in \sem{ev}$. We
-%  have $\ord{q^2} = 1 > \ord{q^1} = \ord{q^3} = 0$. Now $q^3$ points
-%  to $q^4$ but $q^2$ is the last unanswered O-question in $\pview{s}=
-%  s$ with order $>\ord{q^3}$, hence $\sem{ev}$ is not P-incrementally
-%  justified.
+%Take the evaluation map $ev : (o^1 \Rightarrow o^2) \times o^3 \rightarrow o^4$ and the play $s = q^4 q^2 q^1 q^3 \in \sem{ev}$. We have $\ord{q^2} = 1 > \ord{q^1} = \ord{q^3} = 0$. Now $q^3$ points to $q^4$ but $q^2$ is the last unanswered O-question in $\pview{s}= s$ with order $>\ord{q^3}$, hence $\sem{ev}$ is not P-incrementally justified.
 %\end{example}
 Note that although the pointer is determined by the P-view, the choice of the move itself
 can be based on the whole history of the play. Thus P-incremental justification does not imply innocence.
@@ -1120,14 +1112,15 @@ can be based on the whole history of the play. Thus P-incremental justification 
   therein.
 \end{lemma}
 
-
+We write $\sem{\Gamma \vdash M : T}$ for the strategy 
+denoting the term $\Gamma \vdash M : T$ in the game-semantic model.
 The Correspondence Theorem
 % and Lemma \ref{lem:redtrav_trav}
 permits us to show the following:
 \begin{proposition} % [Incremental-binding vs P-incremental justification]
 \label{prop:incrbound_imp_incrjustified}
-For a $\beta$-normal term $M$,
-$\tau(M)$ is incrementally-bound if and only if $\sem{M}$
+For a $\beta$-normal term $\Gamma \vdash M : T$,
+$\tau(M)$ is incrementally-bound if and only if $\sem{\Gamma \vdash M : T}$
 is P-incrementally justified.
 \end{proposition}
 
@@ -1142,35 +1135,34 @@ is P-incrementally justified.
 %{\tree{\lambda^3}{\tree{f^2}{ \tree{\lambda y^1}{ \TR{x^0} }}}}$
 %\end{floatingfigure}
 
-\begin{wrapfigure}[5]{r}{0.6cm}
-$
-% the next line must be commented if the paragraph appears at the top of the page (otherwise
-% the figure in the margin is not positioned correctly)
-% \rput[b](0.1cm,-1cm)
-{\tree{\lambda^3}{\tree{f^2}{ \tree{\lambda y^1}{ \TR{x^0} }}}}$
-\end{wrapfigure}
+%\begin{wrapfigure}[5]{r}{0.6cm}
+% the next line must be commented out if and only if the paragraph appears at the top of the page (otherwise
+% the figure in the margin is not positioned correctly):
+%\rput[t](0.1cm,0.8cm)
+% ${\tree{\lambda^3}{\tree{f^2}{ \tree{\lambda y^1}{ \TR{x^0} }}}}$
+%\end{wrapfigure}
+
+\parpic[r]{
+${\tree{\lambda^3}{\tree{f^2}{ \tree{\lambda y^1}{ \TR{x^0} }}}}$
+}
 \noindent \emph{Example:} %\begin{example}
-Consider the $\beta$-normal term $f (\lambda y .x)$ where $x,y:o$ and
-$f:((o,o),o)$. The figure on the right represents the computation tree
+Consider the $\beta$-normal term $\Gamma \vdash f (\lambda y .x) : o$ where $y:o$ and $\Gamma = x:o, f:((o,o),o)$. The figure on the right represents its computation tree
 with the node orders given in exponent.  Node $x$ is not
 incrementally-bound therefore $\tau(f (\lambda y .x))$ is not
 incrementally-bound and by Proposition
-\ref{prop:incrbound_imp_incrjustified}, $\sem{f (\lambda y .x)}$ is
-not incrementally-justified (although $\sem{f}$ and $\sem{\lambda
-  y. x}$ are).
+\ref{prop:incrbound_imp_incrjustified}, $\sem{\Gamma \vdash f (\lambda y .x) : o}$ is
+not incrementally-justified (although $\sem{\Gamma \vdash f : ((o,o),o)}$ and $\sem{\Gamma \vdash \lambda
+  y. x : (o,o)}$ are).
 %\end{example}
 
 Propositions \ref{prop:safe_imp_incrbound} and
-\ref{prop:incrbound_imp_incrjustified} allow us to show the following
-(see Appendix B):
+\ref{prop:incrbound_imp_incrjustified} allow us to show the following (see long version of the paper):
 
 \begin{theorem}[Safety and P-incremental justification]
 \label{thm:safeincrejust}
 \begin{enumerate}[(i)]
-\item If $M$ is safe then $\sem{M}$ is P-incrementally justified.
-\item If $M$ is a closed simply-typed term and $\sem{M}$ is
-  P-incrementally justified then the $\eta$-long form of the
-  $\beta$-normal form of $M$ is safe.
+\item If $\Gamma \vdash M : T$ is safe then $\sem{\Gamma \vdash M : T}$ is P-incrementally justified.
+\item If $\vdash M : T$ is a closed simply-typed term and $\sem{\vdash M : T}$ is P-incrementally justified then the $\eta$-long form of the $\beta$-normal form of $M$ is safe.
 \end{enumerate}
 \end{theorem}
 
@@ -1192,15 +1184,16 @@ Putting Theorem \ref{thm:safeincrejust}(i) and Lemma
 In fact, as the last example highlights, pointers are entirely superfluous at 
 order $3$ for safe terms. This is because for 
 question moves in the first two levels of an arena, 
-the associated pointers are uniquely recoverable (thanks to 
-the visibility condition). At the third level, the question moves are all P-moves therefore their associated pointers are uniquely recoverable by
+the associated pointers are uniquely recoverable thanks to 
+the visibility condition. At the third level, the question moves are all P-moves therefore their associated pointers are uniquely recoverable by
 P-incremental justification. This is not true anymore at order $4$:
-Take the safe term $M = \lambda f . f (\lambda \varphi x . \varphi x)
-: ((((o^4,o^3),o^{3'},o^2),o^1),o^0)$ where $f:(((o,o),o,o),o)$,
-$\varphi:(o,o)$, $x:o$. There are two different plays of $\sem{M}$
-whose underlying sequence of moves is $q_0 \, q_1 \, q_2 \, q_3 \, q_2
-\, q_3 \, q_4$, each one having $q_4$ pointing to a different
-occurrence of $q_3$, thus pointer-less plays are ambiguous.
+Take the safe term $\psi:(((o^4,o^3),o^2),o^1) \vdash \psi (\lambda \varphi . \varphi a) : o^0$
+for some constant $a:o$, where $\varphi:(o,o)$. Its strategy denotation contains plays whose underlying sequence of moves is $q_0 \, q_1 \, q_2 \, q_3 \, q_2 \, q_3 \, q_4$.
+Since $q_4$ is an O-move, it is not constraint by 
+P-incremental justification and thus $q_4$ can point to any of the two occurrences of $q_3$.\footnote{More generally,
+a P-incrementally justified strategy can contain plays that are not O-incrementally justified since it must take into account any possible strategy incarnating its context, including those that are not P-incrementally justified.
+In the given example, the version of the play which is not O-incrementally justified is involved in the strategy composition 
+$\sem{ \vdash M_2 : (((o,o),o),o)} ; \sem{ \psi:(((o,o),o),o) \vdash \psi (\lambda \varphi . \varphi a):o}$ where $M_2$ denotes the unsafe Kierstead term.}
 
 \subsection*{Safe PCF and Safe Idealised Algol}
 
@@ -1430,6 +1423,9 @@ decidable?
 %\newblock On program equivalence in languages with ground-type references.
 %\newblock \emph{Proceedings of LICS'03} (2003) 108--117
 %\end{thebibliography}
+
+\end{document}
+\endinput
 
 
 \section*{Appendix A -- Computation tree, traversals and correspondence}
@@ -1785,7 +1781,7 @@ $\intersem{\Gamma \vdash M : T}$, is obtained by uncovering\footnote{An
 $ev$ at each @-node of the computation tree.  The inverse operation consists in filtering out the internal moves.
 
 In the simply-typed lambda calculus, the set $\travset(M)$ of
-traversals of the computation tree (defined in Appendix A) is
+traversals of the computation tree is
 isomorphic to the set of uncovered plays of the strategy denotation
 (this is the counterpart of the ``Path-Traversal Correspondence'' of
 \cite{OngLics2006}). Moreover the set of traversal reductions is
@@ -1794,8 +1790,8 @@ isomorphic to the strategy denotation.
 \begin{theorem}[The Correspondence Theorem]
 \label{thm:correspondence}
 \begin{eqnarray*}
-(i) \  \varphi_M  : \travset(M)^{-@} \stackrel{\cong}{\longrightarrow} \intersem{\Gamma \vdash M :T} \quad
-(ii) \  \psi_M  : \travset(M )^{\upharpoonright r} \stackrel{\cong}{\longrightarrow} \sem{\Gamma \vdash M : T} \ .
+(i)~\varphi_M  &: \travset(M)^{-@} \stackrel{\cong}{\longrightarrow} \intersem{\Gamma \vdash M :T} \\
+(ii)~\psi_M  &: \travset(M )^{\upharpoonright r} \stackrel{\cong}{\longrightarrow} \sem{\Gamma \vdash M : T} \ .
 \end{eqnarray*}
 \end{theorem}
 

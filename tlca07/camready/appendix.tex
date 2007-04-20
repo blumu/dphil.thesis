@@ -1,0 +1,517 @@
+\section*{Appendix A -- Computation tree, traversals and correspondence}
+\label{sec:correspondence}
+
+In this section we adapt the notions of computation tree and
+traversals over the computation tree originally introduced in
+\cite{OngLics2006} to the context of the simply-typed
+lambda calculus without constants. Everything remains valid in the
+presence of \emph{uninterpreted}\footnote{A constant $f$ is
+  \emph{uninterpreted} if the small-step semantics of the language
+  does not contain any rule of the form $f \dots \rightarrow e$. $f$
+  can be regarded as a data constructor.}  constants since we can just
+consider them as free variables. Moreover there is no restriction on
+the order of these constants, contrary to \cite{OngLics2006} where
+constants need to be of order at most one. We will also state the
+\emph{Correspondence Theorem} (Theorem \ref{thm:correspondence}) used
+in Sec. \ref{sec:gamesemaccount}. 
+
+In the following we fix a simply typed term 
+$\Gamma \vdash M :T$ and we consider its computation tree $\tau(M)$ as defined in Def. \ref{dfn:comptree}.
+
+
+\subsection{Pointers and justified sequences of nodes}
+
+We define the \defname{enabling relation} on the set of nodes of the
+computation tree as follows: $m$ enables $n$, written $m \vdash n$, if
+and only if $n$ is bound by $m$ (we write $m \vdash_i n$ to precise
+that $n$ is the $i^{\sf th}$ variable bound by $m$), or $m=r$ and $n$
+is a free variable, or $n$ is a $\lambda$-node and $m$ is its parent
+node.
+
+For any set of nodes $S$ we write $S^{\upharpoonright r}$ for $\{ n
+\in S \ | \ r \vdash^* n \}$ -- the subset of $S$ constituted of nodes
+hereditarily enabled by $r$.  We call \defname{input-variables nodes}
+the elements of $N_{var}^{\upharpoonright r}$.
+
+A \defname{justified sequence of nodes} is a sequence of nodes with
+pointers such that each variable or $\lambda$-node $n$ different
+from the root has a pointer to a node $m$ occurring before it the
+sequence such that $m \vdash n$.  We represent the pointer in the
+sequence as follows \Pstr[0.4cm]{ (m){m} \ldots (n-m,45:i) n }.
+  where the label indicates that either $n$ is labelled with the $i$th variable
+abstracted by the $\lambda$-node $m$ or that $n$ is the $i^{\sf th}$
+child of $m$.  Children nodes are numbered from $1$ onward except for
+@-nodes where it starts from $0$. Abstracted variables are numbered
+from $1$ onward. The $i^{\sf th}$ child of $n$ is denoted by $n.i$.
+
+We say that a node $n_0$ of a justified sequence is
+\defname{hereditarily justified} by $n_p$ if there are nodes $n_1,
+\ldots, n_{p-1}$ in the sequence such that $n_i$ points to $n_{i+1}$
+for all $i\in 0..p-1$.
+
+The notion of \defname{P-view} $\pview{t}$ of a justified sequence of
+nodes $t$ is defined the same way as the P-view of a justified
+sequences of moves in Game Semantics:\footnote{ The equalities in the
+  definition determine pointers implicitly. For instance in the second
+  clause, if in the left-hand side, $n$ points to some node in $s$
+  that is also present in $\pview{s}$ then in the right-hand side, $n$
+  points to that occurrence of the node in $\pview{s}$.}
+$$\begin{array}{rclrcl}
+\pview{\epsilon} &=&  \epsilon
+& \pview{\Pstr{ s \cdot (m) m \cdot \ldots \cdot (lmd-m,40){\lambda\overline{\xi}}
+}}
+ &=& \Pstr{
+\pview{s} \cdot (m2) m \cdot (lm2-m2,50) {\lambda \overline{\xi}} } \\
+\mbox{for $n \notin N_\lambda$, } \pview{s \cdot n }  &=&  \pview{s} \cdot n \qquad
+& \pview{s \cdot r }  &=&  r
+\end{array}$$
+
+The O-view of $s$, written $\oview{s}$, is defined
+dually. We borrow the game semantic terminology: A justified sequences of nodes satisfies
+\emph{alternation} if for any two consecutive nodes one is a
+$\lambda$-node and the other is not, and \emph{P-visibility} if every
+variable node points to a node occurring in the P-view a that point.
+
+\subsection{Computation tree with value-leaves}
+Let us first fix some notations. We write $r$ for the root of $\tau(M)$ and $N$, $N_@$, $N_\lambda$ and
+$N_{var}$ for the set of nodes, @-labelled nodes, $\lambda$-nodes and variable nodes respectively. For $n \in N$, $\kappa(n)$ denotes the subterm of $\elnf{M}$ corresponding to the subtree rooted at $n$, in particular $\kappa(r) = \elnf{M}$.  The \defname{type} of a variable node labelled $x$ is the type of $x$, the type of the root is $(A_1,\ldots,A_p, T)$ where $x_1:A_1,\ldots, x_p:A_p$ are the free variables of $M$ and the type of $n\in (N_\lambda \union N_@)
+\setminus \{ r \}$ is the type of $\kappa(n)$. 
+
+
+We now add another ingredient to the computation tree that was not originally used in \cite{OngLics2006}.  We write $\mathcal{D}$ to denote the set
+of values of the base type $o$.  We add \defname{value-leaves} to
+$\tau(M)$ as follows: For each value $v \in \mathcal{D}$ and for each
+node $n \in N$ we attach the child leaf $v_n$ to $n$.  We write $V$
+for the set of nodes and leaves of the computation tree.  For $\$$
+ranging in $\{@, \lambda, var \}$, we write $V_\$$ to denote the set
+$N_\$ \union \{ v_n \ | \ n \in N_\$, v \in \mathcal{D} \}$.
+
+
+Everything that we have defined can be lifted to this new version of
+computation tree. A value-leaf has order $0$. The enabling relation
+$\vdash$ is extended so that every leaf is enabled by its parent
+node. A link going from a value-leaf $v_n$ to a node $n$ is labelled
+by $v$: \Pstr[0.4cm]{ (n) n \ldots (vn-n,35:v){v_n} }. For the
+definition of P-view and visibility, value-leaves are treated as
+$\lambda$-nodes if they are at an odd level in the computation tree,
+and as variable nodes if they are at an even level.
+
+We say that a node $n$ is \defname{matched} by $v_n$
+if there is an occurrence of $v_n$ in the sequence that points to $n$,
+otherwise we say that $n$ is \defname{unmatched}.
+The last unmatched node is called the \defname{pending node}.  A justified sequence of nodes is
+\defname{well-bracketed} if each value-leaf occurring in it is justified by the pending node at that point.  If $t$ is a traversal then we write
+$?(t)$ to denote the subsequence of $t$ consisting only of unmatched
+nodes.
+
+\subsection{Traversals of the computation tree}
+\label{subsec:traversal}
+
+A \emph{traversal} is a justified sequence of nodes of the computation tree where each node
+indicates a step that is taken during the evaluation of the term.
+\begin{definition}\rm
+\label{def:traversal}
+The set $\travset(M)$ of \defname{traversals} over $\tau(M)$ is defined by induction over the following rules.
+
+\begin{description}
+\item[{\bf (Empty)}] $\epsilon \in \travset(M)$.
+\item[{\bf (Root)}] $ r \in \travset(M)$.
+\item[{\bf (Lam)}] If $t \cdot \lambda \overline{\xi}$ is a traversal then so is
+$t \cdot \lambda \overline{\xi} \cdot n$
+where $n$ is $\lambda \overline{\xi}$'s child and if $n$ is a variable node then it points to the only\footnote{This is justified {\it a posteriori} by the fact that P-views are paths in the computation tree.} occurrence of its enabler that is still present in $\pview{t \cdot \lambda \overline{\xi}}$.
+
+\item[{\bf (App)}] If $t \cdot @$ is a traversal then so is \Pstr[0.4cm]{t \cdot (m) @  \cdot (n-m,40:0) n}.
+
+\item[{\bf (InputVar$^{val}$)}] If $t_1 \cdot x \cdot t_2$ is a traversal
+with $x \in N_{var}^{\upharpoonright r}$ and $?(t_1 \cdot x \cdot
+t_2)=?(t_1) \cdot x$ then so is \Pstr[0.4cm]{t_1 \cdot (x){x} \cdot
+t_2 \cdot (xv-x,38:v){v_x} } for all $v \in \mathcal{D}$.
+
+\item[{\bf (InputVar)}] If $t_1 \cdot x \cdot t_2$ is a traversal with
+  $x \in N_{var}^{\upharpoonright r}$ and $?(t_1 \cdot x \cdot
+  t_2)=?(t_1) \cdot x$ then so is $t_1 \cdot x \cdot t_2 \cdot n$ for any
+  $\lambda$-node $n$ whose parent occurs in $\oview{t_1 \cdot x}$, $n$
+  pointing to some occurrence of its parent node in $\oview{t_1 \cdot x}$.
+
+
+\item[{\bf (Copycat$^@$)}]
+  If \Pstr{t \cdot (app){@} \cdot (lz-app,60:0){\lambda \overline{z}}  \ldots  (lzv-lz,60:v){v}_{\lambda \overline{z}} } is a traversal then so is
+\Pstr[0.6cm]{t \cdot (app){@} \cdot (lz-app,60){\lambda
+\overline{z}} \ldots  (lzv-lz,60:v){v}_{\lambda \overline{z}} \cdot
+(appv-app,45:v){v}_@}.
+
+\item[{\bf (Copycat$^\lambda$)}] If \Pstr[0.4cm]{t \cdot \lambda \overline{\xi} \cdot (x){x}  \ldots   (xv-x,50:v){v}_x}
+is a traversal then so is \Pstr[0.5cm]{t \cdot (lmd){\lambda
+\overline{\xi}} \cdot (x){x}  \ldots  (xv-x,50:v){v}_x  \cdot
+(lmdv-lmd,30:v){v}_{\lambda \overline{\xi}} }.
+
+\item[{\bf (Copycat$^{var}$)}] If \Pstr[0.4cm]{t \cdot y \cdot (lmd){\lambda \overline{\xi}}
+\ldots (lmdv-lmd,50:v){v}_{\lambda \overline{\xi}} } is a traversal
+for some variable $y$ not in $N_{var}^{\upharpoonright r}$ then so
+is \Pstr[0.6cm]{t \cdot (y){y} \cdot (lmd){\lambda \overline{\xi}}
+\ldots (lmdv-lmd,30:v){v}_{\lambda \overline{\xi}}  \cdot
+(vy-y,50:v){v}_y }.
+
+\item[{\bf (Var)}]
+If \Pstr[0.5cm]{t' \cdot (n){n} \cdot
+    (lx){\lambda \overline{x}}  \ldots
+    (x-lx,50:i){x_i} } is a traversal for some variable $x_i$ not in $N_{var}^{\upharpoonright r}$ then
+so is
+\Pstr[0.6cm]{
+t' \cdot (n){n} \cdot
+    (lx){\lambda \overline{x}}  \ldots
+    (x-lx,30:i){x_i}  \cdot
+    (letai-n,40:i){\lambda \overline{\eta_i}}
+     }.
+\end{description}
+\end{definition}
+
+\begin{wrapfigure}[7]{r}{3.8cm}
+$
+% The next line must be commented out if and only if the paragraph appears at the top of the page (otherwise the vertical position of the figure in the margin is not correct)
+\rput[t](1.75cm,0.9cm)
+{\tree[levelsep=3ex,treesep=0.5cm]{\lambda} {
+    \tree{@}{
+        \pstree[linestyle=dotted]{\TR{\lambda y}\arclabel{0} }{
+            \tree{y}{
+                \tree{\lambda \overline{\eta_1}}{\vdots}%\arclabel{1}
+                \tree{\lambda \overline{\eta_i}}{\vdots}%\arclabel{i}
+                \tree{\lambda \overline{\eta_n}}{\vdots}%\arclabel{n}
+            }
+        }
+        \pstree[linestyle=dotted]{\TR{\lambda \overline{x}}
+            \arclabel{1}}{ \tree{x_i}{\TR{} \TR{}}}
+}}}
+$
+\end{wrapfigure}
+A traversal always starts by visiting the root. Then it mainly
+follows the structure of the tree. The (Var) rule permits to jump
+across the computation tree. The idea is that after visiting a
+variable node $x$, a jump is allowed to the node corresponding to
+the subterm that would be substituted for $x$ if all the
+$\beta$-redexes occurring in the term were reduced. The sequence
+\Pstr[0.7cm]{\lambda \cdot (app) @  \cdot (ly) {\lambda y}  \ldots
+(y-ly,35:1) y  \cdot (lx-app,38:1) {\lambda \overline{x}} \ldots
+(x-lx,30:i) {x_i} \cdot (leta-y,40:i) {\lambda \overline{\eta_i} }
+\ldots}
+ is an example of traversal of the computation tree shown on the right.
+
+\begin{proposition}[counterpart of proposition 6 from \cite{OngHoMchecking2006}]
+\label{prop:pviewtrav_is_path}
+Let $t$ be a traversal. Then
+\begin{enumerate}[(i)]
+\item $t$ is a well-defined and well-bracketed justified sequence.
+\item $?(t)$ is a well-defined justified sequence verifying alternation, P-visibility and O-visibility.
+\item $\pview{?(t)}$ is the path in $\tau(M)$ from $r$ to the last node in $?(t)$.
+\end{enumerate}
+\end{proposition}
+
+The \defname{reduction} of a traversal $t$ written $ t \upharpoonright
+r$, is the subsequence of $t$ obtained by keeping only the nodes that
+are hereditarily justified by $r$. This has the effect of eliminating
+the ``internal nodes'' of the computation.
+
+Application nodes are used to connect the operator and the operand of
+an application in the computation tree but since they do not play any
+role in the computation of the term, we can remove them from the
+traversals.  We write $t-@$ for the sequence of nodes-with-pointers
+obtained by removing from $t$ all @-nodes and value-leaves of @-nodes,
+any link pointing to an @-node being replaced by a link pointing to
+the immediate predecessor of @ in $t$.
+
+We introduce the two notations $\travset(M)^{-@} = \{ t - @ \ | \  t \in \travset(M) \}$ and $\travset(M)^{\upharpoonright r} = \{ t  \upharpoonright r \ | \  t  \in \travset(M) \}$.
+\begin{remark}
+Clearly if $M$ is $\beta$-normal then $\tau$ does not contain any @-node therefore all nodes are
+hereditarily justified by $r$ and we have $\travset(M)^{-@} = \travset(M) = \travset(M)^{\upharpoonright r }$.
+\end{remark}
+
+\begin{lemma}[View of a traversal reduction]
+\label{lem:redtrav_trav}
+If $M$ is in $\beta$-normal form then for all $t\in \travset(M)$ we have $ \pview{?(t) \upharpoonright  r } = \pview{?(t)} \upharpoonright r$.
+\end{lemma}
+In the safe lambda calculus without interpreted constants this
+lemma follows immediately from the fact that $\travset(M) =
+\travset(M)^{\upharpoonright r }$. This remains valid in the presence of interpreted constants provided that the traversal rules
+implementing the constants are \emph{well-behaved}.\footnote{A
+traversal rule is \defname{well-behaved} if it can be stated under the
+form ``$t = t_1\cdot n \cdot t_2 \in \travset \zand ?(t) = ?(t_1)
+\cdot n \zand n \in N_{\Sigma}\union N_{var} \zand P(t) \zand m\in
+S(t) \imp\ $\Pstr{ t_1\cdot (n){n} \cdot t_2 \cdot (m-n,25){m} \in \travset}'' for some expression $P$
+expressing a condition on $t$ and function $S$ mapping traversals of the form of $t$ to a subset of the children of $n$.}
+
+\subsection{Computation trees and arenas}
+We consider the well-bracketed game model of the simply-typed
+lambda calculus.  We choose to represent strategies using
+``prefix-closed set of plays''.
+\footnote{In the literature, a strategy is commonly defined as a set of plays
+closed by taking a prefix of \emph{even} length. However for the purpose of showing the correspondence with traversals, the ``prefix-closed'' version is more appropriate.}
+We fix a term $\Gamma \vdash M : T$ and write $\sem{\Gamma \vdash M : T}$ for its strategy denotation.
+The answer moves of a question $q$ are written $v_q$ where $v$ ranges in $\mathcal{D}$.
+
+\begin{definition}[Mapping from nodes to moves]\rm
+\label{def:phi_psi mapping}
+Let $q$ be a question move of $\sem{T}$ and $n \in N$ such that $n$
+and $q$ are of type $(A_1,\ldots,A_p,o)$.  Let $\{ q^1, \ldots, q^p \}
+\union \{ v_q \ | \ v \in \mathcal{D} \}$ be the set of moves enabled
+by $q$ where each $q^i$ is of type $A_i$. The function $\psi_M^{n,q}$
+from $V^{\upharpoonright n}$ to $\sem{T}$ is defined as:
+\begin{eqnarray*}
+\psi^{n,q}_M &=& \{ n \mapsto q \} \union  \{ v_n \mapsto v_q \ | \ v \in \mathcal{D} \}\\
+ &&\union \left\{
+                \begin{array}{ll}
+                  \emptyset, & \hbox{if $p=0$\ ;} \\
+                  \Union_{m \in N | n \vdash_i m} \psi_M^{m, q^i}, & \hbox{if $p\geq1$ and $n\in N_{\lambda}$\ ;} \\
+                  \Union_{i=1..p} \psi_M^{n.i, q^i}, & \hbox{if $p\geq1$ and $n\in N_{var}$\ .}
+                \end{array}
+              \right.
+\end{eqnarray*}
+Note that $\psi_M^{n,q}$ is only defined on nodes hereditarily enabled
+by $n$.  For any $n \in N$ let $A_n$ denote the type of
+$\kappa(n)$. We write $\psi_{\kappa(n)}$ for $\psi_{\kappa(n)}^{n,q}$
+where $q$ denotes the initial move of $\sem{A_n}$.\footnote{Arenas
+involved in the game semantics of simply-typed lambda calculus are
+trees.}
+
+
+For a closed term $\vdash M : T$, the total function $\varphi_M$ from
+$V_\lambda \union V_{var}$ to $\sem{T} \uplus \biguplus_{n \in N'_@}
+\sem{A_n}$ is defined as $\varphi_M = \psi_M \union \Union_{n \in
+N'_@} \psi_{\kappa(n)}$ where $N'_@$ denotes the set of children nodes
+of @-nodes.  For an open term $x_1 : X_1, \ldots, x_n : X_n \vdash M :
+T$, $\varphi_M$ is defined as $\varphi_{\lambda x_1 \ldots x_n
+. M}$. When there is no ambiguity we omit the subscript in $\varphi_M$
+and $\psi_M$.
+\end{definition}
+\begin{remark}
+$\varphi$ maps $\lambda$-nodes to O-questions, variable nodes to
+P-questions, value-leaves of $\lambda$-nodes to P-answers and
+value-leaves of variable nodes to O-answers.
+Moreover $\varphi$ maps nodes of a given order to moves of the same order.
+\end{remark}
+If $t = t_0 t_1 \ldots$ is a justified sequence
+of nodes in $V_\lambda \union V_{var}$ then $\varphi(t)$ is defined
+to be the sequence of moves $\varphi(t_0)\ \varphi(t_1) \ldots$
+equipped with the pointers of $t$.
+
+\begin{example}
+Take $\lambda x . (\lambda g . g x) (\lambda y . y)$ with $x,y:o$ and $g:(o,o)$.
+The diagram below represents the computation tree (middle), the arenas
+$\sem{(o,o), o}$ (left), $\sem{o , o}$ (right), $\sem{o\rightarrow o}$ (rightmost)
+and $\varphi = \psi \union \psi_{\lambda g.g x}^{\lambda g, q_{\lambda g}} \union
+\psi_{\lambda y.y}^{\lambda y, q_{\lambda y}}$
+(dashed-lines).
+$$\psset{levelsep=3.5ex}
+\pstree{\TR[name=root]{\lambda x}}
+{
+    \pstree{\TR[name=App]{@}}
+    {
+            \pstree{\TR[name=lg]{\lambda g}}
+                { \pstree{\TR[name=lgg]{g}}{
+                        \pstree{\TR[name=lgg1]{\lambda}}
+                        { \TR[name=lgg1x]{x}  } } }
+            \pstree{\TR[name=ly]{\lambda y}}
+                    {\TR[name=lyy]{y}}
+    }
+}
+\rput(4.5cm,-1cm){
+  \pstree{\TR[name=A1lx]{q_{\lambda x}}}
+        { \TR[name=A1x]{q_x} }
+}
+\rput(-6cm,-1.5cm){
+    \pstree{\TR[name=A2lg]{q_{\lambda g}}}
+    {
+        \pstree{\TR[name=A2g]{q_g}}
+        {  \TR[name=A2g1]{q_{g_1}}   }
+    }}
+\rput(2.5cm,-1.5cm){
+    \pstree{\TR[name=A3ly]{q_{\lambda y}}}
+        { \TR[name=A3y]{q_y}
+        }
+}
+\psset{nodesep=1pt,arrows=->,arcangle=-20,arrowsize=2pt 1,linestyle=dashed,linewidth=0.3pt}
+\ncline{->}{root}{A1lx} \mput*{\psi}
+\ncarc{->}{lgg1x}{A1x}
+\ncline{->}{lg}{A2lg} \mput*{\psi_{\lambda g.g x}^{\lambda g, q_{\lambda g}}}
+\ncline{->}{lgg}{A2g}
+\ncline{->}{lgg1}{A2g1}
+\ncline{->}{ly}{A3ly} \mput*{\psi_{\lambda y.y}^{\lambda y, q_{\lambda y}}}
+\ncline{->}{lyy}{A3y}
+$$
+\end{example}
+
+
+\subsection{The Correspondence Theorem}
+
+In game semantics, strategy composition is achieved by performing a
+CSP-like ``composition + hiding''. If the internal moves are not
+hidden then we obtain an alternative semantics called
+\defname{revealed semantics} in \cite{willgreenlandthesis} and
+\emph{interaction} semantics in \cite{DBLP:conf/sas/DimovskiGL05}.
+The revealed semantics of a term $\Gamma \vdash M :T$, written
+$\intersem{\Gamma \vdash M : T}$, is obtained by uncovering\footnote{An
+  algorithm that uniquely recovers hidden moves is given in Part II of
+  \cite{hylandong_pcf}.}  the internal moves from $\sem{\Gamma \vdash
+  M : T}$ that are generated by the composition with the evaluation map
+$ev$ at each @-node of the computation tree.  The inverse operation consists in filtering out the internal moves.
+
+In the simply-typed lambda calculus, the set $\travset(M)$ of
+traversals of the computation tree is
+isomorphic to the set of uncovered plays of the strategy denotation
+(this is the counterpart of the ``Path-Traversal Correspondence'' of
+\cite{OngLics2006}). Moreover the set of traversal reductions is
+isomorphic to the strategy denotation.
+
+\begin{theorem}[The Correspondence Theorem]
+\label{thm:correspondence}
+\begin{eqnarray*}
+(i)~\varphi_M  &: \travset(M)^{-@} \stackrel{\cong}{\longrightarrow} \intersem{\Gamma \vdash M :T} \\
+(ii)~\psi_M  &: \travset(M )^{\upharpoonright r} \stackrel{\cong}{\longrightarrow} \sem{\Gamma \vdash M : T} \ .
+\end{eqnarray*}
+\end{theorem}
+
+\begin{example}
+Take $M = \lambda f z . (\lambda g x . f x)
+(\lambda y. y) (f z) : ((o,o),o, o)$.  The figure below represents the computation tree (left tree), the arena $\sem{((o,o),o, o)}$ (right tree) and $\psi_M$ (dashed line). (Only question moves are shown for clarity.)  The justified sequence of nodes $t$ defined hereunder is an example of traversal:
+
+\begin{tabular}{lp{6.3cm}}
+$\tree[levelsep=2.5ex,treesep=0.3cm]{ \Rnode{root}{\lambda f z} }
+     {  \tree{@}
+        {   \tree{\lambda g x}{
+                  \tree{\Rnode{f}{f^{[1]}}}{
+                            \tree{\Rnode{lmd}{\lambda^{[2]}}}
+                            {\TR{x}}
+                  }
+                }
+            \tree{ \lambda y }{\TR{y}}
+            \tree{\lambda ^{[3]}}{
+                \tree{\Rnode{f2}{f^{[4]}}} {
+                \tree{\Rnode{lmd2}{\lambda^{[5]}}}{\TR{\Rnode{z}{z}}}
+                }
+            }
+        }
+     }
+\hspace{1cm}
+  \tree[levelsep=8ex,treesep=0.3cm]{ \Rnode{q0}q^0 }
+    {   \pstree[levelsep=4ex]{\TR{\Rnode{q1}{q^1}}}{\TR{\Rnode{q2}{q^2}}}
+        \TR{\Rnode{q3}q^3}
+        \TR{\Rnode{q4}q^4}
+    }
+\psset{nodesep=1pt,arrows=->,arrowsize=2pt 1,linestyle=dashed,linewidth=0.3pt}
+\ncline{->}{root}{q0} \mput*{\psi_M}
+\ncarc[arcangle=-25]{->}{z}{q3}
+\ncarc[arcangle=10]{->}{f}{q1}
+\ncarc[arcangle=10]{->}{lmd}{q2}
+\ncline{->}{f2}{q1}
+\ncline{->}{lmd2}{q2}$
+\hspace{0.3cm}
+&
+\begin{asparablank}
+  \item  \Pstr[0.8cm]{
+t = (n){\lambda f z} \
+(n2){@} \
+(n3-n2,60){\lambda g x} \
+(n4-n,45){f^{[1]}} \
+(n5-n4,45){\lambda^{[2]}} \
+(n6-n3,45){x} \
+(n7-n2,35){\lambda^{[3]}} \
+(n8-n,35){f^{[4]}} \
+(n9-n8,45){\lambda^{[5]}} \
+(n10-n,35){z}
+}
+
+\item \Pstr[0.9cm]{
+t\upharpoonright r = (n){\lambda f z} \
+(n4-n,50){f}^{[1]} \
+(n5-n4,60){\lambda}^{[2]} \
+(n8-n,45){f}^{[4]} \
+(n9-n8,60){\lambda}^{[5]} \
+(n10-n,40){z}}
+\item
+\Pstr[0.8cm]{ {\psi_M(t\upharpoonright r) =\ } (n){q^0}\
+(n4-n,60){q^1}\ (n5-n4,60){q^2}\ (n8-n,45){q^1}\ (n9-n8,60){q^2}\
+(n10-n,38){q^3} \in \sem{M}\ .}
+\end{asparablank}
+\end{tabular}
+\end{example}
+
+
+
+\section*{Appendix B -- Proof of Theorem \ref{thm:safeincrejust} and \ref{thm:safepcfpincr}}
+
+\subsection{Proof of Proposition \ref{prop:safe_imp_incrbound}}
+  (i) Suppose that $M$ is safe. By Lemma
+  \ref{lem:elnf_preserves_safety} the $\eta$-long form of $M$ is safe
+  therefore $\tau(M)$ is the tree representation of a safe term.
+
+In the safe lambda calculus, the variables in the context with the
+lowest order must be all abstracted at once when using the abstraction
+rule. Since the computation tree merges consecutive abstractions into
+a single node, any variable $x$ occurring free in the subtree rooted
+at a node $\lambda \overline{\xi}$ different from the root must have
+order greater or equal to $\ord{\lambda
+  \overline{\xi}}$. Reciprocally, if a lambda node $\lambda
+\overline{\xi}$ binds a variable node $x$ then $\ord{\lambda
+  \overline{\xi}} = 1+\max_{z\in\overline{\xi}} \ord{z} > \ord{x}$.
+
+Let $x$ be a bound variable node. Its binder occurs in the path from
+$x$ to the root, therefore, according to the previous observation, $x$
+must be bound by the first $\lambda$-node occurring in this path with
+order $>\ord{x}$. Let $x$ be a free variable node then $x$ is not
+bound by any of the $\lambda$-nodes occurring in the path to the
+root. Once again, by the previous observation, all these
+$\lambda$-nodes except the root have order smaller than
+$\ord{x}$. Hence $\tau$ is incrementally-bound.
+
+(ii) Let $M$ be a closed term such that $\tau(M)$ is
+incrementally-bound.  We assume that $M$ is already in $\eta$-long
+form.  We prove that $M$ is safe by induction on its structure. The
+base case $M = \lambda \overline{\xi} . x$ for some variable $x$ is
+trivial.  \emph{Step case:} If $M = \lambda \overline{\xi} . N_1
+\ldots N_p$.  Let $i$ range over $1..p$. We have $N_i \equiv \lambda
+\overline{\eta_i} . N'_i$ for some non-abstraction term $N'_i$. By the induction hypothesis, $\lambda \overline{\xi} . N_i = \lambda \overline{\xi} \overline{\eta_i} . N'_i$ is a safe closed term, and consequently $N'_i$ is necessarily safe. Let $z$ be a free variable
+of $N'_i$ not bound by $\lambda \overline{\eta_i}$ in $N_i$. Since
+$\tau(M)$ is incrementally-bound we have $\ord{z} \geq \ord{\lambda
+  \overline{\eta_1}} = \ord{N_i}$, thus we can abstract the variables $\overline{\eta_1}$ using the {\sf (abs)} which shows that $N_i$ is safe.  Finally
+we conclude $\vdash M = \lambda \overline{\xi} . N_1 \ldots N_p : T$ using
+the rules {\sf (app)} and {\sf (abs)}.  \qed
+
+\subsection{Proof of Theorem \ref{thm:safeincrejust}}
+(i) Let $M$ be a safe simply-typed term. By Lemma
+\ref{lem:safered_preserve_safety}, its $\beta$-normal form $M'$ is
+also safe. By Proposition \ref{prop:safe_imp_incrbound}(i), $\tau(M')$
+is incrementally-bound and by Proposition
+\ref{prop:incrbound_imp_incrjustified}, $\sem{M'}$ is an
+incrementally-justified. Finally the soundness of the game model gives
+$\sem{M} = \sem{M'}$.  (ii) is a consequence of Lemma
+\ref{lem:safered_preserve_safety}, Proposition
+\ref{prop:incrbound_imp_incrjustified} and
+\ref{prop:safe_imp_incrbound}(ii) and soundness of the game model.
+\qed
+
+\subsection{Proof of Theorem \ref{thm:safepcfpincr}}
+
+The computation tree of a \pcf\ term is defined as the least
+upper-bound of the chain of computation trees of its \emph{syntactic approximants} \cite{abramsky:game-semantics-tutorial}.  It is
+obtained by infinitely expanding the $Y$ combinator,
+for instance $\tau(Y (\lambda f x. f x))$ is the tree representation
+of the $\eta$-long form of the infinite term $(\lambda f x. f x)
+ ((\lambda f x. f x) ((\lambda f x. f x) ( \ldots$
+
+
+It is straightforward to define the traversal rules modeling the
+arithmetic constants of \pcf. Just as in the safe lambda calculus
+we had to remove @-nodes in order to reveal the game-semantic
+correspondence, in safe \pcf\ it is necessary to filter out the
+constant nodes from the traversals. The Correspondence Theorem for
+\pcf\ says that the interaction game semantics is isomorphic to the
+set of traversals disposed of these superfluous nodes. It is
+trivial to show it for term approximants. The result is then
+lifted to any \pcf\ term by observing that the function
+$\travset^{\upharpoonright r}$ from the set of computation trees ordered by the approximation ordering to the set of sets of justified sequences of nodes ordered by subset inclusion is continuous.
+
+Computation trees of Safe \pcf\ terms are incrementally-bound.
+Moreover the traversal rules for \pcf\ are \emph{well-behaved} hence
+lemma \ref{lem:redtrav_trav} still holds and the game-semantic
+analysis of safety remains valid for \pcf.
+
+

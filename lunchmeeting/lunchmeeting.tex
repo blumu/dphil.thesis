@@ -40,9 +40,11 @@
 \frame{\frametitle{Overview}
 
 \begin{itemize}
-\item \textcolor{blue}{Safety}: a restriction for higher-order grammars.
-\item Transposed to the $\lambda$-calculus, it gives rise to the \textcolor{blue}{Safe $\lambda$-calculus}.
-\item Safety has nice algorithmic properties, automata-theoretic and game-semantic characterisations.
+\item \highlight{Safety} is originally a syntactic restriction for higher-order grammars
+with nice automata-theoretic characterization.
+\item In the context of the $\lambda$-calculus it gives rise to the \highlight{Safe $\lambda$-calculus}.
+\item The loss of expressivity can be characterized in terms of representable numeric functions.
+\item The calculus has a ``succinct'' game-semantic model (some pointers become unnecessary).
 \end{itemize}
 }
 
@@ -53,10 +55,11 @@
 \frame{
 \frametitle{Outline for this talk}
 \begin{enumerate}
-\item The Safety Restriction
-\item The simply typed $\lambda$-calculus
-\item The Safe $\lambda$-calculus
-\item Game-semantic characterisation of Safety
+\item The safety restriction
+%\item The simply typed $\lambda$-calculus
+\item The safe $\lambda$-calculus
+\item Numeric function representable
+\item Game-semantic characterisation
 \end{enumerate}
 }
 
@@ -222,7 +225,6 @@ exactly the multivariate polynomials.
 \end{theorem}
 So $cond$ is not representable in the Safe $\lambda$-calculus and $C$ is unsafe.
 }
-%\def\highlightat#1#2{\temporal<#1>{#2}{\underline{#2}}{\textcolor{blue}{#2}}}
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
@@ -294,21 +296,14 @@ $\sem{ \pcfsucc : \nat \rightarrow \nat} = Pref( \{ q^0 q^1 n ( n+1)
 \def\highlightat#1#2{\temporal<#1>{#2}{\underline{#2}}{\textcolor{blue}{#2}}}
 
 \section{Computation trees and traversals}
-\frame{ \frametitle{Computation trees and traversals} {\it
-Computation tree} = tree representation of the $\eta$-long normal
-form of a term.
+\frame{ \frametitle{Computation trees and traversals}
+\highlight{\it Computation tree:} AST of the $\eta$-long normal form of a term.
 
-\visible<2->{ \textcolor{blue}{\it Traversal} = justified sequence
-of nodes representing the computation (given by formation rules). }
-
-\visible<11->{ \textcolor{red}{\it  Traversal reduction} = keep only
-nodes hereditarily justified by the root. }
-
-\vspace{0.5cm} \textcolor{blue}{Example} $M \equiv \lambda f z .
+Example: $M \equiv \lambda f z .
 (\lambda g x . f x) (\lambda y. y) z$ of type $(o \typear o) \typear
 o \typear o$. \vspace{0.5cm}
 \begin{columns}
-\column{4cm}
+\column{3.5cm}
 \begin{tikzpicture}[level distance=7mm,inner ysep=0.5mm]
  \node {\highlightat{3}{$\lambda f z$}}
     child {
@@ -336,35 +331,40 @@ o \typear o$. \vspace{0.5cm}
         };
 \end{tikzpicture}
 
-\column{7cm}
+\column{8cm}
+\visible<2->{\highlight{\it Traversal:} justified sequence
+of nodes representing the computation. }
+
 \setbox0=\hbox{$\textcolor{blue}{
 \pstr{\only<3->{\nd t= (q1){\lambda f z}}
         \only<4->{\nd \cdot (n2-q1) {@}}
         \only<5->{\nd \cdot (n3-n2){\lambda g x}}
-        \only<6->{\nd \cdot (q3-q1){f}}
+        \only<6->{\nd \cdot (q3-q1,35){f}}
         \only<7->{\nd \cdot (q4-q3){\lambda}}
-        \only<8->{\nd \cdot (n8-n3){x}}
-        \only<9->{\nd \cdot (n9-n2){\lambda}}
-        \only<10->{\nd \cdot (q2-q1){z}}
+        \only<8->{\nd \cdot (n8-n3,35){x}}
+        \only<9->{\nd \cdot (n9-n2,30){\lambda}}
+        \only<10->{\nd \cdot (q2-q1,30){z}}
 }}$}
 \ht0 1cm\box0 % Make sure the height of box containing the traversal remains constant across the different generated slides
 
-
-\visible<11->{
-\vspace*{0.2cm}
+\vspace*{0.5cm}
+\visible<11->{\highlight{\it Traversal reduction:} keep only
+nodes hereditarily justified by the root.
 $\color{red}{
 \Pstr[0.7cm]{t \upharpoonright r = (q1){\lambda f z} \cdot (q3-q1,50){f}
 \cdot (q4-q3,50){\lambda} \cdot (q2-q1){z} } }$
 }
 
-%%\vspace*{0.8cm}
-\visible<12->{ $\Pstr[0.7cm]{ t - @ = (q1){\lambda f z}
+\vspace*{0.8cm}
+\visible<12->{
+\highlight{\it @-nodes removal:}
+ $\Pstr[0.7cm]{ t - @ = (q1){\lambda f z}
  \cdot (n3-q1){ \lambda g x}
- \cdot (q3-q1){ f}
+ \cdot (q3-q1,35){ f}
  \cdot (q4-q3){ \lambda}
- \cdot (n8-n3){ x}
- \cdot (n9-q1){ \lambda}
- \cdot (q2-q1){z}
+ \cdot (n8-n3,30){ x}
+ \cdot (n9-q1,30){ \lambda}
+ \cdot (q2-q1,35){z}
 } $}
 \end{columns}
 }
@@ -372,28 +372,28 @@ $\color{red}{
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 \section{The Correspondence Theorem}
-\frame{ \frametitle{The Correspondence Theorem} Let $M$ be a pure
-simply typed term of type $T$.
+\frame{ \frametitle{The Correspondence Theorem}
+\begin{block}{}
+Let $M$ be a simply typed term of type $T$. There exists a partial function $\textcolor{DarkGreen}{\varphi}$
+from the nodes of the \highlight{computation tree} to the
+moves of the \highlight{arena} $\sem{T}$ such that
+$$ \textcolor{DarkGreen}{\varphi}  : \travset(M)^{-@} \textcolor{DarkGreen}{\stackrel{\cong}{\longrightarrow}} \intersem{M} $$
+$$ \textcolor{DarkGreen}{\varphi}  : \travset(M)^{\upharpoonright r}  \textcolor{DarkGreen}{\stackrel{\cong}{\longrightarrow}} \sem{M} \ .$$
+\end{block}
+where
 \begin{itemize}
-\item $\textcolor{blue}{\travset(M)}$ = set of traversals of the computation tree of $M$
-\item $\textcolor{blue}{\travset(M)}^{\upharpoonright r} = \{ t \upharpoonright r \ | \  t \in {\travset(M)} \}$
-\item $\textcolor{blue}{\travset(M)}^{-@} = \{ t - @ \ | \  t \in {\travset(M)} \}$
-\item $\textcolor{red}{\sem{M}}$ = game-semantic denotation of $M$
-\item $\textcolor{red}{\intersem{M}}$ = revealed denotion (i.e. internal moves are not hidden)
+\item $\highlight{\travset(M)}$ = set of traversals of the computation tree of $M$
+\item $\highlight{\travset(M)^{\upharpoonright r}} = \{ t \upharpoonright r \ | \  t \in {\travset(M)} \}$
+\item $\highlight{\travset(M)^{-@}} = \{ t - @ \ | \  t \in {\travset(M)} \}$
+\item $\highlight{\sem{M}}$ = game-semantic denotation of $M$
+\item $\highlight{\intersem{M}}$ = revealed denotion ({\it i.e.}~internal moves are uncovered.)
 \end{itemize}
 
-\begin{block}{}
-There exists a partial function $\textcolor{DarkGreen}{\varphi}$
-from the nodes of the \textcolor{blue}{computation tree} to the
-moves of the \textcolor{red}{arena} for $T$ such that
-$$ \textcolor{DarkGreen}{\varphi}  : \textcolor{blue}{\travset(M)}^{-@} \textcolor{DarkGreen}{\stackrel{\cong}{\longrightarrow}} \textcolor{red}{\intersem{M}} $$
-$$ \textcolor{DarkGreen}{\varphi}  : \textcolor{blue}{\travset(M)}^{\upharpoonright r}  \textcolor{DarkGreen}{\stackrel{\cong}{\longrightarrow}} \textcolor{red}{\sem{M}}.$$
-\end{block}
 }
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-\section{Correspondence Theorem (example)}
-\frame{\frametitle{Correspondence Theorem (example)}
+\section{The Correspondence Theorem (example)}
+\frame{\frametitle{The Correspondence Theorem (example)}
 \begin{center}
 \begin{tikzpicture}[level distance=7mm,inner ysep=0.5mm,inner xsep=0.5mm,sibling distance=10mm]
 %\color{blue}
@@ -452,9 +452,8 @@ Take the traversal
 \cdot (q4-q3){\lambda}
 \cdot (n8-n3){x}
 \cdot (n9-n2,35){\lambda}
-\cdot (q2-q1,35){z}}}, then $\textcolor{DarkGreen}{\varphi}$ maps its reduction
-to the play:
-$$
+\cdot (q2-q1,35){z}}}. We have:
+$
 \textcolor{DarkGreen}{
 \varphi (} %\textcolor{blue}
 {t \upharpoonright r}
@@ -475,7 +474,7 @@ $$
 }}
 \in %\textcolor{red}
 {\sem{M}}.
-$$
+$
 }
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -484,6 +483,7 @@ $$
 \frame{ \frametitle{The Correspondence Theorem (2)}
 \begin{center}
 \begin{tabular}{c|c}
+Computation tree notion & Game-semantic equivalent \\ \hline \hline \\
 computation tree & arena \\ \\
 traversals & uncovered plays \\ \\
 reduced traversal & plays \\ \\
@@ -501,7 +501,7 @@ paths in the computation tree & P-views of uncovered plays
 \begin{itemize}
 \item The computation tree of  a safe term is \highlight{incrementally-bound} :
 each variable $x$ is bound by the first $\lambda$-node occurring in
-\textcolor{DarkGreen}{the path to the root} with order $> \ord{x}$.
+\textcolor{red}{the path to the root} with order $> \ord{x}$.
 \pause
 
 \item Using the Correspondence Theorem, since paths in the computation tree correspond to P-views
@@ -509,7 +509,7 @@ of plays in game semantic, we can show:
 
 \begin{block}{Proposition}
 Safe terms are denoted by \highlight{P-incrementally justified strategies}: each P-move $m$ points to the
-last O-move in \textcolor{DarkGreen}{the P-view} with order $> \ord{m}$.
+last O-move in \textcolor{red}{the P-view} with order $> \ord{m}$.
 \end{block}
 \end{itemize}
 \pause
@@ -534,7 +534,8 @@ game-semantic properties.
 \begin{itemize}
 \item Find a categorical model of Safe PCF.
 \item Complexity classes characterised with the Safe $\lambda$-calculus?
-\item Safe Idealized Algol: is contextual equivalence decidable?
+\item Safe Idealized Algol: is contextual equivalence decidable
+for some finitary fragment (e.g.~Safe IA$_4$)?
 \end{itemize}
 
 

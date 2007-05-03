@@ -1,6 +1,6 @@
 % Copyright 2007 by William Blum (http://william.famille-blum.org/software/latex/index.html)
 \NeedsTeXFormat{LaTeX2e}
-\ProvidesClass{pstring}[2007/04/10 Package for representing pointer-strings]
+\ProvidesClass{pstring}[2007/05/02 Package for representing pointer-strings]
 
 \newif\ifRequestPSengine
 \newif\ifRequestPGFengine
@@ -66,9 +66,6 @@
     \gdef\@engine{PGF}
 \fi
 
-% Default value for the arrow parameters
-\gdef\pstr@DefaultArrowAngle{45}
-\gdef\pstr@DefaultArrowLabel{}
 
 % routines used to draw the nodes and arrow
 \gdef\pstr@drawArrow{\csname pstr@\@engine @drawArrow\endcsname}
@@ -80,12 +77,17 @@
 \gdef\pstr{\csname pstr@\@engine\endcsname}
 \gdef\Pstr{\csname Pstr@\@engine\endcsname}
 \gdef\pstrSetLabelStyle#1{\gdef\pstr@LabelStyle{#1}}
-\gdef\pstrSetArrowColor#1{\gdef\pstr@ArrowColor{#1}}
+\gdef\pstrSetArrowColor#1{\gdef\pstr@DefaultArrowColor{#1}}
+\gdef\pstrSetArrowAngle#1{\gdef\pstr@DefaultArrowAngle{#1}}
+\gdef\pstrSetArrowLabel#1{\gdef\pstr@DefaultArrowLabel{#1}}
 \gdef\pstrSetArrowLineWidth#1{\gdef\pstr@ArrowLineWidth{#1}}
 
-% Default style value
+
+% Default styles and arrow parameters
 \pstrSetLabelStyle{\color{blue} \tiny}
+\pstrSetArrowLabel{}
 \pstrSetArrowColor{orange}
+\pstrSetArrowAngle{45}
 \pstrSetArrowLineWidth{0.3pt}
 
 
@@ -214,9 +216,9 @@ curveto
 \newcommand{\linkNoStar}[2][]{
 \edef\options{#1}
 \ifx\options\@empty
-\def\opt{[linecolor=\pstr@ArrowColor,linewidth=\pstr@ArrowLineWidth,offset=-2pt,nodesep=0pt,arcangleA=-#2, arcangleB=-#2]}
+\def\opt{[linecolor=\pstr@DefaultArrowColor,linewidth=\pstr@ArrowLineWidth,offset=-2pt,nodesep=0pt,arcangleA=-#2, arcangleB=-#2]}
 \else
-\def\opt{[linecolor=\pstr@ArrowColor,linewidth=\pstr@ArrowLineWidth,offset=-2pt,nodesep=0pt,arcangleA=-#2, arcangleB=-#2,#1]}
+\def\opt{[linecolor=\pstr@DefaultArrowColor,linewidth=\pstr@ArrowLineWidth,offset=-2pt,nodesep=0pt,arcangleA=-#2, arcangleB=-#2,#1]}
 \fi
 \expandafter\ncarc\opt{->}
 }
@@ -225,9 +227,9 @@ curveto
 \newcommand{\linkStar}[2][]{
 \edef\options{#1}
 \ifx\options\@empty
-\def\opt{[linecolor=\pstr@ArrowColor,linewidth=\pstr@ArrowLineWidth,offsetA=0pt,offsetB=2pt,nodesep=1pt,arcangleA=#2, arcangleB=#2]}
+\def\opt{[linecolor=\pstr@DefaultArrowColor,linewidth=\pstr@ArrowLineWidth,offsetA=0pt,offsetB=2pt,nodesep=1pt,arcangleA=#2, arcangleB=#2]}
 \else
-\def\opt{[linecolor=\pstr@ArrowColor,linewidth=\pstr@ArrowLineWidth,offsetA=0pt,offsetB=2pt,nodesep=1pt,arcangleA=#2, arcangleB=#2, #1]}
+\def\opt{[linecolor=\pstr@DefaultArrowColor,linewidth=\pstr@ArrowLineWidth,offsetA=0pt,offsetB=2pt,nodesep=1pt,arcangleA=#2, arcangleB=#2, #1]}
 \fi
 \expandafter\ncHarc\opt{->}
 }
@@ -285,8 +287,9 @@ curveto
 %    #2 target node name
 %    #3 angle
 %    #4 label
-\def\pstr@PS@drawArrow#1#2#3#4{%
-  \link*[nodesep=\pstr@arcoptions]{#3}{#1}{#2} \lnklabel{#4}%
+%    #5 arc color
+\def\pstr@PS@drawArrow#1#2#3#4#5{%
+  \link*[linecolor=#5,nodesep=\pstr@arcoptions]{#3}{#1}{#2} \lnklabel{#4}%
 }
 
 % Create the node and store the commands for the creation of the link in the list of tokens tok0
@@ -297,10 +300,11 @@ curveto
 %  #3 target node name
 %  #4 arrow angle
 %  #5 link label
-%  #6 node content
-\gdef\pstr@PS@createNodeAndArrow#1#2#3#4#5#6{%
-    \pstr@drawNode{#1}{#2}{#6}%
-    \pstr@drawArrow{#2}{#3}{#4}{#5}%
+%  #6 link color
+%  #7 node content
+\gdef\pstr@PS@createNodeAndArrow#1#2#3#4#5#6#7{%
+    \pstr@drawNode{#1}{#2}{#7}%
+    \pstr@drawArrow{#2}{#3}{#4}{#5}{#6}%
 }
 
 
@@ -370,7 +374,8 @@ curveto
 %    #2 target node name
 %    #3 angle
 %    #4 label
-\def\pstr@PGF@drawArrow#1#2#3#4{%
+%    #5 link color
+\def\pstr@PGF@drawArrow#1#2#3#4#5{%
     \def\angleB{#3}%
     \count255=180 \advance \count255 by -\angleB%
     \def\angleA{\number\count255}%
@@ -403,7 +408,7 @@ curveto
     %%%% draw using bezier curves
       \pgfpathmoveto{\ptA}\pgfpathcurveto{\cptC}{\cptD}{\ptB}%
     %%%%
-    \color{\pstr@ArrowColor} \pgfusepath{stroke}%
+    \color{#5} \pgfusepath{stroke}%
 
    %%% Put the label on the link if there is one
     \def\label{#4}%
@@ -461,12 +466,13 @@ curveto
 %  #3 target node name
 %  #4 arrow angle
 %  #5 link label
-%  #6 node content
-\gdef\pstr@PGF@createNodeAndArrow#1#2#3#4#5#6{
+%  #6 link color
+%  #7 node content
+\gdef\pstr@PGF@createNodeAndArrow#1#2#3#4#5#6#7{
     %\pstr@createpgfnode{s}{s}{\mbox{C[1($#1$)  2($#2$) 3($#3$) 4(#4) 5(#5) 6(#6)]} }
-    \pstr@drawNode{#1}{#2}{#6}%
+    \pstr@drawNode{#1}{#2}{#7}%
     % add the arrow to the list of arrows
-    \toks0={\pstr@drawArrow{#2}{#3}{#4}{#5}}%
+    \toks0={\pstr@drawArrow{#2}{#3}{#4}{#5}{#6}}%
     \edef\act{\noexpand\pstr@ptrlist={\the\pstr@ptrlist \the\toks0}}%
     \act%
 }
@@ -534,7 +540,7 @@ curveto
 
 
 %%%%%%%%%%%%%%%%%%%%%
-%%%% Code for the succint syntax parser. Used in all mode (pgf and pstricks)
+%%%% Code for the succint syntax parser. Used in all modes (pgf and pstricks)
 %%%%
 
 % Parse the specification of the pointing string.
@@ -568,13 +574,11 @@ curveto
   \ifx\linkparam\empty
     \def\suite{\Pstr@skiplinkparam{#1}{#2}}
   \else
-    \def\suite{\Pstr@parselinkparam@Target@i{#1}{#2}#3} % #3 contains an extra '-' at the end that will be removed by this command
+    \def\suite{\Pstr@parselinkparam@Target@i{#1}{#2}#3\@nil} % #3 contains an extra '-' at the end that will be removed by this command
   \fi
 \fi
 \suite
 }
-% remove the extra '-' (which was appended before) and then goes on with the parsing by adding an extra at the end ',' and looking for the next ','
-\gdef\Pstr@parselinkparam@Target@i#1#2#3-{\Pstr@parselinkparam@Angle{#1}{#2}#3,\@nil}
 
 \gdef\Pstr@skipcontent#1\@nil{}
 
@@ -582,35 +586,50 @@ curveto
 %  #1 dump   #2 source node  #3 node content
 \gdef\Pstr@skiplinkparam#1#2#3\@nil{\pstr@drawNode{#1}{#2}{#3}}
 
+% remove the extra '-' (which was appended before), adds an extra ',' at the end and look for the next ','
+\gdef\Pstr@parselinkparam@Target@i#1#2#3-\@nil{\Pstr@parselinkparam@Angle{#1}{#2}#3,\@nil}
 
 \gdef\Pstr@parselinkparam@Angle#1#2#3,#4\@nil{
   \def\reste{#4}
   \ifx\reste\empty
-    \def\suite{\Pstr@parseNodeContent{#1}{#2}{#3}{\pstr@DefaultArrowAngle}{\pstr@DefaultArrowLabel}}
+    \def\suite{\Pstr@parseNodeContent{#1}{#2}{#3}{\pstr@DefaultArrowAngle}{\pstr@DefaultArrowLabel}{\pstr@DefaultArrowColor}}
   \else
-    \def\suite{\Pstr@parselinkparam@Angle@i{#1}{#2}{#3}#4} % #4 contains an extra ',' at the end that will be removed by this command
+    \def\suite{\Pstr@parselinkparam@Angle@i{#1}{#2}{#3}#4\@nil} % #4 contains an extra ',' at the end that will be removed by this command
   \fi
   \suite
 }
-% remove the extra ',' (which was appended before) and then goes on with the parsing by adding an extra at the end ':' and looking for the next ':'
-\gdef\Pstr@parselinkparam@Angle@i#1#2#3#4,{\Pstr@parselinkparam@Label{#1}{#2}{#3}#4:\@nil}
+% remove the extra ',' (which was appended before), add an extra ':' at the end and look for the next ':'
+\gdef\Pstr@parselinkparam@Angle@i#1#2#3#4,\@nil{\Pstr@parselinkparam@Label{#1}{#2}{#3}#4:\@nil}
 
 \gdef\Pstr@parselinkparam@Label#1#2#3#4:#5\@nil{
   \def\reste{#5}
   \ifx\reste\empty
-    \def\suite{\Pstr@parseNodeContent{#1}{#2}{#3}{#4}{\pstr@DefaultArrowLabel}}
+    \def\suite{\Pstr@parseNodeContent{#1}{#2}{#3}{#4}{\pstr@DefaultArrowLabel}{\pstr@DefaultArrowColor}}
   \else
-    \def\suite{\Pstr@parselinkparam@Label@i{#1}{#2}{#3}{#4}#5} % #5 contains an extra ':' at the end that will be removed by this command
+    \def\suite{\Pstr@parselinkparam@Label@i{#1}{#2}{#3}{#4}#5\@nil} % #5 contains an extra ':' at the end that will be removed by this command
   \fi
   \suite
 }
-% remove the extra ':' (which was appended before) and then goes on with the parsing
-\gdef\Pstr@parselinkparam@Label@i#1#2#3#4#5:{\Pstr@parseNodeContent{#1}{#2}{#3}{#4}{#5}}
+% remove the extra ':' (which was appended before) add an extra ',' at the end and look for the next ','
+\gdef\Pstr@parselinkparam@Label@i#1#2#3#4#5:\@nil{\Pstr@parselinkparam@Color{#1}{#2}{#3}{#4}#5,\@nil}
 
-% End of the parsing of the link parameter, we just need to parse the node content (#6)
+\gdef\Pstr@parselinkparam@Color#1#2#3#4#5,#6\@nil{
+  \def\reste{#6}
+  \ifx\reste\empty
+    \def\suite{\Pstr@parseNodeContent{#1}{#2}{#3}{#4}{#5}{\pstr@DefaultArrowColor}}
+  \else
+    \def\suite{\Pstr@parselinkparam@Color@i{#1}{#2}{#3}{#4}{#5}#6\@nil} % #6 contains an extra ',' at the end that will be removed by this command
+  \fi
+  \suite
+}
+% remove the extra ',' (which was appended before) and then goes on with the parsing
+\gdef\Pstr@parselinkparam@Color@i#1#2#3#4#5#6,\@nil{\Pstr@parseNodeContent{#1}{#2}{#3}{#4}{#5}{#6}}
+
+
+% End of the parsing of the link parameter, we just need to parse the node content (#7)
 % and we have all the parameters necessary to create the node and the link.
-\gdef\Pstr@parseNodeContent#1#2#3#4#5#6\@nil{%
-\pstr@createNodeAndArrow{#1}{#2}{#3}{#4}{#5}{#6}%
+\gdef\Pstr@parseNodeContent#1#2#3#4#5#6#7\@nil{%
+\pstr@createNodeAndArrow{#1}{#2}{#3}{#4}{#5}{#6}{#7}%
 }
 
 %%%%
@@ -628,6 +647,9 @@ curveto
 Change log:
 -----------
 
+Version 0.3.1, 3 May 2007:
+- It is now possible to specify the link color individually with the following link specification syntax:
+    (src-dst,80:label,green)
 Version 0.3, 1 Mar 2007:
 - added support for pgf as a drawing engine instead of the (hacked) pstricks
 - incompatibility with LatexDaemon fixed: before when loading the pstring package from a precompiled

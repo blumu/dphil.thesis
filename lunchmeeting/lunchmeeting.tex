@@ -287,8 +287,11 @@ Hence the term is \alert{unsafe}. Indeed, $\ord{x} = 0 \leq 1 = \ord{f\ x}$.
 \item Safety does not capture ``variable-renaming uselessness''. E.g.~the unsafe term
 $\lambda y^o z^o. (\lambda x^o .y) z$ can be contracted using capture-permitting substitution.
 
+\item Up to order $2$, $\beta$-normal terms are always safe.
+
 \item \highlight{Kierstead terms} $\lambda f^{((o,o),o)} . f (\lambda x^o . f (\lambda y^o . y
 ))$ is safe but $\lambda f^{((o,o),o)} . f (\lambda x^o . f (\underline{\lambda y^o .x}))$ is unsafe.
+
 \end{enumerate}
 }
 
@@ -325,11 +328,11 @@ $\not \vdash_s \lambda x^o . (\lambda y^o z^o . y) x : (o,o,o)$.
 \section{Expressivity}
 \frame{ \frametitle{Expressivity}
 
-Safety is a quite strong constraint but it
+Safety is a strong constraint but it
 is still unclear how it restricts expressivity:
 \begin{itemize}
 \item de Miranda showed that at order 2 for word languages,
-non-determinism palliates the loss of expressivity caused by safety.
+non-determinism palliates the loss of expressivity.
 It is unknown if this extends to higher orders.
 
 \item For tree-generating grammars: Urzyczyn conjectured that
@@ -657,13 +660,14 @@ each variable $x$ is bound by the first $\lambda$-node occurring in
 \textcolor{red}{the path to the root} with order $> \ord{x}$.
 \pause
 
-\item Using the Correspondence Theorem, since paths in the computation tree correspond to P-views
-of plays in game semantic, we can show:
-
-\begin{block}{Proposition}
-Safe terms are denoted by \highlight{P-incrementally justified strategies}: each P-move $m$ points to the
-last O-move in \textcolor{red}{the P-view} with order $> \ord{m}$.
-\end{block}
+\item By the Correspondence Theorem, this implies that:
+    \begin{block}{Proposition}
+    \begin{itemize}
+    \item Safe terms are denoted by \highlight{P-incrementally justified strategies}: each P-move $m$ points to the last O-move in \textcolor{red}{the P-view} with order $> \ord{m}$.
+    \item Reciprocally, if a \emph{closed} term is denoted by a \highlight{P-incrementally justified strategy} then its $\eta$-long $\beta$-normal form is safe.
+    \note{``closed'' is necessary: take $\lambda x y . x$ and $\lambda y . x$.}
+    \end{itemize}
+    \end{block}
 \end{itemize}
 \pause
 
@@ -673,9 +677,90 @@ terms.
 \end{block}
 }
 
+\begingroup
+\def\sigcol#1{{\color{blue} #1}}
+\def\mucol#1{{\color{red} #1}}
 
 \section{Compositionality}
 \frame{ \frametitle{Compositionality}
+
+\highlight{Question} Do P-incrementally-justified strategies compose?
+\pause
+
+\highlight{No.}    Take $\sigma = \sem{ \vdash_s \lambda x^o v^o .x : o\typear (o,o)}$
+ and  $\mu = \sem{ \vdash_s \lambda y^{(o,o)} \varphi^{((o,o),o)}. \varphi (\lambda u^o . y a) : (o,o) \typear (((o,o),o),o)}$ for some constant $a:o$.
+We have $\sigma \fatcompos \mu = \sem{ \lambda x \varphi. \varphi (\underline{\lambda u . x}) }$ which is not P-i.j. by the previous proposition.
+\bigskip
+
+$\begin{array}{ccccccccc}
+A &  & \multicolumn{2}{c}{B} && \multicolumn{4}{c}{C}\\
+\cline{1-1} \cline{3-4} \cline{6-9}
+o & \stackrel{\sigcol{\sigma}}\longrightarrow & o, & o & \stackrel{\mucol{\mu}}\longrightarrow & ((o, &o),& o),& o \\ \\
+&&&&&&&&\rnode{n0}{\lambda x \varphi \omove  \mucol {\lambda y \varphi}}\\
+&&&&&&&\rnode{n1}{\varphi  \pmove \mucol \varphi}\\
+&&&&&&\rnode{n2}{\lambda u \omove  \mucol {\lambda u}} \\
+&&&  \rnode{n3}{\omove \sigcol {\lambda x v} \pmove \mucol y} \\
+\rnode{n4}{x \pmove \sigcol x}
+\end{array}
+\ncarc[arcangleA=20,arcangleB=20,linecolor=black]{->}{n4}{n0}
+\ncarc[arcangleA=30,arcangleB=20,linecolor=red]{->}{n2}{n1}
+\ncarc[arcangleA=30,arcangleB=20,linecolor=red]{->}{n1}{n0}
+\ncarc[arcangleA=20,arcangleB=20,linecolor=red]{->}{n3}{n0}
+\ncarc[arcangleA=20,arcangleB=20,linecolor=blue]{->}{n4}{n3}
+$
+
+}
+\endgroup
+
+
+\section{Compositionality 2 }
+\frame{ \frametitle{Compositionality 2}
+\begin{definition}
+A strategy $\sigma : A \rightarrow B$ is \highlight{closed P-incrementally justified} if it P-i.j. and if for every move $m$ initial in $A$ that is contained in some play of $\sigma$ we have $\ord_A m \geq \ord B$.
+\end{definition}
+\pause
+
+    \begin{itemize}
+    \item Remark: This property is not preserved up to the Curry isomorphism!
+    \item Example: any P-i.j. strategy on $I\rightarrow A$ is closed P-i.j.
+    \item Safe terms denotations are closed P-i.j.
+    \end{itemize}
+
+    \begin{block}{Proposition}
+    Closed P-incrementally justified strategies compose.
+    \end{block}
+\pause
+Hence we have:
+\begin{itemize}
+\item a category of games and closed P-i.j. strategies,
+\item that is not cartesian-closed,
+\item which models the safe $\lambda$-calculus.
+\end{itemize}
+}
+
+\section{Safe PCF}
+\frame{ \frametitle{Safe PCF}
+
+\begin{itemize}
+\item \highlight{PCF} = $\lambda^{\rightarrow}$ with base type $\nat$ +  successor, predecessor, conditional + Y combinator
+
+\item \highlight{Safe PCF} = Safe fragment of PCF
+\end{itemize}
+
+\begin{block}{Proposition}
+  Safe PCF terms are denoted by closed P-i.j. strategies.
+\end{block}
+
+\begin{block}{Definability}
+Let $\sigma$ be a well-bracketed innocent P-i.j. strategy with finite
+ view function defined on a PCF arena
+ $A_1 \times \ldots \times  A_i \rightarrow B$.
+$\sigma$ is the denotation of some term $\overline{x}:\overline{A} \vdash M : B$ 
+such that $\lambda \overline{x} . M$ is safe.
+\end{block}
+\highlight{Question:} Do we get a full abstract model with respect to safe contexts?
+\alert{Problem:} The quotiented category model is not rational (since 
+it is not even cartesian closed)!
 
 }
 
@@ -690,10 +775,10 @@ game-semantic properties.
 
 \highlight{Future works:}
 \begin{itemize}
-\item Find a categorical model of Safe PCF.
+\item Is there a fully abstract model of Safe PCF (with respect to safe contexts)?
 \item Complexity classes characterised with the Safe $\lambda$-calculus?
 \item Safe Idealized Algol: is contextual equivalence decidable
-for some finitary fragment (e.g.~Safe IA$_4$)?
+for some finitary fragment (e.g.~Safe IA$_4$) (with respect to all/safe contexts) ?
 \end{itemize}
 
 

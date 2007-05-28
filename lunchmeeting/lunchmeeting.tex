@@ -64,6 +64,7 @@ with nice automata-theoretic characterization.
 \begin{enumerate}
 \item The Correspondence Theorem
 \item Game-semantic characterisation
+\item Compositionality
 \end{enumerate}
 \end{description}
 }
@@ -187,10 +188,10 @@ But over trees, MSO and modal mu-calculus are equi-expressive.)
 \begin{itemize}
 \item \highlight{Simple types} $A := o\ |\ A \rightarrow A$.
 %We write $(A_1,\ldots, A_n)$ for $A_1\rightarrow \ldots \rightarrow A_n$.
-\pause
+
 \item The \highlight{order} of a type is given by $\textsf{order}(o) = 0$,
 $\textsf{order}(A \rightarrow B) = \max(\textsf{order}(A) + 1, \textsf{order}(B))$.
-\pause
+
 \item Jugdements of the form $ \Gamma \vdash M : T $ where $\Gamma$ is the context, $M$ is the term and $T$ is the type:
 $$ \rulename{var} \   \rulef{}{x : A\vdash x : A}
 \qquad  \rulename{wk} \   \rulef{\Gamma \vdash M : A}{\Delta \vdash M : A} \ \Gamma \subset \Delta$$
@@ -198,9 +199,9 @@ $$ \rulename{app} \  \rulef{\Gamma \vdash M : A \rightarrow B \quad \Gamma \vdas
                            {\Gamma  \vdash M N : B}
 \quad \rulename{abs} \   \rulef{\Gamma, x : A \vdash M : B}
                                 {\Gamma  \vdash \lambda x^A. M : A \rightarrow B}$$
-\pause
+
 \item Example: $f:o\rightarrow o\rightarrow o, x:o \vdash (\lambda \varphi^{o \rightarrow o} x^o . \varphi\ x) (f\ x)$
-\pause
+
 \item A single rule: \highlight{$\beta$-reduction}. e.g. $(\lambda x. M) N \betared M [N/x]$
 \end{itemize}
 }
@@ -283,11 +284,14 @@ Hence the term is \alert{unsafe}. Indeed, $\ord{x} = 0 \leq 1 = \ord{f\ x}$.
 \pause
 
 \item The term $(\lambda \varphi^{o \rightarrow o} x^o . \varphi\ x) (\lambda y^o . y )$ is safe.
+\pause
 
 \item Safety does not capture ``variable-renaming uselessness''. E.g.~the unsafe term
 $\lambda y^o z^o. (\lambda x^o .y) z$ can be contracted using capture-permitting substitution.
+\pause
 
 \item Up to order $2$, $\beta$-normal terms are always safe.
+\pause
 
 \item \highlight{Kierstead terms} $\lambda f^{((o,o),o)} . f (\lambda x^o . f (\lambda y^o . y
 ))$ is safe but $\lambda f^{((o,o),o)} . f (\lambda x^o . f (\underline{\lambda y^o .x}))$ is unsafe.
@@ -310,8 +314,8 @@ which in turns reduces to the safe term $f\ z\ w$.
 
   \item Safe $\beta$-reduction: reduces simultaneously as many $\beta$-redexes
 as needed in order to reach a safe term.
-  \pause
   \item Safe $\beta$-reduction preserves safety.
+  \pause
   \item $\eta$-reduction preserves safety.
   \pause
   \item $\eta$-expansion \alert{does not} preserve safety. E.g.~
@@ -319,7 +323,6 @@ as needed in order to reach a safe term.
 $\not \vdash_s \lambda x^o . (\lambda y^o z^o . y) x : (o,o,o)$.
   \pause
   \item $\eta$-long normal expansion preserves safety.
-  \pause
 \end{itemize}
 
 }
@@ -339,7 +342,7 @@ It is unknown if this extends to higher orders.
 safety is a proper constraint i.e.~that there is a tree which is intrinsically unsafe.
 He proposed a possible counter-example.
 
-\item For graphs, HMOS06's decidability result implies that safety restricts expressivity.
+\item For graphs, HMOS06's undecidability result implies that safety restricts expressivity.
 
 \item For simply-typed terms: ...
 
@@ -641,9 +644,9 @@ $
 \begin{tabular}{c|c}
 Computation tree notions & Game-semantic equivalents \\ \hline \hline \\
 computation tree & arena(s) \\ \\
-traversals & uncovered plays \\ \\
-reduced traversal & plays \\ \\
-paths in the computation tree & P-views of uncovered plays
+traversal & uncovered play \\ \\
+reduced traversal & play \\ \\
+path in the computation tree & P-view of an uncovered play
 \end{tabular}
 \end{center}
 }
@@ -685,11 +688,10 @@ terms.
 \frame{ \frametitle{Compositionality}
 
 \highlight{Question} Do P-incrementally-justified strategies compose?
-\pause
 
-\highlight{No.}    Take $\sigma = \sem{ \vdash_s \lambda x^o v^o .x : o\typear (o,o)}$
- and  $\mu = \sem{ \vdash_s \lambda y^{(o,o)} \varphi^{((o,o),o)}. \varphi (\lambda u^o . y a) : (o,o) \typear (((o,o),o),o)}$ for some constant $a:o$.
-We have $\sigma \fatcompos \mu = \sem{ \lambda x \varphi. \varphi (\underline{\lambda u . x}) }$ which is not P-i.j. by the previous proposition.
+\highlight{No.}    Take $\sigcol{\sigma} = \sem{ \vdash_s \lambda x^o v^o .x : o\typear (o,o)}$
+ and  $\mucol{\mu} = \sem{ \vdash_s \lambda y^{(o,o)} \varphi^{((o,o),o)}. \varphi (\lambda u^o . y a) : (o,o) \typear (((o,o),o),o)}$ for some constant $a:o$.
+We have $\sigcol{\sigma} \fatcompos \mucol{\mu} = \sem{ \lambda x \varphi. \varphi (\underline{\lambda u . x}) }$ which is not P-i.j. by the previous proposition.
 \bigskip
 
 $\begin{array}{ccccccccc}
@@ -718,18 +720,16 @@ $
 \begin{definition}
 A strategy $\sigma : A \rightarrow B$ is \highlight{closed P-incrementally justified} if it P-i.j. and if for every move $m$ initial in $A$ that is contained in some play of $\sigma$ we have $\ord_A m \geq \ord B$.
 \end{definition}
-\pause
 
     \begin{itemize}
     \item Remark: This property is not preserved up to the Curry isomorphism!
     \item Example: any P-i.j. strategy on $I\rightarrow A$ is closed P-i.j.
     \item Safe terms denotations are closed P-i.j.
     \end{itemize}
-
+\pause
     \begin{block}{Proposition}
     Closed P-incrementally justified strategies compose.
     \end{block}
-\pause
 Hence we have:
 \begin{itemize}
 \item a category of games and closed P-i.j. strategies,
@@ -755,11 +755,11 @@ Hence we have:
 Let $\sigma$ be a well-bracketed innocent P-i.j. strategy with finite
  view function defined on a PCF arena
  $A_1 \times \ldots \times  A_i \rightarrow B$.
-$\sigma$ is the denotation of some term $\overline{x}:\overline{A} \vdash M : B$ 
+$\sigma$ is the denotation of some term $\overline{x}:\overline{A} \vdash M : B$
 such that $\lambda \overline{x} . M$ is safe.
 \end{block}
-\highlight{Question:} Do we get a full abstract model with respect to safe contexts?
-\alert{Problem:} The quotiented category model is not rational (since 
+\highlight{Question:} Does this give a fully abstract model with respect to safe contexts?
+\alert{Problem:} The quotiented category model is not rational (since
 it is not even cartesian closed)!
 
 }

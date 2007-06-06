@@ -1,8 +1,215 @@
 \documentclass{article}
+\usepackage{amsmath, amsthm, amssymb}
+\usepackage[defblank]{paralist}
+\usepackage{shadowbox}
+\usepackage{a4wide}
 
+\newcommand{\ord}{\mathop{\mathrm{ord}}}
+\newcommand{\subseqof}{\sqsubseteq}
+\newcommand{\prefixof}{\leqslant}
+\newcommand{\suffixof}{\geqslant}
+\newcommand\defname[1]{{\bf\em #1}\index{#1}}
+
+% misc
+\newcommand\assignar\leftarrow
+
+\newtheorem{theorem}{Theorem}[section]
+\newtheorem{corollary}[theorem]{Corollary}
+\newtheorem{conjecture}[theorem]{Conjecture}
+
+\newtheorem{lemma}{Lemma}[section]
+\newtheorem{proposition}{Proposition}[section]
+
+\theoremstyle{remark}
+\newtheorem{remark}{Remark}[section]
+\newtheorem{example}{Example}[section]
+\newtheorem{property}{Property}[section]
+
+\theoremstyle{definition}
+\newtheorem{definition}{Definition}[section]
+\newtheorem{algorithm}{Algorithm}[section]
+
+
+\author{William Blum}
+\title{Encoding of safe order-$n$ recursion scheme into $n$-PDA}
 
 \begin{document}
+\maketitle
+\begin{abstract}
+In \cite{hague-sto07}, Hague, Murawsky, Ong and Serre introduced
+higher-order collapsible pushdown automata (CPDA) and showed their equivalence with
+higher-order recursion scheme.
+They proposed an algorithm that transforms a given order-$n$ recursive scheme G to an equivalent order-$n$ CPDA. Here we show that if the recursion scheme is safe then the generated automaton does not require the extra power provided by CPDA and can in fact be simulated by an order $n$-PDA (\it{i.e.} push-down automaton). The proof does not make use of the type-homogeneity constraint (\cite{KNU02}).
+\end{abstract}
 
 
+\section{Preliminaries}
+
+Take an order-$n$ {\bf safe} recursion scheme $G$. Let $Gr(G)$ be the computation graph of $G$.
+We consider the $n$-CPDA $CPDA(G)$ as defined in \cite[Definition 5.2]{hague-sto07}.
+Recall that the stack-alphabet $\Gamma$ is defined as the set of nodes of the computation graph.
+An element of the stack is written $a^{(j,k)}$ where $a\in \Gamma$ and the exponent $(j,k)$
+encodes the pointer associated to the stack symbol. We observe that $CPDA(G)$ is such that the link associated to a lambda node $\lambda \overline{\xi}$ is always of the form $(n-\ord{\lambda \overline{\xi}}+1, k)$, therefore the first component of the link is always recoverable from the node itself. For this reason we omit it when representing stack symbols {\it i.e.} we write $\lambda \overline{\xi}^{k}$ to mean $\lambda \overline{\xi}^{(n-\ord{\lambda \overline{\xi}}+1,k)}$.
+
+
+{\it Remark:} It is possible to define the 
+CPDA $CPDA(G)$ constructed in \cite{hague-sto07} in a more compact way by 
+merging the subcases of $(V_1)$ and $(V_0)$. This is done as follows: In case (A), when pushing the prime child of an application node $@$ on the stack, we associate a link to it that points to the preceding stack symbol in the top $1$-stack {\it i.e.} the $@$-node itself.
+ This modification permits us to avoid the consideration on $j$ in the
+ cases ($V_0$) and ($V_1$). The sequences of instruction $pop_1^{p+1}$ can now be replaced by
+ $pop_1^p ; collapse$ and the cases become:
+ \bigskip
+\begin{center}
+\makebox{
+\begin{shadowbox}[10cm]
+Suppose $u$ is a variable which is the $i$-parameter of its binder and let $p$ be the span of $u$.
+\begin{itemize}
+\item $(V_1)$ If the variable has order $l\geq 1$, then
+$$\delta(u) = push_{n-l+1} ; pop_1^p ; collapse;push_1^{E_i(top_1),n-l+1}$$
+\item $(V_0)$ If the variable is of ground type then
+$$\delta(u) = pop_1^p ; collapse;push_1^{E_i(top_1)}$$
+\end{itemize}
+\end{shadowbox}
+}
+\end{center}
+This makes the definition of the CPDA more compact, however for the purpose of proving our result, the original definition is preferred as the proof will need to proceed by case analysis on $j$ anyway.
+
+
+\begin{lemma}
+  \label{lem:links_pointto_reachable}
+ The links that are associated to the stack symbols always point to reachable states.
+\end{lemma}
+\begin{proof}
+  In the definition of $\delta$, whenever a $push_1$ instruction is used, the link attached to the stack symbol always point to a prefix stack corresponding to the state of the stack in the previous state.
+\end{proof}
+
+
+We introduce the notion of \defname{incremental order-decomposition}
+(or just order-decomposition) of a 1-stack $s$: we write $\lambda \overline{\eta}_1^{k_1}$ to denote the last $\lambda$-node in $s$ with order strictly greater than $1$ and
+$\lambda \overline{\eta}_l^{k_l}$ to denote the last $\lambda$-node in $s_{\prefixof \lambda \overline{\eta}_{l-1}^{k_{l-1}}}$ with order strictly greater than $\ord{\lambda \overline{\eta}_{l-1}^{k_{l-1}}}$, for $1 \leq l \leq r$ where $r$ is defined as the smallest number such that $s_{\prefixof \lambda \overline{\eta}_{r}^{k_{r}}}$ does not contain any lambda-node of order strictly greater than $\lambda \overline{\eta}_{r}^{k_{r}}$.
+
+Then $s$ can be written
+$$ s = u_{r+1} \cdot \lambda \overline{\eta}_r^{k_r} \cdot u_r \cdot
+\ldots \cdot \lambda \overline{\eta}_1^{k_1} \cdot  u_1 $$
+for some sequences $u_i$ of stack symbols for $1 \leq i \leq r+1$, and such that whenever $l>l'$ we have
+$\ord{\lambda \overline{\eta}_l^{k_l}}  > \ord{\lambda \overline{\eta}_{l'}^{k_{l'}}}$
+and for $1\leq l \leq r$, all the lambda-nodes occurring in $u_l$ have order strictly smaller 
+than $\ord{\lambda \overline{\eta}_l}$.
+The lambda-nodes $\lambda \overline{\eta}_l^{k_l}$ for $1\leq l \leq r$ are called the \defname{distinguished lambda-nodes} of the order-decomposition of $s$.
+We write $\widetilde{s}$ do denote the sub-sequence of $s$ consisting the distinguished lambda-nodes.
+This sequence determines uniquely the order-decomposition of $s$.
+
+\begin{lemma} Let $s$ be a $1$-stack with an order-decomposition
+given by the sequence of distinguished lambda-nodes
+  $$ \widetilde{s} = \langle \lambda \overline{\eta}_r^{k_r}, 
+\ldots, \lambda \overline{\eta}_1^{k_1} \rangle$$
+Then for all lambda node $a \in \Gamma$ and link $(j,k)$, if $t = push_1 a^{(j,k)} s$ then
+we have: 
+$\widetilde{t} = \langle a \rangle$ if $\ord{a} > \ord{\lambda \overline{\eta}_r^{k_r}}$
+and $\widetilde{t} =  \langle \lambda \overline{\eta}_r^{k_r}, \ldots, \lambda \overline{\eta}_i^{k_i}, a \rangle$
+where $i$ is the smallest index such that $\ord{a} > \ord{\lambda \overline{\eta}_i^{k_i}}$ otherwise.
+\end{lemma}
+
+
+\section{Simulation}
+
+We claim that provided that the input recursion scheme is safe, the $collapse$ operation 
+in $CPDA(G)$ can be simulated by the operation $pop_{n-\ord{top_1(s)}+1}$.
+
+\section{Proof of correctness}
+
+\begin{lemma}
+Let $s$ be reachable configuration (with respect to the $\rightarrow$-step relation\footnote{Recall that $s\rightarrow s'$ just if $s' = \delta(top_1 s)(s)$ where $\delta$ is the transition function defined in \cite[Figure 2]{hague-sto07}}). Consider the order-decomposition of $top_2 s$:
+$$ (top_2 s) = \ldots \lambda \overline{\eta}_r^{k_r}   
+\ldots  \lambda \overline{\eta}_1^{k_1}  \ldots $$
+Then:
+\begin{enumerate}[i.]
+\item for all $l$ in $\{ 1..r \}$ we have $k_l = 1$,
+\item when performing the transition $s \rightarrow s'$, the $collapse$ operation is executed only when the top stack symbol has a link of type $k=1$.
+\end{enumerate}
+\end{lemma}
+\begin{proof}
+We prove (i) and (ii) simultaneously by induction on the number of $\rightarrow$-steps.
+
+Let $u$ be the top-1 element of the stack $s$ and let $s'$ be the stack obtained
+after performing the transition.
+\begin{itemize}
+\item Case (A) is trivial.
+
+\item Case (S) Since terminals are of order $1$ at most, their children nodes in the computation graph are of order $0$. Hence after pushing a children node on the stack, the order-decomposition of the top $0$-stack is not altered.
+
+\item Case (L) Pushing a variable on the stack does not modify the order-decomposition of the top $0$-stack.
+
+\item Case ($V_1$) Suppose u is labelled by a variable $x$.
+
+By the induction hypothesis we have:
+$$ top_2 s = \ldots \lambda \overline{\eta}_r^1  
+\ldots  \lambda \overline{\eta}_1^1   \ldots \ .$$
+
+
+After performing the operation $push_{n-l+1}$, the pointers in the top $1$-stack are updated as follows: the $k$ component of the link is increased by one if the order of the stack symbol is $l$ and is kept unchanged otherwise. Let $q$ be the index of the last distinguished lambda node in the order decomposition of $top_2 s$ with order strictly greater than $l$ (there must be at least one since the binder of $u$ occurs in $top_2 s$). We have:
+$$ top_2 (push_{n-l+1} s) = \ldots 
+\lambda \overline{\eta}_r^1 
+\ldots  \lambda \overline{\eta}_{q}^1 \cdot
+\lambda \overline{\eta}_{q-1}^2 \ldots
+ \lambda \overline{\eta}_1^2 \ldots
+\ .$$
+
+
+Since the recursion scheme is safe, $x$ is incrementally bound (see \cite{blumong:safelambdacalculus}) which means that its binder is the first $\lambda$-node in the path to the root in the computation tree (obtained by unfolding the computation graph) with order strictly greater than $x$.
+
+But by Corollary 8 from \cite{hague-sto07}, $top_2(s)$ contains exactly the P-view of a traversal finishing with node $u$, and by Proposition 6 from \cite{OngLics2006}, the P-view of a traversal is exactly the path from $u$ to the root of the computation tree. Hence $x$ is necessarily bound by a distinguished lambda-node of the order-decomposition of $top_2 s$. Moreover, this distinguished lambda node must occurs before the $q-1^{th}$ distinguished lambda node (since its order is greater than $l$). Let $b$ be the index of the distinguished lambda-node that binds $x$. We have $b\geq q$ and therefore:
+$$ top_2 ((push_{n-l+1};pop_1^p) s) =
+\ldots \lambda \overline{\eta}_r^1  
+\ldots \lambda \overline{\eta}_{b+1}^1
+\ldots \lambda \overline{\eta}_{b}^1\ .$$
+
+\begin{itemize}
+\item Suppose that $\lambda \overline{\eta}_{b}$ is a prime child.
+
+Let $\lambda \overline{\xi}$ be the $i^{th}$ child of the $@$-node.
+The remaining operations are $pop_1;push_1^{\lambda \overline{\xi},n-l+1}$. We have
+$$ top_2 s' = \ldots \lambda \overline{\eta}_{r}^1
+\ldots \lambda \overline{\eta}_{b+1}^1 \ldots @ \cdot \lambda \overline{\xi}^1 \ .$$
+ 
+The $i^{th}$ child of the @-node corresponds to the $i^{th}$ parameter of the application
+therefore its order is strictly less than the order of the prime child node (which corresponds to the operator of the application). Hence
+$$ \ord{\lambda \overline{\eta}_{b+1}} > \ord{\lambda \overline{\eta}_{b}} >
+\ord{\lambda \overline{\xi}}$$
+which shows that the order-decomposition of $top_2 s'$ is 
+$$ top_2 s' = \ldots \lambda \overline{\eta}_{r}^1
+\ldots \lambda \overline{\eta}_{b+1}^1 \ldots \lambda \overline{\xi}^1$$
+thus condition (i) is verified.
+
+\item Suppose that $\lambda \overline{\eta}_{b}$ is a $j$-child with $j>0$.
+
+The next operation is a $collapse$. Since the link attached to the top stack symbol is indeed of type $k=1$, condition (ii) is verified.
+
+Let $t$ be the stack $(push_{n-l+1};pop_1^p;collapse) s$. By Lemma \ref{lem:links_pointto_reachable} $t$ is a reachable state (in no more steps than $s$), therefore by the induction hypothesis (i) we have
+$$ top_2 t = \ldots \lambda \overline{\eta'}_{r'}^1  
+\ldots \lambda \overline{\eta'}_{1}^1 \ldots \varphi$$
+for some variable node $\varphi$ with $\ord{\varphi} = \ord{\lambda \overline{\eta}_{b}}$.
+
+Let $\lambda \overline{\xi}$ be the $i^{th}$ child of $\varphi$. We have $s' = push_1^{\lambda \overline{\xi},n-l+1} t$ and:
+$$ top_2 s' = \ldots \lambda \overline{\eta'}_{r'}^1  
+\ldots  \lambda \overline{\eta'}_1^1 \ldots \varphi \cdot \lambda \overline{\xi}^1 \ .$$
+
+We now show that $1 \leq \ord{\xi}$
+
+Since $b \geq q$ we have $\ord{\lambda \overline{\eta}_{b}} \geq 
+\ord{\lambda \overline{\eta}_{q}} > l = \ord{u} = \ord{\lambda \overline{\xi}}$. 
+
+Moreover we have $\lambda \ord{\xi} \geq 1$ since the 
+Thus the distinguished lambda nodes in the order-decomposition of $top_2 s'$ are given (in order) by $\lambda \overline{\eta}_r^1$,
+$\lambda \overline{\eta}_{r-1}^1$, \ldots
+$\lambda \overline{\eta}_{q}^1$, $\lambda \overline{\xi}^1$ and condition (i) is verified.
+\end{itemize}
+
+\item ($V_0$) This case is treated identically to ($V_1$).
+\end{itemize}
+\end{proof}
+
+\bibliographystyle{abbrv}
+\bibliography{../bib/dphil-all}
 
 \end{document}

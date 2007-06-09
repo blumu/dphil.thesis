@@ -36,7 +36,7 @@
 
 
 \author{William Blum}
-\title{Encoding of safe order-$n$ recursion scheme into $n$-PDA}
+\title{Encoding of a safe order-$n$ recursion scheme into a $n$-PDA}
 
 \begin{document}
 \maketitle
@@ -210,14 +210,18 @@ $s \saferel_q s'$ just if
 , \lambda \overline{\eta}_1^{k_1} \rangle$ ;
 
 \item $s' = collapse (s_{\prefixof \lambda \overline{\eta}_i^1})$ for some $i$ in
-$\{1..q\}$ such that $n - \ord{\lambda \overline{\eta}_i}} + 1 < \ord{s}$.
+$\{1..q\}$ such that $n - \ord{\lambda \overline{\eta}_i} + 1 <
+\ord{s}$.
 \end{itemize}
 
 We abbreviate $\saferel_1$ into $\saferel$ and we write $\saferel^*$ to denote the transitive reflexive closure of $\saferel$.
 
 \end{definition}
-The definition of safety can therefore be reformulated as follow using the relation $\saferel_q$:
-\begin{lemma} Let $s$ be a stack.
+The definition of safety can therefore be reformulated as follows
+using the relation $\saferel_q$:
+\begin{lemma}
+\label{lem:qsafety_equivdef}
+ Let $s$ be a stack.
 \begin{enumerate}[i.]
   \item $s$ is $q$-safe if and only if $top_2\ s$ is $q$-safe and for all $s'$ such that $s \saferel_q s'$, $s'$ is $1$-safe;
 
@@ -230,66 +234,86 @@ s'$, $\orddec{top_2\ s'} = \langle \lambda \overline{\eta}_r^1,
 
 Let $s$ be a higher-order stack. We define $s^{\langle j \rangle}$ as the operation that replaces
 every link occurring in $s$ of the form $(j,k)$ by $(j,k+1)$. Formally,
-\begin{align*} 
+\begin{align*}
 {a^{(j,k)}}^{\langle j \rangle} &= a^{(j,k)}   \\
-{a^{(j,k)}}^{\langle j' \rangle} &= a^{(j,k+1)} &   \mbox{when $j\neq j'$}\\
+{a^{(j,k)}}^{\langle j' \rangle} &= a^{(j,k+1)} &   \mbox{when $j\neq j'$,}\\
 [s_1 \ldots s_p]^{\langle j \rangle} &= [s_1^{\langle j \rangle} \ldots s_p^{\langle j \rangle}] \ .
 \end{align*}
 
-\begin{lemma} Let $j\geq0$ and $s$ be a higher-order stack 
-such that $\orddec{s}$ contains some lambda node with order $>n-j+1$. Let $q$ be the (backward) index of the last
- node in $\orddec{s}$ verifying this condition. If for some $s'$ we have $s \saferel s'$ then $s^{\langle j \rangle} \saferel_q s'$.
+\begin{lemma}
+\label{lem:incrk_qsafe}
+ Let $j\geq2$ and $s$ be a higher-order stack
+such that $\orddec{s} = \langle \lambda \overline{\eta}_r^{k_r},
+\ldots , \lambda \overline{\eta}_1^{k_1} \rangle$ contains some node
+with order $>n-j+1$ and let $q$ be the index of the last such node.
+
+If $s \saferel s'$ for some $s'$ then $s^{\langle j \rangle}
+\saferel_q s'$.
 
 Consequently, if $s$ is safe then $s^{\langle j \rangle}$ is $q$-safe.
 \end{lemma}
 
 \begin{lemma}
-If $s$ is safe then $top_{\ord{s}} s$ is safe.
+\label{lem:top_qsafe} If $s$ is safe then $top_{\ord{s}} s$ is safe.
 \end{lemma}
+
 \begin{lemma}
-Suppose that
+\label{lem:cons_qsafety} Let $s$ and $t$ be two stacks such that:
 \begin{enumerate}[1.]
-\item $s = [s_1 \ldots s_{n+1}]$ is safe;
-\item $t$ of order $\ord{s}-1$ is $q$-safe for some $q$;
-\item for all $t'$ such that $t\saferel_q t'$ with
-$\ord{top_1(t')} = \ord{s}$ we have $collapse([s_1 \ldots
-s_{n+1} \cdot t'])$ is safe,
+\item $s = [s_1 \ldots s_{k+1}]$ is safe and of order $\geq 2$;
+\item $t$ is a $q$-safe $(\ord{s}-1)$-stack for some $q\geq1$.
 \end{enumerate}
-then $[s_1 \ldots s_{n+1} \cdot t]$ is $q$-safe.
-\end{lemma}
-
-
-
-\begin{lemma}
-  \label{lem:pushj_safe_implies_b-safe}
-If $s$ is $safe$ and $\orddec{push_{n-l+1}\ s} = \langle \lambda
-\overline{\eta}_r^1 , \ldots,  \lambda \overline{\eta}_{b}^1,
-\lambda \overline{\eta}_{b-1}^2, \ldots,
- \lambda \overline{\eta}_1^2 \rangle$
-then $push_{n-l+1}\ s$ is $b$-safe.
+Then $[s_1 \ldots s_{k+1}~ t]$ is $q$-safe.
 \end{lemma}
 \begin{proof}
+We use Lemma \ref{lem:qsafety_equivdef}(i). Firstly, since $t$ is
+$q$-safe so is $top_2 [s_1 \ldots s_{k+1} \cdot t]$. Now suppose
+that $[s_1 \ldots s_{k+1} \cdot t] \saferel_q s'$, we need to show
+that $s'$ is safe. In other words we need to prove that for all
+$s''$ such that $s' \saferel s''$, $s''$ is safe. We proceed by
+induction on the number of $\ord{s'}-1$-stacks in $s'$.
+
 \hrulefill
 
- We now show that $s''$ is $b$-safe. For this, we just need to
-prove that $collapse(s''_{\prefixof \lambda \overline{\eta}_{i}})$
-is $1$-safe for all $q \leq i \leq r$.
+ if $t\saferel_q t'$ for some $t'$ then for all lambda node
+$\lambda \overline{\xi}$ of order $n-\ord{s}+1$ occurring in
+$\orddec{t'}$ we have that $collapse([s_1 \ldots s_{k+1} \cdot
+t'_{\prefixof{\lambda \overline{\xi}}}])$ is safe.
 
-The stack symbols that are duplicated by the $push_j$
-operation\footnote{We reproduce here the definition of the CPDA
-operation $push_j$ from \cite{hague-sto07}:
-$$ push_j \underbrace{[ s_1 \ldots s_{l+1} ]}_{s} =
-\left\{
-  \begin{array}{ll}
-\    [s_1\ \ldots\ s_{l+1}\ s_{l+1}^{\langle j \rangle}]  &\hbox{if $j = \ord{s}$;}\\
-\    [s_1\ \ldots\ s_{l+1}\ push_j\ s_{l+1}]  &\hbox{if $j<\ord{s}$.}
- \end{array}
-\right.
-$$} are the ones lying in the $top$
-order-$(j-1)$ stack. More precisely, suppose $top_{j+1}\ c = [c_1\
-\ldots\ c_{l+1}]$ then $top_{j+1}\ (push_j\ c) = [c_1\ \ldots\
-c_{l+1}\ c_{l+1}^{\langle j \rangle}]$ and the elements that are
-created lies in $top_j\ (push_j\ c) = c_{l+1}^{\langle j \rangle}$.
+
+\hrulefill
+
+Since $s$ is safe we have:
+\begin{equation}
+ \orddec{s} = \langle \lambda \overline{\eta}_r^1
+, \ldots, \lambda \overline{\eta}_1^1   \rangle \ . \label{eqn:orddec_s}
+\end{equation}
+
+Let us first analyze the effect that the operation has on the top
+order-$1$ stack. The pointers in $top_2\ s$ are updated as follows:
+the $k$ component of each link is increased by one if the order of
+the stack symbol is $l$ and is kept unchanged otherwise.
+
+From Eq. \ref{eqn:orddec_s} we get:
+\begin{equation}
+\orddec{s'} = \orddec{push_{n-l+1}\ s} = \langle
+\lambda \overline{\eta}_r^1
+, \ldots,  \lambda \overline{\eta}_{b}^1, \lambda \overline{\eta}_{b-1}^{k_{b-1}}, \ldots,
+ \lambda \overline{\eta}_1^{k_{1}} \rangle
+\ . \label{eqn:orddec_pushj_s}
+\end{equation}
+Hence $top_2 s'$ is $b$-safe. Thus to show that $s'$ is $b$-safe, it
+just remains to prove that $collapse(s'_{\prefixof \lambda
+\overline{\eta}_{i}})$ is $1$-safe for all $b \leq i \leq r$.
+
+\hrulefill
+
+The stack symbols that are duplicated by the $push_j$ operation are
+the ones lying in the $top$ order-$(j-1)$ stack. More precisely,
+suppose $top_{j+1}\ c = [c_1\ \ldots\ c_{l+1}]$ then $top_{j+1}\
+(push_j\ c) = [c_1\ \ldots\ c_{l+1}\ c_{l+1}^{\langle j \rangle}]$
+and the elements that are created lies in $top_j\ (push_j\ c) =
+c_{l+1}^{\langle j \rangle}$.
 
 Take any such element $a^{(l,k)}$. If $l=j$ then the link points to
 the same prefix stack as some other stack symbol in $top_j\ c$, thus
@@ -301,33 +325,84 @@ collapse( pop_{j+1} c_{\prefixof{a}}))$ so we can conclude by the
 induction hypothesis.
 
 
-
 \hrulefill
 
-
-By the induction hypothesis $s$ is safe therefore:
-\begin{equation}
- \orddec{s} = \langle \lambda \overline{\eta}_r^1
-, \ldots, \lambda \overline{\eta}_1^1   \rangle \ . \label{eqn:orddec_s}
-\end{equation}
-
-Take $s'' = push_{n-l+1}\ s$. After performing the operation
-$push_{n-l+1}$, the pointers in the top $1$-stack are updated as
-follows: the $k$ component of each link is increased by one if
-the order of the stack symbol is $l$ and is kept unchanged
-otherwise. Let $b$ be the index of the last lambda node in the
-order decomposition of $top_2 s$ with order strictly greater
-than $l$ (there must be at least one since the binder of $u$
-occurs in $top_2 s$). From Eq. \ref{eqn:orddec_s} we get:
-\begin{equation}
-\orddec{push_{n-l+1}\ s} = \langle
-\lambda \overline{\eta}_r^1
-, \ldots,  \lambda \overline{\eta}_{b}^1, \lambda \overline{\eta}_{b-1}^2, \ldots,
- \lambda \overline{\eta}_1^2 \rangle
-\ . \label{eqn:orddec_pushj_s}
-\end{equation}
+\end{proof}
 
 
+\begin{lemma}
+\label{lem:pushj_safe_implies_b-safe} Let $c$ be a reachable
+configuration of $CPDA(G)$ such that $c$ is \emph{safe} and $top_1\
+c$ is a variable $x$ of order $l\geq 1$. Suppose $\orddec{c} =
+\langle \lambda \overline{\eta}_r^1 , \ldots, \lambda
+\overline{\eta}_1^1   \rangle$. Then
+\begin{enumerate}[i.]
+\item $\orddec{c}$ contains at least a node with order strictly
+greater than $l$. Let $b$ be the index of the last lambda node
+in $\orddec{c}$ verifying this condition;
+
+\item $\lambda \overline{\eta}_{b}$ is precisely $x$'s binder;
+
+\item $push_{n-l+1}\ c$ is $b$-safe.\footnote{We reproduce here the definition of the
+CPDA operation $push_j$ from \cite{hague-sto07}:
+$$ push_j \underbrace{[ s_1 \ldots s_{l+1} ]}_{s} =
+\left\{
+  \begin{array}{ll}
+\    [s_1\ \ldots\ s_{l+1}\ s_{l+1}^{\langle j \rangle}]  &\hbox{if $j = \ord{s}$;}\\
+\    [s_1\ \ldots\ s_{l+1}\ push_j\ s_{l+1}]  &\hbox{if $j<\ord{s}$.}
+ \end{array}
+\right.
+$$}
+
+\end{enumerate}
+\end{lemma}
+\begin{proof}
+\begin{enumerate}[i.]
+\item By Corollary 8 from \cite{hague-sto07}, the $top_2$
+     stack of a configuration contains the P-view of some
+    traversal whose last visited node is the $top_1$ symbol, and
+    by Proposition 6 from \cite{OngLics2006}, the P-view of a
+    traversal is exactly the path from the last visited node to
+    the root of the computation tree (obtained by unfolding the
+    computation graph). Consequently, since the order of the
+    binder of a variable is strictly greater than the order of
+    the variable itself, $x$'s binder must occur in $\orddec{c}$
+    and therefore conditions (i) is satisfied.
+
+\item $\lambda \overline{\eta}_{b}$ is precisely the binder of $x$.
+    Indeed, since the recursion scheme is safe, $x$ is
+ incrementally bound (see \cite{blumong:safelambdacalculus})
+ which means that its binder is the first $\lambda$-node in the
+ path to the root in the computation tree with order strictly
+ greater than $x$.
+
+\item We show a preliminary result.
+    Let $s=[s_1 \ldots s_{c+1}]$ be any safe higher-order stack of order
+    $\geq n-l+1 \geq 2$ (not necessarily a proper configuration). We
+    show that $push_{n-l+1} s$ is $q$-safe by induction on the order of
+    $s$. There are two subcases, the base case being handled by the
+    first one with $\ord{s} = n-l+1 = 2$:
+    \begin{enumerate}[a.]
+      \item Suppose that $n-l+1 = \ord{s}$ then
+    $push_{n-l+1} s = [ s_1 \ldots s_{c+1} s_{c+1}^{\langle n-l+1
+    \rangle}]$.
+
+    Since $s$ is safe, by Lemma \ref{lem:top_qsafe} so is $s_{c+1}$
+    which in turn implies that $s_{c+1}^{\langle n-l+1\rangle}$ is
+    $b$-safe by Lemma \ref{lem:incrk_qsafe}. Finally Lemma
+    \ref{lem:cons_qsafety} shows that  $push_{n-l+1} s$ is $b$-safe.
+
+      \item Suppose that $n-l+1 < \ord{s}$ then
+    $push_{n-l+1} s = [ s_1 \ldots s_{c+1} push_{n-l+1} s_{c+1}]$.
+
+    $s_{c+1}$ is safe by Lemma \ref{lem:top_qsafe} thus by the
+    induction hypothesis $push_{n-l+1} s_{c+1}$ is $b$-safe and so
+    is $push_{n-l+1} s$ by Lemma \ref{lem:cons_qsafety}.
+        \end{enumerate}
+    Now it suffices to apply this result on the configuration $c$, which
+    is an order-$n$ safe stack, to obtain that $push_{n-l+1}\ c$ is
+    $b$-safe.
+\end{enumerate}
 \end{proof}
 
 
@@ -378,25 +453,11 @@ shows that (i) holds and (ii) trivially holds.
 
 \item Case ($V_1$) Suppose $u$ is labelled by a variable $x$ of order $l\geq 1$.
 
-Since $s$ is safe we have:
-\begin{equation*}
- \orddec{s} = \langle \lambda \overline{\eta}_r^1
-, \ldots, \lambda \overline{\eta}_1^1   \rangle
-\end{equation*}
-and by Lemma \ref{lem:pushj_safe_implies_b-safe}, $s''$ is $b$-safe where $b$ is such that $\lambda \overline{\eta}_{b}$ is last lambda node in $\orddec{s}$ with order $>l$.
-
-
-We remark that $\lambda \overline{\eta}_{b}$ is precisely the binder of $x$.
-Indeed, since the recursion scheme is safe, $x$ is incrementally bound
- (see \cite{blumong:safelambdacalculus}) which means that its
- binder is the first $\lambda$-node in the path to the root in
- the computation tree (obtained by unfolding the computation
- graph) with order strictly greater than $x$. Moreover by Corollary 8
- from \cite{hague-sto07}, the $top_2$ stack of a configuration
- contains the P-view of a traversal finishing with the $top_1$
- symbol, and by Proposition 6 from \cite{OngLics2006}, the
- P-view of a traversal is exactly the path from the last visited
- node to the root of the computation tree. 
+Since $s$ is safe we have $ \orddec{s} = \langle \lambda
+\overline{\eta}_r^1 , \ldots, \lambda \overline{\eta}_1^1
+\rangle$, and by Lemma \ref{lem:pushj_safe_implies_b-safe}
+$push_{n-l+1}\ s$ is $b$-safe where $b$ is the index of the
+lambda node $\lambda \overline{\eta}_{b}$ that binds $x$.
 
 %\begin{itemize}
 %\item Suppose that $\lambda \overline{\eta}_{b}$ is a prime child, then $top_1 ((push_{n-l+1};pop_1^{p+1}) s) =
@@ -411,16 +472,18 @@ Indeed, since the recursion scheme is safe, $x$ is incrementally bound
 %
 %\item Suppose that $\lambda \overline{\eta}_{b}$ is a $j$-child with $j>0$.
 
-When $collapse$ is executed, the top stack symbol is $u$'s
-binder $\lambda \overline{\eta}_{b}^1$ which has a link of
-type $k=1$ therefore condition (ii) is verified.
+After performing $pop_1^p$, the top stack symbol contains $x$'s
+binder which is precisely $\lambda \overline{\eta}_{b}^1$. The
+link attached to this node is of type $k=1$, this guarantees
+that condition (ii) is verified when the $collapse$ instruction
+is executed.
 
-Since $push_{n-l+1}\ s$ is $b$-safe, by definition we have that
-$collapse \left( (push_{n-l+1}\ s)_{\prefixof \lambda
-\overline{\eta}_{b}} \right) = (push_{n-l+1};pop_1^p;collapse) \
-s $ is safe. Finally we conclude using Lemma
-\ref{lem:push1pop1_preserves_safety} that $s' = push_1
-E_i(top_1)^{(n-l+1,1)}\ t$ is safe, thus condition (i) holds.
+Furthermore, since $push_{n-l+1}\ s$ is $b$-safe, we have that
+$t = collapse \left( (push_{n-l+1}\ s)_{\prefixof \lambda
+\overline{\eta}_{b}} \right) = (push_{n-l+1};pop_1^p;collapse)
+s$ is safe. Since $s' = push_1 E_i(top_1)^{(n-l+1,1)}\ t$, by
+Lemma \ref{lem:push1pop1_preserves_safety} $s'$ is also safe
+thus condition (i) holds.
 %\end{itemize}
 
 \item ($V_0$) This case is treated identically to ($V_1$).

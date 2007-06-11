@@ -95,6 +95,9 @@ understand how the CPDA works. We will therefore stick to the
 original definition for the purpose of proving our result and we
 will make an explicit case analysis on $j$ in the proof.
 
+In the following, we use the term \defname{configuration} to refer to an order-$n$ stack where $n$ is the order
+of the recursion scheme (which is also the order of CPDA(G)).
+
 
 \subsection{Incremental order-decomposition}
 
@@ -154,26 +157,56 @@ $$ \orddec{pop_1 s} = \orddec{s} \ .$$
   $\orddec{s}$.
 \end{proof}
 
+
+\begin{lemma}[Incremental binders are in the order-decomposition]
+\label{lem:binder_in_ordecompos} Let $c$ be a reachable
+configuration of $CPDA(G)$ such that $top_1\
+c$ is a variable $x$ of order $l\geq 0$. Then
+\begin{enumerate}[i.]
+\item $\orddec{c}$ contains at least a node with order strictly
+greater than $l$.
+\item Let $\lambda \overline{\xi}$ be the last lambda node
+in $\orddec{c}$ verifying the first condition. Then $\lambda \overline{\xi}$ is precisely $x$'s binder.
+\end{enumerate}
+\end{lemma}
+\begin{proof}
+\begin{enumerate}[i.]
+\item By Corollary 8 from \cite{hague-sto07}, the $top_2$
+     stack of a configuration contains the P-view of some
+    traversal whose last visited node is the $top_1$ symbol, and
+    by Proposition 6 from \cite{OngLics2006}, the P-view of a
+    traversal is exactly the path from the last visited node to
+    the root of the computation tree (obtained by unfolding the
+    computation graph). Hence the binder of $x$, whose order
+    is strictly greater than $\ord{x}$, occurs in $top_2 c$.
+    Consequently $\orddec{c}$ must contain at least one node of order strictly greater than $l$.
+
+\item Since the recursion scheme is safe, $x$ is
+ incrementally bound (see \cite{blumong:safelambdacalculus})
+ which means that its binder is the first $\lambda$-node in the
+ path to the root in the computation tree with order strictly
+ greater than $x$.
+\end{enumerate}
+\end{proof}
+
 \subsection{Safe higher-order stack}
 
-In the following, we use the term \defname{configuration} to refer to an order-$n$ stack where $n$ is the order
-of the recursion scheme (which is also the order of CPDA(G)).
 
 \begin{definition}[Safe higher-order stack]
-\label{dfn:safestack} Let $s$ be an order-$j$ stack for $j\geq1$, $r
-= |\orddec{s}|$ and $1 \leq q \leq r$. We say that $s$ is
-\defname{$q$-safe} just if
+\label{dfn:safestack} Let $s$ be an order-$j$ stack for $j\geq1$ and $r
+= |\orddec{s}|$.
+\begin{itemize}[-]
+\item $s$ is \defname{$q$-safe}, for $1 \leq q \leq r$, just if 
 \begin{itemize}
-\item $\orddec{s} = \langle \lambda \overline{\eta}_r^1, \ldots ,
-\lambda \overline{\eta}_q^1, \lambda
-\overline{\eta}_{q-1}^{k_{q-1}}, \ldots , \lambda
-\overline{\eta}_1^{k_1} \rangle$ ({\it i.e.}~{\it i.e.}~the
-first $q$ nodes in $\orddec{s}$ have their $k$-component set
-to $1$) ;
-\item for all $q \leq i \leq r$ such that $n-\ord{\lambda \overline{\eta}_i}+1 <
-\ord{s}$, $collapse (s_{\prefixof \lambda \overline{\eta}_i^1})$ is $1$-safe.
+\item $\orddec{s} = \langle \lambda \overline{\eta}_r^{k_r}, \ldots ,
+\lambda \overline{\eta}_q^1, \ldots , \lambda
+\overline{\eta}_1^{k_1} \rangle$ ({\it i.e.}~the
+$k$-component of the $q^{th}$ node is set to $1$);
+
+\item if $n-\ord{\lambda \overline{\eta}_q}+1 < \ord{s}$ then  $collapse (s_{\prefixof \lambda \overline{\eta}_q^1}) = pop_{(n-\ord{\lambda \overline{\eta}_q}+1)}\  s_{\prefixof \lambda \overline{\eta}_q^1}$ is safe;
 \end{itemize}
-We say that $s$ is \defname{safe} if it is $1$-safe.
+\item $s$ is \defname{safe} just if it is $q$-safe for all $q$ in $\{1..r\}$. In particular empty stacks are safe.
+\end{itemize}
 \end{definition}
 
 
@@ -193,35 +226,29 @@ This is a direct consequence of Lemma
 \end{proof}
 
 \begin{definition}
-For $q\geq 0$, we define the relation $\saferel_q$ on higher-order
-stacks as follows.
-
-$s \saferel_q s'$ just if
+Let $q\geq 0$. We define the relation $\saferel_q$ on higher-order
+stacks of any order as follows. $s \saferel_q s'$ just when
 \begin{itemize}
-\item $\orddec{top_2\ s} = \langle \lambda \overline{\eta}_r^1, \ldots , \lambda
-\overline{\eta}_q^1, \lambda \overline{\eta}_{q-1}^{k_{q-1}}, \ldots
-, \lambda \overline{\eta}_1^{k_1} \rangle$ ;
-
-\item $s' = collapse (s_{\prefixof \lambda \overline{\eta}_i^1})$ for some $i$ in
-$\{1..q\}$ such that $n - \ord{\lambda \overline{\eta}_i} + 1 <
-\ord{s}$.
+\item $\orddec{s} = \langle \lambda \overline{\eta}_r^{k_r}, \ldots , \lambda
+\overline{\eta}_q^1, \ldots, \lambda \overline{\eta}_1^{k_1} \rangle$ ;
+\item $n - \ord{\lambda \overline{\eta}_q} + 1 < \ord{s}$ ;
+\item $s' = collapse (s_{\prefixof \lambda \overline{\eta}_q})$.
 \end{itemize}
 
-We abbreviate $\saferel_1$ into $\saferel$ and we write $\saferel^*$ to denote the transitive reflexive closure of $\saferel$.
-
+We write $s \saferel s'$ just if $s \saferel_q s'$ for some $q\in \{1..|\orddec{s}|\}$
+and $\saferel^*$ to denote the transitive reflexive closure of $\saferel$.
 \end{definition}
-The definition of safety can therefore be reformulated as follows
-using the relation $\saferel_q$:
+The definition of safe stacks can be reformulated using the relation $\saferel_q$:
 \begin{lemma}
 \label{lem:qsafety_equivdef}
- Let $s$ be a stack.
+ Let $s$ be an order-$j$ stack with $j\geq 2$.
 \begin{enumerate}[i.]
-  \item $s$ is $q$-safe if and only if $top_2\ s$ is $q$-safe and for all $s'$ such that $s \saferel_q s'$, $s'$ is $1$-safe;
+  \item $s$ is $q$-safe if and only if $top_2 s$ is $q$-safe, $s \saferel_q s'$ for some unique $s'$ and $s'$ is safe;
+  \item $s$ is safe if and only if $top_2 s$ is safe and for all $s'$ such that $s \saferel s'$, $s'$ is also safe.
 
-  \item Consequently, $s$ is safe if and only if for all $s'$ such that $s
-  \saferel^*
+  \item Consequently, $s$ is safe if and only if for all $s'$ such that $s \saferel^*
 s'$, $\orddec{top_2\ s'} = \langle \lambda \overline{\eta}_r^1,
-\ldots , \lambda \overline{\eta}_1^{1} \rangle$.
+\ldots , \lambda \overline{\eta}_1^{1} \rangle$ ({\it i.e.}~ $top_2\ s'$ is safe).
 \end{enumerate}
 \end{lemma}
 
@@ -235,12 +262,8 @@ every link occurring in $s$ of the form $(j,k)$ by $(j,k+1)$. Formally,
 
 \begin{lemma}
 \label{lem:incrk_qsafe}
- Let $j\geq2$ and $s$ be a higher-order stack
-such that $\orddec{s} = \langle \lambda \overline{\eta}_r^{k_r},
-\ldots , \lambda \overline{\eta}_1^{k_1} \rangle$ contains some node
-with order $>n-j+1$ and let $q$ be the index of the last such node.
-
-If $s$ is safe then $s^{\langle j \rangle}$ is $q$-safe.
+ Let $s$ be a higher-order stack such that $top_1 s$ is an order-$l$ variable $x$ with $l\geq 1$. Let $b$ be the (backward) index of $x$'s binder in the order decomposition $\orddec{s}$.
+If $s$ is safe then $s^{\langle n-l+1 \rangle}$ is $b$-safe.
 \end{lemma}
 
 \begin{lemma}
@@ -323,17 +346,11 @@ induction hypothesis.
 \begin{lemma}
 \label{lem:pushj_safe_implies_b-safe} Let $c$ be a reachable
 configuration of $CPDA(G)$ such that $c$ is \emph{safe} and $top_1\
-c$ is a variable $x$ of order $l\geq 1$. Suppose $\orddec{c} =
-\langle \lambda \overline{\eta}_r^1 , \ldots, \lambda
-\overline{\eta}_1^1   \rangle$. Then
-\begin{enumerate}[i.]
-\item $\orddec{c}$ contains at least a node with order strictly
-greater than $l$. Let $b$ be the index of the last lambda node
-in $\orddec{c}$ verifying this condition;
+c$ is a variable $x$ of order $l\geq 1$. We write $\orddec{c}$ as
+$\langle \lambda \overline{\eta}_r^1 , \ldots, \lambda \overline{\eta}_b^1 , \ldots \lambda
+\overline{\eta}_1^1   \rangle$ where $\lambda \overline{\eta}_b$ is $x$'s binder.
 
-\item $\lambda \overline{\eta}_{b}$ is precisely $x$'s binder;
-
-\item $push_{n-l+1}\ c$ is $b$-safe.\footnote{We reproduce here the definition of the
+Then $push_{n-l+1}\ c$ is $b$-safe.\footnote{We reproduce here the definition of the
 CPDA operation $push_j$ from \cite{hague-sto07}:
 $$ push_j \underbrace{[ s_1 \ldots s_{l+1} ]}_{s} =
 \left\{
@@ -343,30 +360,9 @@ $$ push_j \underbrace{[ s_1 \ldots s_{l+1} ]}_{s} =
  \end{array}
 \right.
 $$}
-
-\end{enumerate}
 \end{lemma}
 \begin{proof}
-\begin{enumerate}[i.]
-\item By Corollary 8 from \cite{hague-sto07}, the $top_2$
-     stack of a configuration contains the P-view of some
-    traversal whose last visited node is the $top_1$ symbol, and
-    by Proposition 6 from \cite{OngLics2006}, the P-view of a
-    traversal is exactly the path from the last visited node to
-    the root of the computation tree (obtained by unfolding the
-    computation graph). Consequently, since the order of the
-    binder of a variable is strictly greater than the order of
-    the variable itself, $x$'s binder must occur in $\orddec{c}$
-    and therefore conditions (i) is satisfied.
-
-\item $\lambda \overline{\eta}_{b}$ is precisely the binder of $x$.
-    Indeed, since the recursion scheme is safe, $x$ is
- incrementally bound (see \cite{blumong:safelambdacalculus})
- which means that its binder is the first $\lambda$-node in the
- path to the root in the computation tree with order strictly
- greater than $x$.
-
-\item We show a preliminary result.
+We show a preliminary result.
     Let $s=[s_1 \ldots s_{c+1}]$ be any safe higher-order stack of order
     $\geq n-l+1 \geq 2$ (not necessarily a proper configuration). We
     show that $push_{n-l+1} s$ is $q$-safe by induction on the order of
@@ -392,7 +388,6 @@ $$}
     Now it suffices to apply this result on the configuration $c$, which
     is an order-$n$ safe stack, to obtain that $push_{n-l+1}\ c$ is
     $b$-safe.
-\end{enumerate}
 \end{proof}
 
 
@@ -461,6 +456,7 @@ lambda node $\lambda \overline{\eta}_{b}$ that binds $x$.
 %condition (ii) holds trivially.
 %
 %\item Suppose that $\lambda \overline{\eta}_{b}$ is a $j$-child with $j>0$.
+%\end{itemize}
 
 After performing $pop_1^p$, the top stack symbol contains $x$'s
 binder which is precisely $\lambda \overline{\eta}_{b}^1$. The
@@ -474,7 +470,6 @@ $t = collapse \left( (push_{n-l+1}\ s)_{\prefixof \lambda
 s$ is safe. Since $s' = push_1 E_i(top_1)^{(n-l+1,1)}\ t$, by
 Lemma \ref{lem:push1pop1_preserves_safety} $s'$ is also safe
 thus condition (i) holds.
-%\end{itemize}
 
 \item ($V_0$) This case is treated identically to ($V_1$).
 \end{itemize}

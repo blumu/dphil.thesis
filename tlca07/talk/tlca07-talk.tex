@@ -126,6 +126,26 @@ $A_1$, \ldots, $A_n$ are and $\ord{A_1} \geq \ord{A_2}\geq \cdots \geq \ord{A_n}
 \end{definition}
 }
 
+\section{Safe grammars: examples}
+\frame{\frametitle{Safe grammars: examples}
+Take $h:o \rightarrow o$, $g:o \rightarrow o \rightarrow o$, $a:o$.
+
+The following grammar is unsafe:
+$$\begin{array}{rll}
+  S & \rightarrow & H \, a\\
+  H \, z^o & \rightarrow & F \, \alert{\underline{(g \,
+  z)}}\\
+  F \, \phi^{(o, o)} & \rightarrow & \phi \, (\phi \, (F \, h))
+\end{array}$$
+\pause
+It is equivalent to the following safe grammar:
+$$\begin{array}{rll}
+  S & \rightarrow & F (g \, a)\\
+  F \, \phi^{(o, o)} & \rightarrow & \phi \, (\phi \, (F \, h))
+\end{array}$$
+}
+
+
 \section{Some Results On Safety}
 \frame{\frametitle{Some Results On Safety}
 \begin{description}
@@ -218,7 +238,31 @@ $$ \rulename{abs} \   \rulef{\Gamma, x_1:A_1 \ldots x_n : A_n \vdash_s M : B}
 \end{frame}
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{The Safe \texorpdfstring{$\lambda$}{Lambda}-Calculus : examples}
+\begin{frame} \frametitle{The Safe $\lambda$-Calculus : examples}
+\begin{itemize}
+\item Some examples of safe terms: $\lambda x . x$, $\lambda x y . x$, $\lambda x y . y$.
+\pause
 
+\item Up to order $2$, $\beta$-normal terms are always safe.
+\pause
+
+\item The two Kierstead terms (order $3$). Only one of them is safe:
+
+$$\lambda f^{((o,o),o)} . f (\lambda x^o . f (\lambda y^o . y
+))$$
+$$\lambda f^{((o,o),o)} . f (\lambda x^o . f (\underline{\lambda y^o .\alert{x}}))$$
+
+\pause
+
+\item An example of safe term not in $\beta$-normal form:
+$$(\lambda \varphi^{o \rightarrow o} x^o . \varphi\ x) (\lambda y^o . y )$$
+
+\end{itemize}
+\end{frame}
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \section{Variable Capture}
 \frame{\frametitle{Variable Capture} \highlight{The usual
 ``problem'' in $\lambda$-calculus}: avoid \alert{variable capture}
@@ -252,8 +296,8 @@ performing substitution.
 }
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-\section{Examples}
-\frame{\frametitle{Examples}
+\section{Variable capture: examples}
+\frame{\frametitle{Variable capture: examples}
 \begin{enumerate}
 \item
 Contracting the $\beta$-redex in the following term
@@ -267,17 +311,8 @@ Hence the term is \alert{unsafe}. Indeed, $\ord{x} = 0 \leq 1 = \ord{f\ x}$.
 \item The term $(\lambda \varphi^{o \rightarrow o} x^o . \varphi\ x) (\lambda y^o . y )$ is safe.
 \pause
 
-\item Safety does not capture ``variable-renaming uselessness''. E.g.~the unsafe term
-$\lambda y^o z^o. (\lambda x^o .y) z$ can be contracted using capture-permitting substitution.
-\pause
-
-\item Up to order $2$, $\beta$-normal terms are always safe.
-\pause
-
-\item \highlight{Kierstead terms} $\lambda f^{((o,o),o)} . f (\lambda x^o . f (\lambda y^o . y
-))$ is safe but $\lambda f^{((o,o),o)} . f (\lambda x^o . f (\underline{\lambda y^o .x}))$ is unsafe.
-
-\end{enumerate}
+\item The unsafe term $\lambda y^o z^o. (\lambda x^o .y) z$ can be contracted using without renaming variables. Hence safety does not capture ``variable-renaming uselessness''.
+ \end{enumerate}
 }
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -346,50 +381,43 @@ y, & \mbox{if $t = n+1$}\ .
 \end{array} \right.
 $$
 \end{theorem}
-$cond$ is represented by the term $C = \lambda F G H \alpha x . H (
+
+
+}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+
+\section{Safe numerical functions}
+\frame{ \frametitle{Numerical functions: examples}
+Let $n,m \in \nat$.
+\begin{itemize}
+    \item Natural number: $\overline{n} = \lambda s z. s^n z : (o\rightarrow o)\rightarrow o\rightarrow o$. Safe.
+\pause
+    \item Addition: $\overline{n+m} =
+  \lambda \alpha^{(o,o)} x^o . (\overline{n}\, \alpha) (\overline{m}\, \alpha
+  \, x)$. Safe.
+\pause
+    \item Multiplication: $\overline{n . m} = \lambda \alpha^{(o,o)} . \overline{n} \,(\overline{m}\, \alpha)$. Safe.
+\pause        
+    \item Conditional: 
+    $C = \lambda F G H \alpha x . H (
 \temporal<2>{\lambda y . G \alpha x}
 {\underline{\lambda y . G \alpha x}}{\underline{\lambda y . G \alpha x}}
- ) (F \alpha x)$.
+ ) (F \alpha x)$. \alert{Unsafe}.
+\end{itemize}
 \pause
+In fact:
 \begin{theorem}
 Functions representable  by safe $\lambda$-expressions of type $I\rightarrow \ldots \rightarrow I$  are
 exactly the multivariate polynomials.
 \end{theorem}
-So $cond$ is not representable in the Safe $\lambda$-calculus and $C$ is unsafe.
 }
-
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
-%%%%\section{Game Semantics}
-%%%%\frame{ \frametitle{Game Semantics}
-%%%%Let $\vdash M:T$ be a pure simply typed term.
-%%%%
-%%%%\begin{itemize}
-%%%%\item \highlight{Game-semantics} provides a model of $\lambda$-calculus.
-%%%%$M$ is denoted by a strategy $\sem{M}$ on a 2-player game induced by $T$.
-%%%%\item A \highlight{strategy} is represented by a set of sequences of moves together with \highlight{links}: each move points
-%%%%to a preceding move.
-%%%%\pause
-%%%%\item \textcolor{DarkGreen}{Computation tree} = canonical tree representation of a term.
-%%%%\item \textcolor{DarkGreen}{Traversals $\travset(M)$ } = sequences of nodes with links respecting some formation rules.
-%%%%\end{itemize}
-%%%%\pause
-%%%%
-%%%%\begin{block}{The Correspondence Theorem}
-%%%%The game semantics of a term can be represented on the computation
-%%%%tree:
-%%%%$$ \textcolor{DarkGreen}{\travset(M)} \cong \textcolor{blue}{\intersem{M}} $$
-%%%%$$ \textcolor{DarkGreen}{Reduction(\travset(M))} \cong \textcolor{blue}{\sem{M}}$$
-%%%%where $\textcolor{blue}{\intersem{M}}$ is the revealed game-semantic denotion (i.e. internal moves are uncovered).
-%%%%\end{block}
-%%%%}
-
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 \section{Game semantics}
 \frame{\frametitle{Game semantics}
- Model of programming languages based on games (Abramsky et al.; Hyland and Ong; Nickau)
+Model of programming languages based on games (Abramsky et al.; Hyland and Ong; Nickau)
 \begin{itemize}
 \item 2 players: \highlight{O}pponnent (system) and \highlight{P}roponent (program)
 \item The term type induces an \highlight{arena} defining the possible moves
@@ -414,7 +442,7 @@ $\sem{\nat \rightarrow \nat} = \begin{tikzpicture}[baseline=(root.base),level di
     child {node {$\scriptstyle \ldots$}}
 ;
 \end{tikzpicture}$
-\item \highlight{Play} = justified sequence of moves played alternatively by O and P with justification pointers.
+\item \highlight{Play} = justified sequence of moves played alternatively by O and P with \emph{justification pointers}.
 \item \highlight{Strategy for P} = prefix-closed set of plays. $s  a  b$ in the strategy means that
 P should respond $b$ when O plays $a$ in position $s$.
 \item The \highlight{denotation} of a term $M$, written $\sem{M}$, is a strategy for P.
@@ -481,31 +509,24 @@ The first fully-abstract models of PCF were based on game semantics
 
 \item $IA_i+Y_j$: fragment of IA with finite base type, terms of order
 $\leq i$, recursion limited to order $j$
-
-\item Safe IA = the Safe fragment of IA
 \end{itemize}
 
-\highlight{Question}: Is observational equivalence decidable for
-Safe IA?
-
-Abramsky and McCusker showed that two IA terms are equivalent if and
-only if the set of complete plays of their game denotations is the
-same [Abramsky,McCusker].
+Two IA terms are equivalent iff the two sets of complete plays of the game denotations are equal [Abramsky,McCusker].
 
 \begin{itemize}
-\item $IA_2$: the set of complete plays is regular [Ghica].
+\item $IA_2$: the set of complete plays is regular [Ghica\&McCusker00].
 
-\item $IA_3 + Y_0$: DPDA definable [Ong].
+\item $IA_3 + Y_0$: DPDA definable [Ong02].
 
-\item $IA_3 + while$: Visibly Pushdown Automaton definable [Murawski].
+\item $IA_3 + while$: Visibly Pushdown Automaton definable [Murawski\&Walukievicz05].
 \end{itemize}
 Hence observational equivalence is decidable for all these
 fragments.
 
-At order 4, however observational equivalence is undecidable
-[Murawski]. This is partially due to the fact that pointers cannot
-be encoded succinctly.
+However at order 4, observational equivalence is undecidable [Mur05]. 
 
+\highlight{Question}: Is observational equivalence decidable for
+the safe fragment of $IA_4$?
 }
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

@@ -8,6 +8,7 @@
 
 \begin{document}
 \maketitle
+\tableofcontents
 
 \section{Well-bracketing and P-incremental justification}
 
@@ -147,13 +148,6 @@ for $s \, m \in \sigma$, $m$ points to the last O-move in $\pview{s}$ with order
 \end{proposition}
 
 
-\section{Remarks}
-\subsection{Homogeneity constraint}
-
-Type homogeneity is not preserved after composition. Indeed the types  $o \typear (o \typear o)$ and $(o \typear o) \typear \left((o \typear o) \typear o \right)$ are homogeneous
-but $o \typear \left((o \typear o) \typear o\right)$ is not.
-
-If $A\typear B$ and $B \typear C$ are homogeneous types then  a sufficient condition for $A\typear C$ to be homogeneous is  ``$\ord{A} \geq \ord{B}$''.
 
 
 \section{Compositionality - A semantic proof}
@@ -970,12 +964,6 @@ although $\mu$ is not.
 
 
 \subsubsection{Tensor product}
-\emph{Notation:} Let $s$ be a play. We call \defname{thread} a
-maximal subsequence of $s$ constituted of moves that are
-hereditarily justified by the same occurrence of an initial move.
-Let $m$ be a move occurring in $s$. We call thread of $m$ the only
-thread in $s$ containing $m$.
-
 
  Given two strategies $\sigma :\ A
 \fngamear B$  and $\tau :\ C\fngamear D$, their tensor product
@@ -1032,6 +1020,12 @@ The proof is immediate.
 
 
 \subsubsection{Promotion}
+\emph{Notation:} Let $s$ be a play. We call \defname{thread} a
+maximal subsequence of $s$ constituted of moves that are
+hereditarily justified by the same occurrence of an initial move.
+Let $m$ be a move occurring in $s$. We call thread of $m$ the only
+thread in $s$ containing $m$.
+
 
 We recall some definitions. Let $A$ and $B$ be two well-opened
 games. Given a strategy  $\sigma :\ !A \fngamear B$, its promotion
@@ -1068,11 +1062,11 @@ C$ is also P-i.j.;
 \end{enumerate}
 \end{corollary}
 
-\subsection{A categorical model of Safe PCF}
+\subsection{The category $\mathcal{G}_{Pij}$ of closed P-i.j. strategies}
 
-We now consider the category $\mathcal{G}_s$ where
+We define the category $\mathcal{G}_{Pij}$ as follows:
 \begin{itemize}
-\item the objects are arenas of PCF types,
+\item the objects are games (as defined in \cite{abramsky:game-semantics-tutorial}),
 \item the morphisms from $A$ to $B$ are the closed P-incrementally-justified strategies
 on the game $A\rightarrow B$,
 \item morphisms are composed using the standard game-semantic strategy composition.
@@ -1080,7 +1074,7 @@ on the game $A\rightarrow B$,
 This indeed defines a category. Indeed we have shown in the previous
 section that closed P-i.j. compose, strategy composition is
 associative (\cite{abramsky94full,hylandong_pcf}) and finally the
-identity strategies $id_A$ are closed P-i.j.
+identity strategy $id_A$ for any game $A$ is closed P-i.j.
 
 We mentioned before that such category cannot be cartesian closed. Indeed, remember that
 a P-i.j. strategy from $A$ to $B$ is said to be \emph{closed} P-i.j. provided that some condition
@@ -1088,8 +1082,99 @@ on the arena $A\rightarrow B$ holds. This condition refers precisely to the stru
 
 
 
+\section{Modeling the safe lambda calculus in $\mathcal{G}_{Pij}^{inn}$}
 
-\section{Compositionnality - Syntactic approach}
+Consider the category $\mathcal{G}_{Pij}$ defined in section
+\ref{sec:compos-semantic}. In this section we show how the safe
+lambda calculus can be modeled in the sub-category
+$\mathcal{G}_{Pij}^{inn}$ of innocent P-ij strategies.
+
+\subsection{The language}
+We recall the definition of the safe lambda calculus
+\cite{blumong:safelambdacalculus}.  We use sequents of the form
+$\Gamma \vdash_s M : A$ to represent terms-in-context where $\Gamma$
+is the context and $A$ is the type of $M$. For simplicity we write
+$(A_1, \cdots, A_n, B)$ to mean $A_1 \typear \cdots \typear A_n
+\typear B$, where $B$ is not necessarily ground.
+
+\begin{definition}\rm
+The \defname{safe lambda calculus} is a sub-system of the
+  simply-typed lambda calculus defined by induction over the
+  following rules:
+$$ \rulename{var} \ \rulef{}{x : A\vdash_s x : A} \quad
+\rulename{wk} \ \rulef{\Gamma \vdash_s s : A}{\Delta \vdash_s s : A} \quad
+\Gamma \subset \Delta$$
+$$ \rulename{app} \ \rulef{\Gamma \vdash_s s : (A_1,\ldots,A_n,B) \
+  \Gamma \vdash_s t_1 : A_1 \; \ldots \; \Gamma \vdash_s t_n : A_n
+} {\Gamma \vdash_s s t_1 \ldots t_n : B} \ \ord{B} \sqsubseteq
+\ord{\Gamma}$$
+$$ \rulename{abs} \ \rulef{\Gamma, x_1 : A_1, \ldots, x_n : A_n
+  \vdash_s s : B} {\Gamma \vdash_s \lambda x_1 \ldots x_n . s :
+  (A_1, \ldots ,A_n,B)} \ \ord (A_1, \ldots ,A_n,B) \sqsubseteq
+\ord{\Gamma}$$ where $\ord{\Gamma}$ denotes the set $\{ \ord{y} : y
+\in \Gamma \}$ and ``$c \sqsubseteq S$'' means that $c$ is a
+lower-bound of the set $S$.
+\end{definition}
+
+
+\subsection{Game denotation}
+
+In \cite{blumong:safelambdacalculus} we showed that in the game
+semantic model safe lambda terms are denoted by P-i.j. strategies.
+The argument was syntactic: it is based on the analysis of a special
+kind of abstract syntax tree of a term called computation tree
+\cite{OngLics2006}. Here we give another proof based on a semantic
+argument that uses the results of section \ref{sec:compos-semantic}.
+
+
+\begin{proposition}
+  Safe simply-typed terms are denoted by closed P-i.j. strategies.
+\end{proposition}
+\begin{proof}
+  By induction on the formation rules.
+  \begin{enumerate}
+    \item (var) $\sem{x:A \vdash_s x:A } = id_A$. Clearly the
+    identity strategy is closed P-i.j.
+
+    \item (wk) Take $\Gamma \subset \Delta $ and suppose $\sem{\Gamma \vdash_s
+    s : A}$ is closed P-i.j. Up to an appropriate retagging of
+    the moves the two strategies $\sem{\Delta \vdash_s s : A}$
+    and $\sem{\Gamma \vdash_s s : A}$ are isomorphic. Hence
+    $\sem{\Delta \vdash_s s : A}$ is P-i.j. It is also closed
+    P-i.j. since none of the new initial moves introduced by
+    $\Delta$ occurs in any play of the strategy.
+
+    \item (app) Suppose that $\sem{\Gamma \vdash_s s :
+    (A_1,\ldots,A_n,B)}$ and $\sem{\Gamma \vdash_s t_i : A_i}$
+    for $i \in \{1..n\}$ are closed P-i.j. and $\ord{B}
+    \sqsubseteq \ord{\Gamma}$. We have $\sem{ \Gamma \vdash_s s
+    t_1 \ldots t_n : B} = \langle \sem{\Gamma \vdash s},
+    \sem{\Gamma \vdash t_1}, \ldots, \sem{\Gamma \vdash t_n}
+    \rangle \fatsemi ev_n$ where $ev_n$ is the $n$-parameter
+    evaluation strategy. By Proposition \ref{prop:pij_paring},
+    $\langle \sem{\Gamma \vdash s}, \sem{\Gamma \vdash t_1} ,
+    \ldots, \sem{\Gamma \vdash t_n} \rangle$ is closed P-i.j.
+    The evaluation map $ev_n$ is P-i.j. (but not necessarily
+    closed P-i.j.) therefore by Proposition
+    \ref{prop:closedpijcompose} I. $\sem{ \Gamma \vdash_s s t_1
+    \ldots t_n : B}$ is P-i.j. Now since $B$ has only one
+    initial move and since $\ord{B} \sqsubseteq \ord{\Gamma}$,
+    by Lemma \ref{lem:closedpij_singleBinitmove}, $\sem{ \Gamma
+    \vdash_s s t_1 \ldots t_n : B}$ is closed P-i.j.
+
+    \item (abs) Suppose that $\sem{\Gamma, x_1 : A_1, \ldots, x_n : A_n \vdash_s
+    s : B}$ is closed P-i.j. Then $\sem{\Gamma \vdash_s \lambda
+    x_1 \ldots x_n . s }$ is also P-i.j. by isomorphism.
+    Furthermore, by Lemma \ref{lem:closedpij_singleBinitmove}
+    since the game $\sem{(A_1, \ldots ,A_n,B)}$ has only one
+    initial move and $\ord (A_1, \ldots ,A_n,B) \sqsubseteq
+    \ord{\Gamma}$, $\sem{\Gamma \vdash_s \lambda x_1 \ldots x_n
+    . s }$ is closed P-i.j.
+  \end{enumerate}
+\end{proof}
+
+
+\section{Modeling Safe PCF in $\mathcal{G}_{Pij}^{inn}$}
 
 \subsection{Definability result for Safe PCF}
 
@@ -1247,31 +1332,9 @@ Take $M_\sigma$ to be $\etanf{\betanf{N}}^* $. We have $\sem{\overline{x} : \ove
 For the second part we just need to take $M'_\sigma = \lambda \overline{x}. M_\sigma$.
 \end{proof}
 
-\subsection{Full abstraction}
-
-The fully-abstract game-model of PCF is also fully-abstract for the
-safe fragment of PCF when observational equivalence is defined with
-respect to unrestricted ({\it i.e.}~possibly unsafe) PCF contexts.
-However one may ask what is a fully abstract model of Safe PCF with
-respect to \emph{safe} contexts.
 
 
-\hrulefill
-
-By the definability results for Safe PCF, it should be possible to
-prove that the category $\mathcal{C}^{inn}_{OP-incr}$ of
-OP-incrementally justified and innocent strategies is fully abstract
-for Safe PCF. We can use the same proof as in the PCF case: we have
-a compact test strategy $\alpha:A\rightarrow N$ and by definability,
-there must be some context $x:A \vdash C[x] : N$ such that $\sem{x:A
-\vdash C[x] : N} = \alpha$. The definability result for Safe PCF
-gives us that $\lambda x . C[x] : A \rightarrow N$ is safe which in
-turns implies that $x:A \vdash C[x] : N$ is safe since $\ord{N} =
-0$.
-
-\hrulefill
-
-\subsection{Composition of P-i.j. strategies}
+\subsection{A syntactic argument for compositionality of P-i.j. strategies}
 
 Let $\overline{A} = (A_1, \ldots, A_i)$,
 $B = (B_1, \ldots, B_l,o)$
@@ -1351,10 +1414,8 @@ This condition is not necessary: Take $A=o$, $B=(o,o)$, $C=(o,o)$ and consider t
 
 
 
-
-
-\subsection{Two P-i.j. strategies whose composition is not P-i.j.}
-\subsubsection{First attempt}
+\subsubsection{Counter-example: two P-i.j. strategies whose composition is not P-i.j.}
+\paragraph{First attempt}
 
 Take the types $A=o$, $B=(o,o)$, $C=o$, the variables
 $x,u,v:o$, $y:B$ and $\varphi:((o,o),o)$ and $\Sigma$-constant $a:o$.
@@ -1364,7 +1425,7 @@ Theorem \ref{thm:safeincrejust}(ii) to conclude that
 $\sem{M_{f\fatcompos g}}$ is not P-incrementally justified. However this theorem cannot be used here because $M_g$ contains an order $2$ constants ($\varphi$) therefore
 $M_{f\fatcompos g}$ is not a valid simply typed $\lambda$-term (nor a \pcf-term).
 
-\subsubsection{Second attempt}
+\paragraph{Second attempt}
 The previous example can be easily changed into a working counter-example: we just need to elevate $\varphi$ from the status of constant to variable.
 
 Take $A=o$, $B=(o,o)$, $C=(((o,o),o),o)$, the variables
@@ -1392,114 +1453,60 @@ o & \stackrel{\sigcol{\sem{M_f}}}\longrightarrow & o, & o & \stackrel{\mucol{\se
 $$
 \endgroup
 
-\subsubsection{Another counter-example where $\ord{B} = \ord{C}$}
+\paragraph{Another counter-example with $\ord{B} = \ord{C}$.}
 
 Let $A=o$, $B=C=(((o,o),o),o)$ and let $x:A$, $y:B$, $u:o$, $v,\varphi:((o,o),o)$
 and $g:(o,o)$ be variables and  $a:o$ be a $\Sigma$-constant. Take the two safe terms $\vdash  M_f = \lambda x v.x$ and $\vdash M_g = \lambda y \varphi. \varphi (\lambda u . y (\lambda g. a))$.
 The $\eta\beta$-nf of $M_{f\fatcompos g}$ is $\vdash \lambda x \varphi. \varphi (\underline{\lambda u . x})$ which is unsafe because of the underlined term, so
 $f\fatcompos g$ is not P-incrementally justified.
 
+
+\subsection{Full abstraction}
+
+The fully-abstract game-model of PCF is also fully-abstract for the
+safe fragment of PCF when observational equivalence is defined with
+respect to unrestricted ({\it i.e.}~possibly unsafe) PCF contexts.
+However one may ask what is a fully abstract model of Safe PCF with
+respect to \emph{safe} contexts.
+
+
+\hrulefill
+
+By the definability results for Safe PCF, it should be possible to
+prove that the category $\mathcal{C}^{inn}_{OP-incr}$ of
+OP-incrementally justified and innocent strategies is fully abstract
+for Safe PCF. We can use the same proof as in the PCF case: we have
+a compact test strategy $\alpha:A\rightarrow N$ and by definability,
+there must be some context $x:A \vdash C[x] : N$ such that $\sem{x:A
+\vdash C[x] : N} = \alpha$. The definability result for Safe PCF
+gives us that $\lambda x . C[x] : A \rightarrow N$ is safe which in
+turns implies that $x:A \vdash C[x] : N$ is safe since $\ord{N} =
+0$.
+
+\hrulefill
+
 \bibliographystyle{plain}
 \bibliography{../bib/dphil-all}
 
 
-\section{Modeling the safe lambda calculus in $\mathcal{G_s}$}
 
-In this section we show how the safe lambda calculus can be modeled
-in the category $\mathcal{G_s}$ defined in section
-\ref{sec:compos-semantic}.
-
-
-\subsection{The language}
-We recall the definition of the safe lambda calculus
-\cite{blumong:safelambdacalculus}.  We use sequents of the form
-$\Gamma \vdash_s M : A$ to represent terms-in-context where $\Gamma$
-is the context and $A$ is the type of $M$. For simplicity we write
-$(A_1, \cdots, A_n, B)$ to mean $A_1 \typear \cdots \typear A_n
-\typear B$, where $B$ is not necessarily ground.
-
-\begin{definition}\rm
-The \defname{safe lambda calculus} is a sub-system of the
-  simply-typed lambda calculus defined by induction over the
-  following rules:
-$$ \rulename{var} \ \rulef{}{x : A\vdash_s x : A} \quad
-\rulename{wk} \ \rulef{\Gamma \vdash_s s : A}{\Delta \vdash_s s : A} \quad
-\Gamma \subset \Delta$$
-$$ \rulename{app} \ \rulef{\Gamma \vdash_s s : (A_1,\ldots,A_n,B) \
-  \Gamma \vdash_s t_1 : A_1 \; \ldots \; \Gamma \vdash_s t_n : A_n
-} {\Gamma \vdash_s s t_1 \ldots t_n : B} \ \ord{B} \sqsubseteq
-\ord{\Gamma}$$
-$$ \rulename{abs} \ \rulef{\Gamma, x_1 : A_1, \ldots, x_n : A_n
-  \vdash_s s : B} {\Gamma \vdash_s \lambda x_1 \ldots x_n . s :
-  (A_1, \ldots ,A_n,B)} \ \ord (A_1, \ldots ,A_n,B) \sqsubseteq
-\ord{\Gamma}$$ where $\ord{\Gamma}$ denotes the set $\{ \ord{y} : y
-\in \Gamma \}$ and ``$c \sqsubseteq S$'' means that $c$ is a
-lower-bound of the set $S$.
-\end{definition}
-
-
-\subsection{Game denotation}
-
-In \cite{blumong:safelambdacalculus} we showed that in the game
-semantic model safe lambda terms are denoted by P-i.j. strategies.
-The argument was syntactic: it is based on the analysis of a special
-kind of abstract syntax tree of a term called computation tree
-\cite{OngLics2006}. Here we give another proof based on a semantic
-argument that uses the results of section \ref{sec:compos-semantic}.
-
-
-\begin{proposition}
-  Safe simply-typed terms are denoted by closed P-i.j. strategies.
-\end{proposition}
-\begin{proof}
-  By induction on the formation rules.
-  \begin{enumerate}
-    \item (var) $\sem{x:A \vdash_s x:A } = id_A$. Clearly the
-    identity strategy is closed P-i.j.
-
-    \item (wk) Take $\Gamma \subset \Delta $ and suppose $\sem{\Gamma \vdash_s
-    s : A}$ is closed P-i.j. Up to an appropriate retagging of
-    the moves the two strategies $\sem{\Delta \vdash_s s : A}$
-    and $\sem{\Gamma \vdash_s s : A}$ are isomorphic. Hence
-    $\sem{\Delta \vdash_s s : A}$ is P-i.j. It is also closed
-    P-i.j. since none of the new initial moves introduced by
-    $\Delta$ occurs in any play of the strategy.
-
-    \item (app) Suppose that $\sem{\Gamma \vdash_s s :
-    (A_1,\ldots,A_n,B)}$ and $\sem{\Gamma \vdash_s t_i :
-    A_i}$ for $i \in \{1..n\}$ are closed P-i.j. and
-    $\ord{B} \sqsubseteq \ord{\Gamma}$. We have $\sem{
-    \Gamma \vdash_s s t_1 \ldots t_n : B} = \langle
-    \sem{\Gamma \vdash s}, \sem{\Gamma \vdash t_1}, \ldots,
-    \sem{\Gamma \vdash t_n} \rangle \fatsemi ev_n$ where
-    $ev_n$ is the $n$-parameter evaluation strategy. By
-    Proposition \ref{prop:pij_paring}, $\langle \sem{\Gamma
-    \vdash s}, \sem{\Gamma \vdash t_1} , \ldots, \sem{\Gamma
-    \vdash t_n} \rangle$ is closed P-i.j. The evaluation map
-    $ev_n$ is P-i.j. (but not necessarily closed P-i.j.)
-    therefore by Proposition \ref{prop:closedpijcompose} I.
-    $\sem{ \Gamma \vdash_s s t_1 \ldots t_n : B}$ is P-i.j.
-    Now since $B$ has only one initial move and since
-    $\ord{B} \sqsubseteq \ord{\Gamma}$, by Lemma
-    \ref{lem:closedpij_singleBinitmove}, $\sem{ \Gamma
-    \vdash_s s t_1 \ldots t_n : B}$ is closed P-i.j.
-
-    \item (abs) Suppose that $\sem{\Gamma, x_1 : A_1, \ldots, x_n : A_n \vdash_s
-    s : B}$ is closed P-i.j. Then $\sem{\Gamma \vdash_s \lambda
-    x_1 \ldots x_n . s }$ is also P-i.j. by isomorphism.
-    Furthermore, by Lemma \ref{lem:closedpij_singleBinitmove}
-    since the game $\sem{(A_1, \ldots ,A_n,B)}$ has only one
-    initial move and $\ord (A_1, \ldots ,A_n,B) \sqsubseteq
-    \ord{\Gamma}$, $\sem{\Gamma \vdash_s \lambda x_1 \ldots x_n
-    . s }$ is closed P-i.j.
-  \end{enumerate}
-\end{proof}
-
-
-\section{P-i.j. and IA}
+\section{Safe IA in $\mathcal{G}_{Pij}$}
 $var = acc \times exp = com^{\omega}\times exp$
 
 Any strategy on the game $I \fngamear\ !var$ is P-i.j. since there is no P-question in the arena $var$.
+
+
+\section{Remarks}
+\subsection{Homogeneity constraint}
+
+Type homogeneity is not preserved after composition. Indeed the
+types  $o \typear (o \typear o)$ and $(o \typear o) \typear \left((o
+\typear o) \typear o \right)$ are homogeneous but $o \typear
+\left((o \typear o) \typear o\right)$ is not.
+
+If $A\typear B$ and $B \typear C$ are homogeneous types then  a
+sufficient condition for $A\typear C$ to be homogeneous is
+``$\ord{A} \geq \ord{B}$''.
 
 
 \end{document}

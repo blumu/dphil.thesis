@@ -12,25 +12,51 @@
 
 \section{Game Semantics Preliminaries}
 
-\subsection{Well-bracketing}
-
 We consider an arena $A$ and make the following two assumptions on it:
 \begin{itemize}
 \item (A1) For $A \neq \bot$ (the arena with a single initial question), each question move in the arena enables at least one answer move.
 \item (A2) Answer moves do not enable any other move.
 \end{itemize}
 
-We define the \defname{order} of a move $m$ in the arena $A$, written $\ord_A{m}$ (or just $\ord{m}$ where there is no ambiguity), as the length of the path from $m$ to its furthest leaf in $A$ minus 1
+An arena is said to be \defname{prime} if it has a single initial move; a type is prime if its arena denotation is prime.
+
+\subsection{Node-order}
+
+\subsubsection{Definition}
+
+We define the \defname{order of a move} $m$ in the arena $A$, written $\ord_A{m}$ (or just $\ord{m}$ where there is no ambiguity), as the length of the path from $m$ to its furthest leaf in $A$ minus 1
 ({\it i.e.}~the height of the subarena rooted at $m$ minus 2.). Because of assumptions (A1) and (A2),
 for any move $m$ of $A \neq \bot$, $m$ is a question move if and only if $\ord{m} \geq 0$, and $m$ is an answer move if and only if $\ord{m} = -1$.
 
-The order of the arena $A$ is defined to be the maximal order of its initial moves. The order of a (simple, PCF or IA) type is defined as the order of the arena denoting it; equivalently a ground type has order 0, $\ord{A\rightarrow B} = \max(1+\ord{A},\ord{B})$ and $\ord(A\times B) = \max(\ord A, \ord B)$.
+The \defname{order of an arena} $A$ is defined to be the maximal order of its initial moves. The order of a (simple, PCF or IA) type is defined as the order of the arena denoting it - or equivalently as 0 for ground type, $\ord{A\rightarrow B} = \max(1+\ord{A},\ord{B})$ and $\ord(A\times B) = \max(\ord A, \ord B)$. The order of a term is the order of its type.
 
 
+\subsubsection{Node-order after composition}
 
+Consider the arena $X\fngamear Y$ and let $m$ be a move of
+$X\fngamear Y$. We write $\ord_{X\fngamear Y}{m}$ to denote the
+order of $m$ in the arena ${X\fngamear Y}$. If $m$ belongs to $X$
+(resp.~$Y$) then we write $\ord_X{m}$ (resp.~$\ord_Y{m}$) to denote
+the order of the move $m$ in the arena $X$ (resp.~$Y$).
 
+\begin{lemma}
+\label{lem:compositionorder} Let $A$, $B$ and $C$ be three arenas.
+We have:
+$$\begin{array}{lll}
+\forall m \in A:
+    &  \ord_{A\fngamear B}{m} = \ord_{A\fngamear C}{m} \ ,\\
+\forall m \in B:
+    & \ord_{A\fngamear B}{m} \geq \ord_{B\fngamear C}{m}  & \mbox{for $m$ initial,}\\
+    & \ord_{A\fngamear B}{m} = \ord_{B\fngamear C}{m} & \mbox{for $m$ non initial,} \\
+\forall m \in C:
+    & \ord_{A\fngamear C}{m} \geq \ord_{B\fngamear C}{m} \iff
+\ord{A} \geq \ord{B}\ & \mbox{for $m$ initial,}\\
+    & \ord_{A\fngamear C}{m} = \ord_{B\fngamear C}{m}   & \mbox{for $m$ non initial.}
+\end{array}
+$$
+\end{lemma}
 
-
+\subsection{Well-bracketing}
 
 We call \defname{pending question} of a sequence of moves $s \in L_A$ the last unanswered question in $s$.
 
@@ -114,30 +140,7 @@ unanswered in $s$.
 \end{proof}
 
 
-\subsection{Node-order after composition}
 
-Consider the arena $X\fngamear Y$ and let $m$ be a move of
-$X\fngamear Y$. We write $\ord_{X\fngamear Y}{m}$ to denote the
-order of $m$ in the arena ${X\fngamear Y}$. If $m$ belongs to $X$
-(resp.~$Y$) then we write $\ord_X{m}$ (resp.~$\ord_Y{m}$) to denote
-the order of the move $m$ in the arena $X$ (resp.~$Y$).
-
-\begin{lemma}
-\label{lem:compositionorder} Let $A$, $B$ and $C$ be three arenas.
-We have:
-$$\begin{array}{lll}
-\forall m \in A:
-    &  \ord_{A\fngamear B}{m} = \ord_{A\fngamear C}{m} \ ,\\
-\forall m \in B:
-    & \ord_{A\fngamear B}{m} \geq \ord_{B\fngamear C}{m}  & \mbox{for $m$ initial,}\\
-    & \ord_{A\fngamear B}{m} = \ord_{B\fngamear C}{m} & \mbox{for $m$ non initial,} \\
-\forall m \in C:
-    & \ord_{A\fngamear C}{m} \geq \ord_{B\fngamear C}{m} \iff
-\ord{A} \geq \ord{B}\ & \mbox{for $m$ initial,}\\
-    & \ord_{A\fngamear C}{m} = \ord_{B\fngamear C}{m}   & \mbox{for $m$ non initial.}
-\end{array}
-$$
-\end{lemma}
 
 
 
@@ -388,13 +391,18 @@ An example of closed P-i.j. strategy is the identity strategy $id_A$
 for any game $A$.
 
 \begin{lemma}
-\label{lem:closedpij_singleBinitmove} Let $\sigma : A \fngamear B$
-be a P-i.j. strategy. Suppose that the arena $B$ has only one
-initial move and for every initial move $m$ of $A$ such that some
-play $s\in\sigma$ contains $m$, we have $\ord_A{m} \geq \ord{B}$.
-Then $\sigma$ is closed P-i.j.
+\label{lem:closedpij_singleBinitmove} Let $\sigma : A \fngamear B$ be a P-i.j. strategy. 
+\begin{enumerate}[i.]
+\item If for each initial move $m$ of $A$ occurring in some play of $\sigma$ we have $\ord_A m \geq \ord{B}$, then $\sigma$ is closed P-i.j.
+\item Suppose that $A=A_1\times \ldots \times A_n$ where each of the $A_i$ are prime arenas. If for each initial move $m_i$ of $A_i$, for $i \in \{1..n\}$, occurring in some play of $\sigma$ we have $\ord A_i \geq \ord{B}$, then $\sigma$ is closed P-i.j.
+\end{enumerate}
 \end{lemma}
-This is a direct consequence of the definition.
+\begin{proof}
+(i) This is a direct consequence of the definition since $\ord B \geq \ord_B b$ for every move $b$ initial in $B$.
+
+(ii) Take an initial move $m$ of $A$. It is necessary an initial move of $A_i$ for some $i$ hence $\ord_A m = \ord_{A_i} m$ which is equal to $\ord A_i$ since $A_i$ is prime. By hypothesis this is in turn greater than $\ord{B}$ hence we can conclude using (i).
+\end{proof}
+
 
 
 We observe that every P-i.j. strategy $\sigma$ on the game $I
@@ -1181,14 +1189,13 @@ $$ \rulename{var} \ \rulef{}{x : A\vdash_s x : A} \quad
 \Gamma \subset \Delta$$
 $$ \rulename{app} \ \rulef{\Gamma \vdash_s s : (A_1,\ldots,A_n,B) \
   \Gamma \vdash_s t_1 : A_1 \; \ldots \; \Gamma \vdash_s t_n : A_n
-} {\Gamma \vdash_s s t_1 \ldots t_n : B} \ \ord{B} \sqsubseteq
-\ord{\Gamma}$$
+} {\Gamma \vdash_s s t_1 \ldots t_n : B} \ \min_{y:Y \in \Gamma} \ord Y \geq \ord B$$
 $$ \rulename{abs} \ \rulef{\Gamma, x_1 : A_1, \ldots, x_n : A_n
   \vdash_s s : B} {\Gamma \vdash_s \lambda x_1 \ldots x_n . s :
-  (A_1, \ldots ,A_n,B)} \ \ord (A_1, \ldots ,A_n,B) \sqsubseteq
-\ord{\Gamma}$$ where $\ord{\Gamma}$ denotes the set $\{ \ord{y} : y
-\in \Gamma \}$ and ``$c \sqsubseteq S$'' means that $c$ is a
-lower-bound of the set $S$.
+  (A_1, \ldots ,A_n,B)} \ \min_{y:Y \in \Gamma} \ord Y \geq \ord (A_1, \ldots ,A_n,B)$$
+%  where $\ord{\Gamma}$ denotes the set $\{ \ord{y} : y
+%\in \Gamma \}$ and ``$c \sqsubseteq S$'' means that $c$ is a
+%lower-bound of the set $S$.
 \end{definition}
 
 
@@ -1232,25 +1239,47 @@ argument that uses the results of section \ref{sec:closedpij}.
     The evaluation map $ev_n$ is P-i.j. (but not necessarily
     closed P-i.j.) therefore by Proposition
     \ref{prop:closedpijcompose} I. $\sem{ \Gamma \vdash_s s t_1
-    \ldots t_n : B}$ is P-i.j. Now since $B$ has only one
-    initial move and since $\ord{B} \sqsubseteq \ord{\Gamma}$,
-    by Lemma \ref{lem:closedpij_singleBinitmove}, $\sem{ \Gamma
+    \ldots t_n : B}$ is P-i.j. 
+    The arena of the game $\sem{\Gamma}$ is of type $\sem{Y_1} \times \ldots \times \sem{Y_n}$ where 
+    the $Y_i$s are the types of the variables in the context $\Gamma$. 
+    The $\sem{Y_i}$s are prime since we work with pure simple types without product. 
+    Moreover the side-condition of the rule gives $\ord Y_i \geq \ord B$ for all $i \in \{1..n\}$.
+    Hence by Lemma \ref{lem:closedpij_singleBinitmove}(ii), $\sem{ \Gamma
     \vdash_s s t_1 \ldots t_n : B}$ is closed P-i.j.
 
     \item (abs) Suppose that $\sem{\Gamma, x_1 : A_1, \ldots, x_n : A_n \vdash_s
-    s : B}$ is closed P-i.j. Then $\sem{\Gamma \vdash_s \lambda
-    x_1 \ldots x_n . s }$ is also P-i.j. by isomorphism.
-    Furthermore, by Lemma \ref{lem:closedpij_singleBinitmove}
-    since the game $\sem{(A_1, \ldots ,A_n,B)}$ has only one
-    initial move and $\ord (A_1, \ldots ,A_n,B) \sqsubseteq
-    \ord{\Gamma}$, $\sem{\Gamma \vdash_s \lambda x_1 \ldots x_n
-    . s }$ is closed P-i.j.
+    s : B}$ is closed P-i.j. Then the isomorphic strategy $\sigma = \sem{\Gamma \vdash_s \lambda
+    x_1 \ldots x_n . s : (A_1,\ldots,A_n,B)}$ is also P-i.j.
+    Again, using the side-condition, Lemma \ref{lem:closedpij_singleBinitmove}(ii)
+    implies that $\sigma$ is closed P-i.j.
   \end{enumerate}
 \end{proof}
 
-\subsection{Safe $\Lambda^{\rightarrow}$ + product}
-We will now show how product types and pairing can be added to the safe lambda calculus. 
-To achieve this some care must be taken. Indeed, the arenas involved in the calculus defined in the previous section are all prime arenas {\it i.e.}~they have only one initial move. With product types however, arenas can have more than one initial move. We therefore need to adapt the side-conditions of the application and abstraction rules in order to guarantee that the game semantic characterization still holds.
+\subsection{The safe lambda calculus with product ($\Lambda^{\rightarrow}_\times$)}
+We will now show how product types and pairing can be added to the safe lambda calculus.
+This can be done trivially as follows. Types are now given by the following grammar:
+\begin{align*}
+T ::=& \ B,  \quad \mbox{for some base type $B$} \\
+   &| \ T \rightarrow T \\
+   &| \ T \times T
+\end{align*}
+and the typing system is extended with the following three rules:
+$$ \rulename{\times} \ \rulef{\Gamma \vdash_s s : A \qquad \Gamma \vdash_s t : B}
+{\Gamma \vdash_s \langle s, t \rangle : A \times B}
+\qquad \rulename{\pi_1} \ \rulef{\Gamma \vdash_s s : A \times B}
+{\Gamma \vdash_s \pi_1 s : A} \qquad
+ \rulename{\pi_2} \ \rulef{\Gamma \vdash_s s : A \times B}
+{\Gamma \vdash_s \pi_2 s : B}$$
+We abbreviate this new system of rules as $\Lambda^{\rightarrow}_\times$.
+
+One can easily check that most of the good properties of the safe lambda calculus remains: the free variables of a term have order greater that the term itself; the no-variable-renaming Lemma holds, and $\Lambda^{\rightarrow}_\times$-terms
+are denoted by P-i.j. strategies.
+
+However it is not true in general that terms are denoted by \emph{closed} P-i.j. strategies. Indeed, in the safe lambda calculus without product - as defined in the previous section - all the arenas involved are prime {\it i.e.}~they have a single initial move.  However when introducing product types, arenas can have many initial moves.
+Consequently Lemma \ref{lem:closedpij_singleBinitmove}(ii) does not hold anymore.
+
+
+It is therefore necessary to make a modification to our calculus to guarantee that the game semantic characterization still holds.
 
 \section{Modeling Safe PCF in $\mathcal{G}_{Pij}^{inn}$}
 

@@ -391,7 +391,7 @@ An example of closed P-i.j. strategy is the identity strategy $id_A$
 for any game $A$.
 
 \begin{lemma}
-\label{lem:closedpij_singleBinitmove} Let $\sigma : A \fngamear B$ be a P-i.j. strategy. 
+\label{lem:closedpij_singleBinitmove} Let $\sigma : A \fngamear B$ be a P-i.j. strategy.
 \begin{enumerate}[i.]
 \item If for each initial move $m$ of $A$ occurring in some play of $\sigma$ we have $\ord_A m \geq \ord{B}$, then $\sigma$ is closed P-i.j.
 \item Suppose that $A=A_1\times \ldots \times A_n$ where each of the $A_i$ are prime arenas. If for each initial move $m_i$ of $A_i$, for $i \in \{1..n\}$, occurring in some play of $\sigma$ we have $\ord A_i \geq \ord{B}$, then $\sigma$ is closed P-i.j.
@@ -1210,6 +1210,7 @@ argument that uses the results of section \ref{sec:closedpij}.
 
 
 \begin{proposition}
+\label{prop:safe_closepij_sem}
   Safe simply-typed terms are denoted by closed P-i.j. strategies.
 \end{proposition}
 \begin{proof}
@@ -1239,10 +1240,10 @@ argument that uses the results of section \ref{sec:closedpij}.
     The evaluation map $ev_n$ is P-i.j. (but not necessarily
     closed P-i.j.) therefore by Proposition
     \ref{prop:closedpijcompose} I. $\sem{ \Gamma \vdash_s s t_1
-    \ldots t_n : B}$ is P-i.j. 
-    The arena of the game $\sem{\Gamma}$ is of type $\sem{Y_1} \times \ldots \times \sem{Y_n}$ where 
-    the $Y_i$s are the types of the variables in the context $\Gamma$. 
-    The $\sem{Y_i}$s are prime since we work with pure simple types without product. 
+    \ldots t_n : B}$ is P-i.j.
+    The arena of the game $\sem{\Gamma}$ is of type $\sem{Y_1} \times \ldots \times \sem{Y_n}$ where
+    the $Y_i$s are the types of the variables in the context $\Gamma$.
+    The $\sem{Y_i}$s are prime since we work with pure simple types without product.
     Moreover the side-condition of the rule gives $\ord Y_i \geq \ord B$ for all $i \in \{1..n\}$.
     Hence by Lemma \ref{lem:closedpij_singleBinitmove}(ii), $\sem{ \Gamma
     \vdash_s s t_1 \ldots t_n : B}$ is closed P-i.j.
@@ -1270,16 +1271,82 @@ $$ \rulename{\times} \ \rulef{\Gamma \vdash_s s : A \qquad \Gamma \vdash_s t : B
 {\Gamma \vdash_s \pi_1 s : A} \qquad
  \rulename{\pi_2} \ \rulef{\Gamma \vdash_s s : A \times B}
 {\Gamma \vdash_s \pi_2 s : B}$$
-We abbreviate this new system of rules as $\Lambda^{\rightarrow}_\times$.
 
-One can easily check that most of the good properties of the safe lambda calculus remains: the free variables of a term have order greater that the term itself; the no-variable-renaming Lemma holds, and $\Lambda^{\rightarrow}_\times$-terms
-are denoted by P-i.j. strategies.
+One can easily check that most of the good properties of the safe
+lambda calculus remains in this extended calculus: the free
+variables of a term have order greater than the order of the term
+itself; the no-variable-renaming Lemma holds and terms are denoted
+by P-i.j. strategies. However in general, terms are not denoted by
+\emph{closed} P-i.j. strategies. Indeed, in the safe lambda calculus
+without product - as defined in the previous section - all the
+arenas involved are prime {\it i.e.}~they have a single initial
+move. In the present case however, since types can be constructed
+using the cartesian product, the corresponding arenas can have many
+initial moves. Consequently Lemma
+\ref{lem:closedpij_singleBinitmove}(ii) cannot be used anymore! Here
+is a counter-example: Take the term $x : (o^1\rightarrow o^2)\times
+o^3 \vdash \lambda y^o . \pi_2 x : o^4 \rightarrow o^5$ denoted by
+some P-i.j. strategy $\sigma$ containing the play $q^5 q^3$. We have
+$\ord_{(o^1\rightarrow o^2)\times o^3} q^3 = 0 < 1 = \ord_{o^4
+\rightarrow o^5} q^5$ therefore $\sigma$ is not closed P-i.j.
 
-However it is not true in general that terms are denoted by \emph{closed} P-i.j. strategies. Indeed, in the safe lambda calculus without product - as defined in the previous section - all the arenas involved are prime {\it i.e.}~they have a single initial move.  However when introducing product types, arenas can have many initial moves.
-Consequently Lemma \ref{lem:closedpij_singleBinitmove}(ii) does not hold anymore.
 
+There are two different approaches to overcome this problem. The
+first one consists in restricting the types of the variables
+appearing in the context of a term. More precisely we require that
+for all variable of type $A \times B$ we must have $\ord A = \ord
+B$. One can easily check that this rules out the problem underlined
+in the previous counter-example and that terms are all denoted by
+closed P-i.j. strategies.
 
-It is therefore necessary to make a modification to our calculus to guarantee that the game semantic characterization still holds.
+The other approach is less restrictive but requires us to modify
+slightly the side-conditions of the application and abstraction
+rules: instead of requiring that all variables in the context have
+order greater than the order of the term, we require that the order
+of \emph{any prime sub-type of any variable} in the context has
+order greater that the order of the term. The set $Pr(A)$ of prime
+sub-types of a type $A$ being defined as follows:
+\begin{align*}
+Pr(B) &= \{ B \} \qquad \mbox{ for some base type } B \\
+Pr(A\rightarrow B) &= \{ A\rightarrow B \} \\
+Pr(A\times B) &= Pr(A) \union Pr(B)
+\end{align*}
+
+This gives rise the following calculus:
+\begin{definition}\rm
+The \defname{safe lambda calculus with product}, or Safe
+$\Lambda^{\rightarrow}_\times$ for short, is given by induction over
+the following rules:
+$$ \rulename{var} \ \rulef{}{x : A\vdash_s x : A} \quad
+\rulename{wk} \ \rulef{\Gamma \vdash_s s : A}{\Delta \vdash_s s : A} \quad
+\Gamma \subset \Delta$$
+$$ \rulename{\times} \ \rulef{\Gamma \vdash_s s : A \qquad \Gamma \vdash_s t : B}
+{\Gamma \vdash_s \langle s, t \rangle : A \times B}
+\qquad \rulename{\pi_1} \ \rulef{\Gamma \vdash_s s : A \times B}
+{\Gamma \vdash_s \pi_1 s : A} \qquad
+ \rulename{\pi_2} \ \rulef{\Gamma \vdash_s s : A \times B}
+{\Gamma \vdash_s \pi_2 s : B}$$
+$$ \rulename{app} \ \rulef{\Gamma \vdash_s s : (A_1,\ldots,A_n,B) \
+  \Gamma \vdash_s t_1 : A_1 \; \ldots \; \Gamma \vdash_s t_n : A_n
+} {\Gamma \vdash_s s t_1 \ldots t_n : B} \ C(\Gamma ; B)$$
+$$ \rulename{abs} \ \rulef{\Gamma, x_1 : A_1, \ldots, x_n : A_n
+  \vdash_s s : B} {\Gamma \vdash_s \lambda x_1 \ldots x_n . s :
+  (A_1, \ldots ,A_n,B)} \ C(\Gamma ; (A_1, \ldots ,A_n,B) )$$
+
+where the side-condition $C(\Gamma ; B)$ expresses that $\forall y:Y
+\in \Gamma, \forall Y' \in Pr(Y) . \ord Y' \geq \ord B$.
+\end{definition}
+
+One can show by induction on the rules that the game denotations of
+terms of this calculus are closed P-i.j. (the argument is similar to
+the one used in the proof of Proposition
+\ref{prop:safe_closepij_sem}). However this syntax does not
+completely capture all the closed P-i.j. strategies. Take for
+instance the term $x:(o\rightarrow o)\times o \vdash \lambda z^o. \
+(\pi_1 x) : o \rightarrow (o \rightarrow o)$. Its denotation is
+closed P-i.j. although it is not typable in
+$\Lambda^{\rightarrow}_\times$.
+
 
 \section{Modeling Safe PCF in $\mathcal{G}_{Pij}^{inn}$}
 

@@ -11,36 +11,102 @@
 
 \section{Safe Idealized Algol}
 
-In this section, we present two different approaches that one can
-follow to extend the safety restriction to a language featuring
-variable referencing, such as Idealized Algol. This gives rise to
-different version of ``Safe Idealized Algol''. In the first version,
-all free variables must respect the safety condition whereas in the
-second version, only variables that are not abstracted by the \ianew
-construct (including variables of type $var$) are required to
+In this section, we present two possible approaches to extend the
+safety restriction to a language featuring variable referencing,
+such as Idealized Algol. This gives rise to two different versions
+of ``Safe Idealized Algol''. In the first version, all free
+variables must respect the safety condition whereas in the second
+version, only variables that are not abstracted by the \ianew\
+construct (including variables of type \iavar) are required to
 respect the safety condition.
 
 
 \subsection{First version: Safe IA}
-- Is just IA where the application and abstraction rules are
-restricted as in the safe lambda calculus. Equivalently, it is the
-safe lambda calculus extended with the constants and constructs of
-PCF and IA.
 
-- The rules are formally given by:
+ The obvious way to define safety for IA terms consists in extending the safe lambda calculus by adding rules
+ for constants and constructs of PCF and IA.
+ Equivalently, this is the system of rules of IA where the application and abstraction rules
+ have been restricted as in the safe lambda calculus.
+The rules are formally given in Table \ref{tab:safeia_formrules}.
 
 
-- Game semantics of Safe PCF extends immediately to Safe IA.
+%\newenvironment{FramedTable}%
+%{\begin{table}[htbp]
+%\begin{Sbox}%
+%\setlength{\mylength}{\textwidth}%
+%\addtolength{\mylength}{-2\fboxsep}%
+%\addtolength{\mylength}{-2\fboxrule}%
+%\begin{minipage}{\mylength}}%
+%{\end{minipage}\end{Sbox}\shadowbox{\TheSbox}\end{table}}%
 
-- Observational equivalence.
 
-There is an important theorem (\cite{AM97a}) about the
-game-semantics model of IA which states that two IA terms are
-equivalent if and only if the set of complete plays of their
-denotations are equal. This was used in \cite{ghicamccusker00} to
-show that observational equivalence for the $IA_2$ fragment of IA is
-decidable, the set of complete plays being representable by regular
-expressions. In \cite{Ong02} it as shown that it is still decidable
+\begin{table}
+ {\bf Lambda calculus part}
+
+$$ \rulename{var} \ \rulef{}{x : A  \vdash_s x : A}
+\qquad \rulename{wk} \ \rulef{\Gamma \vdash_s s :
+A}{\Delta \vdash_s s : A} \quad \Gamma \subset
+\Delta
+$$
+
+%\fbox
+{
+%\begin{Bcenter}
+$$ \rulename{app} \ \rulef{\Gamma  \vdash_s s : (A_1,\ldots,A_n,B) \quad
+\Gamma  \vdash_s t_1 : A_1 \quad \ldots \quad \Gamma  \vdash_s t_n : A_n
+} {\Gamma  \vdash_s s t_1 \ldots t_n : B} \quad C(\Gamma ; B)$$ \\
+$$ \rulename{abs} \ \rulef{\Gamma, x_1 : A_1, \ldots, x_n : A_n
+  \vdash_s s : B} {\Gamma \vdash_s \lambda x_1 \ldots x_n . s :
+  (A_1, \ldots ,A_n,B)} \quad C(\Gamma ; (A_1, \ldots ,A_n,B) )$$
+%\end{Bcenter}
+}
+
+where the side-condition $C(\Gamma ; B)$ expresses that $\forall y:Y
+\in \Gamma, \forall Y' \in Pr(Y) . \ord Y' \geq \ord B$.
+
+
+{\bf Arithmetic and recursion}
+$$ \rulename{const} \ \rulef{}{\emptyset  \vdash n :\texttt{exp}}
+\qquad \rulename{succ} \ \rulef{\Gamma \vdash M:\texttt{exp} }{\Gamma \vdash \texttt{succ}\ M:\texttt{exp}}
+\qquad \rulename{pred} \ \rulef{\Gamma \vdash M:\texttt{exp} }{\Gamma \vdash \texttt{pred}\ M:\texttt{exp}}$$
+
+$$
+\rulename{cond} \ \rulef{\Gamma\vdash M : \texttt{exp} \qquad \Gamma\vdash N_1 : \texttt{exp} \qquad \Gamma\vdash N_2 : \texttt{exp} }{\Gamma \vdash \texttt{cond}\ M\ N_1\ N_2}
+\qquad  \rulename{rec} \ \rulef{\Gamma \vdash M : A\rightarrow A }{ \Gamma \vdash Y_A M : A}$$
+
+{\bf Imperative constructs}
+$$ \rulef{\Gamma| \Gamma^{\ianew} \vdash M : \texttt{com} \quad \Gamma \vdash N :A}
+    {\Gamma \vdash \texttt{seq}_A \ M\ N\ : A} \quad A \in \{ \texttt{com}, \texttt{exp}\}$$
+
+$$ \rulef{\Gamma \vdash M : \texttt{var} \quad \Gamma \vdash N : \texttt{exp}}
+    {\Gamma \vdash \texttt{assign}\ M\ N\ : \texttt{com}}
+\qquad
+ \rulef{\Gamma \vdash M : \texttt{var}}
+    {\Gamma \vdash \texttt{deref}\ M\ : \texttt{exp}}$$
+
+$$ \rulef{\Gamma , x : \texttt{var} \vdash M : A}
+    {\Gamma  \vdash \texttt{new } x \texttt{ in } M} \quad A \in \{ \texttt{com}, \texttt{exp}\}$$
+
+$$ \rulef{\Gamma \vdash M_1 : \texttt{exp} \rightarrow \texttt{com} \quad \Gamma \vdash M_2 : \texttt{exp}}
+    {\Gamma \vdash \texttt{mkvar } M_1\ M_2\ : \texttt{var}}$$
+\caption{Formation rules for Safe IA} \label{tab:safeia_formrules}
+\end{table}
+
+
+\notetoself{ - Game semantics of Safe PCF extends immediately to
+Safe IA.
+
+- Observational equivalence.}
+
+\subsubsection{Algorithmic game semantics}
+
+An important theorem (\cite{AM97a}) about the game-semantics model
+of IA states that two IA terms are equivalent if and only if the set
+of complete plays of their denotations are equal. This result has
+been used in \cite{ghicamccusker00} to show that observational
+equivalence for the $IA_2$ fragment of IA is decidable -- the set of
+complete plays being representable by regular expressions. In
+\cite{Ong02} it as shown that it is still decidable
  for the $IA_3+Y_0$: the sets of complete plays corresponding exactly to the context-free languages
  and therefore the problem reduces to the DPDA equivalence problem which is itself decidable with an unknown
 complexity.
@@ -49,23 +115,93 @@ Imposing the safety condition suggest an improvement in complexity.
 For instance, in the case of $IA_3$, the complexity lies somewhere
 between the complexity of regular language equivalence and
 context-free language equivalence. In fact Safe $IA_3$ contains
-terms whose denotation is context free such as $\lambda f . f
-(\lambda x .x )$, therefore the complexity must be strictly higher
-than for equivalence of regular languages.
+terms whose denotation is context free -- for instance $\lambda f .
+f (\lambda x .x )$ -- therefore the complexity must be strictly
+higher than the complexity of regular language equivalence.
 
 
 \subsection{Second version: Safe IA'}
 
-Rules We define new judgment forms where the context is partitioned
-in two components $\Gamma$ and $\Gamma^{\ianew}$: the component
-contains variables that can be abstracted by a $\lambda$, the second
-contains variables that are abstracted by a \ianew construct.
+We introduce a new judgment of the form $\Gamma | \Gamma^{\ianew}
+\vdash_{s'} M : A$ where the context is partitioned into two
+components: The first component contains standard lambda calculus
+variables -- those that are abstracted by a $\lambda$-abstraction;
+the second is called the block-variable context, it contains
+variables that are abstracted by an occurrence of the \ianew\
+construct. The component $\Gamma^{\ianew}$ contains variables of
+type \iavar\ only while the other component can contain variables of
+any type including the type \iavar. It is straightforward to
+redefine the typing rule of IA in such a way that these two distinct
+contexts are maintained appropriately. In particular the abstraction
+rule must only be able to abstract variables taken from the first
+component of the context; similarly the \ianew\ block construct must
+only used to ``abstract'' variables from the block-variable context.
+The full system of rules is given in table
+\ref{tab:safeia2_formrules}.
 
-%%%rules
+\begin{table}[htbp]
+{\bf Lambda calculus part}
 
-Safe IA' consists of the term formed with the rules above and such
-that the context $\Gamma^{\ianew}$ is empty.
+$$ \rulename{var} \ \rulef{}{x : A | \emptyset \vdash_s x : A} \quad
+\rulename{var^{\ianew}} \ \rulef{}{\emptyset | x : \iavar \vdash_s x : \iavar} $$
+$$
+\rulename{wk} \ \rulef{\Gamma | \Gamma^{\ianew} \vdash_s s : A}{\Delta | \Gamma^{\ianew} \vdash_s s : A} \quad
+\Gamma \subset \Delta \qquad
+\rulename{wk^{\ianew}} \ \rulef{\Gamma| \Gamma^{\ianew} \vdash_s s : A}{\Gamma| \Delta^{\ianew} \vdash_s s : A} \quad
+\Gamma^{\ianew} \subset \Delta^{\ianew}
+$$
 
+$$ \rulename{app} \ \rulef{\Gamma | \Gamma^{\ianew} \vdash_s s : (A_1,\ldots,A_n,B) \quad
+\Gamma | \Gamma^{\ianew} \vdash_s t_1 : A_1 \quad \ldots \quad \Gamma | \Gamma^{\ianew} \vdash_s t_n : A_n
+} {\Gamma | \Gamma^{\ianew} \vdash_s s t_1 \ldots t_n : B} \ C(\Gamma ; B)$$
+$$ \rulename{abs} \ \rulef{\Gamma, x_1 : A_1, \ldots, x_n : A_n |
+\Gamma^{\ianew}
+  \vdash_s s : B} {\Gamma | \Gamma^{\ianew} \vdash_s \lambda x_1 \ldots x_n . s :
+  (A_1, \ldots ,A_n,B)} \ C(\Gamma ; (A_1, \ldots ,A_n,B) )$$
+
+
+where $\Gamma$ and $\Delta$ are finite sets of variables and
+$\Gamma^{\ianew}$ and $\Delta^{\ianew}$ are finite sets of variables
+of type \iavar\ and where the side-condition $C(\Gamma ; B)$
+expresses that $\forall y:Y \in \Gamma, \forall Y' \in Pr(Y) . \ord
+Y' \geq \ord B$.
+
+
+{\bf Arithmetic and recursion}
+$$ \rulename{const} \ \rulef{}{\emptyset | \emptyset \vdash n :\texttt{exp}}
+\qquad \rulename{succ} \ \rulef{\Gamma | \Gamma^{\ianew}\vdash M:\texttt{exp} }{\Gamma| \Gamma^{\ianew} \vdash \texttt{succ}\ M:\texttt{exp}}
+\qquad \rulename{pred} \ \rulef{\Gamma| \Gamma^{\ianew} \vdash M:\texttt{exp} }{\Gamma| \Gamma^{\ianew} \vdash \texttt{pred}\ M:\texttt{exp}}$$
+
+$$
+\rulename{cond} \ \rulef{\Gamma| \Gamma^{\ianew} \vdash M : \texttt{exp} \qquad \Gamma| \Gamma^{\ianew} \vdash N_1 : \texttt{exp} \qquad \Gamma| \Gamma^{\ianew} \vdash N_2 : \texttt{exp} }{\Gamma| \Gamma^{\ianew} \vdash \texttt{cond}\ M\ N_1\ N_2}
+\qquad  \rulename{rec} \ \rulef{\Gamma| \Gamma^{\ianew} \vdash M : A\rightarrow A }{ \Gamma| \Gamma^{\ianew} \vdash Y_A M : A}$$
+
+{\bf Imperative constructs}
+$$ \rulef{\Gamma| \Gamma^{\ianew} \vdash M : \texttt{com} \quad \Gamma| \Gamma^{\ianew} \vdash N :A}
+    {\Gamma| \Gamma^{\ianew} \vdash \texttt{seq}_A \ M\ N\ : A} \quad A \in \{ \texttt{com}, \texttt{exp}\}$$
+
+$$ \rulef{\Gamma| \Gamma^{\ianew} \vdash M : \texttt{var} \quad \Gamma| \Gamma^{\ianew} \vdash N : \texttt{exp}}
+    {\Gamma| \Gamma^{\ianew} \vdash \texttt{assign}\ M\ N\ : \texttt{com}}
+\qquad
+ \rulef{\Gamma| \Gamma^{\ianew} \vdash M : \texttt{var}}
+    {\Gamma| \Gamma^{\ianew} \vdash \texttt{deref}\ M\ : \texttt{exp}}$$
+
+$$ \rulef{\Gamma | \Gamma^{\ianew}, x : \texttt{var} \vdash M : A}
+    {\Gamma | \Gamma^{\ianew} \vdash \texttt{new } x \texttt{ in } M} \quad A \in \{ \texttt{com}, \texttt{exp}\}$$
+
+$$ \rulef{\Gamma| \Gamma^{\ianew} \vdash M_1 : \texttt{exp} \rightarrow \texttt{com} \quad \Gamma| \Gamma^{\ianew} \vdash M_2 : \texttt{exp}}
+    {\Gamma| \Gamma^{\ianew} \vdash \texttt{mkvar } M_1\ M_2\ : \texttt{var}}$$
+
+
+\caption{Formation rules for Safe IA'} \label{tab:safeia2_formrules}
+\end{table}
+
+ We defined Safe IA terms to be the subset of terms typable with
+the system of rules of table \ref{tab:safeia2_formrules} for which
+the block-variable context is empty. For commodity we will denote
+these terms by the judgment $\Gamma \vdash_{s'} M : A$, assuming the
+following implicit rule:
+$$ \rulef{\Gamma | \emptyset \vdash_{s'} M : A} {\Gamma \vdash_{s'} M : A}$$
 
 \subsection{P-incrementally justified strategies}
 

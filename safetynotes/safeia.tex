@@ -20,27 +20,34 @@ version, only variables that are not abstracted by the \ianew\
 construct (including variables of type \iavar) are required to
 respect the safety condition.
 
+We recall the definition of the \defname{safety constraint} $SC(\Gamma ; B)$
+for some finite type alphabet $\Gamma$ and type $B$:
+$$SC(\Gamma ; B) \quad \mbox{iff} \quad  \forall x:A\; \in \Gamma . \forall A' \in Pr(A) . \ord A' \geq \ord B$$
+where $Pr(A)$ denotes the set of prime sub-types of $A$.
+
+
 
 \subsection{First version: Safe IA}
 
  The obvious way to define safety for IA terms consists in extending the safe lambda calculus by adding rules
  for constants and constructs of PCF and IA.
- Equivalently, this is the system of rules of IA where the application and abstraction rules
- have been restricted as in the safe lambda calculus.
+ Equivalently, this is the system of rules of IA where the application and abstraction rules  have been restricted by the safety constraint as in the safe lambda calculus.
 The rules are formally given in Table \ref{tab:safeia_formrules}.
 
 
-%\newenvironment{FramedTable}%
-%{\begin{table}[htbp]
-%\begin{Sbox}%
-%\setlength{\mylength}{\textwidth}%
-%\addtolength{\mylength}{-2\fboxsep}%
-%\addtolength{\mylength}{-2\fboxrule}%
-%\begin{minipage}{\mylength}}%
-%{\end{minipage}\end{Sbox}\shadowbox{\TheSbox}\end{table}}%
+\newlength{\mylength}
+\newenvironment{FramedTable}%
+{\begin{table}[htbp]
+\begin{Sbox}%
+\setlength{\mylength}{\textwidth}%
+\addtolength{\mylength}{-2\fboxsep}%
+\addtolength{\mylength}{-2\fboxrule}%
+\begin{minipage}{\mylength}}%
+{\end{minipage}\end{Sbox}\shadowbox{\TheSbox}\end{table}}%
 
 
-\begin{table}
+
+\begin{FramedTable}
  {\bf Lambda calculus part}
 
 $$ \rulename{var} \ \rulef{}{x : A  \vdash_s x : A}
@@ -49,20 +56,19 @@ A}{\Delta \vdash_s s : A} \quad \Gamma \subset
 \Delta
 $$
 
-%\fbox
-{
-%\begin{Bcenter}
-$$ \rulename{app} \ \rulef{\Gamma  \vdash_s s : (A_1,\ldots,A_n,B) \quad
+\begin{center}
+\ovalbox{%
+\begin{Bcenter}
+$ \dps \rulename{app} \ \rulef{\Gamma  \vdash_s s : (A_1,\ldots,A_n,B) \quad
 \Gamma  \vdash_s t_1 : A_1 \quad \ldots \quad \Gamma  \vdash_s t_n : A_n
-} {\Gamma  \vdash_s s t_1 \ldots t_n : B} \quad C(\Gamma ; B)$$ \\
-$$ \rulename{abs} \ \rulef{\Gamma, x_1 : A_1, \ldots, x_n : A_n
+} {\dps \Gamma  \vdash_s s t_1 \ldots t_n : B} \quad SC(\Gamma ; B)$ \\[12pt]
+$ \dps  \rulename{abs} \ \rulef{\Gamma, x_1 : A_1, \ldots, x_n : A_n
   \vdash_s s : B} {\Gamma \vdash_s \lambda x_1 \ldots x_n . s :
-  (A_1, \ldots ,A_n,B)} \quad C(\Gamma ; (A_1, \ldots ,A_n,B) )$$
-%\end{Bcenter}
+  (A_1, \ldots ,A_n,B)} \quad SC(\Gamma ; (A_1, \ldots ,A_n,B) )$
+\end{Bcenter}
 }
-
-where the side-condition $C(\Gamma ; B)$ expresses that $\forall y:Y
-\in \Gamma, \forall Y' \in Pr(Y) . \ord Y' \geq \ord B$.
+\end{center}
+\smallskip
 
 
 {\bf Arithmetic and recursion}
@@ -71,26 +77,28 @@ $$ \rulename{const} \ \rulef{}{\emptyset  \vdash n :\texttt{exp}}
 \qquad \rulename{pred} \ \rulef{\Gamma \vdash M:\texttt{exp} }{\Gamma \vdash \texttt{pred}\ M:\texttt{exp}}$$
 
 $$
-\rulename{cond} \ \rulef{\Gamma\vdash M : \texttt{exp} \qquad \Gamma\vdash N_1 : \texttt{exp} \qquad \Gamma\vdash N_2 : \texttt{exp} }{\Gamma \vdash \texttt{cond}\ M\ N_1\ N_2}
-\qquad  \rulename{rec} \ \rulef{\Gamma \vdash M : A\rightarrow A }{ \Gamma \vdash Y_A M : A}$$
+\rulename{cond} \ \rulef{\Gamma\vdash M : \texttt{exp} \quad \Gamma\vdash N_1 : \texttt{exp} \quad \Gamma\vdash N_2 : \texttt{exp} }{\Gamma \vdash \texttt{cond}\ M\ N_1\ N_2}
+\quad  \rulename{rec} \ \rulef{\Gamma \vdash M : A\rightarrow A }{ \Gamma \vdash Y_A M : A}$$
 
 {\bf Imperative constructs}
-$$ \rulef{\Gamma| \Gamma^{\ianew} \vdash M : \texttt{com} \quad \Gamma \vdash N :A}
+$$ \rulename{seq} \ \rulef{\Gamma| \Gamma^{\ianew} \vdash M : \texttt{com} \quad \Gamma \vdash N :A}
     {\Gamma \vdash \texttt{seq}_A \ M\ N\ : A} \quad A \in \{ \texttt{com}, \texttt{exp}\}$$
 
-$$ \rulef{\Gamma \vdash M : \texttt{var} \quad \Gamma \vdash N : \texttt{exp}}
+$$ \rulename{assign} \ \rulef{\Gamma \vdash M : \texttt{var} \quad \Gamma \vdash N : \texttt{exp}}
     {\Gamma \vdash \texttt{assign}\ M\ N\ : \texttt{com}}
-\qquad
+\qquad \rulename{deref} \
  \rulef{\Gamma \vdash M : \texttt{var}}
     {\Gamma \vdash \texttt{deref}\ M\ : \texttt{exp}}$$
 
-$$ \rulef{\Gamma , x : \texttt{var} \vdash M : A}
+$$ \rulename{new} \ \rulef{\Gamma , x : \texttt{var} \vdash M : A}
     {\Gamma  \vdash \texttt{new } x \texttt{ in } M} \quad A \in \{ \texttt{com}, \texttt{exp}\}$$
 
-$$ \rulef{\Gamma \vdash M_1 : \texttt{exp} \rightarrow \texttt{com} \quad \Gamma \vdash M_2 : \texttt{exp}}
+$$ \rulename{mkvar} \ \rulef{\Gamma \vdash M_1 : \texttt{exp} \rightarrow \texttt{com} \quad \Gamma \vdash M_2 : \texttt{exp}}
     {\Gamma \vdash \texttt{mkvar } M_1\ M_2\ : \texttt{var}}$$
-\caption{Formation rules for Safe IA} \label{tab:safeia_formrules}
-\end{table}
+
+\caption{Formation rules for Safe IA}
+\label{tab:safeia_formrules}
+\end{FramedTable}
 
 
 \notetoself{ - Game semantics of Safe PCF extends immediately to
@@ -136,10 +144,10 @@ contexts are maintained appropriately. In particular the abstraction
 rule must only be able to abstract variables taken from the first
 component of the context; similarly the \ianew\ block construct must
 only used to ``abstract'' variables from the block-variable context.
-The full system of rules is given in table
+The full system of rules is given in Table
 \ref{tab:safeia2_formrules}.
 
-\begin{table}[htbp]
+\begin{FramedTable}
 {\bf Lambda calculus part}
 
 $$ \rulename{var} \ \rulef{}{x : A | \emptyset \vdash_s x : A} \quad
@@ -151,57 +159,58 @@ $$
 \Gamma^{\ianew} \subset \Delta^{\ianew}
 $$
 
+where $\Gamma^{\ianew}$ and $\Delta^{\ianew}$ are finite sets of variables
+of type \iavar.
+
 $$ \rulename{app} \ \rulef{\Gamma | \Gamma^{\ianew} \vdash_s s : (A_1,\ldots,A_n,B) \quad
 \Gamma | \Gamma^{\ianew} \vdash_s t_1 : A_1 \quad \ldots \quad \Gamma | \Gamma^{\ianew} \vdash_s t_n : A_n
-} {\Gamma | \Gamma^{\ianew} \vdash_s s t_1 \ldots t_n : B} \ C(\Gamma ; B)$$
-$$ \rulename{abs} \ \rulef{\Gamma, x_1 : A_1, \ldots, x_n : A_n |
+} {\Gamma | \Gamma^{\ianew} \vdash_s s t_1 \ldots t_n : B} \ SC(\Gamma ; B)$$
+
+\begin{center}\ovalbox{$
+ \rulename{abs} \ \dps  \rulef{\dps \Gamma, x_1 : A_1, \ldots, x_n : A_n |
 \Gamma^{\ianew}
   \vdash_s s : B} {\Gamma | \Gamma^{\ianew} \vdash_s \lambda x_1 \ldots x_n . s :
-  (A_1, \ldots ,A_n,B)} \ C(\Gamma ; (A_1, \ldots ,A_n,B) )$$
-
-
-where $\Gamma$ and $\Delta$ are finite sets of variables and
-$\Gamma^{\ianew}$ and $\Delta^{\ianew}$ are finite sets of variables
-of type \iavar\ and where the side-condition $C(\Gamma ; B)$
-expresses that $\forall y:Y \in \Gamma, \forall Y' \in Pr(Y) . \ord
-Y' \geq \ord B$.
+  (A_1, \ldots ,A_n,B)} \ SC(\Gamma ; (A_1, \ldots ,A_n,B) )$}\end{center}
 
 
 {\bf Arithmetic and recursion}
 $$ \rulename{const} \ \rulef{}{\emptyset | \emptyset \vdash n :\texttt{exp}}
-\qquad \rulename{succ} \ \rulef{\Gamma | \Gamma^{\ianew}\vdash M:\texttt{exp} }{\Gamma| \Gamma^{\ianew} \vdash \texttt{succ}\ M:\texttt{exp}}
-\qquad \rulename{pred} \ \rulef{\Gamma| \Gamma^{\ianew} \vdash M:\texttt{exp} }{\Gamma| \Gamma^{\ianew} \vdash \texttt{pred}\ M:\texttt{exp}}$$
+\quad \rulename{succ} \ \rulef{\Gamma | \Gamma^{\ianew}\vdash M:\texttt{exp} }{\Gamma| \Gamma^{\ianew} \vdash \texttt{succ}\ M:\texttt{exp}}
+\quad \rulename{pred} \ \rulef{\Gamma| \Gamma^{\ianew} \vdash M:\texttt{exp} }{\Gamma| \Gamma^{\ianew} \vdash \texttt{pred}\ M:\texttt{exp}}$$
 
 $$
-\rulename{cond} \ \rulef{\Gamma| \Gamma^{\ianew} \vdash M : \texttt{exp} \qquad \Gamma| \Gamma^{\ianew} \vdash N_1 : \texttt{exp} \qquad \Gamma| \Gamma^{\ianew} \vdash N_2 : \texttt{exp} }{\Gamma| \Gamma^{\ianew} \vdash \texttt{cond}\ M\ N_1\ N_2}
-\qquad  \rulename{rec} \ \rulef{\Gamma| \Gamma^{\ianew} \vdash M : A\rightarrow A }{ \Gamma| \Gamma^{\ianew} \vdash Y_A M : A}$$
+\rulename{cond} \ \rulef{\Gamma| \Gamma^{\ianew} \vdash M : \texttt{exp} \quad \Gamma| \Gamma^{\ianew} \vdash N_1 : \texttt{exp} \quad \Gamma| \Gamma^{\ianew} \vdash N_2 : \texttt{exp} }{\Gamma| \Gamma^{\ianew} \vdash \texttt{cond}\ M\ N_1\ N_2}
+\quad  \rulename{rec} \ \rulef{\Gamma| \Gamma^{\ianew} \vdash M : A\rightarrow A }{ \Gamma| \Gamma^{\ianew} \vdash Y_A M : A}$$
 
 {\bf Imperative constructs}
-$$ \rulef{\Gamma| \Gamma^{\ianew} \vdash M : \texttt{com} \quad \Gamma| \Gamma^{\ianew} \vdash N :A}
+$$ \rulename{seq} \ \rulef{\Gamma| \Gamma^{\ianew} \vdash M : \texttt{com} \quad \Gamma| \Gamma^{\ianew} \vdash N :A}
     {\Gamma| \Gamma^{\ianew} \vdash \texttt{seq}_A \ M\ N\ : A} \quad A \in \{ \texttt{com}, \texttt{exp}\}$$
 
-$$ \rulef{\Gamma| \Gamma^{\ianew} \vdash M : \texttt{var} \quad \Gamma| \Gamma^{\ianew} \vdash N : \texttt{exp}}
+$$ \rulename{assign} \ \rulef{\Gamma| \Gamma^{\ianew} \vdash M : \texttt{var} \quad \Gamma| \Gamma^{\ianew} \vdash N : \texttt{exp}}
     {\Gamma| \Gamma^{\ianew} \vdash \texttt{assign}\ M\ N\ : \texttt{com}}
 \qquad
- \rulef{\Gamma| \Gamma^{\ianew} \vdash M : \texttt{var}}
+ \rulename{deref} \ \rulef{\Gamma| \Gamma^{\ianew} \vdash M : \texttt{var}}
     {\Gamma| \Gamma^{\ianew} \vdash \texttt{deref}\ M\ : \texttt{exp}}$$
 
-$$ \rulef{\Gamma | \Gamma^{\ianew}, x : \texttt{var} \vdash M : A}
-    {\Gamma | \Gamma^{\ianew} \vdash \texttt{new } x \texttt{ in } M} \quad A \in \{ \texttt{com}, \texttt{exp}\}$$
 
-$$ \rulef{\Gamma| \Gamma^{\ianew} \vdash M_1 : \texttt{exp} \rightarrow \texttt{com} \quad \Gamma| \Gamma^{\ianew} \vdash M_2 : \texttt{exp}}
+\begin{center}\ovalbox{$
+\rulename{new} \ \dps \rulef{\Gamma | \Gamma^{\ianew}, x : \texttt{var} \vdash M : A}
+    {\Gamma | \Gamma^{\ianew} \vdash \texttt{new } x \texttt{ in } M} \quad A \in \{ \texttt{com}, \texttt{exp}\} $}\end{center}
+
+$$ \rulename{mkvar} \ \rulef{\Gamma| \Gamma^{\ianew} \vdash M_1 : \texttt{exp} \rightarrow \texttt{com} \quad \Gamma| \Gamma^{\ianew} \vdash M_2 : \texttt{exp}}
     {\Gamma| \Gamma^{\ianew} \vdash \texttt{mkvar } M_1\ M_2\ : \texttt{var}}$$
 
+\caption{Formation rules for Safe IA'}
+\label{tab:safeia2_formrules}
+\end{FramedTable}
 
-\caption{Formation rules for Safe IA'} \label{tab:safeia2_formrules}
-\end{table}
-
- We defined Safe IA terms to be the subset of terms typable with
-the system of rules of table \ref{tab:safeia2_formrules} for which
-the block-variable context is empty. For commodity we will denote
-these terms by the judgment $\Gamma \vdash_{s'} M : A$, assuming the
-following implicit rule:
+ We define Safe IA terms to be the subset of terms typable with
+the system of rules of Table \ref{tab:safeia2_formrules} for which
+the block-variable context is empty.
+For convenience we introduce the additional rule
 $$ \rulef{\Gamma | \emptyset \vdash_{s'} M : A} {\Gamma \vdash_{s'} M : A}$$
+so that Safe IA terms are exactly those denoted by judgments of the form $\Gamma \vdash_{s'} M : A$.
+
 
 \subsection{P-incrementally justified strategies}
 

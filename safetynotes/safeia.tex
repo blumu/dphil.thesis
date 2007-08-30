@@ -27,50 +27,41 @@ where $Pr(A)$ denotes the set of prime sub-types of $A$.
 
 
 
-\subsection{First version: Safe IA}
+\subsection{First version: Very Safe IA}
 
  The obvious way to define safety for IA terms consists in extending the safe lambda calculus by adding rules
  for constants and constructs of IA.
 Said equivalently, it is the system of rules of IA where the
 application and abstraction rules  have been restricted by the
-safety constraint as in the safe lambda calculus. The rules are
-formally given in Table \ref{tab:safeia_formrules}. The circled
-rules are those that differs from their IA counterpart. Note that
-the $\rulename{new}$ rule remains the same: it does not have the
-side-condition present in the $\rulename{abs}$ rule. Therefore the
-calculus allows us to (indirectly) abstract variables of type
-\iavar\ without having to meet the safety requirement.
-
-
-\newlength{\mylength}
-\newenvironment{FramedTable}%
-{\begin{table}[htbp]
-\begin{Sbox}%
-\setlength{\mylength}{\textwidth}%
-\addtolength{\mylength}{-2\fboxsep}%
-\addtolength{\mylength}{-2\fboxrule}%
-\begin{minipage}{\mylength}}%
-{\end{minipage}\end{Sbox}\shadowbox{\TheSbox}\end{table}}%
+safety constraint as in the safe lambda calculus. Let us call this
+language \defname{Very Safe IA}. The rules are formally given in
+Table \ref{tab:safeia_formrules}. The circled rules are those that
+differs from their IA counterpart. Note that the $\rulename{new}$
+rule remains the same: it does not have the side-condition present
+in the $\rulename{abs}$ rule. Therefore the calculus allows us to
+(indirectly) abstract variables of type \iavar\ without having to
+meet the safety requirement.
 
 
 
 \begin{FramedTable}
  {\bf Lambda calculus part}
 
-$$ \rulename{var} \ \rulef{}{x : A  \vdash_s x : A}
-\qquad \rulename{wk} \ \rulef{\Gamma \vdash_s s :
-A}{\Delta \vdash_s s : A} \quad \Gamma \subset
+$$ \rulename{var} \ \rulef{}{x : A  \vsafeentail x : A}
+\qquad \rulename{wk} \ \rulef{\Gamma \vsafeentail s :
+A}{\Delta \vsafeentail s : A} \quad \Gamma \subset
 \Delta
 $$
 
 \begin{center}
 \ovalbox{%
 \begin{Bcenter}
-$ \dps \rulename{app} \ \rulef{\Gamma  \vdash_s s : (A_1,\ldots,A_n,B) \quad
-\Gamma  \vdash_s t_1 : A_1 \quad \ldots \quad \Gamma  \vdash_s t_n : A_n
-} {\dps \Gamma  \vdash_s s t_1 \ldots t_n : B} \quad SC(\Gamma ; B)$ \\[12pt]
+$ \dps \rulename{app} \ \rulef{\Gamma  \vsafeentail s :
+(A_1,\ldots,A_n,B) \quad \Gamma  \vsafeentail t_1 : A_1 \quad \ldots
+\quad \Gamma  \vsafeentail t_n : A_n
+} {\dps \Gamma  \vsafeentail s t_1 \ldots t_n : B} \quad SC(\Gamma ; B)$ \\[12pt]
 $ \dps  \rulename{abs} \ \rulef{\Gamma, x_1 : A_1, \ldots, x_n : A_n
-  \vdash_s s : B} {\Gamma \vdash_s \lambda x_1 \ldots x_n . s :
+  \vsafeentail s : B} {\Gamma \vsafeentail \lambda x_1 \ldots x_n . s :
   (A_1, \ldots ,A_n,B)} \quad SC(\Gamma ; (A_1, \ldots ,A_n,B) )$
 \end{Bcenter}
 }
@@ -79,86 +70,79 @@ $ \dps  \rulename{abs} \ \rulef{\Gamma, x_1 : A_1, \ldots, x_n : A_n
 
 
 {\bf Arithmetic and recursion}
-$$ \rulename{const} \ \rulef{}{\emptyset  \vdash_s n :\texttt{exp}}
-\qquad \rulename{succ} \ \rulef{\Gamma \vdash_s M:\texttt{exp} }{\Gamma \vdash_s \texttt{succ}\ M:\texttt{exp}}
-\qquad \rulename{pred} \ \rulef{\Gamma \vdash_s M:\texttt{exp} }{\Gamma \vdash_s \texttt{pred}\ M:\texttt{exp}}$$
+$$ \rulename{const} \ \rulef{}{\emptyset  \vsafeentail n :\texttt{exp}}
+\qquad \rulename{succ} \ \rulef{\Gamma \vsafeentail M:\texttt{exp} }{\Gamma \vsafeentail \texttt{succ}\ M:\texttt{exp}}
+\qquad \rulename{pred} \ \rulef{\Gamma \vsafeentail M:\texttt{exp} }{\Gamma \vsafeentail \texttt{pred}\ M:\texttt{exp}}$$
 
 $$
-\rulename{cond} \ \rulef{\Gamma\vdash_s M : \texttt{exp} \quad \Gamma\vdash_s N_1 : \texttt{exp} \quad \Gamma\vdash_s N_2 : \texttt{exp} }{\Gamma \vdash_s \texttt{cond}\ M\ N_1\ N_2}
-\quad  \rulename{rec} \ \rulef{\Gamma \vdash_s M : A\rightarrow A }{ \Gamma \vdash_s Y_A M : A}$$
+\rulename{cond} \ \rulef{\Gamma\vsafeentail M : \texttt{exp} \quad \Gamma\vsafeentail N_1 : \texttt{exp} \quad \Gamma\vsafeentail N_2 : \texttt{exp} }{\Gamma \vsafeentail \texttt{cond}\ M\ N_1\ N_2}
+\quad  \rulename{rec} \ \rulef{\Gamma \vsafeentail M : A\rightarrow A }{ \Gamma \vsafeentail Y_A M : A}$$
 
 {\bf Imperative constructs}
-$$ \rulename{seq} \ \rulef{\Gamma| \Gamma^{\ianew} \vdash_s M : \texttt{com} \quad \Gamma \vdash_s N :A}
-    {\Gamma \vdash_s \texttt{seq}_A \ M\ N\ : A} \quad A \in \{ \texttt{com}, \texttt{exp}\}$$
+$$ \rulename{seq} \ \rulef{\Gamma| \Gamma^{\ianew} \vsafeentail M : \texttt{com} \quad \Gamma \vsafeentail N :A}
+    {\Gamma \vsafeentail \texttt{seq}_A \ M\ N\ : A} \quad A \in \{ \texttt{com}, \texttt{exp}\}$$
 
-$$ \rulename{assign} \ \rulef{\Gamma \vdash_s M : \texttt{var} \quad \Gamma \vdash_s N : \texttt{exp}}
-    {\Gamma \vdash_s \texttt{assign}\ M\ N\ : \texttt{com}}
+$$ \rulename{assign} \ \rulef{\Gamma \vsafeentail M : \texttt{var} \quad \Gamma \vsafeentail N : \texttt{exp}}
+    {\Gamma \vsafeentail \texttt{assign}\ M\ N\ : \texttt{com}}
 \qquad \rulename{deref} \
- \rulef{\Gamma \vdash_s M : \texttt{var}}
-    {\Gamma \vdash_s \texttt{deref}\ M\ : \texttt{exp}}$$
+ \rulef{\Gamma \vsafeentail M : \texttt{var}}
+    {\Gamma \vsafeentail \texttt{deref}\ M\ : \texttt{exp}}$$
 
-$$ \rulename{new} \ \rulef{\Gamma , x : \texttt{var} \vdash_s M : A}
-    {\Gamma  \vdash_s \texttt{new } x \texttt{ in } M : A} \quad A \in \{ \texttt{com}, \texttt{exp}\}$$
+$$ \rulename{new} \ \rulef{\Gamma , x : \texttt{var} \vsafeentail M : A}
+    {\Gamma  \vsafeentail \texttt{new } x \texttt{ in } M : A} \quad A \in \{ \texttt{com}, \texttt{exp}\}$$
 
-$$ \rulename{mkvar} \ \rulef{\Gamma \vdash_s M_1 : \texttt{exp} \rightarrow \texttt{com} \quad \Gamma \vdash_s M_2 : \texttt{exp}}
-    {\Gamma \vdash_s \texttt{mkvar } M_1\ M_2\ : \texttt{var}}$$
+$$ \rulename{mkvar} \ \rulef{\Gamma \vsafeentail M_1 : \texttt{exp} \rightarrow \texttt{com} \quad \Gamma \vsafeentail M_2 : \texttt{exp}}
+    {\Gamma \vsafeentail \texttt{mkvar } M_1\ M_2\ : \texttt{var}}$$
 
-\caption{Formation rules for Safe IA}
-\label{tab:safeia_formrules}
+\caption{Formation rules for Very Safe IA}
+\label{tab:verysafeia_formrules}
 \end{FramedTable}
 
 
+
 \notetoself{ - Game semantics of Safe PCF extends immediately to
-Safe IA.
+Very Safe IA.
 
 - Observational equivalence.}
 
-\subsubsection{Algorithmic game semantics}
 
-An important theorem (\cite{AM97a}) about the game-semantics model
-of IA states that two IA terms are equivalent if and only if the set
-of complete plays of their denotations are equal. This result has
-been used in \cite{ghicamccusker00} to show that observational
-equivalence for the $IA_2$ fragment of IA is decidable -- the set of
-complete plays being representable by regular expressions. In
-\cite{Ong02} it as shown that it is still decidable
- for the $IA_3+Y_0$: the sets of complete plays corresponding exactly to the context-free languages
- and therefore the problem reduces to the DPDA equivalence problem which is itself decidable with an unknown
-complexity.
+\subsection{Second version: Safe IA}
 
-Imposing the safety condition suggest an improvement in complexity.
-For instance, in the case of $IA_3$, the complexity lies somewhere
-between the complexity of regular language equivalence and
-context-free language equivalence. In fact Safe $IA_3$ contains
-terms whose denotation is context free -- for instance $\lambda f .
-f (\lambda x .x )$ -- therefore the complexity must be strictly
-higher than the complexity of regular language equivalence.
+It turns out that the definition of Very Safe IA is needlessly
+restrictive. Indeed, the major benefit of the safety constraint is
+that it avoids variable renaming when performing substitution. To
+achieve this, the safety constraint restricts the occurrences of the
+variables in a term. In the present setting of a language with
+imperative features, one can distinct two types of variables: The
+``standard ones'' -- those that we abstract using
+$\lambda$-abstraction, for instance $x$ in the term $\lambda x . x$;
+and the ``imperative'' ones -- those that are used as identifier for
+memory cell, also called block-allocated variables. We observe that
+for this second type of variables there is no gain in imposing any
+constraint since no substitution can ever occur for such variables
+when performing reduction!
 
-
-\subsection{Second version: Safe IA'}
-
-It turns out that the previous definition of Safe IA is needlessly
-restrictive. This section presents a language that subsumes the
-previous one while preserving its good properties.
+Inspired by this observation we can now identify a new fragment of
+IA subsuming Very Safe IA and which incarnates the notion ``safety''
+ more faithfully.
 
 We introduce a new judgment of the form $\Gamma | \Gamma^{\ianew}
-\vdash_{s'} M : A$ where the context is partitioned into two
+\safeentail M : A$ where the context is partitioned into two
 components: The first component contains standard lambda calculus
-variables -- those that are abstracted by a $\lambda$-abstraction;
-the second is called the block-variable context, it contains
-variables that are abstracted by an occurrence of the \ianew\
-construct. The component $\Gamma^{\ianew}$ contains variables of
-type \iavar\ only while the other component can contain variables of
-any type including the type \iavar. It is straightforward to
-redefine the typing rule of IA in such a way that these two distinct
-contexts are maintained appropriately. In particular the abstraction
-rule must only be able to abstract variables taken from the first
-component of the context; similarly the \ianew\ block construct must
-only be used to ``abstract'' variables from the block-variable
-context. The full system of rules is given in Table
-\ref{tab:safeia2_formrules}. The rules that are circled correspond
-to those that differs from their counterpart in Table
-\ref{tab:safeia_formrules}; the  differences being that:
+variables; the second component contains block-allocated variable --
+abstracted by an occurrence of the \ianew\ construct. The component
+$\Gamma^{\ianew}$ contains variables of type \iavar\ only while the
+other component can contain variables of any type including the type
+\iavar. It is straightforward to redefine the typing rule of IA in
+such a way that these two distinct contexts are maintained
+appropriately. In particular the abstraction rule must only be able
+to abstract variables taken from the first component of the context;
+similarly the \ianew\ block construct must only be used to
+``abstract'' variables from the block-variable context. The full
+system of rules is given in Table \ref{tab:safeia_formrules}. The
+rules that are circled correspond to those that differs from their
+counterpart in Table \ref{tab:verysafeia_formrules}; the differences
+being that:
 \begin{itemize}
 \item the rule $\rulename{abs}$ and $\rulename{new}$ can only
 abstract variables from their respective context component;
@@ -169,86 +153,85 @@ the first context component.
 \begin{FramedTable}
 {\bf Lambda calculus part}
 
-$$ \rulename{var} \ \rulef{}{x : A | \emptyset \vdash_{s'} x : A} \quad
-\rulename{var^{\ianew}} \ \rulef{}{\emptyset | x : \iavar \vdash_{s'} x : \iavar} $$
+$$ \rulename{var} \ \rulef{}{x : A | \emptyset \safeentail x : A} \quad
+\rulename{var^{\ianew}} \ \rulef{}{\emptyset | x : \iavar \safeentail x : \iavar} $$
 $$
-\rulename{wk} \ \rulef{\Gamma | \Gamma^{\ianew} \vdash_{s'} s : A}{\Delta | \Gamma^{\ianew} \vdash_{s'} s : A} \quad
+\rulename{wk} \ \rulef{\Gamma | \Gamma^{\ianew} \safeentail s : A}{\Delta | \Gamma^{\ianew} \safeentail s : A} \quad
 \Gamma \subset \Delta \qquad
-\rulename{wk^{\ianew}} \ \rulef{\Gamma| \Gamma^{\ianew} \vdash_{s'} s : A}{\Gamma| \Delta^{\ianew} \vdash_{s'} s : A} \quad
+\rulename{wk^{\ianew}} \ \rulef{\Gamma| \Gamma^{\ianew} \safeentail s : A}{\Gamma| \Delta^{\ianew} \safeentail s : A} \quad
 \Gamma^{\ianew} \subset \Delta^{\ianew}
 $$
 
 where $\Gamma^{\ianew}$ and $\Delta^{\ianew}$ are finite sets of variables
 of type \iavar.
 
-$$ \rulename{app} \ \rulef{\Gamma | \Gamma^{\ianew} \vdash_{s'} s : (A_1,\ldots,A_n,B) \quad
-\Gamma | \Gamma^{\ianew} \vdash_{s'} t_1 : A_1 \quad \ldots \quad \Gamma | \Gamma^{\ianew} \vdash_{s'} t_n : A_n
-} {\Gamma | \Gamma^{\ianew} \vdash_{s'} s t_1 \ldots t_n : B} \ SC(\Gamma ; B)$$
+$$ \rulename{app} \ \rulef{\Gamma | \Gamma^{\ianew} \safeentail s : (A_1,\ldots,A_n,B) \quad
+\Gamma | \Gamma^{\ianew} \safeentail t_1 : A_1 \quad \ldots \quad \Gamma | \Gamma^{\ianew} \safeentail t_n : A_n
+} {\Gamma | \Gamma^{\ianew} \safeentail s t_1 \ldots t_n : B} \ SC(\Gamma ; B)$$
 
 \begin{center}\ovalbox{$
  \rulename{abs} \ \dps  \rulef{\dps \Gamma, x_1 : A_1, \ldots, x_n : A_n |
 \Gamma^{\ianew}
-  \vdash_{s'} s : B} {\Gamma | \Gamma^{\ianew} \vdash_{s'} \lambda x_1 \ldots x_n . s :
+  \safeentail s : B} {\Gamma | \Gamma^{\ianew} \safeentail \lambda x_1 \ldots x_n . s :
   (A_1, \ldots ,A_n,B)} \ SC(\Gamma ; (A_1, \ldots ,A_n,B) )$}\end{center}
 
 
 {\bf Arithmetic and recursion}
-$$ \rulename{const} \ \rulef{}{\emptyset | \emptyset \vdash_{s'} n :\texttt{exp}}
-\quad \rulename{succ} \ \rulef{\Gamma | \Gamma^{\ianew}\vdash_{s'} M:\texttt{exp} }{\Gamma| \Gamma^{\ianew} \vdash_{s'} \texttt{succ}\ M:\texttt{exp}}
-\quad \rulename{pred} \ \rulef{\Gamma| \Gamma^{\ianew} \vdash_{s'} M:\texttt{exp} }{\Gamma| \Gamma^{\ianew} \vdash_{s'} \texttt{pred}\ M:\texttt{exp}}$$
+$$ \rulename{const} \ \rulef{}{\emptyset | \emptyset \safeentail n :\texttt{exp}}
+\quad \rulename{succ} \ \rulef{\Gamma | \Gamma^{\ianew}\safeentail M:\texttt{exp} }{\Gamma| \Gamma^{\ianew} \safeentail \texttt{succ}\ M:\texttt{exp}}
+\quad \rulename{pred} \ \rulef{\Gamma| \Gamma^{\ianew} \safeentail M:\texttt{exp} }{\Gamma| \Gamma^{\ianew} \safeentail \texttt{pred}\ M:\texttt{exp}}$$
 
 $$
-\rulename{cond} \ \rulef{\Gamma| \Gamma^{\ianew} \vdash_{s'} M : \texttt{exp} \quad \Gamma| \Gamma^{\ianew} \vdash_{s'} N_1 : \texttt{exp} \quad \Gamma| \Gamma^{\ianew} \vdash_{s'} N_2 : \texttt{exp} }{\Gamma| \Gamma^{\ianew} \vdash_{s'} \texttt{cond}\ M\ N_1\ N_2}
-\quad  \rulename{rec} \ \rulef{\Gamma| \Gamma^{\ianew} \vdash_{s'} M : A\rightarrow A }{ \Gamma| \Gamma^{\ianew} \vdash_{s'} Y_A M : A}$$
+\rulename{cond} \ \rulef{\Gamma| \Gamma^{\ianew} \safeentail M : \texttt{exp} \quad \Gamma| \Gamma^{\ianew} \safeentail N_1 : \texttt{exp} \quad \Gamma| \Gamma^{\ianew} \safeentail N_2 : \texttt{exp} }{\Gamma| \Gamma^{\ianew} \safeentail \texttt{cond}\ M\ N_1\ N_2}
+\quad  \rulename{rec} \ \rulef{\Gamma| \Gamma^{\ianew} \safeentail M : A\rightarrow A }{ \Gamma| \Gamma^{\ianew} \safeentail Y_A M : A}$$
 
 {\bf Imperative constructs}
-$$ \rulename{seq} \ \rulef{\Gamma| \Gamma^{\ianew} \vdash_{s'} M : \texttt{com} \quad \Gamma| \Gamma^{\ianew} \vdash_{s'} N :A}
-    {\Gamma| \Gamma^{\ianew} \vdash_{s'} \texttt{seq}_A \ M\ N\ : A} \quad A \in \{ \texttt{com}, \texttt{exp}\}$$
+$$ \rulename{seq} \ \rulef{\Gamma| \Gamma^{\ianew} \safeentail M : \texttt{com} \quad \Gamma| \Gamma^{\ianew} \safeentail N :A}
+    {\Gamma| \Gamma^{\ianew} \safeentail \texttt{seq}_A \ M\ N\ : A} \quad A \in \{ \texttt{com}, \texttt{exp}\}$$
 
-$$ \rulename{assign} \ \rulef{\Gamma| \Gamma^{\ianew} \vdash_{s'} M : \texttt{var} \quad \Gamma| \Gamma^{\ianew} \vdash_{s'} N : \texttt{exp}}
-    {\Gamma| \Gamma^{\ianew} \vdash_{s'} \texttt{assign}\ M\ N\ : \texttt{com}}
+$$ \rulename{assign} \ \rulef{\Gamma| \Gamma^{\ianew} \safeentail M : \texttt{var} \quad \Gamma| \Gamma^{\ianew} \safeentail N : \texttt{exp}}
+    {\Gamma| \Gamma^{\ianew} \safeentail \texttt{assign}\ M\ N\ : \texttt{com}}
 \qquad
- \rulename{deref} \ \rulef{\Gamma| \Gamma^{\ianew} \vdash_{s'} M : \texttt{var}}
-    {\Gamma| \Gamma^{\ianew} \vdash_{s'} \texttt{deref}\ M\ : \texttt{exp}}$$
+ \rulename{deref} \ \rulef{\Gamma| \Gamma^{\ianew} \safeentail M : \texttt{var}}
+    {\Gamma| \Gamma^{\ianew} \safeentail \texttt{deref}\ M\ : \texttt{exp}}$$
 
 
 \begin{center}\ovalbox{$
 \rulename{new} \ \dps \rulef{\Gamma | \Gamma^{\ianew}, x :
-\texttt{var} \vdash_{s'} M : A}
-    {\Gamma | \Gamma^{\ianew} \vdash_{s'} \texttt{new } x \texttt{ in } M : A} \quad A \in \{ \texttt{com}, \texttt{exp}\} $}\end{center}
+\texttt{var} \safeentail M : A}
+    {\Gamma | \Gamma^{\ianew} \safeentail \texttt{new } x \texttt{ in } M : A} \quad A \in \{ \texttt{com}, \texttt{exp}\} $}\end{center}
 
-$$ \rulename{mkvar} \ \rulef{\Gamma| \Gamma^{\ianew} \vdash_{s'} M_1 : \texttt{exp} \rightarrow \texttt{com} \quad \Gamma| \Gamma^{\ianew} \vdash_{s'} M_2 : \texttt{exp}}
-    {\Gamma| \Gamma^{\ianew} \vdash_{s'} \texttt{mkvar } M_1\ M_2\ : \texttt{var}}$$
+$$ \rulename{mkvar} \ \rulef{\Gamma| \Gamma^{\ianew} \safeentail M_1 : \texttt{exp} \rightarrow \texttt{com} \quad \Gamma| \Gamma^{\ianew} \safeentail M_2 : \texttt{exp}}
+    {\Gamma| \Gamma^{\ianew} \safeentail \texttt{mkvar } M_1\ M_2\ : \texttt{var}}$$
 
-\caption{Formation rules for Safe IA'}
-\label{tab:safeia2_formrules}
+\caption{Formation rules for Safe IA} \label{tab:safeia_formrules}
 \end{FramedTable}
 
- We define Safe IA' terms to be the subset of terms typable with
-the system of rules of Table \ref{tab:safeia2_formrules} for which
-the block-variable context is empty.
-For convenience we introduce the additional rule
-$$ \rulef{\Gamma | \emptyset \vdash_{s'} M : A} {\Gamma \vdash_{s'} M : A}$$
-so that Safe IA' terms are exactly those denoted by judgments of the
-form $\Gamma \vdash_{s'} M : A$.
+ We define \defname{Safe IA} as the subset of terms typable with
+the system of rules of Table \ref{tab:safeia_formrules} for which
+the block-variable context is empty. For convenience we introduce
+the additional rule
+$$ \rulef{\Gamma | \emptyset \safeentail M : A} {\Gamma \safeentail M : A}$$
+so that Safe IA terms are exactly those denoted by judgments of the
+form $\Gamma \safeentail M : A$.
 
-\subsection{Examples}
+\subsubsection{Examples}
 
-Clearly Safe IA is a subset of Safe IA', the following example
+Clearly Very Safe IA is a subset of Safe IA, the following example
 showing that the inclusion is strict:
 
-$$ \vdash_{s'} \lambda f^{(\iaexp \rightarrow \iacom) \rightarrow \iaexp} . \ianewin{i}\ f ( \lambda x . \iaassign\ i\ x ) : \iaexp$$
-$$ \mbox{ but } \not \vdash_s \lambda f^{(\iaexp \rightarrow \iacom) \rightarrow \iaexp} . \ianewin{i}\ f ( \lambda x . \iaassign\ i\ x ) : \iaexp \ .$$
+$$ \safeentail \lambda f^{(\iaexp \rightarrow \iacom) \rightarrow \iaexp} . \ianewin{i}\ f ( \lambda x . \iaassign\ i\ x ) : \iaexp$$
+$$ \mbox{ but } \not \vsafeentail \lambda f^{(\iaexp \rightarrow \iacom) \rightarrow \iaexp} . \ianewin{i}\ f ( \lambda x . \iaassign\ i\ x ) : \iaexp \ .$$
 
 \notetoself{Need more examples}
 
-\subsection{Game-semantic denotation}
+\subsubsection{Game-semantic denotation}
 
 In this section, our aim is to extend the game-semantic
-characterization result of the safe lambda calculus to safe IA:
+characterization result of the safe lambda calculus to Safe IA:
 \begin{proposition}
 \label{prop:safeia_closedpij}
-  Let $\Gamma \vdash_{s'} M : A$ be as safe IA' term then $\sem{\Gamma \vdash_{s'} M :
+  Let $\Gamma \safeentail M : A$ be a Safe IA term then $\sem{\Gamma \safeentail M :
   A}$ is closed P-incrementally justified.
 \end{proposition}
 
@@ -265,43 +248,56 @@ that $\sigma$ is P-i.j. modulo $\mathfrak{M}$ iff for all $s m \in
 Similarly we say that $\sigma$ is \emph{closed} P-i.j. modulo
 $\mathfrak{M}$ iff for all $s m \in \sigma$ where $m \not\in
 \mathfrak{M}$ the play $s m$ is \emph{closed} P-i.j.
-\end{definition}
+
 Hence a strategy is P-i.j. if and only if it is P-i.j. modulo
-$\emptyset$. Instead of showing Proposition
-\ref{prop:safeia_closedpij} we will prove the following more general
-result:
+$\emptyset$.
+\end{definition}
+
+We write $\sem{\Gamma | \Gamma^{\ianew} \safeentail M : A}$ to
+denote the game denotation of the corresponding IA term {\it i.e.}
+$\sem{\Gamma, \Gamma^{\ianew} \vdash M : A}$. Instead of showing
+Proposition \ref{prop:safeia_closedpij} we will prove the following
+more general result:
 \begin{proposition}
 \label{prop:safeia_closedpijmodulo} Let $\Gamma | \Gamma^{\ianew}
-\vdash_{s'} M : A $ be a Safe IA' term. Its denotation $\sem{\Gamma
-| \Gamma^{\ianew} \vdash_{s'} M : A} = \sem{\Gamma, \Gamma^{\ianew}
-\vdash M : A}$ is closed P-i.j. modulo
+\safeentail M : A $ be a Safe IA term. Its denotation $\sem{\Gamma |
+\Gamma^{\ianew} \safeentail M : A}$ is closed P-i.j. modulo
 $\mathfrak{M}_{\Gamma^{\ianew}}$ where
 $\mathfrak{M}_{\Gamma^{\ianew}}$ is the set of initial moves in
-$\Gamma^{\ianew}$ (theses moves are of type $read$ or $write_i$ for
-some $i\in \nat$).
+$\Gamma^{\ianew}$.
 \end{proposition}
 
+\begin{remark}
+Since the context $\Gamma^{\ianew}$ contains variable of type
+\iavar\ only, $\mathfrak{M}_{\Gamma^{\ianew}}$ contains only moves
+of the form `$read$' or `$write_i$' for some $i\in \nat$.
+\end{remark}
 
 \begin{lemma}
-Let $\sigma : A \rightarrow B$ and $\mu : B \rightarrow C$.
-  Let $\mathfrak{M}$ be any set of initial moves in $A$ of order $0$.
-  If $\sigma$ is P-i.j (resp. closed P-i.j)  modulo $\mathfrak{M}$ and $\mu$ is P-i.j
-  then $\sigma \fatsemi \mu$ is P-i.j (resp. closed P-i.j) modulo $\mathfrak{M}$.
+\label{lem:leftcompos_preserv_pijmodulo}
+ Let $\sigma : A \rightarrow
+B$ and $\mu : B \rightarrow C$.
+  Let $\mathfrak{M}$ be any set of order $0$ moves initial in $A$.
+  If $\sigma$ is closed  P-i.j. modulo $\mathfrak{M}$ and $\mu$ is
+  P-i.j. (resp. closed P-i.j.) then $\sigma \fatsemi \mu$ is P-i.j. (resp. closed P-i.j.) modulo $\mathfrak{M}$.
 \end{lemma}
 \notetoself{
 \begin{proof}
+Let us analyze the proof of compositionality for closed P-i.j.
+strategies.
+
 \end{proof}
 }
 
-Let $cell : I \rightarrow !\iavar$ denotes the ``storage cell''
-strategy (see \cite{abramsky:game-semantics-tutorial}). One can
-easily check that it is closed P-incrementally justified.
+
 \begin{lemma}
-Let $\sigma : C \otimes !\iavar \rightarrow B$ with $B \in \{\iacom,
-\iaexp \}$ and $\mathfrak{M}$ be any set of initial moves in $C
-\otimes !\iavar$ of order $0$.
-  If $\sigma$ is P-i.j (resp. closed P-i.j) modulo $\mathfrak{M}$
-  then $(id_C \otimes cell) \fatsemi \sigma$ is P-i.j (resp. closed P-i.j) modulo $\mathfrak{M} \inter C$.
+\label{lem:cellcomposition_preserve_pijmodulo} Let $\sigma : C_1
+\otimes C_2 \rightarrow B$, $\tau : I \rightarrow C_2$ and
+$\mathfrak{M}$ be any set of order $0$ moves initial in $C_1 \otimes
+C_2$.
+  If $\tau$ is P-i.j. and
+  $\sigma$ is P-i.j. (resp. closed P-i.j.) modulo $\mathfrak{M}$
+  then $(id_{C_1} \otimes \tau) \fatsemi \sigma$ is P-i.j. (resp. closed P-i.j.) modulo $\mathfrak{M} \inter C_1$.
 \end{lemma}
 \notetoself{
 \begin{proof}
@@ -311,10 +307,97 @@ Let $\sigma : C \otimes !\iavar \rightarrow B$ with $B \in \{\iacom,
 
 \notetoself{
 \begin{proof}[Proof of Prop. \ref{prop:safeia_closedpijmodulo}]
-By induction on the structure of the term. Take a Safe IA' term
-$\Gamma | \Gamma^\iavar \vdash M :A$.
+By induction and and case analysis on the structure of Safe IA
+terms:
+\begin{itemize}
+  \item[$\rulename{var}$, $\rulename{var^\ianew}$
+  , $\rulename{wk}$, $\rulename{wk^\ianew}$]
+
+  These cases are treated the same way as in the corresponding
+  proof for the Safe Lambda Calculus.
+
+  \item[$\rulename{app}$]
+
+  \item[$\rulename{abs}$]
+
+
+
+
+  \item[$\rulename{const}$]
+  \item[$\rulename{succ}$]
+  \item[$\rulename{pred}$]
+  \item[$\rulename{cond}$]
+  \item[$\rulename{rec}$]
+
+  \item[$\rulename{seq}$]
+  \item[$\rulename{assign}$]
+  \item[$\rulename{deref}$]
+  \item[$\rulename{new}$] $\Gamma | \Gamma^\ianew \safeentail \ianewin{x}\ M : B$.
+
+Let $cell : I \rightarrow !\iavar$ denotes the ``storage cell''
+strategy (see \cite{abramsky:game-semantics-tutorial}).  Let
+$\sigma = \sem{\Gamma | \Gamma^\ianew, x : \iavar \safeentail M
+: B}$.  We have $\sem{\Gamma | \Gamma^\ianew \safeentail
+\ianewin{x}\  M : B} = (id_{\Gamma,\Gamma^\iavar} \otimes cell)
+\fatcompos \sigma$. By induction hypothesis $\sigma$ is closed
+P-i.j. modulo $\mathfrak{M}_{\Gamma^{\ianew} \otimes !\iavar}$
+and one can easily check that $cell$ is P-incrementally
+justified. Hence instancing Lemma
+\ref{lem:cellcomposition_preserve_pijmodulo} with $\tau
+\leftarrow cell$, $C_1 \leftarrow \Gamma \otimes  \Gamma^\ianew$
+and $C_2\leftarrow !\iavar$ gives the desired result.
+  \item[$\rulename{mkvar}$]
+
+\end{itemize}
 \end{proof}
 }
+
+
+\subsection{Algorithmic game semantics}
+
+An important theorem (\cite{AM97a}) about the game-semantics model
+of IA states that two IA terms are equivalent if and only if the set
+of complete plays of their denotations are equal. This result has
+been used in \cite{ghicamccusker00} to show that observational
+equivalence for the $IA_2$ fragment of IA is decidable -- the set of
+complete plays being representable by regular expressions. In
+\cite{Ong02} it was shown that it is still decidable
+ for $IA_3+Y_0$. Indeed, for this fragment, the set of complete plays becomes context-free
+therefore the problem reduces to the DPDA equivalence problem which
+is itself decidable (with an unknown complexity).
+
+Imposing the safety condition should lead to some improvement in
+complexity. The complexity of  Safe $IA_3$ (resp. Safe $IA'_3$) for
+instance, must be lower than the complexity of the DPDA equivalence
+problem. Moreover the fact that Safe $IA_3$ (resp. Safe $IA'_3$)
+contains terms whose denotation is context free -- e.g. $\lambda f .
+f (\lambda x .x )$ -- strongly suggests that its complexity is
+strictly higher than the complexity of regular language equivalence.
+
+Murawski \cite{Murawski2003} has shown that observational
+equivalence for $\ialgol_4$ is undecidable. The proofs proceeds by
+showing that the computations of $\Gamma$-machine -- some variation
+of queue machines that are Turing complete -- are representable
+using IA terms.
+
+Does this result extend to the safe fragments? For Safe IA, it does,
+simply because the $IA_4$ term exhibited in \cite{Murawski2003} to
+represent computations of the $\Gamma$-machine is also a Safe IA
+term. The same argument does not carry over to Very Safe IA since
+the term is not typable in this language. We do not know whether
+observational equivalence is decidable for Very Safe $IA_4$.
+
+
+
+\subsection{Expressivity of Safe IA/Very Safe IA}
+
+Murawski representability : Safe IA representable languages are
+exactly the context free languages. For Very Safe IA however, we
+believe that the representable languages are a proper subclass of
+the context free languages.
+
+
+
 
 \bibliographystyle{plain}
 \bibliography{../bib/higherorder,../bib/gamesem,../bib/lambdacalculus}

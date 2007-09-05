@@ -105,14 +105,17 @@ Very Safe IA:
   Very Safe IA terms are denoted by closed P-i.j. strategies.
 \end{proposition}
 \begin{proof}
-The proof is by structural induction over the structure of the term.
-The functional rules and the arithmetic/recursion rules are treated
-the same way as in the corresponding proof for the safe lambda
-calculus and for Safe PCF respectively. For the imperative rules, we
+The proof is an adaptation of the proof for Safe PCF. We first show that the result holds for the
+fragment of Very Safe IA in which the only allowed uses of $Y$ are in terms of the form $\Omega$.
+This is done by induction over the structure of the term:
+The functional rules and the arithmetic rules are treated
+the same way as in the proof for Safe PCF. For the imperative rules, we
 observe that the strategies $assign$, $deref$, $mkvar$, $seq$ and
 $cell$ are all closed P-i.j. The fact that pairing, tensor product
 and strategy composition all preserve closed P-incremental
 justification permits us to conclude.
+
+The result is then lifted to the whole of Very Safe IA using syntactic approximants as in the PCF case.
 \end{proof}
 
 
@@ -130,14 +133,11 @@ and the ``imperative'' ones -- those that are used as identifier for
 memory cell, also called block-allocated variables. We observe that
 for this second type of variables there is no gain in imposing any
 constraint since no substitution can ever occur for such variables
-when performing reduction!
-
-Inspired by this observation we can now identify a new fragment of
-IA subsuming Very Safe IA and which incarnates the notion ``safety''
+when performing reduction! Inspired by this observation we can now identify a new fragment of IA subsuming Very Safe IA and which incarnates the notion ``safety''
  more faithfully.
 
-We introduce a new judgment of the form $\Gamma | \Gamma^{\ianew}
-\safeentail M : A$ where the context is partitioned into two
+We consider a new judgment of the form $\Gamma | \Gamma^{\ianew}
+\safeentail M : A$ - called a ``split term'' in \cite{abramsky:game-semantics-tutorial} - where the context is partitioned into two
 components: The first component contains standard lambda calculus
 variables; the second component contains block-allocated variable --
 abstracted by an occurrence of the \ianew\ construct. The component
@@ -217,13 +217,10 @@ $$ \rulename{mkvar} \ \rulef{\Gamma| \Gamma^{\ianew} \safeentail M_1 : \texttt{e
 \caption{Formation rules for Safe IA} \label{tab:safeia_formrules}
 \end{FramedTable}
 
- We define \defname{Safe IA} as the subset of terms typable with
-the system of rules of Table \ref{tab:safeia_formrules} for which
-the block-variable context is empty. For convenience we introduce
-the additional rule
+
+Split-terms with an empty block-variable context $\Gamma^\ianew$ are called \emph{semi-closed}. We define \defname{Safe IA} to be the set of semi-closed split-terms typable with the system of rules of Table \ref{tab:safeia_formrules}. For convenience we introduce the additional rule
 $$ \rulef{\Gamma | \emptyset \safeentail M : A} {\Gamma \safeentail M : A}$$
-so that Safe IA terms are exactly those denoted by judgments of the
-form $\Gamma \safeentail M : A$.
+so that Safe IA is exactly the set of terms of the form $\Gamma \safeentail M : A$.
 
 \subsubsection{Examples}
 
@@ -287,7 +284,7 @@ of the form `$read$' or `$write_i$' for some $i\in \nat$.
 \label{lem:leftcompos_preserv_pijmodulo}
  Let $\sigma : A \rightarrow
 B$ and $\mu : B \rightarrow C$.
-  Let $\mathfrak{M}$ be any set of order $0$ moves initial in $A$.
+  Let $\mathfrak{M}$ be any set of moves initial in $A$.
   If $\sigma$ is closed  P-i.j. modulo $\mathfrak{M}$ and $\mu$ is
   P-i.j. (resp. closed P-i.j.) then $\sigma \fatsemi \mu$ is P-i.j. (resp. closed P-i.j.) modulo $\mathfrak{M}$.
 \end{lemma}
@@ -303,7 +300,7 @@ strategies.
 \begin{lemma}
 \label{lem:cellcomposition_preserve_pijmodulo} Let $\tau : I
 \rightarrow C_2$, $\sigma : C_1 \otimes C_2 \rightarrow B$  and
-$\mathfrak{M}$ be any set of order $0$ moves initial in $C_1 \otimes
+$\mathfrak{M}$ be any set of moves initial in $C_1 \otimes
 C_2$.
   If $\tau$ is P-i.j. and
   $\sigma$ is P-i.j. (resp. closed P-i.j.) modulo $\mathfrak{M}$
@@ -317,8 +314,7 @@ C_2$.
 
 \notetoself{
 \begin{proof}[Proof of Prop. \ref{prop:safeia_closedpijmodulo}]
-By induction and and case analysis on the structure of Safe IA
-terms:
+We first prove the result for the fragment of Safe IA where the only allowed uses of the $Y$ combinator is in terms of the form $\Omega$. By induction and and case analysis on the structure of Safe IA terms:
 \begin{itemize}
   \item[$\rulename{var}$, $\rulename{var^\ianew}$
   , $\rulename{wk}$, $\rulename{wk^\ianew}$]
@@ -331,13 +327,8 @@ terms:
   \item[$\rulename{abs}$]
 
 
-
-
   \item[$\rulename{const}$]
-  \item[$\rulename{succ}$]
-  \item[$\rulename{pred}$]
-  \item[$\rulename{cond}$]
-  \item[$\rulename{rec}$]
+  \item[$\rulename{succ}$, $\rulename{pred}$,$\rulename{cond}$]
 
   \item[$\rulename{seq}$]
   \item[$\rulename{assign}$]
@@ -352,23 +343,23 @@ $\sigma = \sem{\Gamma | \Gamma^\ianew, x : \iavar \safeentail M
 \fatcompos \sigma$. By induction hypothesis $\sigma$ is closed
 P-i.j. modulo $\mathfrak{M}_{\Gamma^{\ianew} \otimes !\iavar}$
 and one can easily check that $cell$ is P-incrementally
-justified. Hence instancing Lemma
+justified. Instancing Lemma
 \ref{lem:cellcomposition_preserve_pijmodulo} with $\tau
 \leftarrow cell$, $C_1 \leftarrow \Gamma \otimes  \Gamma^\ianew$
-and $C_2\leftarrow !\iavar$ gives the desired result.
+and $C_2\leftarrow !\iavar$ gives us the desired result.
   \item[$\rulename{mkvar}$]
 
 \end{itemize}
+The result is then lifted to the whole of Safe IA using the technique of syntactic approximants and using the fact that the ``closed P-i.j.'' property is continuous.
 \end{proof}
 }
 
 
 \subsection{Algorithmic game semantics}
 
-An important theorem (\cite{AM97a}) about the game-semantics model
-of IA states that two IA terms are equivalent if and only if the set
-of complete plays of their denotations are equal. This result has
-been used in \cite{ghicamccusker00} to show that observational
+There is an important theorem (\cite{AM97a}) in game semantics
+which states that two IA terms are equivalent if and only if the set
+of complete plays of their game denotations are equal. This result was used in \cite{ghicamccusker00} to show that observational
 equivalence for the $IA_2$ fragment of IA is decidable -- the set of
 complete plays being representable by regular expressions. In
 \cite{Ong02} it was shown that it is still decidable

@@ -1,0 +1,203 @@
+\psset{linecolor=darkGreen,linewidth=0.5pt}
+
+
+\section{Safe Idealized Algol}
+
+In this section we present two possible approaches to accommodate
+the safety restriction to a language featuring block-variable constructs such as Idealized Algol. This gives rise to two
+different versions of ``Safe Idealized Algol''. In the first
+version, all free variables are required to satisfy the safety
+constraint whereas in the second version, only variables that are
+not abstracted by the \ianew\ construct (including variables of type
+\iavar) are required to satisfy the safety constraint.
+
+We recall the definition of the \defname{safety constraint} $SC(\Gamma ; B)$
+for some finite type alphabet $\Gamma$ and type $B$:
+$$SC(\Gamma ; B) \quad \mbox{iff} \quad  \forall x:A\; \in \Gamma . \forall A' \in Pr(A) . \ord A' \geq \ord B$$
+where $Pr(A)$ denotes the set of prime sub-types of $A$.
+
+
+
+\subsection{Strongly Safe IA}
+
+ The obvious way to define safety for IA terms consists in extending the safe lambda calculus by adding rules
+ for constants and constructs of IA.
+Said equivalently, it is the system of rules of IA where the
+application and abstraction rules  have been restricted by the
+safety constraint as in the safe lambda calculus. Let us call this
+language \defname{Strongly Safe IA}. The rules are formally given in
+Table \ref{tab:safeia_formrules}. The circled rules are those that
+differs from their IA counterpart. Note that the IA rule $\rulename{new}$ is kept unchanged: it has no side-condition, contrary to the $\rulename{abs}$ rule. In other words, the calculus allows us to abstract variables of type \iavar\ without having to satisfy the safety constraint provided that this abstraction is performed by a block-variable allocation.
+
+
+\begin{FramedTable}
+ {\bf Functional part}
+
+$$ \rulename{var} \ \rulef{}{x : A  \vsafeentail x : A}
+\qquad \rulename{wk} \ \rulef{\Gamma \vsafeentail s :
+A}{\Delta \vsafeentail s : A} \quad \Gamma \subset
+\Delta
+$$
+
+\begin{center}
+\ovalbox{%
+\begin{Bcenter}
+$ \dps \rulename{app} \ \rulef{\Gamma  \vsafeentail s :
+(A_1,\ldots,A_n,B) \quad \Gamma  \vsafeentail t_1 : A_1 \quad \ldots
+\quad \Gamma  \vsafeentail t_n : A_n
+} {\dps \Gamma  \vsafeentail s t_1 \ldots t_n : B} \quad SC(\Gamma ; B)$ \\[12pt]
+$ \dps  \rulename{abs} \ \rulef{\Gamma, x_1 : A_1, \ldots, x_n : A_n
+  \vsafeentail s : B} {\Gamma \vsafeentail \lambda x_1 \ldots x_n . s :
+  (A_1, \ldots ,A_n,B)} \quad SC(\Gamma ; (A_1, \ldots ,A_n,B) )$
+\end{Bcenter}
+}
+\end{center}
+\smallskip
+
+
+{\bf Arithmetic and recursion}
+$$ \rulename{const} \ \rulef{}{\emptyset  \vsafeentail n :\texttt{exp}}
+\qquad \rulename{succ} \ \rulef{\Gamma \vsafeentail M:\texttt{exp} }{\Gamma \vsafeentail \texttt{succ}\ M:\texttt{exp}}
+\qquad \rulename{pred} \ \rulef{\Gamma \vsafeentail M:\texttt{exp} }{\Gamma \vsafeentail \texttt{pred}\ M:\texttt{exp}}$$
+
+$$
+\rulename{cond} \ \rulef{\Gamma\vsafeentail M : \texttt{exp} \quad \Gamma\vsafeentail N_1 : \texttt{exp} \quad \Gamma\vsafeentail N_2 : \texttt{exp} }{\Gamma \vsafeentail \texttt{cond}\ M\ N_1\ N_2}
+\quad  \rulename{rec} \ \rulef{\Gamma \vsafeentail M : A\rightarrow A }{ \Gamma \vsafeentail Y_A M : A}$$
+
+{\bf Imperative constructs}
+$$ \rulename{seq} \ \rulef{\Gamma| \Gamma^{\ianew} \vsafeentail M : \texttt{com} \quad \Gamma \vsafeentail N :A}
+    {\Gamma \vsafeentail \texttt{seq}_A \ M\ N\ : A} \quad A \in \{ \texttt{com}, \texttt{exp}\}$$
+
+$$ \rulename{assign} \ \rulef{\Gamma \vsafeentail M : \texttt{var} \quad \Gamma \vsafeentail N : \texttt{exp}}
+    {\Gamma \vsafeentail \texttt{assign}\ M\ N\ : \texttt{com}}
+\qquad \rulename{deref} \
+ \rulef{\Gamma \vsafeentail M : \texttt{var}}
+    {\Gamma \vsafeentail \texttt{deref}\ M\ : \texttt{exp}}$$
+
+$$ \rulename{new} \ \rulef{\Gamma , x : \texttt{var} \vsafeentail M : A}
+    {\Gamma  \vsafeentail \texttt{new } x \texttt{ in } M : A} \quad A \in \{ \texttt{com}, \texttt{exp}\}$$
+
+$$ \rulename{mkvar} \ \rulef{\Gamma \vsafeentail M_1 : \texttt{exp} \rightarrow \texttt{com} \quad \Gamma \vsafeentail M_2 : \texttt{exp}}
+    {\Gamma \vsafeentail \texttt{mkvar } M_1\ M_2\ : \texttt{var}}$$
+
+\caption{Formation rules for Strongly Safe IA}
+\label{tab:verysafeia_formrules}
+\end{FramedTable}
+\bigskip
+
+\subsection{Safe IA}
+
+It turns out that the definition of Strongly Safe IA is needlessly
+restrictive. Indeed, the major benefit of the safety constraint is
+that it avoids variable renaming when performing substitution. To
+achieve this, the safety constraint restricts the occurrences of the
+variables in a term. In the present setting of a language with
+imperative features, one can distinct two types of variables: The
+``standard ones'' -- those that we abstract using
+$\lambda$-abstraction, for instance $x$ in the term $\lambda x . x$;
+and the ``imperative'' ones -- those that are used as identifier for
+memory cell, also called block-allocated variables. We observe that
+for this second type of variables there is no gain in imposing any
+constraint since no substitution can ever occur for such variables
+when performing reduction! Inspired by this observation we can now identify a new fragment of IA subsuming Strongly Safe IA and which incarnates the notion ``safety''
+ more faithfully.
+
+We consider a new judgment of the form $\Gamma | \Gamma^{\ianew}
+\safeentail M : A$ - called a ``split term'' in \cite{abramsky:game-semantics-tutorial} - where the context is partitioned into two
+components: The first component contains standard lambda calculus
+variables; the second component contains block-allocated variable --
+abstracted by an occurrence of the \ianew\ construct. The component
+$\Gamma^{\ianew}$ contains variables of type \iavar\ only while the
+other component can contain variables of any type including the type
+\iavar. It is straightforward to redefine the typing rule of IA in
+such a way that these two distinct contexts are maintained
+appropriately. In particular the abstraction rule must only be able
+to abstract variables taken from the first component of the context;
+similarly the \ianew\ block construct must only be used to
+``abstract'' variables from the block-variable context. The full
+system of rules is given in Table \ref{tab:safeia_formrules}. The
+rules that are circled correspond to those that differs from their
+counterpart in Table \ref{tab:verysafeia_formrules}; the differences
+being that:
+\begin{itemize}
+\item the rule $\rulename{abs}$ and $\rulename{new}$ can only
+abstract variables from their respective context component;
+\item the side-condition in $\rulename{abs}$ refers only to
+the first context component.
+\end{itemize}
+
+\begin{FramedTable}
+{\bf Functional part}
+
+$$ \rulename{var} \ \rulef{}{x : A | \emptyset \safeentail x : A} \quad
+\rulename{var^{\ianew}} \ \rulef{}{\emptyset | x : \iavar \safeentail x : \iavar} $$
+$$
+\rulename{wk} \ \rulef{\Gamma | \Gamma^{\ianew} \safeentail s : A}{\Delta | \Gamma^{\ianew} \safeentail s : A} \quad
+\Gamma \subset \Delta \qquad
+\rulename{wk^{\ianew}} \ \rulef{\Gamma| \Gamma^{\ianew} \safeentail s : A}{\Gamma| \Delta^{\ianew} \safeentail s : A} \quad
+\Gamma^{\ianew} \subset \Delta^{\ianew}
+$$
+
+where $\Gamma^{\ianew}$ and $\Delta^{\ianew}$ are finite sets of variables
+of type \iavar.
+
+$$ \rulename{app} \ \rulef{\Gamma | \Gamma^{\ianew} \safeentail s : (A_1,\ldots,A_n,B) \quad
+\Gamma | \Gamma^{\ianew} \safeentail t_1 : A_1 \quad \ldots \quad \Gamma | \Gamma^{\ianew} \safeentail t_n : A_n
+} {\Gamma | \Gamma^{\ianew} \safeentail s t_1 \ldots t_n : B} \ SC(\Gamma ; B)$$
+
+\begin{center}\ovalbox{$
+ \rulename{abs} \ \dps  \rulef{\dps \Gamma, x_1 : A_1, \ldots, x_n : A_n |
+\Gamma^{\ianew}
+  \safeentail s : B} {\Gamma | \Gamma^{\ianew} \safeentail \lambda x_1 \ldots x_n . s :
+  (A_1, \ldots ,A_n,B)} \ SC(\Gamma ; (A_1, \ldots ,A_n,B) )$}\end{center}
+
+
+{\bf Arithmetic and recursion}
+$$ \rulename{const} \ \rulef{}{\emptyset | \emptyset \safeentail n :\texttt{exp}}
+\quad \rulename{succ} \ \rulef{\Gamma | \Gamma^{\ianew}\safeentail M:\texttt{exp} }{\Gamma| \Gamma^{\ianew} \safeentail \texttt{succ}\ M:\texttt{exp}}
+\quad \rulename{pred} \ \rulef{\Gamma| \Gamma^{\ianew} \safeentail M:\texttt{exp} }{\Gamma| \Gamma^{\ianew} \safeentail \texttt{pred}\ M:\texttt{exp}}$$
+
+$$
+\rulename{cond} \ \rulef{\Gamma| \Gamma^{\ianew} \safeentail M : \texttt{exp} \quad \Gamma| \Gamma^{\ianew} \safeentail N_1 : \texttt{exp} \quad \Gamma| \Gamma^{\ianew} \safeentail N_2 : \texttt{exp} }{\Gamma| \Gamma^{\ianew} \safeentail \texttt{cond}\ M\ N_1\ N_2}
+\quad  \rulename{rec} \ \rulef{\Gamma| \Gamma^{\ianew} \safeentail M : A\rightarrow A }{ \Gamma| \Gamma^{\ianew} \safeentail Y_A M : A}$$
+
+{\bf Imperative constructs}
+$$ \rulename{seq} \ \rulef{\Gamma| \Gamma^{\ianew} \safeentail M : \texttt{com} \quad \Gamma| \Gamma^{\ianew} \safeentail N :A}
+    {\Gamma| \Gamma^{\ianew} \safeentail \texttt{seq}_A \ M\ N\ : A} \quad A \in \{ \texttt{com}, \texttt{exp}\}$$
+
+$$ \rulename{assign} \ \rulef{\Gamma| \Gamma^{\ianew} \safeentail M : \texttt{var} \quad \Gamma| \Gamma^{\ianew} \safeentail N : \texttt{exp}}
+    {\Gamma| \Gamma^{\ianew} \safeentail \texttt{assign}\ M\ N\ : \texttt{com}}
+\qquad
+ \rulename{deref} \ \rulef{\Gamma| \Gamma^{\ianew} \safeentail M : \texttt{var}}
+    {\Gamma| \Gamma^{\ianew} \safeentail \texttt{deref}\ M\ : \texttt{exp}}$$
+
+
+\begin{center}\ovalbox{$
+\rulename{new} \ \dps \rulef{\Gamma | \Gamma^{\ianew}, x :
+\texttt{var} \safeentail M : A}
+    {\Gamma | \Gamma^{\ianew} \safeentail \texttt{new } x \texttt{ in } M : A} \quad A \in \{ \texttt{com}, \texttt{exp}\} $}\end{center}
+
+$$ \rulename{mkvar} \ \rulef{\Gamma| \Gamma^{\ianew} \safeentail M_1 : \texttt{exp} \rightarrow \texttt{com} \quad \Gamma| \Gamma^{\ianew} \safeentail M_2 : \texttt{exp}}
+    {\Gamma| \Gamma^{\ianew} \safeentail \texttt{mkvar } M_1\ M_2\ : \texttt{var}}$$
+
+\caption{Formation rules for Safe IA} \label{tab:safeia_formrules}
+\end{FramedTable}
+
+
+Split-terms with an empty block-variable context $\Gamma^\ianew$ are called \emph{semi-closed}. We define \defname{Safe IA} to be the set of semi-closed split-terms typable with the system of rules of Table \ref{tab:safeia_formrules}. For convenience we introduce the additional rule
+$$ \rulef{\Gamma | \emptyset \safeentail M : A} {\Gamma \safeentail M : A}$$
+so that Safe IA is exactly the set of terms of the form $\Gamma \safeentail M : A$.
+
+\subsubsection{Examples}
+
+Clearly Strongly Safe IA is a subset of Safe IA, the following example
+showing that the inclusion is strict:
+
+$$ \safeentail \lambda f^{(\iaexp \rightarrow \iacom) \rightarrow \iaexp} . \ianewin{i}\ f ( \lambda x . \iaassign\ i\ x ) : \iaexp$$
+$$ \mbox{ but } \not \vsafeentail \lambda f^{(\iaexp \rightarrow \iacom) \rightarrow \iaexp} . \ianewin{i}\ f ( \lambda x . \iaassign\ i\ x ) : \iaexp \ .$$
+
+\notetoself{Need more examples}
+
+
+\subsection{Game-semantic analysis via a syntactic argument}
+

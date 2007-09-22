@@ -1,0 +1,2132 @@
+\psset{linecolor=darkGreen,linewidth=0.5pt}
+
+\section{Game Semantics Preliminaries}
+
+We consider an arena $A$ and make the following two assumptions on it:
+\begin{itemize}
+\item (A1) For $A \neq \bot$ (the arena with a single initial question), each question move in the arena enables at least one answer move.
+\item (A2) Answer moves do not enable any other move.
+\end{itemize}
+
+An arena is said to be \defname{prime} if it has a single initial move; a type is prime if its arena denotation is prime.
+
+\subsection{Node-order}
+
+\subsubsection{Definition}
+
+We define the \defname{order of a move} $m$ in the arena $A$, written $\ord_A{m}$ (or just $\ord{m}$ where there is no ambiguity), as the length of the path from $m$ to its furthest leaf in $A$ minus 1
+({\it i.e.}~the height of the subarena rooted at $m$ minus 2.). Because of assumptions (A1) and (A2),
+for any move $m$ of $A \neq \bot$, $m$ is a question move if and only if $\ord{m} \geq 0$, and $m$ is an answer move if and only if $\ord{m} = -1$.
+
+The \defname{order of an arena} $A$ is defined to be the maximal order of its initial moves. The order of a (simple, PCF or IA) type is defined as the order of the arena denoting it - or equivalently as 0 for ground type, $\ord{A\rightarrow B} = \max(1+\ord{A},\ord{B})$ and $\ord(A\times B) = \max(\ord A, \ord B)$. The order of a term is the order of its type.
+
+
+\subsubsection{Node-order after composition}
+
+Consider the arena $X\fngamear Y$ and let $m$ be a move of
+$X\fngamear Y$. We write $\ord_{X\fngamear Y}{m}$ to denote the
+order of $m$ in the arena ${X\fngamear Y}$. If $m$ belongs to $X$
+(resp.~$Y$) then we write $\ord_X{m}$ (resp.~$\ord_Y{m}$) to denote
+the order of the move $m$ in the arena $X$ (resp.~$Y$).
+
+\begin{lemma}
+\label{lem:compositionorder} Let $A$, $B$ and $C$ be three arenas.
+We have:
+$$\begin{array}{lll}
+\forall m \in A:
+    &  \ord_{A\fngamear B}{m} = \ord_{A\fngamear C}{m} \ ,\\
+\forall m \in B:
+    & \ord_{A\fngamear B}{m} \geq \ord_{B\fngamear C}{m}  & \mbox{for $m$ initial,}\\
+    & \ord_{A\fngamear B}{m} = \ord_{B\fngamear C}{m} & \mbox{for $m$ non initial,} \\
+\forall m \in C:
+    & \ord_{A\fngamear C}{m} \geq \ord_{B\fngamear C}{m} \iff
+\ord{A} \geq \ord{B}\ & \mbox{for $m$ initial,}\\
+    & \ord_{A\fngamear C}{m} = \ord_{B\fngamear C}{m}   & \mbox{for $m$ non initial.}
+\end{array}
+$$
+\end{lemma}
+
+\subsection{Well-bracketing}
+
+We call \defname{pending question} of a sequence of moves $s \in L_A$ the last unanswered question in $s$.
+
+\begin{definition}\rm
+A strategy $\sigma$ is said to be \defname{P-well-bracketed} if for any play $s \, a \in \sigma$ where $a$ is a  P-answer, $a$ points to the pending question in $s$.
+\end{definition}
+
+
+
+P-well-bracketing can be restated differently as the following proposition shows:
+\begin{proposition}
+\label{prop:char_wellbrack}
+\rm We make assumption (A1) and (A2).
+Let $\sigma$ be a strategy on an arena $A\neq \bot$.
+The following statements are equivalent:
+\begin{enumerate}
+\item[(i)] $\sigma$ is P-well-bracketed,
+\item[(ii)] for $s \, a \in \sigma$ with $a$ a P-answer, $a$ points to the pending question in $\pview{s}$,
+\item[(iii)] for $s \, a \in \sigma$ with $a$ a P-answer, $a$ points to the last O-question in $\pview{s}$,
+\item[(iv)] for $s \, a \in \sigma$ with $a$ a P-answer, $a$ points to the last O-move in $\pview{s}$ with order $>\ord{a}$.
+\end{enumerate}
+\end{proposition}
+\begin{proof}
+$(i)\iff(ii)$: \cite[Lemma 2.1]{McC96b} states that if P is to move then the pending question in $s$ is the same as that of $\pview{s}$.
+
+$(ii)\iff(iii)$: Assumption (A2) implies that the pending question in $\pview{s}$ is also the last O-question occurring in $\pview{s}$.
+
+$(iii)\iff(iv)$: Because of assumption (A1) and (A2),
+for any move $m$, we have $m$ is a question move
+if and only if $\ord{m} \geq 0$ if and only if $\ord{m} > \ord{a} = -1$.
+\end{proof}
+
+
+
+
+\begin{lemma}
+\label{lem:justfied_by_unanswered}
+Under assumption (A2), if $s$ be a justified sequence of moves satisfying alternation and visibility then any O-move (resp. P-move) in $s$ points to an \emph{unanswered} P question (resp. O-question).
+\end{lemma}
+\begin{proof}
+Suppose that an O-move $c$ points to a P-move $d$ that has already been answered by the O-move $a$. The sequence $s$ as the following form:
+$$ s= \ldots \Pstr{(d){d}  \ldots  (a-d,20){a}  \ldots  (c-d,20){c}}$$
+
+By O-visibility, $d$ must belong to $\oview{s_{<c}}$. But since $a$ is an answer, by assumption (A2), it cannot justify any P-move, therefore
+$\oview{s_{<q}}$ must contain an OP-arc ``hoping'' over $a$. We name the nodes of this arc $d^1$ and $c^1$:
+$$ s = \ldots \Pstr[0.7cm]{(d){d}  \ldots  (d1){d^1} \ldots (a-d,20){a} \ldots
+ (c1-d1,20){c^1} \ldots (c-d,25){c}}$$
+
+By P-visibility, $d^1$ must belong to $\pview{s_{<c^1}}$. Consequently, $a$ does not belong to $\pview{s_{<c^1}}$ (otherwise the PO-arc $\Pstr[0.5cm]{(d){d} \quad (a-d,45){a}}$ would cause the P-view to jump over $d^1$).
+Therefore there must be a PO-arc $\Pstr[0.5cm]{(d2){d^2} \quad (c2-d2,45){c^2}}$ in $\pview{s_{<c^1}}$ hoping over $a$:
+$$ s = \ldots \Pstr[0.7cm]{(d){d}  \ldots
+(d1){d^1} \ldots (d2){c^2} \ldots
+(a-d,20){a} \ldots
+ (c2-d2,20){d^2} \ldots (c1-d1,20){c^1} \ldots (c-d,25){c}}$$
+
+This process can be repeated infinitely often by using alternatively O-visibility and P-visibility. This gives a contradiction since the sequence of moves $s_{<c}$ has finite length.
+Hence $d$ cannot point to a question that has already been answered. Since, by assumption (A2), a question is enabled by another question, $d$ is necessarily justified by an unanswered question.
+\end{proof}
+
+
+\begin{lemma}
+\label{lem:oq_in_pview_unanswered}
+Under assumption (A2), if $s$ is a P-well-bracketed justified sequence of moves of odd length satisfying alternation and visibility then  all O-questions occurring in $\pview{s}$ are unanswered in $s$.
+\end{lemma}
+\begin{proof}
+We proof the first part by induction on $s$.
+The base case ($s = q$ with $q$ initial O-move) is trivial.
+
+Suppose $\Pstr[0.4cm]{ s = s' \cdot (n)n \cdot u \cdot (m-n,45){m} }$.
+Let $r$ be an O-question in $\pview{s} = \pview{s'} \cdot n \cdot m$.
+If $r$ is the last move $m$ then it is necessarily unanswered.
+If $r \in \pview{s'}$ then by the induction hypothesis, $r$ is unanswered in $s'$.
+Suppose that $r$ is answered in $s$. This implies that some answer move $a$ in $u$ points to $r$:
+$$\pstr[0.7cm][5pt]{ s = \underbrace{\cdots\ \nd(r){r}^O \cdots }_{s'} \
+\nd(n){n}^P \ \underbrace{\cdots\ \nd(a-r,35){a}^P \cdots }_{u} \
+\nd(m-n,30){m}^O } \ .$$
+
+Since $m$ points to $n$, by lemma \ref{lem:justfied_by_unanswered}, $n$ is still unanswered at $s_{\prefixof a}$. Therefore the pending
+question at $s_{\prefixof a}$ cannot be $r$. But $a$ is justified by $r$, therefore the well-bracketing condition is violated. Hence $r$ is
+unanswered in $s$.
+\end{proof}
+
+
+
+
+
+
+
+
+\subsection{Interaction sequences} Let us first recall the
+definition of an interaction sequence. Let $A$,$B$ and $C$ be three
+games. We say that $u$  is an
+\defname{interaction sequence} of $A$,$B$ and $C$ whenever $u\filter
+A,B$ is a valid position of the game $A\fngamear B$ (i.e.~$u\filter
+A,B \in P_{A\fngamear B}$) and  $u\filter B,C$ is a valid position
+of the game $B\fngamear C$. We write $Int(A,B,C)$ to denote the set
+of all such interaction sequences.
+
+Let $\sigma:A\fngamear B$ and $\mu:B\fngamear C$ be two strategies.
+We write $\sigma \parallel \mu$ to denote the set of interaction
+sequences that unfold according to the strategy $\sigma$ in the
+$A,B$-projection of the game and to $\mu$ in the $B,C$-projection:
+$$ \sigma \parallel \mu = \{ u \in Int(A,B,C) \ | \ u\filter A,B \in \sigma \wedge u \filter B,C \in \mu \} \ .$$
+The composite of $\sigma$ and $\mu$ is then defined as $\sigma ; \mu
+= \{ u \filter A,C \ | \ u \in \sigma \parallel \tau \}$.
+
+The diagram below shows the structure of an interaction sequence
+from $\sigma \parallel \mu$. There are four states represented by
+the rectangular boxes. The content of the state shows who is to play
+in each of the game $A\fngamear B$, $B\fngamear C$ and $A\fngamear
+C$. For instance in state $OPP$, it is O's turn to play in
+$A\fngamear B$ and P's turn to play in $B\fngamear C$ and
+$A\fngamear C$. Arrows represent the moves. When specifying
+interaction sequence, the following bullet symbols are used to
+represent moves: $\pmove$ for P-moves, $\omove$ for O-moves,
+$\pomove$ for a move playing the role of P in $A\fngamear B$ and O
+in $B\fngamear C$ and $\opmove$ for the symmetric of $\pomove$. We
+sometimes add a subscript to the symbols $\pmove$ and $\omove$ to
+denote the component in which the moves is played ($A$ or $C$).
+
+
+\tikzstyle{state}=[rectangle,draw=blue!50,fill=blue!20,thick,minimum
+height = 4ex, text width=4cm] \tikzstyle{move}=[->,shorten
+<=1pt,>=latex',line width=1pt] \tikzstyle{intmove}=[dashed]
+\tikzstyle{extomove}=[color=\extomovecolor]
+\tikzstyle{genomove}=[]%[dashed]
+\tikzstyle{genpmove}=[color=\genpmovecolor]
+\def\sep{1.5cm}
+\begin{figure}[htbp]
+\begin{center}
+\begin{tikzpicture}[node distance=1.7cm]
+
+% the four states
+\path
+ node(oooT)  [state] {}
+ node(opp)   [state, below of=oooT] {}
+ node(pop)   [state, below of=opp]  {}
+ node(oooB)  [state, below of=pop] {}
+ node(title) [anchor=south, at=(oooT.north), minimum height = 4ex, text width=4cm] { };
+
+\path
+% text in the title centered in 3 columns
+  ([xshift=-\sep]title) node {$A\fngamear B$}
+        (title) node {$B\fngamear C$}
+        ([xshift=\sep]title) node {$A\fngamear C$}
+
+% text in the states centered in 3 columns
+  ([xshift=-\sep]oooT) node {O}
+        (oooT) node {O}
+        ([xshift=\sep]oooT) node {O}
+  ([xshift=-\sep]opp) node {O}
+        (opp) node {P}
+        ([xshift=\sep]opp) node {P}
+  ([xshift=-\sep]pop) node {P}
+        (pop) node {O}
+        ([xshift=\sep]pop) node {P}
+  ([xshift=-\sep]oooB) node {O}
+        (oooB) node {O}
+        ([xshift=\sep]oooB) node {O}
+
+% text in between two arrows giving the arena of the move
+  (oooT) to node {\bf C} (opp)
+  (opp) to node {\bf B} (pop)
+  (pop) to node {\bf A} (oooB)
+
+% arrows representing the moves
+  (opp.20)    edge[move, genpmove]
+        node[right] {$\mu$}
+        node[left]{$\pmove$} (oooT.-20)
+  (oooT.-160) edge[move, extomove, genomove]
+        node[left] {$env_\mu$}
+        node[right]{$\omove$} (opp.160)
+  (pop.20)    edge[move, genomove,genpmove,intmove]
+        node[right] {$\sigma$}
+        node[left]{$\pomove$} (opp.-20)
+  (opp.-160)  edge[move, genomove, genpmove,intmove]
+        node[left] {$\mu$}
+        node[right]{$\opmove$}  (pop.160)
+  (oooB.20)   edge[move, extomove,genomove]
+        node[right] {$env_\sigma$}
+        node[left]{$\omove$} (pop.-20)
+  (pop.-160)  edge[move, genpmove]
+        node[left] {$\sigma$}
+        node[right]{$\pmove$} (oooB.160);
+
+%\draw[move, genpmove] (3.5cm,-1cm) -- +(1,0) node[right] {Generalised P-move \& External P-move };
+%\draw[move, genomove,genpmove] (3.5cm,-2cm) -- +(1,0) node[right] {Generalised O-move \& Generalised P-move};
+%\draw[move, genomove,extomove] (3.5cm,-3cm) -- +(1,0) node[right] {Generalised O-move \& External O-move};
+\draw[move] (3.5cm,-1cm) -- +(1cm,0cm) node[right] {External move};
+\draw[move,intmove] (3.5cm,-2cm) -- +(1cm,0cm) node[right] {Internal
+move}; \draw (3.5cm,-3cm) node[anchor=west]
+{\textcolor{\extomovecolor}{External O-moves: $\omove$}}; \draw
+(3.5cm,-4cm) node[anchor=west]
+{\textcolor{\genpmovecolor}Generalised P-move: $\opmove, \pomove,
+\pmove$};
+\end{tikzpicture}
+\end{center}
+\caption{Structure of an interaction sequence.} \label{fig:interseq}
+\end{figure}
+
+Note that in state OPP, the alternation condition (for each of the
+three games involved) prevents the players from playing in A.
+Indeed, the O-moves in component $A$ of $A\fngamear B$ are also
+$O$-moves in component $A$ of $A\fngamear C$ however the state name
+indicates that the next move in $A\fngamear B$ must be an O-move and
+the next move in $A\fngamear C$ must be a P-move.
+
+Similarly, in the top state OOO, the players cannot make move in B
+since the O-moves in component B of the game $B\fngamear C$
+correspond to P-moves in the component B of $A\fngamear B$. However
+the state name indicates that the next move in $A\fngamear B$ and
+the next move in $B\fngamear C$ must be played by O.
+
+
+Let $u \in Int(A,B,C)$ and $m$ be a move of $u$. The
+\defname{component} of $m$ is $A,B$ if after playing $m$ the game is
+under the control of the strategy $\sigma$ and $B,C$ otherwise (if
+$\mu$ has control). In other words, the moves $\omove, \pmove \in A$
+and $\opmove \in B$ shown on the diagram of Figure
+\ref{fig:interseq} have component $A,B$ and $\omove, \pmove \in C$
+and $\pomove \in B$ have component $B,C$.
+
+
+Also we call \defname{generalized O-move in component $A,B$} moves
+that play the role of O in the game $A\fngamear B$, that is to say
+moves represented by $\opmove$ and $\omove_A$. Similarly $\pomove$
+and $\pmove_A$ moves are the \defname{generalized P-moves in
+component $A,B$}, $\omove_C$ and $\pomove$ moves are the
+\defname{generalized O-moves in component $B,C$} and  $\pmove_C$ and
+$\opmove$ moves are the \defname{generalized P-moves in component
+$B,C$}.
+
+The P-view (also called {\emph core} in
+\cite{McCusker-GamesandFullAbstrac}) of an interaction sequence $u
+\in Int(A,B,C)$, written $\overline{u}$ or $\pview{u}$ is defined
+as:
+\begin{align*}
+\pview{u\cdot \extomove{n}} &= \extomove{n} &
+\mbox{ if \extomove{$m$} is an \extomove{external O-move} initial in C,}\\
+\pview{\Pstr{u\cdot (m)m\cdot v \cdot (n-m,45){\extomove{n}} }} &= \extomove{n} &\mbox{ if \extomove{$m$} is an \extomove{external O-move} non initial in C,}\\
+\pview{u \cdot \genpmove{m}} &= \pview{u}\cdot \genpmove{m}  & \mbox{ if \genpmove{$m$} is a \genpmove{generalised P-move}.}\\
+\end{align*}
+
+We can show the following property by an easy induction :
+\begin{lemma}
+\label{lem:pviewAC_eq_ACpview}
+ Let $u$ be an interaction sequence in $Int(A,B,C)$ then
+$$\pview{u} \upharpoonright A,C = \pview{u \upharpoonright A,C} \ .$$
+\end{lemma}
+\begin{proof}
+  By induction on $u$. It is trivial for the empty sequence.
+Let $b$ be a move in $B$. We have $\pview{u b} \filter A,C =
+\pview{u} \filter A,C$. By the I.H. this is equal to $\pview{u
+\filter A,C} = \pview{u b\filter A,C}$. Let $m$ be a P-move in $A$
+or $C$ then $\pview{u m} \filter A,C = (\pview{u} \filter A,C) m$
+and by the I.H. this is equal to $\pview{u \filter A,C} m =
+\pview{(u \filter A,C) m} = \pview{u m \filter A,C}$. Let $c$ be an
+initial move in $C$. We have $\pview{u c \filter A,C}  = \pview{(u
+\filter A,C) c} = c =  c \filter A,C = \pview{u c} \filter A,C$. Let
+$u = \Pstr{u_1 (m){m} u_2 (n-m){n}}$ with $n$ an O-move in
+$A\rightarrow C$. Then necessarily $m\in A,C$ and $ \pview{u\filter
+A,C} = \pview{\Pstr[0.5cm]{u_1\filter A,C \cdot (m){m} \cdot
+u_2\filter A,C \cdot (n-m,30){n}}} =
+ \pview{u_1 \filter A,C} \Pstr{(m){m} (n-m){n}}$. By the I.H. this is equal to
+$(\pview{u_1}\filter A,C) \Pstr{(m){m} (n-m){n}} = (\pview{u_1}
+\Pstr{(m){m} (n-m){n}} ) \filter A,C  = \pview{u_1 \Pstr{(m){m} u_2
+(n-m){n}}} \filter A,C$
+\end{proof}
+
+
+\subsection{P-incremental justification}
+
+
+\begin{definition}\rm
+A play $s m$ of even length is said to be \defname{P-incrementally justified}, or {\emph P-i.j.} for short, if $m$ points to the last unanswered O-question in $\pview{s}$ with order strictly greater than $\ord{m}$.
+
+ A strategy $\sigma$ is said to be \defname{P-incrementally justified}, if all plays in $\sigma$ ending with a P-question are
+P-incrementally justified.
+\end{definition}
+Let $\sigma$ be a strategy. We write $Pij(\sigma)$ to denote the set of plays of $\sigma$ that are P-i.j.
+We can define equivalently P-i.j.\ strategies as those verifying the relation $\sigma = Pij(\sigma)$.
+\begin{proposition}
+\label{prop:char_pincr}
+\rm We make assumption (A1) and (A2).
+Let $\sigma$ be a \emph{P-well-bracketed} strategy on an arena $A\neq \bot$.
+The following statements are equivalent:
+\begin{enumerate}
+\item[(i)] $\sigma$ is P-incrementally justified,
+\item[(ii)] for $s \, q \in \sigma$ with $q$ a P-question, $q$ points to the last O-question in $\pview{s}$ with order $>\ord{q}$,
+\item[(iii)] for $s \, q \in \sigma$ with $q$ a P-question, $q$ points to the last O-move in $\pview{s}$ with order $>\ord{q}$.
+\end{enumerate}
+\end{proposition}
+\begin{proof}
+$(i)\iff(ii)$: By lemma \ref{lem:oq_in_pview_unanswered}, O-question occurring in $\pview{s}$ are all unanswered.
+
+$(ii)\iff(iii)$: Because of (A1) and (A2), $\ord{q} \geq 0$ thus an O-move with order $>\ord{q}$ is necessarily an O-question.
+\end{proof}
+
+Putting proposition \ref{prop:char_pincr} and
+\ref{prop:char_wellbrack} together we obtain:
+\begin{proposition}
+Under assumption (A1) and (A2).
+A strategy $\sigma$ on $A\neq \bot$
+is \emph{P-well-bracketed} and
+ \emph{P-incrementally justified} if and only if
+for $s \, m \in \sigma$, $m$ points to the last O-move in $\pview{s}$ with order $>\ord{m}$.
+\end{proposition}
+
+
+
+
+\section{Closed P-i.j.\ strategies}
+\label{sec:closedpij}
+
+\subsection{Definition}
+
+\begin{definition}
+\label{def:closedpij} Let $s m$ be an even-length play on some game
+$A \rightarrow B$. $s m$ is said to be
+\defname{closed P-incrementally justified} (closed P-i.j.\ for short)
+just if
+\begin{itemize}
+\item $s m$ is P-incrementally justified;
+\item and if $m$ is an initial move in $A$ then its justifier $n$ (initial in
+$B$) verifies $\ord_A m \geq \ord_B n$.
+\end{itemize}
+
+\noindent A strategy $\sigma$ is \defname{closed P-i.j.} just if all
+plays in $\sigma$ ending with a P-questions are closed P-i.j.
+\end{definition}
+An example of closed P-i.j.\ strategy is the identity strategy $id_A$
+for any game $A$.
+
+\begin{lemma}
+\label{lem:closedpij_singleBinitmove} Let $\sigma : A \fngamear B$ be a P-i.j.\ strategy.
+\begin{enumerate}[i.]
+\item If for each initial move $m$ of $A$ occurring in some play of $\sigma$ we have $\ord_A m \geq \ord{B}$, then $\sigma$ is closed P-i.j.
+\item Suppose that $A=A_1\times \ldots \times A_n$ where each of the $A_i$ are prime arenas. If for each initial move $m_i$ of $A_i$, for $i \in \{1..n\}$, occurring in some play of $\sigma$ we have $\ord A_i \geq \ord{B}$, then $\sigma$ is closed P-i.j.
+\end{enumerate}
+\end{lemma}
+\begin{proof}
+(i) This is a direct consequence of the definition since $\ord B \geq \ord_B b$ for every move $b$ initial in $B$.
+
+(ii) Take an initial move $m$ of $A$. It is necessary an initial move of $A_i$ for some $i$ hence $\ord_A m = \ord_{A_i} m$ which is equal to $\ord A_i$ since $A_i$ is prime. By hypothesis this is in turn greater than $\ord{B}$ hence we can conclude using (i).
+\end{proof}
+
+
+
+We observe that every P-i.j.\ strategy $\sigma$ on the game $I
+\fngamear A$ is closed P-i.j.\ while $\sigma : A$ is not necessarily closed P-i.j.\footnote{In particular, every P-i.j.\ strategy
+$\sigma$ on the game $!A_1 \otimes \ldots \otimes !A_n \fngamear B$,
+is isomorphic, up to arena-tagging of the moves, to the closed
+P-i.j.\ strategy $\Lambda^n(\sigma)$ on the game $I \fngamear
+(A_1,\ldots,A_n,B)$, where $\Lambda$ denotes the usual {\it
+currying} isomorphism.};
+hence the distinction between $I \fngamear A$ and $A$ matters.
+This is because the definition of closed P-i.j.\ strategy
+specifically refers to the moves of  the arena in the left-hand side
+of the function space arrow $\fngamear$, therefore the property is not valid
+up to an isomorphism that retags the moves such as {\it
+currying}.
+
+Consequently, it is possible to have two isomorphic strategies $\sigma$ and
+$\mu$ such that one is closed P-i.j.\ but not the other. In contrast, the ``ordinary'' P-incremental
+justification condition is preserved across the  {\it curry} isomorphism. A consequence of this remark is that the category of closed P-i.j.\ strategies
+that we will introduce later on, is not closed (neither monoidal closed nor cartesian closed) and
+that it only admits a weak form of {\it curry} isomorphism.
+
+\subsection{Compositionality - A semantic proof}
+
+{\bf Notation} In plays representations, the symbol $\omove$ stands
+for an O-move and $\pmove$ for a P-move. Suppose the game considered
+is $L\fngamear R$ for some game $L$ and $R$ then whenever the
+sub-arena in which the move is played is known, it is specified in
+subscripts ($\omove_L$, $\pmove_L$, $\omove_R$ or $\pmove_R$). For
+interaction sequences in $Int(A,B,C)$ we use the symbols $\omove_A$,
+$\pmove_A$, $\omove_C$, $\pmove_C$, $\opmove$ and $\pomove$ as
+defined in Figure \ref{fig:interseq}. We use the variable $X$ to
+denote one of the component $A,B$ or $B,C$, the variable  $Y$ then
+denotes the other component. We write $s \subseqof t$ to say that
+$s$ is a subsequence (with pointers) of $t$, $s \prefixof t$ to say
+that $s$ is a prefix (with pointers) of $t$ and  $s \suffixof t$ to
+say that $s$ is a suffix of $t$.
+
+We now prove several useful lemmas which will become useful when studying compositionality of P-i.j.\ strategies.
+
+\begin{lemma}
+\label{lem:interjump}
+Let $X$ be a component (either  $A,B$ or  $B,C$).
+Let $u$ be an interaction sequence of the form
+$ u =
+\Pstr[0.5cm][2pt]{ \ldots (b){\stk \beta \pmove}  \ldots
+ {n}  \ldots  (a-b,30){\stk \alpha\omove}
+\ldots m}$ where:
+\begin{itemize}[-]
+\item $\alpha,\beta$ are external moves in component $X$ (necessarily both played in $A$ or in $C$),
+\item  $m$ is either played in $B$ or an external P-move in $X$,
+\item  $\alpha$ is visible at $m$ in $X$ \emph{i.e.}~$\alpha\in \pview{u \upharpoonright X}$ (consequently $\beta$ is also visible).
+\end{itemize}
+Then $n \not\in \pview{u \upharpoonright A, C}$.
+\end{lemma}
+\begin{proof}
+Since $\alpha$ is an O-move, $\alpha$ and $\beta$ are necessarily
+played in the same arena ($A$ or $C$). Take $v=u$ if $m$ is a
+generalized O-move in $X$ and $v=u_{<z}$ otherwise (if $m$ is a
+generalized P-move in $X$). The third assumption implies
+$\alpha,\beta\in \pview{v}$. The last move in $v$ is necessarily a
+generalized O-move in component $X$ (see diagram of Figure
+\ref{fig:interseq}) therefore by \cite[Lemma 3.3.1]{Harmer2005} we
+have $\pview{v \filter X} = \pview{\overline{v} \filter X} \subseqof
+\overline{v} \subseqof \overline{u}$. Thus $\alpha,\beta \in
+\overline{u}$ and since $\alpha,\beta$ are played in $A,C$ we have
+$\alpha,\beta  \in \overline{u} \upharpoonright A,C = \pview{u
+\upharpoonright A,C}$ (Lemma \ref{lem:pviewAC_eq_ACpview}). Finally
+since $n$ lies underneath the $\beta$-$\alpha$ PO-arc it cannot
+appear in the P-view  $\pview{u \upharpoonright A,C}$.
+\end{proof}
+
+\begin{lemma}
+\label{lem:in_pviewAC_imp_in_pviewX}
+Let $u$ be an interaction sequence in $Int(A,B,C)$ and
+$n$ be a move of $u$ such that $n\in\pview{u \filter A,C}$:
+\begin{enumerate}[i.]
+\item
+if all the moves in $u_{\suffixof n}$
+are played in $C$  then $n \in \pview{u \filter B,C}$;
+\item
+if all the moves in $u_{\suffixof n}$ are played in $A$ then $n \in \pview{u \filter A,B}$.
+\end{enumerate}
+\end{lemma}
+\begin{proof}
+\begin{enumerate}[(i)]
+\item
+We show the contrapositive. Suppose that $n \not\in\pview{u \filter B,C}$. This must be due to one of the following  two
+reasons:
+\begin{itemize}[-]
+\item $\pview{u \filter B,C}$ contains an initial move $c_0 \in C$
+occurring after $n$ in $u$.
+
+
+By \cite[Lemma 3.3.1]{Harmer2005}
+we have $\pview{u \filter B,C} = \pview{\overline{u} \filter B,C} \subseqof \pview{u}$, thus $c_0$ also occurs in $\pview{u}$.
+Since $c_0$ belongs to $C$ we have
+$c_0 \in \pview{u} \filter A,C=
+\pview{u \filter A,C}$ (Lemma \ref{lem:pviewAC_eq_ACpview}).
+Thus the P-view $\pview{u \filter A,C}$
+starts with the initial move $c_0$ and
+since $n$ occurs before $c_0$, $n$ does not occur in the P-view.
+
+\item $n$ lies underneath a PO-arc $\beta$-$\alpha$ visible
+at $ u \filter B,C$.
+By assumption, since $\alpha$ occurs after $n$ in $u$, it must belong to $C$. We can therefore apply Lemma \ref{lem:interjump}
+with $X\assignar B,C$ which gives
+$n \not\in\pview{u \filter A,C}$.
+\end{itemize}
+
+\item Suppose that $n \not\in\pview{u \filter A,B}$ then either:
+\begin{itemize}[-]
+\item $\pview{u \filter A,B}$ contains an initial move $b_0 \in B$
+occurring after $n$ in $u$. But this is impossible since by assumption all the moves occurring after $n$ in $u$ belong to $A$.
+
+\item or $n$ lies underneath a PO-arc $\beta$-$\alpha$ in $A,B$.
+By assumption, since $\alpha$ occurs after $n$ it must belong to $A$. We can then conclude using
+Lemma \ref{lem:interjump} with $X\assignar A,B$.
+\end{itemize}
+\end{enumerate}
+\end{proof}
+
+Note that we cannot completely relax the assumption
+which says that moves in $u_{\suffixof n}$ are all in the same component.
+For instance take $u = \Pstr[0.5cm]{(co){\omove_C}\thinspace
+(b0-co){\opmove} \thinspace
+(n){\stk{\pmove_A}{n}} \thinspace
+(b1-co){\opmove}}$ then we have $n\in\pview{u\filter A,C}$ but $n\notin\pview{u\filter A,B}$.
+
+
+%%%%%%%%%%%
+% This commented Lemma could be useful be we did not make use of it eventually.
+%
+% \begin{lemma}
+%\label{lem:oviewsegmentinB}
+%For any legal sequence $s = \ldots x \cdot r \cdot y$ of a game $A\fngamear B$ if $x, y \in A$ and $x$ is O-visible from $y$ then any move in $r$ occurring in $\oview{s}$ belongs to $A$.
+%\end{lemma}
+%\begin{proof}
+%We proceed by induction on the length of the segment $r$.
+%Base case $r=\epsilon$ is trivial. Suppose $r = r' \cdot m$.
+%If $y$ is an O-move then by the Switching Condition
+%$m$ is necessarily in $A$. Clearly $x$ is O-visible from $m$ thus  by the I.H. any move from $r$ occurring in the O-view is in $A$.
+%
+%If $y$ is a P-move then it cannot point to an initial move in $B$. Indeed, suppose that it points to an initial O-move $b_0 \in B$ then
+%we have $\oview{s} = b_0 \cdot y$ which contradicts the fact that $x\in \oview{s}$.
+%Thus $y$ points to a move in $A$ and again we can conclude using the induction hypothesis.
+%\end{proof}
+
+
+\begin{lemma}[P-visibility decomposition (from $C$)]
+\label{lem:middlepomove}
+Let $u = \ldots n' \cdot r \cdot m \in Int(A,B,C)$ where
+$n'$ is a $\omove_A$-move verifying $n' \in \pview{u\filter A,C}$ and $m$ is in $\{ \pmove_C, \opmove, \pomove \}$. Then there is a $\pomove$-move $\gamma$ in $r \cdot m$ such that $\gamma \in \pview{u\filter B,C}$ , $n' \in \pview{u_{\leq \gamma} \filter A,B}$ and $\gamma$ is justified by a move occurring before $n'$.
+\end{lemma}
+\begin{proof}
+By induction on $|r|$.
+If $r=\epsilon$ then necessarily $u = \ldots \stk{\omove_A}{n'} \thinspace\stk \pomove m$ where $m$ points before $n'$ ($n'$ being played in $A$ cannot justify $m$ played in $B$) so we just need to take $\gamma = m$.
+If $|r|=1$ then either
+$u = \ldots \stk{\omove_A}{n'} \pomove\thinspace\stk {\pmove_C} m$
+or $u = \ldots \stk{\omove_A}{n'} \pomove\thinspace\stk \opmove m$.
+In both cases we can take $\gamma$ to be the $\pomove$-move between $n'$ and $m$.
+Suppose $|r|>1$. Let $m^-$ denote the move preceding $m$ in $u$.
+We proceed by case analysis:
+\begin{enumerate}[i.]
+\item Suppose $m = \pmove_C$ and $m^- = \omove_C$.
+Let $q$ be the external P-move that justifies $m^-$.
+Since $n' \in \pview{u\filter A,C}$, $q$ must occur after $n'$ in $u$:
+$$
+\begin{array}{ccccl}
+A & \stackrel\sigma{\longrightarrow} & B & \stackrel\mu{\longrightarrow} & C \\
+&\vdots&&\vdots\\
+n' \omove\\
+&\vdots&&\vdots  \\
+&& & &  \rnode{q}{\pmove}q  \\
+&\vdots&&\vdots  \\
+&& & &  \rnode{mp}{\omove}m^-  \\
+&& & &  \rnode{m}{\pmove}m  \\
+\end{array}
+\ncarc[arcangleA=60,arcangleB=60]{->}{mp}{q}
+ $$
+Thus we can use the induction hypothesis (with $u\assignar u_{\prefixof q}$): there is a $\pomove$-move $\gamma$
+in $u_{]n',q]}$ pointing before $n'$ such that $\gamma \in \pview{u_{\prefixof q} \filter B,C}$, $n' \in \pview{u_{\prefixof \gamma} \filter A,B}$.
+Moreover $\pview{u_{\prefixof q} \filter B,C} \prefixof \pview{u_{\prefixof m} \filter B,C}$ (since $q$ is visible from $m$ in $B,C$) thus we have $\gamma \in \pview{u_{\prefixof m} \filter B,C}$ as required.
+
+\item Suppose $m = \pmove_C$ and $m^- = \pomove \in B$.
+Again we can conclude using
+the induction hypothesis with $u \assignar u_{\prefixof m^-}$.
+
+\item Suppose $m = \pomove \in B$.
+
+Suppose that all the moves in $r$ are in $A$.
+Then $r$ is of the form $(\pmove_A \omove_A)^*$ (where $(\cdot)^*$ denotes the Kleenee star operator).
+We just need to take $\gamma = m$.
+Indeed, moves in $u_{\suffixof m}$ are all in $A$
+and by assumption $n'\in\pview{u\filter A,C}$  therefore
+Lemma \ref{lem:in_pviewAC_imp_in_pviewX}(ii) gives
+$n'\in\pview{u\filter A,B}$.
+Also, since $m$ is a $\pomove$-move,
+its justifier is a $\opmove$-move but $r$ contains only $\omove$ and $\pmove$ moves hence $m$'s justifier must occur before $n'$.
+
+Suppose that $r$ contains at least one move in $B$. Let $b$ be the last such move, then $u$ is of the form $\ldots n' \cdot \ldots \cdot \stk\opmove  b \cdot (\pmove_A \omove_A)^* \cdot\thinspace\stk\pomove m $. We then have
+$u\filter B,C = \ldots n' \cdot \ldots \cdot
+\thinspace\stk\opmove b \thinspace\cdot \stk\pomove m $ thus $b \in \pview{u\filter B,C}$. We can then conclude by applying the induction hypothesis with $u \assignar u_{\prefixof b}$.
+
+\item Suppose $m = \pomove \in B$.
+If $m^- = \opmove \in B$ then the I.H. with $u \assignar u_{\prefixof m^-}$ permits us to conclude.
+If $m^- = \omove \in C$ then we conlude by applying  the I.H. on $u \assignar u_{\prefixof q}$ where $q$ is the external P-move in $C$ justifying
+$m^-$.
+\end{enumerate}
+\end{proof}
+
+We now show the lemma symmetric to the previous one:
+\begin{lemma}[P-visibility decomposition (from $A$)]
+\label{lem:middleopmove}
+Let $u = \ldots n' \cdot r \cdot m \in Int(A,B,C)$ where
+$n'$ is an O-move \emph{non initial} in $C$ verifying $n' \in \pview{u\filter A,C}$ and $m$ is in $\{\pmove_A, \opmove, \pomove\}$. Then there is a $\opmove$-move $\gamma$ in $r \cdot m$ such that $\gamma \in \pview{u\filter A,B}$ , $n' \in \pview{u_{\leq \gamma} \filter B,C}$ and $\gamma$ is justified by a move occurring before $n'$.
+\end{lemma}
+\begin{proof}
+The proof is almost symmetrical to the previous one (Lemma \ref{lem:middlepomove}). We proceed by induction on $|r|$.
+If $r=\epsilon$ then necessarily $u = \ldots \stk {\omove_C} {n'} \thinspace\stk \opmove m$ where $m$ points before $n'$ (it cannot point to $n'$
+since $n'$ is not initial in $C$). Thus we just need to take $\gamma = m$.
+
+If $|r|=1$ then either
+$u = \ldots \stk {\omove_C} {n'} \thinspace\opmove\thinspace\thinspace\stk{\pmove_A} m$
+or $u = \ldots \stk {\omove_C} {n'} \thinspace\opmove\thinspace\thinspace\stk \pomove m$.
+In both cases we can take $\gamma$ to be the $\opmove$-move between $n'$ and $m$.
+Suppose $|r|>1$. Let $m^-$ denote the move preceding $m$ in $u$.
+We do a case analysis:
+\begin{enumerate}[i.]
+\item Suppose $m = \pmove_A$ and $m^- = \omove_A$.
+Let $q$ be the external P-move that justifies $m^-$.
+Since $n' \in \pview{u\filter A,C}$, $q$ must occur after $n'$ in $u$:
+$$
+\begin{array}{rcccl}
+A & \stackrel\sigma{\longrightarrow} & B & \stackrel\mu{\longrightarrow} & C \\
+&\vdots&&\vdots\\
+&&&& \omove\ n'\\
+&\vdots&&\vdots  \\
+q\rnode{q}{\pmove}  \\
+&\vdots&&\vdots  \\
+m^- \rnode{mp}{\omove}  \\
+m \rnode{m}{\pmove}  \\
+\end{array}
+\ncarc[arcangleA=-45,arcangleB=-45]{->}{mp}{q}
+ $$
+Thus we can use the induction hypothesis (with $u\assignar u_{\prefixof q}$): there is a $\opmove$-move $\gamma$
+in $u_{]n',q]}$ pointing before $n'$ such that $\gamma \in \pview{u_{\prefixof q} \filter A,B}$, $n' \in \pview{u_{\prefixof \gamma} \filter B,C}$.
+Moreover $\pview{u_{\prefixof q} \filter A,B} \prefixof \pview{u_{\prefixof m} \filter A,B}$ (since $q$ is visible from $m$ in $A,B$) thus we have $\gamma \in \pview{u_{\prefixof m} \filter A,B}$ as required.
+
+\item Suppose $m = \pmove_A$ and $m^- = \pomove$ then again we can conclude using the I.H. with $u \assignar u_{\prefixof m^-}$.
+
+\item Suppose $m = \opmove$.
+\begin{itemize}[-]
+\item Suppose that $r$ does not contain any move in $B$  then $r$ is of the form $(\pmove_C \omove_C)^*$.
+
+We just need to take $\gamma = m$.
+Indeed:
+\begin{enumerate}
+\item By lemmma \ref{lem:in_pviewAC_imp_in_pviewX}(i)
+we have $n'\in \pview{u\filter B,C}$.
+
+\item  $m$ is justified by a move occurring before $n'$.
+Indeed, if $m$ is justified by a $\pomove$-move then since $n' \cdot r$ contains only $\omove$ and $\pmove$ moves, $m$'s justifier must occur before $n'$.
+If $m$'s justifier is an initial $\omove_C$-move $c_i$, then
+by P-visibility we have $c_i \in \pview{u\filter B,C}$
+but since the P-view computation ``stops'' when reaching an initial moves, in order to guarantee that $n'$ also belongs to the P-view (as shown in (a)) it must
+occurs after $c_i$.
+\end{enumerate}
+
+
+\item Suppose that $r$ contains some move in $B$. Let $b$ be the last such move. Then $u$ is of the form $u = \ldots n' \cdot \ldots \cdot \stk\opmove  b \cdot (\pmove_A \omove_A)^* \cdot\ \stk\pomove m $.
+So we have
+$u\filter B,C = \ldots n' \cdot \ldots \cdot \stk\opmove  b \cdot \stk\pomove m $ hence $b \in \pview{u\filter B,C}$. We can now
+conclude by applying the I.H. with $u \assignar u_{\prefixof b}$.
+\end{itemize}
+
+\item Suppose $m = \pomove \in B$.
+If $m^- = \pomove \in B$ then the I.H. with $u \assignar u_{\prefixof m^-}$ permits us to conclude.
+If $m^- = \omove \in A$ then we conclude by applying the I.H. on $u \assignar u_{\prefixof q}$ where $q$ is the external P-move in $A$ justifying $m^-$.
+\end{enumerate}
+\end{proof}
+
+We now use the two preceding Lemmas to show
+the following useful result:
+\begin{lemma}[Increasing order lemma]
+\label{lem:increasing_order}
+Let $u = \ldots n' \cdot r \cdot m \in Int(A,B,C)$ where
+\begin{enumerate}
+\item
+$n'$ is an external O-move in compoment $X$
+($n'=\omove_A$ and $X=A,B$, or $n'=\omove_C$ and $X=B,C$)  non initial in $C$,
+\item $n' \in \pview{u\filter A,C}$,
+\item $m$ is either played in $B$
+($\opmove$ or $\pomove$) or is an external
+ P-move in $Y$
+($\pmove_C$ if $n'=\omove_A$ and
+$\pmove_A$ if $n'=\omove_C$),
+\item $m$'s justifier occurs before $n'$,
+\item $u\filter X$ is P-i.j.,
+\item $u_{\prefixof b}\filter Y$ is P-i.j.\ for all non-initial B-move $b$ occurring in $u$.
+\end{enumerate}
+Then:
+$$ \ord_{Y} m \geq \ord_{A\fngamear C} n' \ .$$
+\end{lemma}
+\begin{proof}
+If $n' =\omove_C$ (resp.~if $n'=\omove_A$)
+then by Lemma \ref{lem:middleopmove}
+(resp.~Lemma \ref{lem:middlepomove})
+there is an occurrence in $r \cdot m$ of a non-initial B-move $\gamma$ of type $\opmove$
+(resp.~$\pomove$) such that $\gamma \in \pview{u\filter Y}$ , $n' \in \pview{u_{\leq \gamma} \filter X}$ and $\gamma$ is justified by a move occurring before $n'$. By the $6^{th}$ hypothesis, $u_{\prefixof \gamma}\filter Y$ is P-i.j.
+
+There are six possible cases depending on
+the type of the moves $n'$ and $m$:
+$(n',m) \in \{ \omove_A \} \times \{\pmove_C,\opmove,\pomove \}
+\union \{ \omove_C \} \times \{\pmove_A,\opmove,\pomove \} $).
+The following diagram illustrates the cases $(n',m)
+ = (\omove_A,\pmove_C)$ (left)
+and  $(n',m)
+ = (\omove_C,\pmove_A)$  (right):
+$$
+\begin{array}{ccccc}
+A & \longrightarrow & B &
+ \longrightarrow & C \\
+&\vdots&&\vdots\\
+&&&& \rnode{n}{\omove} \\
+&\vdots&\rnode{gj}{\opmove}&\vdots\\
+n' \omove \\
+&\vdots&&\vdots  \\
+&&\rnode{g}{\gamma} \pomove \\
+&\vdots&&\vdots  \\
+&&&&\rnode{m}{m} \pmove \\
+\end{array}
+\ncarc[arcangleA=30,arcangleB=30]{->}{m}{n}
+\ncarc[arcangleA=30,arcangleB=30]{->}{g}{gj}
+\hspace{2cm} \begin{array}{ccccc}
+A & \longrightarrow & B & \longrightarrow & C \\
+&\vdots&&\vdots\\
+& \rnode{n}{\omove} \\
+&\vdots& &\rnode{gj}\vdots\\
+&&&&n' \omove \\
+&\vdots&&\vdots  \\
+&&\rnode{g}{\gamma} \opmove \\
+&\vdots&&\vdots  \\
+\rnode{m}{m} \pmove \\
+\end{array}
+\ncarc[arcangleA=30,arcangleB=30]{->}{m}{n}
+\ncarc[arcangleA=30,arcangleB=30]{->}{g}{gj}
+ $$
+
+We have:
+\begin{equation}
+\ord_Y \gamma \geq \ord_X \gamma \label{eqn:gammaorderXY}
+\end{equation}
+Indeed, if $n' =\omove_C$ then $X=B,C$ and $Y=A,B$ and
+by Lemma \ref{lem:compositionorder} we have
+$\ord_{A\fngamear B} \gamma \geq \ord_{B\fngamear C} \gamma$.
+If $n=\omove_A$ then $\gamma$ is a $\pomove$-move therefore it is not initial in $B$ and Lemma \ref{lem:compositionorder} gives
+$\ord_{A\fngamear B} \gamma = \ord_{B\fngamear C} \gamma$.
+
+Hence:
+\begin{align*}
+\ord_{A\fngamear C} n'
+& = \ord_{X} n' & \mbox{(n' non initial in $C$ \& Lemma \ref{lem:compositionorder})} \\
+& \leq \ord_{X} \gamma & \mbox{($u_{\prefixof \gamma}\filter Y$ is P-i.j. \& $\gamma$'s justifier occurs before $n'$)} \\
+& \leq \ord_{Y} \gamma & \mbox{(By Eq. \ref{eqn:gammaorderXY})} \\
+& \leq \ord_{Y} m & \mbox{($u\filter X$ is P-i.j. \&
+4$^{th}$ assumption: $m$'s justifier occurs before $\gamma$)}.
+\end{align*}
+\end{proof}
+
+
+\begin{lemma}
+\label{lem:visibleatprefixofu}
+Let $u\in Int(A,B,C)$ such that
+$u = \ldots \gamma \ldots \delta \ldots m$
+where $m$ is a generalized P-move in $X$,
+$\gamma \in \pview{u\filter A,C}$  and $\delta \in \pview{u\filter X}$. Then $\gamma \in \pview{u_{\prefixof \delta} \filter A,C}$.
+\end{lemma}
+\begin{proof}
+First we remark than $\delta$ must occur in $\pview{u}$.
+Indeed, $\delta \in \pview{u\filter X} = \pview{u_{< m} \filter X} \cdot m$ therefore $\delta \in \pview{u_{< m} \filter X}$ and since the move preceding $m$ in $u$ is necessarily a generalized O-move in $X$, we can use Lemma 3.3.1 from \cite{Harmer2005}:
+\begin{align*}
+\delta \in \pview{u_{< m} \filter X}
+&= \pview{\pview{u_{<m}}\filter X} & \mbox{(Lemma 3.3.1 from \cite{Harmer2005})}\\
+&\subseqof \pview{u_{<m}} \\
+&\subseqof \pview{u} \ .
+\end{align*}
+
+Clearly, $\pview{u_{\prefixof \delta} \filter A,C}$ is a prefix of $\pview{u \filter A,C}$, indeed:
+\begin{align*}
+\pview{u_{\prefixof \delta} \filter A,C}
+& = \pview{u_{\prefixof \delta}}\filter A,C
+  & \mbox{(Lemma \ref{lem:pviewAC_eq_ACpview})}  \\
+& \prefixof \pview{u}\filter A,C
+  & \mbox{($\delta \in \pview{u}$)} \\
+& = \pview{u\filter A,C}
+  & \mbox{(Lemma \ref{lem:pviewAC_eq_ACpview})} \ .
+\end{align*}
+
+Finally since $\gamma \in \pview{u\filter A,C}$ and $\gamma$ occurs before $\delta$ in $u$, we necessarily have $\gamma \in \pview{u_{\prefixof \delta}\filter A,C}$.
+\end{proof}
+
+\begin{lemma}
+\label{lem:compos_auxiliary_lemma}
+Let $X$ be a component and $u \in Int(A,B,C)$ such that
+the projection of $u$ on the component $X$ has the form:
+$$ u \filter X =
+\Pstr[0.5cm][2pt]{ \ldots (n){n}  \ldots
+ {\stk {n'}{\omove}}  \ldots  (m-n,30){\stk m {\pmove}}
+}$$
+and
+\begin{enumerate}
+  \item $m$ and $n'$ are external move in $X$ ({\it i.e.}~in $A$ if $X =A,B$ and in $C$ if $X=B,C$);
+  \item $u\filter X$ is P-i.j.;
+  \item $u_{\prefixof b}\filter Y$ is P-i.j.\ for all non-initial B-move $b$ occurring in $u$.
+\end{enumerate}
+Then either $\ord_{A\fngamear C} n' \leq \ord_{A\fngamear C} m$ or $n' \not \in \pview{u\filter A,C}$.
+\end{lemma}
+\begin{proof}
+
+Suppose that $n'$ occurs in the P-view $\pview{u\filter X}$. Then we have
+\begin{equation}
+\ord_{A\fngamear C} n'  = \ord_{B\fngamear C} n' \ . \label{eqn:ordnp}
+\end{equation}
+Indeed, if $X$ is the component $B,C$ then necessarily $n'$ is not initial in $C$ (otherwise it would be the first move in $\pview{u \filter B,C}$, which is not the case since by visibility $n$ must occur before $n'$ in the P-view) and
+if $X=A,B$ then $n'$ is in $A$. Thus in both cases, Lemma \ref{lem:compositionorder} gives us the claimed equality.
+
+Hence we have
+\begin{align*}
+\ord_{A\fngamear C} n'
+& = \ord_{X} n' & \mbox{(Eq.
+\ref{eqn:ordnp})} \\
+& \leq \ord_{X} m & \mbox{($u\filter X$ is P-i.j.)} \\
+& = \ord_{A\fngamear C} m & \mbox{(Lemma \ref{lem:compositionorder} \& $m$ is not initial in $C$)} \ .
+\end{align*}
+
+Suppose that $n'$ does not occur in the P-view $\pview{u \filter X}$, then $n'$ lies underneath a PO arc occurring in $\pview{u \filter X}$. Let us denote this arc by $\beta$-$\alpha$ where $\beta$ and $\alpha$ denote the arc's nodes. We have:
+$$ u \filter X = \ldots
+\Pstr[0.5cm]{
+ (n){n} \ldots (b){\stk\beta \pmove} \ldots \stk{n'} {\omove}
+\ldots (a-b){\stk\alpha \omove}  \ldots (m-n){\stk m {\pmove} }
+} $$
+with $\ord_X \alpha \leq \ord_X m$ (by P-i.j.\ of $u \filter X$).
+
+\begin{enumerate}[i.]
+\item Suppose $\alpha$ is an external move then so is $\beta$. Indeed, if $X=B,C$ and $\alpha = \omove_C$ then $\alpha$ can only point to another move in $C$ and
+if $X=A,B$ and $\alpha = \omove_A$ then since $\alpha$ is an O-move in $A,B$, it is not initial in $A$ and therefore its justifier must also be in $A$.
+
+Then instancing Lemma \ref{lem:interjump} with
+$n \assignar n'$ gives us $n' \not\in\pview{u \filter A,C}$.
+
+\item Suppose $\alpha$ is a $B$-move then necessarily so is $\beta$. Indeed, if $X=A,B$ then $\alpha \in B$
+can only point to a move in $B$, and if $X=B,C$ then
+since $\alpha$ is an O-move in the game $B,C$ it is not initial in $B$ and therefore its justfier must also be in $B$.
+
+Now suppose that $n' \in \pview{u\filter A,C}$,
+then by Lemma \ref{lem:visibleatprefixofu}
+(with $\delta,\gamma \assignar \alpha,n'$)
+we have $n' \in \pview{u_{\prefixof \alpha}\filter A,C}$,
+and $u_{\prefixof \alpha}\filter Y$ is P-i.j.\ by hypothesis 3. This permits us to apply Lemma \ref{lem:increasing_order} on $u_{\prefixof \alpha}$:
+\begin{align*}
+\ord_{A\fngamear C} n'
+& \leq \ord_{Y} \alpha & \mbox{(Lemma \ref{lem:increasing_order} with $u\assignar u_{\prefixof \alpha}$)} \\
+& = \ord_{X} \alpha & \mbox{(Lemma \ref{lem:compositionorder} \& $\alpha$ non initial in $B$)} \\
+& \leq \ord_{X} m & \mbox{($u \filter X$ is P-i.j.)} \\
+& = \ord_{A\fngamear C} m & \mbox{(Lemma \ref{lem:compositionorder} \& $m$ is not initial in $C$)} \ .
+\end{align*}
+\end{enumerate}
+\end{proof}
+
+
+\begin{proposition}
+\label{prop:closedpijcompose} Let $\sigma : A \fngamear B$ and $\mu
+: B \fngamear C$ be two well-bracketed (P-visible) strategies then
+\begin{enumerate}[(I)]
+\item $\sigma$ closed P-i.j.\ $\wedge$ $\mu$ P-i.j.
+$\implies$ $\sigma ; \mu$  P-i.j.;
+\item $\sigma, \mu$ closed P-i.j.
+$\implies$ $\sigma ; \mu$ closed P-i.j.
+\end{enumerate}
+\end{proposition}
+
+\begin{proof}
+Well-bracketing is preserved by strategy composition (see \cite[Proposition 2.5]{abramsky94full}) thus
+$\sigma ; \mu$ is well-bracketed so we can use the definition of P-i.j.\ from Proposition \ref{prop:char_wellbrack}.
+
+\noindent (I) Let us prove that $\sigma ; \mu$ is P-i.j..
+Let $u$ be a play of the interaction $\sigma\ \|\ \mu$ between $\sigma$ and $\mu$
+ending with an external P-move $m$
+justified by $n$ in $\pview{u \upharpoonright A , C}$.
+Let $n'$ be an external O-move occurring betweeen $n$ and $m$:
+$$ u \filter A,C =
+\Pstr[0.5cm][2pt]{ \ldots (n){\stk {n} \omove}  \ldots
+ {\stk {n'} \omove}  \ldots  (m-n,30){\stk m \pmove}
+}
+$$
+To show that $u \filter A,C$ is P-incrementally justified, we just need to prove that either $n'\not\in \pview{u \filter A,C}$ or $\ord_{A\fngamear C} n' \leq \ord_{A\fngamear C} m$.
+Note that if $n'\in \pview{u \filter A,C}$
+then necessarily $n'$ is not initial
+in $C$ because $n$ occurs before $n'$ in
+$\pview{u \filter A,C}$.
+
+Let $E$ denote one of the two external arenas ($A$ or $C$), $X$ be
+the corresponding component ({\it i.e.}~$X=A,B$ if $E=A$ and $X=B,C$
+if $E=C$) and $Y$ denote the other component.
+    \begin{enumerate}[1)]
+    \item Suppose $m$ and $n$ are two external moves in $E$.
+
+        \begin{enumerate}[{1}.a)]
+        \item Suppose $n' \in E$.
+
+        This case corresponds to the situation handled by Lemma \ref{lem:compos_auxiliary_lemma}: we have either $\ord_{A\fngamear C} n' \leq \ord_{A\fngamear C} m$
+        or $n' \not\in \pview{u \filter A,C}$.
+
+        \item Suppose $n' \not\in E$.
+
+        Suppose that $n' \in \pview{u\filter A,C}$, then by
+        Lemma \ref{lem:increasing_order} with $X\assignar Y$ we have $ \ord_{A\fngamear C} n'  \leq \ord_X m$
+        and since $m$ is not initial in $C$, Lemma \ref{lem:compositionorder} gives $\ord_X m = \ord_{A\fngamear C} m$, thus $\ord_{A\fngamear C} n' \leq \ord_{A\fngamear C} m$.
+        \end{enumerate}
+
+        \item \label{case:mA} Suppose $m \in A$ and $n \in C$.
+
+        Then $m$ is an initial move in $A$
+        pointing to a $\opmove$-move
+        $b_0$ initial in $B$ which in turn points to the $\omove_C$-move $n$ initial in $C$.
+
+        This situation cannot be handled similarly as the previous case. Indeed the pointer associated to the move $m$ in the game $A,C$ is not the same as the one attached to the corresponding move in the game $A,B$ (see in \cite{Abr02} for the definition of the  filtering operation over the overall component A,C), hence we cannot use Lemma \ref{lem:increasing_order} since the condition requiring that $m$ points before $n'$ is not necessarily met. A more detailed analysis is therefore required.
+
+        Let us assume that $n'\in \pview{u\filter A,C}$ and
+        prove that we necessarily have $\ord_{A\fngamear C} n' \leq \ord_{A\fngamear C} m$. We do a case analysis:
+        \begin{itemize}[-]
+        \item Suppose $n'$ occurs before $b_0$.
+        Note that we cannot apply Lemma \ref{lem:increasing_order} on $u$
+        since $m$ does not point before $b_0$.
+        Up to now we have only used the fact that $\sigma$ and $\mu$ are P-i.j. The assumption that $\sigma$ is  \emph{closed} P-i.j.\ now becomes crucial.
+
+        Since $n' \in \pview{u\filter A,C}$ and
+        $b_0 \in \pview{u\filter B,C}$, applying Lemma \ref{lem:visibleatprefixofu}
+        with $X\assignar B,C$ and $\delta,\gamma \assignar b_0,n'$ gives
+        $n' \in \pview{u_{\prefixof b_0}\filter A,C}$. This allows us to apply Lemma \ref{lem:increasing_order} on $u_{\prefixof b_0}$:
+            \begin{align*}
+            \ord_{A\fngamear C} m
+            = \ord_A m
+            & \geq \ord_B b_0 & \mbox{($u \filter A,B$ is closed P-i.j., $m$ is initial in $A$)} \\
+            & = \ord_{B\fngamear C} b_0  \\
+            & \geq \ord_{A\fngamear C} n' & \mbox{(Lemma \ref{lem:increasing_order} on $u_{\prefixof b_0}$ with $X\assignar A,B$)} \ .
+            \end{align*}
+
+        \item Suppose $n'$ occurs after $b_0$ (and necessarily before $m$).
+
+            \begin{enumerate}[a.]
+            \item Suppose $n'\in C$. Since $m$'s justifier occurs before $n'$ in $u$, we can use Lemma \ref{lem:increasing_order} which gives $\ord_{A\fngamear C} n' \leq \ord_{A\fngamear B} m
+                = \ord_{A\fngamear C} m$.
+
+            \item Suppose $n'\in A$.
+By Lemma \ref{lem:compos_auxiliary_lemma} with $X \assignar A,B$, since $n' \in \pview{u \filter A,C}$, we have $\ord_{A\fngamear C} n' \leq \ord_{A\fngamear C} m$.
+\smallskip
+
+        Note that we could not use Lemma \ref{lem:increasing_order} on $u$ directly since both $m$ and $n'$ are played in $A$. Also, in the ideal case where $n'$ is hereditarily enabled by the initial move $m$, we can immediately conclude $\ord_{A\fngamear C} n' \leq \ord_{A\fngamear C} m$; however this argument does not work in general: there may be more than one initial move in $A$ in which case $n'$ can be hereditarily enabled by an initial $A$-move distinct from $m$.
+            \end{enumerate}
+        \end{itemize}
+
+    \end{enumerate}
+
+\noindent (II) We now show that $\sigma;\mu$ is closed P-i.j.\
+provided that both $\sigma$ and $\mu$ are. Take a play $s m \in
+\sigma ; \mu$ such that $m$ is initial in $A$ and let $n$ be the
+initial move of $C$ justifying $m$. Let $u \in \sigma \ \|\ \mu$ be
+the uncovering of $s m$ ($s m = u \filter A,C$) and $b_0$ be the
+initial $B$-move justifying $m$ in $u$.
+ We have:
+\begin{align*}
+\ord_A m & \geq \ord_B b_0 & \mbox{($u \filter A,B \in \sigma$ is closed P-i.j.)} \\
+ & \geq \ord_C n & \mbox{($u_{\prefixof b_0} \filter B,C \in \mu $ is closed P-i.j.)}.
+\end{align*}
+\end{proof}
+
+{\it Remark:} The second part of the proposition only gives a
+\emph{sufficient} condition for $\sigma ; \mu$ to be closed P-i.j.
+In fact it is possible to have that $\sigma ; \mu$ is closed P-i.j.\
+although $\mu$ is not.
+
+
+\subsection{Tensor product}
+
+ Given two strategies $\sigma :\ A
+\fngamear B$  and $\tau :\ C\fngamear D$, their tensor product
+$\sigma \otimes \tau :\ A\otimes B \fngamear C\otimes D$ is defined
+as
+$$\sigma \otimes \tau = \{ s \in L_{A\otimes C \fngamear B\otimes
+D} \ | \ s \filter A,B \in \sigma \wedge s \filter C,D \in \tau \} $$
+ where $A\otimes B$ denotes the tensor product of the games $A$ and $B$ (see \cite{abramsky:game-semantics-tutorial}).
+\begin{proposition}
+Let $\sigma :\ A \fngamear B$  and $\tau :\ C\fngamear D$.
+\begin{enumerate}
+\item If $\sigma$ and $\tau$ are P-i.j.\
+then so is $\sigma \otimes \tau$;
+\item If $\sigma$ and $\tau$ are closed P-i.j.\ then so is $\sigma \otimes \tau$.
+\end{enumerate}
+\end{proposition}
+
+\begin{proof}
+By establishing the state diagram of the game $A\otimes C \fngamear
+B\otimes D$ one can show easily that only player O can switch
+between the subgames $A\fngamear B$ and $C\fngamear D$.
+Consequently, in the P-view of a play of the game $A\otimes C
+\fngamear B\otimes D$, all the moves are played in the same subgame
+({\it i.e.~} all in $A\fngamear B$ or all in $C\fngamear D$). Hence
+if the last move of a play $m$ is played in $A\fngamear B$ then
+$\pview{s\filter A,B} = \pview{s} \filter A,B = \pview{s}$ (and
+reciprocally if $m$ is played in $C\fngamear D$). The first part of
+the proposition then follows immediately. The second part is also
+straightforward.
+\end{proof}
+
+
+\subsection{Pairing} Given two strategies $\sigma :\ C \fngamear A$
+and $\tau :\ C\fngamear B$, the pairing $\langle \sigma , \tau
+\rangle :\ C \fngamear A\& B$ is defined as
+\begin{align*}
+\langle \sigma , \tau \rangle
+    &= \{ s \in L_{C \fngamear A\& B} \ | \ s \filter C,A \in \sigma \wedge s \filter B = \epsilon \} \\
+    & \union \{ s \in L_{C \fngamear A\& B} \ | \ s \filter C,B \in \tau \wedge s \filter A = \epsilon \}
+\ .
+\end{align*}
+ where $A\& B$ denotes the product of the games $A$ and $B$ (see \cite{abramsky:game-semantics-tutorial}).
+
+\begin{proposition}
+\label{prop:pij_paring} Let $\sigma :\ C \fngamear A$  and $\tau :\
+C\fngamear B$.
+\begin{enumerate}
+\item If $\sigma$ and $\tau$ are P-i.j.\ then so is $\langle \sigma , \tau \rangle$;
+\item If $\sigma$ and $\tau$ are closed P-i.j.\ then so is $\langle \sigma , \tau \rangle$.
+\end{enumerate}
+\end{proposition}
+The proof is immediate.
+
+
+\subsection{Promotion} \emph{Notation:} Let $s$ be a play. We call
+\defname{thread} a maximal subsequence of $s$ constituted of moves
+that are hereditarily justified by the same occurrence of an initial
+move. Let $m$ be a move occurring in $s$. We call thread of $m$ the
+only thread in $s$ containing $m$.
+
+
+We recall some definitions. Let $A$ and $B$ be two well-opened
+games. Given a strategy  $\sigma :\ !A \fngamear B$, its promotion
+$\sigma^\dag :\ !A\fngamear !B$ is defined as
+$$ \sigma^\dag = \{ s \in L_{!A\fngamear !B}\ |\ \mbox{for all inital $m$ in $B$, } s\filter m \in \sigma \}$$
+and for $\mu :\ !B\fngamear C$ the composite strategy $\sigma
+\fatcompos \mu$ is defined as:
+$$ \sigma \fatcompos \mu = \sigma^\dag ; \mu \ .$$
+
+Since $B$ is well-opened, plays of $\sigma$ are constituted of a
+single thread initiated by some initial $B$-move. Plays of
+$\sigma^\dag$ however, are interleaves of potentially infinitely many single-threaded
+plays of $\sigma$. One can show easily, using the visibility condition, that the thread of a $P$-move
+is always the same as the thread of the preceding $O$-move. Consequently, the P-view of a play is equal to the P-view of the current thread:
+if the current thread of a play $s$ is opened by an initial move $b \in B$ then
+$\pview{s} = \pview{s \filter b} = \pview{s} \filter b$.
+
+
+The state of the game is given by an infinite sequence of symbols in $\{O, P\}$, each element of the
+sequence indicating who is to play in the corresponding thread.
+The diagram on Figure \ref{fig:promotion_state_diagram} illustrates
+how the state changes as a play of $\sigma^\dag$ unfolds.
+The initial state of the game is $O^\omega$ - an infinite
+sequence of O's -- which indicates that O is to play in all the
+threads. When O plays an initial move in $B$, it ``opens'' a new
+thread so the state of the game becomes $O^k P O^\omega$ where $k$
+is the index of the thread being opened. By alternation, $P$ now has to play. His move must be played in a thread
+already opened by $O$ and in which $P$ is to play; only one thread is in such state: the $k$th one. Hence after P's move
+we are back to state $O^\omega$.
+
+\tikzstyle{state}=[rectangle,draw=blue!50,fill=blue!20,thick,minimum
+height = 4ex, text width=1.2cm, text centered]
+\tikzstyle{state_nobg}=[thick,minimum
+height = 4ex, text width=1.2cm, text centered]
+\tikzstyle{omove}=[->,shorten <=1pt,>=latex',line width=0.5pt,bend left=10]
+\tikzstyle{pmove}=[->,shorten <=1pt,>=latex',line width=0.5pt,bend left=10, draw=blue!50]
+\begin{figure}[htbp]
+\begin{center}
+\begin{tikzpicture}[node distance=2cm]
+% the states
+\path
+ node(init)  [state, text width=4cm] {$O^\omega$}
+ (init)+(-2.8cm,-3cm)
+ node(p)     [state, anchor=east,] {$PO^\omega$}
+ node(p1)    [state, right of=p]  {$OPO^\omega$}
+ node(p2)    [state_nobg, right of=p1] {\ldots}
+ node(p3)    [state, right of=p2] {$O^kPO^\omega$}
+ node(p4)    [state_nobg, right of=p3] {\ldots} ;
+\path
+% arrows representing the moves
+  ([xshift=-1.4cm]init.south)  edge[omove] node[right]{O} ([xshift=0.2cm]p.north)
+  (p.north)    edge[pmove] node[left]{P} ([xshift=-1.5cm]init.south)
+  ([xshift=-0cm]init.south)   edge[omove] node[right]{O} ([xshift=0.2cm]p1.north)
+  (p1.north)   edge[pmove] node[left]{P} ([xshift=-0.2cm]init.south)
+  ([xshift=1cm]init.south)   edge[omove] node[right]{O} ([xshift=0cm]p3.north)
+  ([xshift=-0.2cm]p3.north)   edge[pmove] node[left]{P} ([xshift=0.8cm]init.south);
+\end{tikzpicture}
+\end{center}
+\caption{State diagram for plays of $\sigma^\dag$.}
+\label{fig:promotion_state_diagram}
+\end{figure}
+
+
+
+\begin{proposition}
+\label{prop:fatcompos_pij} If $A$ and $B$ are two well-opened games
+and $\sigma :\ !A \fngamear B$ is a well-bracketed P-i.j.\ strategy
+then $\sigma^\dag$ is also well-bracketed and P-i.j. Furthermore if
+$\sigma$ is closed P-i.j.\ then so is $\sigma^\dagger$.
+\end{proposition}
+\begin{proof}
+$\sigma^\dag$ is well-bracketed by \cite[Proposition
+2.10.]{abramsky94full}. For P-incremental justification, the result is a direct consequence of the
+fact that the P-view of a play in $\sigma^\dag$ is equal to the P-view of the current thread.
+For closed P-incremental justification, the result is immediate.
+\end{proof}
+
+From propositions \ref{prop:closedpijcompose} and
+\ref{prop:fatcompos_pij} we obtain:
+\begin{corollary}
+Let $A$ and $B$ be two well-opened games. Let $\sigma :\ !A
+\fngamear B$ and $\mu :\ !B\fngamear C$ be two well-bracketed
+strategies then:
+\begin{enumerate}
+\item If $\sigma$ is closed P-i.j.\ and $\mu$ is P-i.j.\ then $\sigma \fatcompos \mu :\ !A \fngamear
+C$ is also P-i.j.;
+\item If $\sigma$ and $\mu$ are closed P-i.j.\ then so is $\sigma \fatcompos \mu :\ !A \fngamear C$.
+\end{enumerate}
+\end{corollary}
+
+\subsection{The category $\mathcal{G}_{Pij}$ of closed P-i.j.\ strategies}
+
+We define the category $\mathcal{G}_{Pij}$ as follows:
+\begin{itemize}
+\item the objects are games (as defined in \cite{abramsky:game-semantics-tutorial}),
+\item the morphisms from $A$ to $B$ are the closed P-incrementally-justified strategies
+on the game $A\rightarrow B$,
+\item morphisms are composed using the standard game-semantic strategy composition.
+\end{itemize}
+This indeed defines a category. Indeed we have shown in the previous
+section that closed P-i.j.\ compose, strategy composition is
+associative (\cite{abramsky94full,hylandong_pcf}) and finally the
+identity strategy $id_A$ for any game $A$ is closed P-i.j.
+
+We mentioned before that such category cannot be cartesian closed. Indeed, remember that
+a P-i.j.\ strategy from $A$ to $B$ is said to be \emph{closed} P-i.j.\ provided that some condition
+on the arena $A\rightarrow B$ holds. This condition refers precisely to the structure of the arenas $A$ and $B$ and consequently relies on the fact the arena considered is exactly $A\rightarrow B$ (and not any other isomorphic arena).
+
+
+
+\section{Modeling the Safe Lambda Calculus in $\mathcal{G}_{Pij}^{inn}$}
+
+Consider the category $\mathcal{G}_{Pij}$ defined in section
+\ref{sec:closedpij}. In this section we show how the safe lambda
+calculus can be modeled in the sub-category
+$\mathcal{G}_{Pij}^{inn}$ of innocent P-ij strategies.
+
+\subsection{The language}
+We recall the definition of the safe simply-typed lambda calculus
+\cite{blumong:safelambdacalculus}.  We use sequents of the form
+$\Gamma \vdash_s M : A$ to represent terms-in-context where $\Gamma$
+is the context and $A$ is the type of $M$. For simplicity we write
+$(A_1, \cdots, A_n, B)$ to mean $A_1 \typear \cdots \typear A_n
+\typear B$, where $B$ is not necessarily ground.
+
+\begin{definition}\rm
+The \defname{safe lambda calculus}, or Safe $\Lambda^{\rightarrow}$ for short, is a sub-system of the
+  simply-typed lambda calculus defined by induction over the
+  following rules:
+$$ \rulename{var} \ \rulef{}{x : A\vdash_s x : A} \quad
+\rulename{wk} \ \rulef{\Gamma \vdash_s s : A}{\Delta \vdash_s s : A} \quad
+\Gamma \subset \Delta$$
+$$ \rulename{app} \ \rulef{\Gamma \vdash_s s : (A_1,\ldots,A_n,B) \
+  \Gamma \vdash_s t_1 : A_1 \; \ldots \; \Gamma \vdash_s t_n : A_n
+} {\Gamma \vdash_s s t_1 \ldots t_n : B} \ \min_{y:Y \in \Gamma} \ord Y \geq \ord B$$
+$$ \rulename{abs} \ \rulef{\Gamma, x_1 : A_1, \ldots, x_n : A_n
+  \vdash_s s : B} {\Gamma \vdash_s \lambda x_1 \ldots x_n . s :
+  (A_1, \ldots ,A_n,B)} \ \min_{y:Y \in \Gamma} \ord Y \geq \ord (A_1, \ldots ,A_n,B)$$
+%  where $\ord{\Gamma}$ denotes the set $\{ \ord{y} : y
+%\in \Gamma \}$ and ``$c \sqsubseteq S$'' means that $c$ is a
+%lower-bound of the set $S$.
+\end{definition}
+
+
+\subsection{Game-semantic denotation}
+
+In \cite{blumong:safelambdacalculus} we showed that in the game
+semantic model safe lambda terms are denoted by P-i.j.\ strategies.
+The argument was syntactic: it is based on the analysis of a special
+kind of abstract syntax tree of a term called computation tree
+\cite{OngLics2006}. Here we give another proof based on a semantic
+argument that uses the results of section \ref{sec:closedpij}.
+
+
+\begin{proposition}
+\label{prop:safe_closepij_sem}
+  Safe simply-typed terms are denoted by closed P-i.j.\ strategies.
+\end{proposition}
+\begin{proof}
+  By induction on the formation rules.
+  \begin{enumerate}
+    \item (var) $\sem{x:A \vdash_s x:A } = id_A$. Clearly the
+    identity strategy is closed P-i.j.
+
+    \item (wk) Take $\Gamma \subset \Delta $ and suppose $\sem{\Gamma \vdash_s
+    s : A}$ is closed P-i.j. Up to an appropriate retagging of
+    the moves the two strategies $\sem{\Delta \vdash_s s : A}$
+    and $\sem{\Gamma \vdash_s s : A}$ are isomorphic. Hence
+    $\sem{\Delta \vdash_s s : A}$ is P-i.j. It is also closed
+    P-i.j.\ since none of the new initial moves introduced by
+    $\Delta$ occurs in any play of the strategy.
+
+    \item (app) Suppose that $\sem{\Gamma \vdash_s s :
+    (A_1,\ldots,A_n,B)}$ and $\sem{\Gamma \vdash_s t_i : A_i}$
+    for $i \in \{1..n\}$ are closed P-i.j.\ and $\ord{B}
+    \sqsubseteq \ord{\Gamma}$. We have $\sem{ \Gamma \vdash_s s
+    t_1 \ldots t_n : B} = \langle \sem{\Gamma \vdash s},
+    \sem{\Gamma \vdash t_1}, \ldots, \sem{\Gamma \vdash t_n}
+    \rangle \fatsemi ev_n$ where $ev_n$ is the $n$-parameter
+    evaluation strategy. By Proposition \ref{prop:pij_paring},
+    $\langle \sem{\Gamma \vdash s}, \sem{\Gamma \vdash t_1} ,
+    \ldots, \sem{\Gamma \vdash t_n} \rangle$ is closed P-i.j.
+    The evaluation map $ev_n$ is P-i.j.\ (but not necessarily
+    closed P-i.j.) therefore by Proposition
+    \ref{prop:closedpijcompose} I. $\sem{ \Gamma \vdash_s s t_1
+    \ldots t_n : B}$ is P-i.j. The arena of the game
+    $\sem{\Gamma}$ is of type $\sem{Y_1} \times \ldots \times
+    \sem{Y_n}$ where the $Y_i$s are the types of the variables
+    in the context $\Gamma$. The $\sem{Y_i}$s are all prime
+    since we work with pure simple types without product.
+    Moreover the side-condition of the rule gives $\ord Y_i \geq
+    \ord B$ for all $i \in \{1..n\}$. Hence by Lemma
+    \ref{lem:closedpij_singleBinitmove}(ii), $\sem{ \Gamma
+    \vdash_s s t_1 \ldots t_n : B}$ is closed P-i.j.
+
+    \item (abs) Suppose that $\sem{\Gamma, x_1 : A_1, \ldots, x_n : A_n \vdash_s
+    s : B}$ is closed P-i.j. Then the isomorphic strategy $\sigma = \sem{\Gamma \vdash_s \lambda
+    x_1 \ldots x_n . s : (A_1,\ldots,A_n,B)}$ is also P-i.j.
+    Again, using the side-condition, Lemma \ref{lem:closedpij_singleBinitmove}(ii)
+    implies that $\sigma$ is closed P-i.j.
+  \end{enumerate}
+\end{proof}
+
+\subsection{The safe lambda calculus with product ($\Lambda^{\rightarrow}_\times$)}
+We will now show how product types and pairing can be added to the safe lambda calculus.
+This can be done trivially as follows. Types are now given by the following grammar:
+\begin{align*}
+T ::=& \ B,  \quad \mbox{for some base type $B$} \\
+   &| \ T \rightarrow T \\
+   &| \ T \times T
+\end{align*}
+and the typing system is extended with the following three rules:
+$$ \rulename{\times} \ \rulef{\Gamma \vdash_s s : A \qquad \Gamma \vdash_s t : B}
+{\Gamma \vdash_s \langle s, t \rangle : A \times B}
+\qquad \rulename{\pi_1} \ \rulef{\Gamma \vdash_s s : A \times B}
+{\Gamma \vdash_s \pi_1 s : A} \qquad
+ \rulename{\pi_2} \ \rulef{\Gamma \vdash_s s : A \times B}
+{\Gamma \vdash_s \pi_2 s : B}$$
+
+One can easily check that most of the good properties of the safe
+lambda calculus remains in this extended calculus: the free
+variables of a term have order greater than the order of the term
+itself; the no-variable-renaming Lemma holds and terms are denoted
+by P-i.j.\ strategies. However in general, terms are not denoted by
+\emph{closed} P-i.j.\ strategies. Indeed, in the safe lambda calculus
+without product - as defined in the previous section - all the
+arenas involved are prime {\it i.e.}~they have a single initial
+move. In the present case however, since types can be constructed
+using the cartesian product, the corresponding arenas can have many
+initial moves. Consequently Lemma
+\ref{lem:closedpij_singleBinitmove}(ii) cannot be used anymore! Here
+is a counter-example: Take the term $x : (o^1\rightarrow o^2)\times
+o^3 \vdash \lambda y^o . \pi_2 x : o^4 \rightarrow o^5$ denoted by
+some P-i.j.\ strategy $\sigma$ containing the play $q^5 q^3$. We have
+$\ord_{(o^1\rightarrow o^2)\times o^3} q^3 = 0 < 1 = \ord_{o^4
+\rightarrow o^5} q^5$ therefore $\sigma$ is not closed P-i.j.
+
+
+There are two different approaches to overcome this problem. The
+first one consists in restricting the types of the variables
+appearing in the context of a term. More precisely we require that
+whenever a variable has product type $A \times B$ we have $\ord A =
+\ord B$. One can easily check that this rules out the problem
+underlined in the previous counter-example and that it guarantees
+that terms are then indeed denoted by closed P-i.j.\ strategies.
+
+The other approach is less restrictive but requires us to modify
+slightly the side-conditions of the application and abstraction
+rules: instead of requiring that all variables in the context have
+order greater than the order of the term, we require that the order
+of \emph{any prime sub-type of any variable} in the context has
+order greater that the order of the term. The set $Pr(A)$ of prime
+sub-types of a type $A$ being defined as follows:
+\begin{align*}
+Pr(B) &= \{ B \} \qquad \mbox{ for some base type } B \\
+Pr(A\rightarrow B) &= \{ A\rightarrow B \} \\
+Pr(A\times B) &= Pr(A) \union Pr(B)
+\end{align*}
+
+This gives rise the following calculus:
+\begin{definition}\rm
+The \defname{safe lambda calculus with product}, or Safe
+$\Lambda^{\rightarrow}_\times$ for short, is given by induction over
+the following rules:
+$$ \rulename{var} \ \rulef{}{x : A\vdash_s x : A} \quad
+\rulename{wk} \ \rulef{\Gamma \vdash_s s : A}{\Delta \vdash_s s : A} \quad
+\Gamma \subset \Delta$$
+$$ \rulename{\times} \ \rulef{\Gamma \vdash_s s : A \qquad \Gamma \vdash_s t : B}
+{\Gamma \vdash_s \langle s, t \rangle : A \times B}
+\qquad \rulename{\pi_1} \ \rulef{\Gamma \vdash_s s : A \times B}
+{\Gamma \vdash_s \pi_1 s : A} \qquad
+ \rulename{\pi_2} \ \rulef{\Gamma \vdash_s s : A \times B}
+{\Gamma \vdash_s \pi_2 s : B}$$
+$$ \rulename{app} \ \rulef{\Gamma \vdash_s s : (A_1,\ldots,A_n,B) \
+  \Gamma \vdash_s t_1 : A_1 \; \ldots \; \Gamma \vdash_s t_n : A_n
+} {\Gamma \vdash_s s t_1 \ldots t_n : B} \ C(\Gamma ; B)$$
+$$ \rulename{abs} \ \rulef{\Gamma, x_1 : A_1, \ldots, x_n : A_n
+  \vdash_s s : B} {\Gamma \vdash_s \lambda x_1 \ldots x_n . s :
+  (A_1, \ldots ,A_n,B)} \ C(\Gamma ; (A_1, \ldots ,A_n,B) )$$
+
+where the side-condition $C(\Gamma ; B)$ expresses that $\forall y:Y
+\in \Gamma. \forall Y' \in Pr(Y) . \ord Y' \geq \ord B$.
+\end{definition}
+
+One can show by induction on the rules that the game denotations of
+terms of this calculus are closed P-i.j.\ (the argument is similar to
+the one used in the proof of Proposition
+\ref{prop:safe_closepij_sem}). However this syntax does not
+completely capture all the closed P-i.j.\ strategies. Take for
+instance the simply-typed term $x:(o\rightarrow o)\times o \vdash \lambda z^o. \
+(\pi_1 x) : o \rightarrow (o \rightarrow o)$; Its denotation is
+closed P-i.j.\ but it is not typable in
+$\Lambda^{\rightarrow}_\times$.
+
+
+\section{Modeling Safe PCF in $\mathcal{G}_{Pij}^{inn}$}
+
+\subsection{Safe PCF}
+
+\notetoself{Insert here the definition of Safe PCF from transfer
+thesis.}
+
+\subsection{Game-semantic denotation (semantic argument)}
+
+\begin{proposition}
+\label{prop:safepcf_closedpij} Safe PCF terms are denoted by closed
+P-incrementally justified strategies.
+\end{proposition}
+\begin{proof}
+We first prove the result for $\pcf_1$ - the fragment of \pcf\
+containing terms of the form $\Omega_A = Y (\lambda x : A.x)$ but
+where no other use of Y is allowed (see
+\cite{abramsky:game-semantics-tutorial}). The proof is by structural
+induction over the structure of the term.
+\begin{itemize}
+\item The strategy $\sem{\Omega_A} = \bot$ is
+clearly closed P-i.j.
+
+\item The functional rules are treated the same way as in the
+corresponding proof for the safe lambda calculus.
+
+\item For the arithmetic rules, we observe that the strategies
+$succ$, $pred$ and $cond$ are all closed P-i.j. The fact that
+pairing and strategy composition preserve closed P-incremental
+justification permits us to conclude.
+\end{itemize}
+
+We now lift the result to full PCF using the technique of
+\emph{syntactic approximant} (see
+\cite{abramsky:game-semantics-tutorial}). By \cite[lemma
+16]{abramsky:game-semantics-tutorial} we have
+$$ \sem{M} = \Union_{n\in\omega} \sem{M_n}$$
+where $M_n$ is the $\pcf_1$ term obtained from $M$ by replacing each
+subterm of the form $Y N$ with $Y^n N_n$, and $Y^n F$ denotes the
+$n$th approximant of $Y F$. Since the $M_n$s are $\pcf_1$ terms, by
+the previous result each $\sem{M_n}$ is closed P-i.j.\ and since
+closed P-incremental justification is clearly a continuous property,
+$\sem{M}$ is also closed P-i.j.
+\end{proof}
+
+
+\subsection{Game-semantic characterization (syntactic argument)}
+
+In this section will give a game-semantic characterization of Safe
+PCF based on syntactical arguments.
+
+\begin{definition}
+We say that a PCF term is \defname{semi-safe} if it is of the form
+$N_0 N_1 \ldots N_k$ for $k\geq 1$ where each of the $N_i$ is a Safe
+PCF term or if it can be written $\lambda \overline{x} . N$ for some
+safe PCF term $N$.
+\end{definition}
+Semi-safe terms are either safe or ``almost safe'' in the sense that
+they can be turned into an equivalent (i.e.~with isomorphic game
+semantics) safe term  by performing $\eta$-expansions. Indeed, let
+$M$ be an semi-safe term that is unsafe. If $M$ is of the first form
+$N_0 N_1 \ldots N_k : (A_1,\ldots,A_n)$ with $k\geq 1$ then let
+$\varphi_i:A_i$ for $i\in\{1..n\}$ be fresh variables, using the
+(app) and (abs) rules we can build the safe term $\lambda \varphi_1
+\ldots \varphi_n . N_0 N_1 \ldots N_k \varphi_1 \ldots \varphi_n$.
+If $M$ is of the second form $\lambda \overline{x} . N$ then using
+the abstraction rule we can build the equivalent safe term $\lambda
+\overline{y} \overline{x}. N$  where $\overline{y} = fv(\lambda
+\overline{x}. N)$.
+
+The $\beta$-normal form of a \pcf\ term is the possibly infinite
+term obtained by reducing all the redexes in $M$.
+
+\subsubsection{Safe terms vs P-i.j.\ strategies}
+
+In the context of the simply typed lambda calculus, the
+correspondence between safety and P-incremental justification was
+first shown in \cite[Theorem 3(ii)]{blumong:safelambdacalculus}
+using a syntactic argument:
+\begin{theorem}[\cite{blumong:safelambdacalculus},Theorem 3(ii)]
+\label{thm:safeincrejust} In the simply typed lambda calculus:
+\begin{enumerate}[(i)]
+\item If $M$ is safe then $\sem{M}$ is P-incrementally justified.
+\item If $M$ is a closed term and $\sem{M}$ is
+  P-incrementally justified then the $\eta$-long form of the
+  $\beta$-normal form of $M$ is safe.
+\end{enumerate}
+\end{theorem}
+In fact the following more precise result holds (the proof of the
+previous theorem can be easily adapted to this one):
+\begin{theorem}[Semi-safety and P-incremental justification]
+\label{thm:semisafeincrejust} Let $\Gamma \vdash M : A$ be a simply typed term. Then:
+\begin{enumerate}[(i)]
+\item If $\Gamma \vdash M : A$ is semi-safe then $\sem{\Gamma \vdash M : A}$ is P-incrementally justified.
+\item If $\sem{\Gamma \vdash M : A}$ is
+  P-incrementally justified then
+$\etanf{\betanf{M}}$ is semi-safe if $M$ is open
+and safe if $M$ is closed.
+\end{enumerate}
+\end{theorem}
+
+
+
+In the context of \pcf\ however, only the first part of the theorem
+holds (see \cite{blumtransfer} for the proof). However (ii) does not
+hold. Indeed, take the closed \pcf\ term $M = \lambda f x y. f
+(\lambda z. \pcfcond (\pcfsucc\ x) y z )$ where $x,y,z:o$ and
+$f:((o,o),o)$. $M$ is in normal form (conditional cannot be reduced
+since the value of $x$ is undetermined). The $\eta$-long form of the
+$\beta$-normal form of $M$ is therefore $M$ itself which is unsafe.
+But clearly we have $\sem{M} = \sem{\lambda f x y. f (\lambda z.
+z)}$, and since $\lambda f x y. f (\lambda z. z)$ is safe, by (i),
+$\sem{M}$ is P-incrementally justified.
+
+Such counter-example arises because the conditional operator of
+\pcf\ permits us to construct terms in normal form that contain
+``dead code'' {\it i.e.}~some subterm that will never be evaluated
+for any value of M's parameters. In the example above, the dead code
+consists of the subterm $y$. In general, if the dead code part of
+the computation tree contains a variable that is not incrementally
+bound then the resulting term will be unsafe even if the rest of the
+tree is incrementally bound. In the example above, it was possible
+to turn $M$ into the equivalent safe term $\lambda f x y. f (\lambda
+z. z)$ by eliminating the dead code from $M$. In fact we can
+generalise this method to any \pcf\ term with a P-incrementally
+justified denotation.
+\smallskip
+
+Dead code elimination can be difficult to achieve in practice but it
+is easy to define it formally: We say that a subterm $N$ occurring
+in a context $C[-]$ in $M : (A_1, \ldots, A_n,o)$ is part of the
+\defname{dead code} of $M$ if for any term $T_0$ of the form $M M_1
+\ldots M_n$, any reduction sequence starting from $T_0$ does not
+involve a reduction of the subterm $N$ {\it i.e.}~for any reduction
+sequence $T_0 \redar T_1 \redar \ldots \redar T_k$, there is no
+$j\in \{0.. k-1\}$ such that $T_j = C[N]$ and $T_{j+1} = C[N']$ for
+some term $N'$.
+
+
+Let $M$  be a \pcf\ term in $\eta$-nf. An occurrence of a variable
+$x$ in $M$ is said to be a \defname{dead occurrence} if it occurs in
+the dead code of $M$. In other words, it is a dead occurrence of $x$
+if the corresponding node in the computation tree does not appear in
+any traversal of $\travset(M)$. Equivalently, thanks to the
+Correspondence Theorem, an occurrence of $x:B$ is dead if and only
+if the initial move of the arena $\sem{B}$ does not appear in any
+play of $\sem{M}$.
+
+
+We define $M^*$ as the term obtained from $M$ after substituting all
+subterms of the form  $x N_1 \dots N_k$ for some dead variable
+occurrence $x:(B_1,\ldots, B_k, o)$ by the constant $0$. This
+process is called \defname{dead variable elimination}. Note that if
+$M$ is in $\eta\beta$-nf then so is $M^*$. We also write $\tau(M)^*$
+to denote the equivalent transformation on the computation tree.
+Since the computation tree is constructed from the $\eta$-nf of $M$,
+we will use this notation even when $M$ is not in $\eta$-nf.
+
+
+
+\begin{proposition}[Incremental-binding and P-incremental justification coincide] \
+\label{prop:incrbound_imp_incrjustified_pcf} Let $\Gamma \vdash M : A$ be a PCF term in $\beta$-normal form.
+\begin{enumerate}[(i)]
+\item  If $\tau(\Gamma \vdash M : A)$ is incrementally-bound then $\sem{\Gamma \vdash M : A}$ is P-incrementally justified,
+\item  if $\sem{\Gamma \vdash M : A}$ is P-incrementally justified
+then $\tau(\Gamma \vdash M : A)^*$ is incrementally-bound.
+\end{enumerate}
+\end{proposition}
+\begin{proof}
+(i) The proof is exactly the same as in the simply typed lambda calculus case,
+see \cite[Proposition 4.1.5(i)]{blumtransfer}.
+
+\noindent (ii)
+Take $\Gamma \vdash M : A$ a \pcf\ term in $\beta$-normal form denoted by $\sem{\Gamma \vdash M : A}$ P-incrementally justified. Let $r$ denote the root of $\tau(M)^*$.
+Let $n$ be a node of $\tau(M)^*$ labelled by the variable $x$.
+$\tau(M)^*$ is free from dead code therefore $n$ is not a dead occurrence of $x$ and there exists a traversal of $\tau(M)^*$ of the form $t \cdot x$.
+
+\pcf\ constants are of order $1$ at most therefore they cannot hereditarily justify a variable node, thus $x$ is necessarily hereditarily justified by the root $r$ of the computation tree.
+
+
+By considering $t\cdot x$ as a traversal of $\tau(M)$,  the correspondence theorem gives $\varphi((t \cdot x) \upharpoonright r) = \varphi((t \upharpoonright r) \cdot x) \in \sem{M}$. Since $\sem{M}$ is P-incrementally justified, $\varphi(x)$ must point to the last O-move in $\pview{?(\varphi(t \upharpoonright
+r))}$ with order strictly greater than $\ord{\varphi(x)}$.
+Consequently $x$ points to the last node in $\pview{?(t
+\upharpoonright r)} \inter N^{\lambda}$ with order strictly greater than $\ord{x}$. We have:
+\begin{align*}
+\pview{?(t \upharpoonright r)} &= \pview{?(t) \upharpoonright r} = \pview{?(t)} \upharpoonright r & (\mbox{by \cite[lemma 3.1.23]{blumtransfer}}) \\
+& = [r,x[ \ \upharpoonright r & (\mbox{by \cite[proposition 3.1.20]{blumtransfer}})
+\end{align*}
+Since $M$ is in $\beta$-nf, the set of nodes not hereditarily justified by $r$ is exactly the set of nodes hereditarily justified by $N_{\Sigma}$ thus
+$[r,x[ \ \upharpoonright r = [r,x[\ \setminus\  N^{\upharpoonright \Sigma}$.
+Moreover \pcf\ constants are of order $1$ at most therefore $N^{\upharpoonright \Sigma} = N_{\Sigma} \union N^c_{\Sigma}$
+where $N^c_{\Sigma}$ is the set of children nodes of $N_{\Sigma}$.
+Thus $(\pview{?(t \upharpoonright r)}\upharpoonright r) \inter N^{\lambda} =
+([r,x[\ \setminus\  N_{\Sigma} \setminus N^c_{\Sigma} ) \inter N^{\lambda} =
+([r,x[\ \setminus\  N^c_{\Sigma} )  \inter N^{\lambda}$, and
+since $N^c_{\Sigma}$ is constituted of order $0$ lambda-nodes only we have that
+$x$ points to the last node in $[r,x[ \inter N^{\lambda}$ with order strictly greater than $\ord{x}$.
+
+Hence if $x$ is a bound variable node then it is bound by the
+last $\lambda$-node in $[r,x[$ with order strictly greater than
+$\ord{x}$ and if $x$ is a free variable then it points to $r$ and
+therefore all the $\lambda$-node in $]r,x[$ have order smaller than
+$\ord{x}$. Thus $\tau(M)^*$ is incrementally-bound.
+\end{proof}
+
+The counterpart of Lemma 4.1.6 from
+\cite{blumtransfer} can be stated as follows in the context of PCF:
+\begin{lemma}[Semi-safety and incrementally-binding]
+\label{lem:safe_imp_incrbound_pcf} Let $\Gamma \vdash M : A$ be a PCF term.
+\begin{itemize}
+\item[(i)] If $\Gamma \vdash M : A$ is a semi-safe term then $\tau(\Gamma \vdash M : A)$ is incrementally-bound ;
+\item[(ii)] conversely, if $\tau(\Gamma \vdash M : A)$ is incrementally-bound then the $\eta$-normal form of $\Gamma \vdash M : A$ is semi-safe if $M$ is open and safe if $M$ is closed.
+\end{itemize}
+\end{lemma}
+The proof can be obtained by adapting the proof
+of Lemma 4.1.6 from \cite{blumtransfer}.
+
+\begin{theorem}[Semi-safety and P-incremental justification]
+\label{thm:semisafeincrejust_pcf} Let $\Gamma \vdash M : A$ be a PCF term. Then:
+\begin{enumerate}[(i)]
+\item If $\Gamma \vdash M : A$ is semi-safe then $\sem{\Gamma \vdash M : A}$ is P-incrementally justified.
+\item If $\sem{\Gamma \vdash M : A}$ is
+  P-incrementally justified then $\etanf{\betanf{M}}^*$ is semi-safe  if $M$ is open, and safe if $M$ is closed.
+\end{enumerate}
+\end{theorem}
+
+\begin{proof}
+\noindent(i)
+A proof of this is given in the proof of Theorem 4.2.10 in \cite{blumtransfer}.
+
+\noindent(ii)
+Suppose $M$ is a \pcf\ term with a P-incrementally justified strategy denotation. By Proposition \ref{prop:incrbound_imp_incrjustified_pcf}(ii), $\tau(\betanf{M})^* = \tau(\etanf{\betanf{M}}^*)$ is incrementally-bound.
+If $M$ is closed then so is $\etanf{\betanf{M}}^*$ therefore by Lemma \ref{lem:safe_imp_incrbound_pcf}, $\etanf{\etanf{\betanf{M}}^*} = \etanf{\betanf{M}}^*$ is safe. If $M$ is open then so is $\etanf{\betanf{M}}^*$ and by Lemma \ref{lem:safe_imp_incrbound_pcf}, $\etanf{\etanf{\betanf{M}}^*} = \etanf{\betanf{M}}^*$ is semi-safe.
+\end{proof}
+
+
+We write \pcf' to denote the language obtained by extending \pcf\
+with the $\pcfcase_k$ construct (see \cite{Abr02}).
+The $\pcfcase_k$ construct is the obvious generalisation of the
+conditional operator \pcfcond\ to $k$ branches instead of $2$. All the results obtained so far concerning Safe \pcf\ (including those
+cited from \cite{blumtransfer}) can clearly be transposed to \pcf'.
+
+\subsubsection{Definability result}
+
+The previous theorem leads to the following definability result for safe \pcf':
+\begin{proposition}[Definability for safe \pcf' terms]
+\label{prop:safetydefinability}
+Let $\overline{A}=(A_1,\ldots, A_i)$ and $B =(B_1, \ldots, B_l,o)$ be two PCF types for some $i,l\geq 0$ and $\sigma$ be a well-bracketed innocent
+P-i.j.\ strategy with finite view function defined on the game $!A_1 \otimes \ldots \otimes !A_i \fngamear (!B_1 \fngamear \ldots \fngamear !B_l \fngamear o) $. There exists a \emph{semi-safe} PCF' term $\overline{x} : \overline{A} \vdash M : B$ in $\eta$-long normal form such that:
+$$ \sem{\overline{x} : \overline{A} \vdash M_\sigma : B} = \sigma $$
+and a safe closed PCF' term $\vdash_s M'_\sigma : (\overline{A},B)$ in $\eta$-long normal form such that:
+$$ \sem{\vdash M'_\sigma : (\overline{A},B)} \cong \sigma \ .$$
+\end{proposition}
+\begin{proof}
+By the standard definability result for PCF', there is a term $\overline{x} : \overline{A} \vdash N : B$ such that $\sem{\overline{x} :\overline{A} \vdash N : B} = \sigma$.
+Take $M_\sigma$ to be $\etanf{\betanf{N}}^* $. We have $\sem{\overline{x} : \overline{A} \vdash M_\sigma : B} =  \sem{\overline{x} :\overline{A} \vdash N : B} = \sigma$ and by Theorem  \ref{thm:semisafeincrejust_pcf}(ii), $M_\sigma$ is semi-safe.
+For the second part we just need to take $M'_\sigma = \lambda \overline{x}. M_\sigma$.
+\end{proof}
+
+
+
+\subsubsection{Application of the definability result: a syntactic
+argument showing compositionality of P-i.j.\ strategies}
+
+
+We have already shown in Sec. \ref{sec:closedpij} that under certain
+conditions, P-i.j.\ strategies compose. Here we will obtain a
+slightly weaker version of this result using a much simpler argument
+which exploits the definability result from the previous section.
+
+
+ Let $\overline{A} = (A_1, \ldots, A_i)$, $B = (B_1, \ldots,
+B_l,o)$ and $C=(C_1,\ldots,C_k,o)$ be three PCF types for some
+$i\geq 1,l,k\geq 0$. Let $f:\ !A_1 \otimes \ldots \otimes !A_i
+\fngamear B$ and $g:\ !B\fngamear C$ be two innocent well-bracketed
+and P-incrementally justified strategies with finite view function.
+We would like to find under which conditions the composition
+$f\fatcompos g$ is also P-incrementally justified.
+
+By the definability result, there are two closed safe terms (in $\eta$-nf) $\vdash M_f :(\overline{A},B)$  and $\vdash M_g :B \typear C$ such that $\sem{M_f} = f$
+and $\sem{M_f} = g$.
+We define the term $M_{f\fatcompos g} = \lambda \overline{x} . M_g (M_f \overline{x})$ for some fresh variables $\overline{x} : \overline{A}$. Clearly we have $\sem{M_{f\fatcompos g}} = \sem{M_f} \fatcompos \sem{M_g} = f\fatcompos g$.
+
+\paragraph{Sufficient conditions}
+
+By Theorem \ref{thm:semisafeincrejust_pcf}, we know that $f\fatcompos g$ is P-incrementally justified just when $\etanf{\betanf{M_{f\fatcompos g}}}^*$ is safe.
+We will now exploit this fact to extract a sufficient condition on the types $A$ and $B$ for
+the composition of $f$ and $g$ to be P-incrementally justified.
+
+The term $M_f$ and $M_g$, being in $\eta$-nf, are of the following forms:
+\begin{eqnarray*}
+\vdash M_f &=& \lambda x_1^{A_1} \ldots x_i^{A_i} \varphi_1^{B_1} \ldots \varphi_l^{B_l} . N_f^o\\
+\vdash  M_g &=& \lambda y^{ (B_1, \ldots, B_l,o)} \phi_1^{C_1} \ldots \phi_k^{C_k} . N_g^o
+\end{eqnarray*}
+for some distinct variables $x_1, \ldots, x_i$, $y$, $\varphi_1, \dots \varphi_l$, $\phi_1, \dots \phi_k$  and $\eta$-normal terms $N_f$ and $N_g$:
+\begin{eqnarray*}
+x_1:A, \ldots, x_i:A_i, \varphi_1:B_1, \dots, \varphi_l:B_l &\vdash& N_f :o \\
+y: (B_1, \ldots, B_l,o), \phi_1:C_1, \dots, \phi_l:C_l &\vdash& N_g :o
+\end{eqnarray*}
+
+
+
+The fact that $M_f$ and $M_g$ are safe does not imply that $M_{f\fatcompos g}$ is: take $M_f = \lambda x^o z^o.x$ and $M_g = \lambda y^{(o,o)} . y a$ for some constant $a\in \Sigma$, then $\lambda x:A . M_g (M_f x) = \lambda x . (\lambda y . y a) ( \underline{(\lambda x z.x) x} )$ is unsafe because of the underlined subterm. However we have:
+\begin{align*}
+f\fatcompos g &= \sem{\lambda \overline{x} . M_g (M_f  \overline{x})} \\
+ &= \sem{\lambda \overline{x} . (\lambda \phi_1\ldots \phi_k . N_g) [(M_f \overline{x}) / y]} \\
+&= \sem{\lambda \overline{x} \phi_1 \dots \phi_k. N_g [(M_f  \overline{x}) / y]}
+& \mbox{(the $x_j$'s and $\phi_j$'s are disjoint)}.
+\end{align*}
+
+We now concentrate on the term  $\lambda \overline{x} \phi_1 \dots
+\phi_k. N_g [(M_f  \overline{x}) / y]$ and try to find a sufficient
+condition guaranteeing its safety.
+
+\subparagraph{A sufficient condition}
+\begin{lemma}
+Suppose that $\Gamma,y:B \vdash M$ is a safe term in $\eta$-nf and $\Gamma \vdash R : B$ is an almost safe application. Let $N$ denote the set of nodes of the computation tree $\tau(M)$. We have:
+\begin{align*}
+\Gamma \vdash M[R/y] :A \mbox{ safe }
+\iff&  \forall x \in fv(R) . \\
+    & \forall n_y \in N_{fv} \mbox{ labelled $y$}.
+      \forall m \in N_{\lambda} \inter ]r,n_y] : \ord{m} \leq \ord{x}
+\end{align*}
+\end{lemma}
+\begin{proof}
+Since $M$ is in $\eta$-nf, all the application to the variable $y$ are total (i.e.~of the form $y P_1 \ldots P_l :o$). Hence after substituting the safe term $N$ for $y$ in $M$, the only possible cause of unsafety is when
+some variable free in $N$ becomes not safely bound in $\tau(M)$.
+\end{proof}
+
+Applying this lemma with $R= M_f \overline{x}$ gives us a sufficient
+condition -- the right-hand side of the equivalence -- for $\lambda
+x \phi_1 \dots \phi_k. N_g [(M_f \overline{x}) / y]$ to be safe, and
+hence for $f\fatcompos g$ to be P-incrementally justified. Of course
+it is not a necessary condition since $N_g[(M_f \overline{x}) /y]$
+can be unsafe while its eta-beta normal form is safe.
+
+\subparagraph{A simpler sufficient condition}
+\begin{lemma}
+If $y:B, \Sigma \vdash N : T$ and $\vdash M : (\overline{A}, B)$
+are safe terms with $\ord{A_i} \geq \ord{B}$ for all $i\in 1..n$
+then $\overline{x}:\overline{A}, \Sigma \vdash N[(M \overline{x})/y] :T$ is also safe.
+\end{lemma}
+\begin{proof}
+Since $\ord{x_i} = \ord{A_i} \geq \ord{B} = \ord{M \overline{x}}$, we can use the application
+rule of the safe lambda calculus to form the safe term $\overline{x}:\overline{A} \vdash M \overline{x}$.
+Using the substitution lemma we have that $N[(M \overline{x})/y]$ is safe.
+\end{proof}
+
+Hence we obtain the following sufficient condition for $f\fatcompos
+g$ to be P-incrementally justified:
+$$\ord{A_i}\geq\ord{B} \mbox{ for all } 1 \leq i \leq n$$
+
+
+Indeed the lemma gives that $\vdash \lambda \overline{x} \phi_1
+\dots \phi_k. N_g [(M_f \overline{x}) / y]$ is safe and therefore
+its denotation $\sem{\vdash \lambda \overline{x} \phi_1 \dots
+\phi_k. N_g [(M_f \overline{x}) / y]} = f\fatcompos g$ is
+P-incrementally justified.
+
+Note that this condition is not necessary: Take $A=o$, $B=(o,o)$,
+$C=(o,o)$ and consider the two safe terms $M_f = \lambda x^A u^o.u$
+and $M_g = \lambda y^B . y a$ for  some constant $a:o$. Then we have
+$M_{f\fatcompos g} = \lambda x . a$ which is safe hence $f\fatcompos
+g$ is P-incrementally justified although $\ord{A} < \ord{B}$.
+
+\begin{remark}
+This result corroborates what we already know about compositionality
+of P-i.j.\ strategies (see Sec. \ref{sec:closedpij}). Indeed, the
+condition given hereinbefore implies that the strategy $f$ is
+\emph{closed} P-i.j.\ (the $A_i$s are prime because we are working
+with PCF types) and therefore by Prop. \ref{prop:closedpijcompose},
+$f \fatcompos g$ must also be P-i.j.
+\end{remark}
+
+
+
+
+\paragraph{Counter-example: two P-i.j.\ strategies whose composition is not
+P-i.j.}
+
+We now give counter-example to show that P-i.j.\ strategies do not
+compose in general.
+
+\subparagraph{First attempt}
+
+Take the types $A=o$, $B=(o,o)$, $C=o$, the variables
+$x,u,v:o$, $y:B$ and $\varphi:((o,o),o)$ and $\Sigma$-constant $a:o$.
+Consider the two safe terms $\vdash_s  M_f = \lambda xv.x : A\typear B$ and $\vdash_s M_g = \lambda y . \varphi (\lambda u . y a) : B\typear C$.
+The $\eta\beta$-nf of $M_{f\fatcompos g}$ is $\vdash \lambda x . \varphi (\underline{\lambda u . x})$ which is unsafe because of the underlined term. It is then tempting to use
+Theorem \ref{thm:safeincrejust}(ii) to conclude that
+$\sem{M_{f\fatcompos g}}$ is not P-incrementally justified. However this theorem cannot be used here because $M_g$ contains an order $2$ constants ($\varphi$) therefore
+$M_{f\fatcompos g}$ is not a valid simply typed $\lambda$-term (nor a \pcf-term).
+
+\subparagraph{Second attempt} The previous example can be easily
+changed into a working counter-example: we just need to elevate
+$\varphi$ from the status of constant to variable.
+
+Take $A=o$, $B=(o,o)$, $C=(((o,o),o),o)$, the variables
+$x,u,v:o$, $y:B$ and $\varphi:((o,o),o)$ and the $\Sigma$-constant $a:o$. Consider the two safe terms $\vdash_s  M_f = \lambda xv.x : A\typear B$ and  $\vdash_s M_g = \lambda y \varphi. \varphi (\lambda u . y a) : B\typear C$.
+The $\eta\beta$-nf of $M_{f\fatcompos g}$ is $\vdash \lambda x \varphi. \varphi (\underline{\lambda u . x})$ which is unsafe because of the underlined term, thus by Theorem \ref{thm:safeincrejust}(ii), $\sem{M_{f\fatcompos g}}=\sem{M_f} \fatcompos
+\sem{M_g}$ is not P-incrementally justified. The following diagram illustrates a play that is not P-i.j.:
+\begingroup
+\def\sigcol#1{{\color{gray} #1}}
+\def\mucol#1{{\color{red} #1}}
+$$\begin{array}{ccccccccc}
+A &  & \multicolumn{2}{c}{B} && \multicolumn{4}{c}{C}\\
+\cline{1-1} \cline{3-4} \cline{6-9}
+o & \stackrel{\sigcol{\sem{M_f}}}\longrightarrow & o, & o & \stackrel{\mucol{\sem{M_g}}}\longrightarrow & ((o, &o),& o),& o \\ \\
+&&&&&&&&\rnode{n0}{\lambda x \varphi \omove  \mucol {\lambda y \varphi}}\\
+&&&&&&&\rnode{n1}{\varphi  \pmove \mucol \varphi}\\
+&&&&&&\rnode{n2}{\lambda u \omove  \mucol {\lambda u}} \\
+&&&  \rnode{n3}{\omove \sigcol {\lambda x v} \pmove \mucol y} \\
+\rnode{n4}{x \pmove \sigcol x}
+\end{array}
+\ncarc[arcangleA=20,arcangleB=20,linecolor=black]{->}{n4}{n0}
+\ncarc[arcangleA=30,arcangleB=20,linecolor=red]{->}{n2}{n1}
+\ncarc[arcangleA=30,arcangleB=20,linecolor=red]{->}{n1}{n0}
+\ncarc[arcangleA=20,arcangleB=20,linecolor=red]{->}{n3}{n0}
+\ncarc[arcangleA=20,arcangleB=20,linecolor=gray]{->}{n4}{n3}
+$$
+\endgroup
+
+\subparagraph{Another counter-example with $\ord{B} = \ord{C}$.}
+
+Let $A=o$, $B=C=(((o,o),o),o)$ and let $x:A$, $y:B$, $u:o$, $v,\varphi:((o,o),o)$
+and $g:(o,o)$ be variables and  $a:o$ be a $\Sigma$-constant. Take the two safe terms $\vdash  M_f = \lambda x v.x$ and $\vdash M_g = \lambda y \varphi. \varphi (\lambda u . y (\lambda g. a))$.
+The $\eta\beta$-nf of $M_{f\fatcompos g}$ is $\vdash \lambda x \varphi. \varphi (\underline{\lambda u . x})$ which is unsafe because of the underlined term, so
+$f\fatcompos g$ is not P-incrementally justified.
+
+\subsection{Full abstraction}
+
+
+\subsubsection{O-incremental justification}
+
+\defname{O-incremental justification} is the counterpart of P-incremental justification ({\it i.e.}~the role of O and P is exchanged in the definition).
+
+O-incremental justification relates to P-incremental justification very much like O-visibility relates to P-visibility
+(see \cite[Sec.~3.6]{Harmer2005}).
+
+Let $\sigma : A$ and $\mu : A \rightarrow o$ be two strategies and $q$ be the initial move of the game $A \rightarrow o$. Then P-views of plays in $A$ correspond to O-views
+in the game $A \rightarrow o$. Indeed, for $s\in L_A$ we have $q s \in L_{A \rightarrow o}$ and
+due to alternation, $q \pview{s}^A = \oview{q s }_{A \rightarrow o}$.
+
+Consequently, if $\sigma$ is P-i.j.\ then the play involved in the interaction between $\sigma$ and $\mu$
+are all O-i.j.\ from $\mu$'s perspective. Indeed, let $u \in \sigma \| \mu$ with $|u|\geq1$. Then $u=q v$
+and $u\filter A = v \filter A$ is P-i.j. By the previous remark, this implies that $q (v\filter A) = (q v)\filter (A \rightarrow o) = u \filter (A \rightarrow o)$ is O-i.j.
+\smallskip
+
+Now if we regard $\sigma$ as the denotation of some closed term $\vdash M:A$ and $\mu$ as the
+denotation of some context $x:A \vdash C[x]:o$ then what the previous remark says is that
+non O-i.j.\ plays are useless for the purpose of studying observational equivalence!
+This suggests that it is not necessary to include non O-i.j.\ plays in the game denotation of safe terms. However before removing completely those plays from the game model, we have to ensure that this does not prevent us from constructing a category:
+\begin{lemma}
+\label{lem:oij_decomp}
+Let $\sigma : A\rightarrow B$ and $\tau : A\rightarrow B$ be closed P-i.j.\ strategies and suppose
+that $u\in \sigma \| \tau$ such that for all external O-moves $o$ of $u$, we have that $u_{\prefixof o} \filter A,C$ satisfies
+O-incremental justification. Then, for any generalized O-move $m$ of $u$ in component $X$, we have that
+$u_{\prefixof m} \filter X$ satisfies O-incremental justification
+\end{lemma}
+
+This lemma states that O-i.j plays cannot be obtained from the interaction of plays that are not O-i.j. In other words, if we write $\mathcal{O}(\sigma)$ for the set of O-i.j.\ plays of $\sigma$, then the Lemma can be restated equivalently as:
+\begin{eqnarray}
+     \forall \sigma, \tau\ \mbox{closed P-i.j.}: \mathcal{O}(\sigma) ; \mathcal{O}(\tau) \supseteq \mathcal{O}(\sigma ; \tau)
+     \label{eqn:oijdecomp_1}
+\end{eqnarray}
+which in turn is equivalent to
+\begin{eqnarray}
+    \forall \sigma, \tau\ \mbox{closed P-i.j.}: \mathcal{O}( \mathcal{O}(\sigma) ; \mathcal{O}(\tau) ) = \mathcal{O}(\sigma ; \tau)
+    \label{eqn:oijdecomp_2}
+\end{eqnarray}
+Indeed, Eq.~\ref{eqn:oijdecomp_1} implies the right-to-left inclusion and the other inclusion
+is given by the fact that $\mathcal{O}(\sigma) ; \mathcal{O}(\tau) \subseteq \sigma;\tau$.
+
+
+In some sense, Lemma \ref{lem:oij_decomp} is the dual of the proposition stating that closed P-i.j.\
+strategies compose, since  the latter can be reexpressed more succinctly with the relation:
+\begin{eqnarray}
+     \forall \sigma, \tau .\, \mathcal{P}(\sigma) ; \mathcal{P}(\tau) \subseteq \mathcal{P}(\sigma ; \tau)
+     \label{eqn:pijcomp_1}
+\end{eqnarray}
+where $\mathcal{P}(\sigma)$ is define as be the largest even-length-prefix-closed subset of $\sigma$ consisting of closed P-i.j.\ plays.
+
+\subsubsection{A category of incremental strategies}
+
+\notetoself{
+-Incremental strategies means O-i.j.\ and closed P-i.j.
+
+}
+
+\subsubsection{Full abstraction}
+
+The fully-abstract game-model of PCF is also fully-abstract for the
+safe fragment of PCF when observational equivalence is defined with
+respect to unrestricted ({\it i.e.}~possibly unsafe) PCF contexts.
+However one may ask what is a fully abstract model of Safe PCF with
+respect to \emph{safe} contexts.
+
+
+
+
+\notetoself{
+By the definability results for Safe PCF, it should be possible to
+prove that the category $\mathcal{C}^{inn}_{OP-incr}$ of
+OP-incrementally justified and innocent strategies is fully abstract
+for Safe PCF. We can use the same proof as in the PCF case: we have
+a compact test strategy $\alpha:A\rightarrow N$ and by definability,
+there must be some context $x:A \vdash C[x] : N$ such that $\sem{x:A
+\vdash C[x] : N} = \alpha$. The definability result for Safe PCF
+gives us that $\lambda x . C[x] : A \rightarrow N$ is safe which in
+turns implies that $x:A \vdash C[x] : N$ is safe since $\ord{N} =
+0$.
+}
+
+\subsubsection{Algorithmic game semantics}
+We recall that Strongly Safe IA $\subseteq$ Safe IA $\subseteq$ IA.
+Up to order $3$, it is conservative, with respect to observational equivalence, to add unsafe context to safe ones.
+At order $4$, it is not conservative anymore.
+
+\paragraph{Observational equivalence}
+\begin{table}
+\begin{tabular}{|c|c||c|c|c|c|c|}
+    \cline{3-7}
+  \multicolumn{2}{c|}{}  & \multicolumn{5}{c|}{Finitary fragments} \\ \hline
+  \multirow{2}{*}{$L$} & \multirow{2}{*}{$C[\_]$} &   order 2          &  order 2       & order 3     & order 3 & \multirow{2}{*}{order 4}  \\
+                       &                          &    + while         &   + $Y_1$      & + while     & +$Y_0$  &          \\ \hline \hline
+
+  \multirow{4}{*}{IA}  & \multirow{2}{*}{IA}      & \multirow{4}{2cm}{PSPACE$^{(1)}$ \\ {\small $\preccurlyeq$ DFA}} & \multirow{4}{*}{U$^{(2)}$} & \multirow{4}{2.8cm}{EXP-complete$^{(3)}$ \\ {\small $\preccurlyeq$ VPA} }  & \multirow{4}{2cm}{D$^{(4)}$ \\ {\small $\preccurlyeq_{exp}$ DPDA\\ $\succcurlyeq$ DPDA} } & \multirow{2}{*}{U$^{(5)}$}\\
+                       &                          &                    &                    &  & & \\
+\cline{2-2}\cline{7-7} & \multirow{2}{*}{Safe IA} &                    &                    &  & & \multirow{2}{*}{?} \\
+                       &                          &                    &                    &  & & \\ \hline
+
+  \multirow{4}{*}{Safe IA} & \multirow{2}{*}{IA}      & \multirow{4}{2cm}{PSPACE \\ {\small $\preccurlyeq$ DFA}} & \multirow{4}{*}{U} & \multirow{4}{2.3cm}{EXP-complete \\ {\small $\preccurlyeq$ VPA}} & \multirow{4}{2cm}{D \\ {\small $\preccurlyeq_{exp}$ DPDA\\ $\succcurlyeq$ DPDA} } & \multirow{2}{*}{U} \\
+                           &                          &                    &                & & & \\
+\cline{2-2}\cline{7-7}     & \multirow{2}{*}{Safe IA} &                    &                & & & \multirow{2}{*}{?} \\
+                           &                          &                    &                & & & \\ \hline
+
+  \multirow{4}{*}{St. Safe IA} & \multirow{2}{*}{IA}           & \multirow{4}{*}{D} & \multirow{4}{*}{?} & \multirow{4}{*}{D} & \multirow{4}{*}{D} & \multirow{2}{*}{?} \\
+                               &                               &                    &                    &                    &                    & \\
+\cline{2-2} \cline{7-7}        &  \multirow{2}{*}{St. Safe IA} &                    &                    &                    &                    & \multirow{2}{*}{?} \\
+                               &                               &                    &                    &                    &                    & \\ \hline
+\end{tabular}
+\caption{Decidability (and complexity) of observational equivalence for some finitary fragments of IA}
+
+U stands for Undecidable and D stands for decidable with unknown complexity, $\preccurlyeq P$ means ``reducible to problem $P$''
+and $\succcurlyeq P$ means ``at least as hard as problem $P$''.
+\begin{asparaenum}
+\item[1.] See \cite{ghicamccusker00}.
+\item[2.] Showed by Ong in \cite{OngLics2006}.
+\item[3.] See \cite{DBLP:conf/fossacs/MurawskiW05}.
+\item[4.] See \cite{DBLP:conf/icalp/MurawskiOW05}.
+\item[5.] By encoding of $\Sigma$-machine (turing complete) into IA$_4$, see \cite{murawski03program}.
+
+\end{asparaenum}
+\end{table}
+
+\paragraph{Observational approximation}
+
+Observational approximation has been shown to be undecidable at order $1$ already, for the fragment $IA_1 + Y_0$ (\cite{DBLP:conf/fossacs/MurawskiW05}).
+
+
+\notetoself{
+- Characterization of the set of complete plays for Safe IA.
+(Easy adaptation of the corresponding result for IA. In the present case however, the proof relies
+on the fact that plays of the strategy are O-i.j. (in order for $\alpha$ to be P-i.j.)
+}
+
+
+\subsection{What is a model of Safe PCF/Safe IA?}
+
+\notetoself{
+- Define the notion of incremental category.
+
+- Show that any incremental category is a model of Safe PCF and that any model of Safe PCF
+is an incremental category.
+
+- Show that the category of games and OP-i.j. strategies is an incremental category.
+
+}
+
+
+
+\section{Modeling Safe IA in $\mathcal{G}_{Pij}$}
+\notetoself{
+- I need to merge this section with the other note on Safe IA.
+
+- $\iavar =  \iacom^{\omega}\times \iaexp$
+
+- Any strategy on the game $I \fngamear\ !\iavar$ is P-i.j.\ (and thus closed P-i.j.) since
+there is no P-question in the arena \iavar. Hence the strategy $cell$ is P-i.j.
+}
+
+\subsubsection{Game-semantic denotation}
+
+In this section, our aim is to extend the game-semantic characterization of safety to Safe IA.
+
+We first observe that the result extends extends trivially from Safe PCF to Strongly Safe IA:
+\begin{proposition}
+  Strongly Safe IA terms are denoted by closed P-i.j. strategies.
+\end{proposition}
+\begin{proof}
+The proof is an adaptation of the proof for Safe PCF. We first show that the result holds for the
+fragment of Strongly Safe IA in which the only allowed uses of $Y$ are in terms of the form $\Omega$.
+This is done by induction over the structure of the term:
+The functional rules and the arithmetic rules are treated
+the same way as in the proof for Safe PCF. For the imperative rules, we
+observe that the strategies $assign$, $deref$, $mkvar$, $seq$ and
+$cell$ are all closed P-i.j. The fact that pairing, tensor product
+and strategy composition all preserve closed P-incremental
+justification permits us to conclude.
+
+The result is then lifted to the whole of Strongly Safe IA using syntactic approximants as in the PCF case.
+\end{proof}
+
+Now we would like to extend this result to full Safe IA:
+\begin{proposition}
+\label{prop:safeia_closedpij} Safe IA terms are denoted by closed
+P-incrementally justified strategies.
+\end{proposition}
+
+This happens to be less trivial than for the previous restricted fragment of Safe IA. We first introduce some definitions:
+
+\begin{definition}[P-i.j. modulo $\mathfrak{M}$]
+\label{def:pij_modulo} Let $\sigma$ be a strategy on some game $A$
+and $\mathfrak{M}$ be a set of moves. We say that $\sigma$ is P-i.j.
+modulo $\mathfrak{M}$ iff for all $s m \in \sigma$ with $m \not\in
+\mathfrak{M}$, the play $s m$ is P-i.j.
+
+Similarly we say that $\sigma$ is \emph{closed} P-i.j. modulo
+$\mathfrak{M}$ iff for all $s m \in \sigma$ with $m \not\in
+\mathfrak{M}$ the play $s m$ is \emph{closed} P-i.j.
+
+Hence a strategy is P-i.j. if and only if it is P-i.j. modulo
+$\emptyset$.
+\end{definition}
+
+Given a term $\Gamma | \Gamma^{\ianew} \safeentail M : A$, we write
+$\sem{\Gamma | \Gamma^{\ianew} \safeentail M : A}$ to denote the
+game denotation of the corresponding IA term {\it i.e.}
+$\sem{\Gamma, \Gamma^{\ianew} \vdash M : A}$. Instead of showing
+Proposition \ref{prop:safeia_closedpij} we will prove the following
+more general result:
+\begin{proposition}
+\label{prop:safeia_closedpijmodulo} Let $\Gamma | \Gamma^{\ianew}
+\safeentail M : A $ be a Safe IA term. Its denotation $\sem{\Gamma |
+\Gamma^{\ianew} \safeentail M : A}$ is closed P-i.j. modulo
+$\mathfrak{M}_{\Gamma^{\ianew}}$ where
+$\mathfrak{M}_{\Gamma^{\ianew}}$ is the set of initial moves in
+$\Gamma^{\ianew}$.
+\end{proposition}
+
+\begin{remark}
+Since the context $\Gamma^{\ianew}$ contains variable of type
+\iavar\ only, $\mathfrak{M}_{\Gamma^{\ianew}}$ contains only moves
+of the form `$read$' or `$write_i$' for some $i\in \nat$.
+\end{remark}
+
+\begin{lemma}
+\label{lem:leftcompos_preserv_pijmodulo}
+ Let $\sigma : A \rightarrow
+B$ and $\mu : B \rightarrow C$.
+  Let $\mathfrak{M}$ be any set of moves initial in $A$.
+  If $\sigma$ is closed  P-i.j. modulo $\mathfrak{M}$ and $\mu$ is
+  P-i.j. (resp. closed P-i.j.) then $\sigma \fatsemi \mu$ is P-i.j. (resp. closed P-i.j.) modulo $\mathfrak{M}$.
+\end{lemma}
+\notetoself{
+\begin{proof}
+Let us analyze the proof of compositionality for closed P-i.j.
+strategies.
+
+\end{proof}
+}
+
+
+\begin{lemma}
+\label{lem:cellcomposition_preserve_pijmodulo} Let $\tau : I
+\rightarrow C_2$, $\sigma : C_1 \otimes C_2 \rightarrow B$  and
+$\mathfrak{M}$ be any set of moves initial in $C_1 \otimes
+C_2$.
+  If $\tau$ is P-i.j. and
+  $\sigma$ is P-i.j. (resp. closed P-i.j.) modulo $\mathfrak{M}$
+  then $(id_{C_1} \otimes \tau) \fatsemi \sigma$ is P-i.j. (resp. closed P-i.j.) modulo $\mathfrak{M} \inter C_1$.
+\end{lemma}
+\notetoself{
+\begin{proof}
+\end{proof}
+}
+
+
+\notetoself{
+\begin{proof}[Proof of Prop. \ref{prop:safeia_closedpijmodulo}]
+We first prove the result for the fragment of Safe IA where the only allowed uses of the $Y$ combinator is in terms of the form $\Omega$. By induction and and case analysis on the structure of Safe IA terms:
+\begin{itemize}
+  \item[$\rulename{var}$, $\rulename{var^\ianew}$
+  , $\rulename{wk}$, $\rulename{wk^\ianew}$]
+
+  These cases are treated the same way as in the corresponding
+  proof for the Safe Lambda Calculus.
+
+  \item[$\rulename{app}$]
+
+  \item[$\rulename{abs}$]
+
+
+  \item[$\rulename{const}$]
+  \item[$\rulename{succ}$, $\rulename{pred}$,$\rulename{cond}$]
+
+  \item[$\rulename{seq}$]
+  \item[$\rulename{assign}$]
+  \item[$\rulename{deref}$]
+  \item[$\rulename{new}$] $\Gamma | \Gamma^\ianew \safeentail \ianewin{x}\ M : B$.
+
+Let $cell : I \rightarrow !\iavar$ denotes the ``storage cell''
+strategy (see \cite{abramsky:game-semantics-tutorial}).  Let
+$\sigma = \sem{\Gamma | \Gamma^\ianew, x : \iavar \safeentail M
+: B}$.  We have $\sem{\Gamma | \Gamma^\ianew \safeentail
+\ianewin{x}\  M : B} = (id_{\Gamma,\Gamma^\iavar} \otimes cell)
+\fatcompos \sigma$. By induction hypothesis $\sigma$ is closed
+P-i.j. modulo $\mathfrak{M}_{\Gamma^{\ianew} \otimes !\iavar}$
+and one can easily check that $cell$ is P-incrementally
+justified. Instancing Lemma
+\ref{lem:cellcomposition_preserve_pijmodulo} with $\tau
+\leftarrow cell$, $C_1 \leftarrow \Gamma \otimes  \Gamma^\ianew$
+and $C_2\leftarrow !\iavar$ gives us the desired result.
+  \item[$\rulename{mkvar}$]
+
+\end{itemize}
+The result is then lifted to the whole of Safe IA using the technique of syntactic approximants and using the fact that the ``closed P-i.j.'' property is continuous.
+\end{proof}
+}
+
+
+\subsection{Algorithmic game semantics}
+
+There is an important theorem (\cite{AM97a}) in game semantics
+which states that two IA terms are equivalent if and only if the set
+of complete plays of their game denotations are equal. This result was used in \cite{ghicamccusker00} to show that observational
+equivalence for the $IA_2$ fragment of IA is decidable -- the set of
+complete plays being representable by regular expressions. In
+\cite{Ong02} it was shown that it is still decidable
+ for $IA_3+Y_0$. Indeed, for this fragment, the set of complete plays becomes context-free
+therefore the problem reduces to the DPDA equivalence problem which
+is itself decidable (with an unknown complexity).
+
+Imposing the safety condition should lead to some improvement in
+complexity. The complexity of  Safe $IA_3$ (resp. Safe $IA'_3$) for
+instance, must be lower than the complexity of the DPDA equivalence
+problem. Moreover the fact that Safe $IA_3$ (resp. Safe $IA'_3$)
+contains terms whose denotation is context free -- e.g. $\lambda f .
+f (\lambda x .x )$ -- strongly suggests that its complexity is
+strictly higher than the complexity of regular language equivalence.
+
+Murawski \cite{Murawski2003} has shown that observational
+equivalence for $\ialgol_4$ is undecidable. The proofs proceeds by
+showing that the computations of $\Gamma$-machine -- some variation
+of queue machines that are Turing complete -- are representable
+using IA terms.
+
+Does this result extend to the safe fragments? For Safe IA, it does,
+simply because the $IA_4$ term exhibited in \cite{Murawski2003} to
+represent computations of the $\Gamma$-machine is also a Safe IA
+term. The same argument does not carry over to Very Safe IA since
+the term is not typable in this language. We do not know whether
+observational equivalence is decidable for Strongly Safe $IA_4$.
+
+
+
+\subsection{Expressivity of Safe IA/Strongly Safe IA}
+
+Murawski representability : Safe IA representable languages are
+exactly the context free languages. For Strongly Safe IA however, we
+believe that the representable languages are a proper subclass of
+the context free languages.
+
+
+
+
+
+
+
+
+
+
+
+
+
+\section{Remarks}
+\subsection{Homogeneity constraint}
+
+Type homogeneity is not preserved after composition. Indeed the
+types  $o \typear (o \typear o)$ and $(o \typear o) \typear \left((o
+\typear o) \typear o \right)$ are homogeneous but $o \typear
+\left((o \typear o) \typear o\right)$ is not.
+
+If $A\typear B$ and $B \typear C$ are homogeneous types then  a
+sufficient condition for $A\typear C$ to be homogeneous is
+``$\ord{A} \geq \ord{B}$''.
+

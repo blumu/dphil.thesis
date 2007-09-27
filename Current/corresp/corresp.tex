@@ -1410,8 +1410,9 @@ $\mathcal{M}_T = M_A$ and $\sim_T = id_{M_A}$. For other cases:
     by transitivity, reflexivity and symmetry.
 \end{definition}
 
-The set of \defname{internal moves} of the game $\intersem{T}$, consists of all moves from $M_T$ that are not
-$\sim$-equivalent to any move in $M_{type(T)}$.
+We call \defname{internal move} of the game $\intersem{T}$, any move
+from $M_T$ which is not $\sim$-equivalent to any move in
+$M_{type(T)}$.
 
 
 A \defname{justified interaction sequence} of moves on the
@@ -1422,22 +1423,62 @@ several pointers. More precisely, if the equivalence class $m$ is
 $\{m_1, \ldots, m_l \}$ then $m$ has one pointer for each
 non-initial move $m_i$ in the equivalence class.
 
+\begin{definition}[Filtering] We define several filtering operations
+over justified interaction sequences. Let $s$ be a justified
+sequence of moves on the interaction game $\intersem{T}$.
+\begin{itemize}
+\item  Let $T'$ be a subtree of $T$. We define the
+filtering operator $s\upharpoonright T'$ to be the subsequence
+of $s$ consisting of moves $\sim$-equivalent to some move in
+$M_{T'}$. This operation causes some move to ``lose'' some of
+their attached pointers: a given move $m$ with equivalence class
+$\{m_1, \ldots, m_l \}$ may have up to $l$ pointers, but in
+$s\upharpoonright T'$, only pointers associated to a $m_i$
+belonging to $\mathcal{M}_{T'}$ are preserved.
 
-Let $s$ be a justified sequence of moves on the interaction game
-$\intersem{T}$. Let $T'$ be a subtree of $T$. We define the
-filtering operator $s\upharpoonright T$ to be the subsequence of
-$s$ consisting of moves $\sim$-equivalent to some move in $M_T$. 
-This operation make the moves ``lose'' some of their pointers:
-a given move $m$ with equivalence class $\{m_1, \ldots, m_l \}$ may have up to $l$ pointers, but in $s\upharpoonright T$,
-only pointers associated to $m_i$s belonging to $\mathcal{M}_{T'}$ are preserved.
+Note that since $M_T$ is a set of equivalence classes with
+respect to $\sim$, the filtering operator $\filter T'$
+implicitly performs the ``retagging'' of the moves to the
+appropriate components of each game of the interaction game
+$\intersem{T'}$.
 
-We also define the filtering operator $s\upharpoonright type(T')$ as
-the subsequence of $s$ consisting of moves from $type(T')$ where at
-most one pointer is kept for each move in the sequence: the one
-corresponding to the class citizen from $type(T')$.
+\item  For any sub-game $A$ of the standard game $\sem{type(T')}$ we
+define the filtering operator $s\upharpoonright A$ to be the
+subsequence of $s$ consisting of moves from $A$ where at most
+one pointer is kept for each move in the sequence: the one
+corresponding to the class citizen from $A$.
 
+\item For any initial move $m$ of the game $\sem{type(T)}$, $s
+\upharpoonright m$ is the subsequence of $s$ consisting of moves
+that are hereditarily justified by $m$ in $s \filter type(T)$.
+\end{itemize}
 By extension, we also define these operations on sets of justified
-sequences.
+interaction sequences.
+\end{definition}
+
+Allowing moves to have multiple pointers complicates slightly the
+presentation here, but this capability is necessary to model
+strategy composition. Indeed, in game semantics after composing
+strategies, the pointers from some moves may change! (See definition
+of $\filter A,C$ in \cite{abramsky:game-semantics-tutorial}.)
+However, for all the other operations on strategies that we will
+used, the pointers will just be preserved. Formally we define this
+property as follows: Let $s$ be an  interaction sequence on a game
+$\intersem{T}$, $T'$ a direct subtree $T$ ({\it i.e.}~a subtree of
+$T$ whose root is a child of $T$'s root), $A$ be a sub-game of
+$\sem{type(T)}$ and $A'$ be a sub-game of $\sem{type(T')}$, then we
+define the predicate $A'\stackrel{s}\hookrightarrow A$ as:
+\begin{align*}
+ A'\stackrel{s}\hookrightarrow A \mbox{ holds iff } &
+ \Pstr{s_1\ (n){n'}\ s_2\ (m-n){m'}\ s_3 } = s\filter A'  \\
+ & \implies \exists! m,n \in A | m \sim m' \zand n \sim n' \zand \Pstr{s_1\
+(n){n}\  s_2\ (m-n){m}\ s_3} = s\filter A
+\end{align*}
+
+and we say that $s$'s justification is preserved from $A'$ to $A$
+with respect to $\sim$.
+
+
 
 \begin{definition}[Legal uncovered positions] We recall
 that in the standard game semantics, the set of legal positions
@@ -1469,44 +1510,51 @@ interaction strategy:
 
 \item Tensor product, pairing, promotion, currying:
 \begin{eqnarray*}
-(\Sigma_1 : \intersem{T_1}) \otimes (\Sigma_2 : \intersem{T_2}) : \intersem{T} &=& \{ s \in L_T \ | \ s \filter type(T) \in
-(\Sigma_1 \filter type(T_1)) \otimes (\Sigma_2 \filter type(T_2)) \\
-&& \zand\ s \filter T_1 \in \Sigma_1 \zand\ s \filter T_2 \in \Sigma_2 \}
+(\Sigma_1 : \intersem{T_1}) \otimes (\Sigma_2 : \intersem{T_2}) : \intersem{T} &=\{ s \in L_T \ | \  &s \filter T_1 \in \Sigma_1 \zand\ s \filter T_2 \in \Sigma_2 \\
+&& \zand\ type(T_1)\stackrel{s}\hookrightarrow type(T) \ \zand\ type(T_2)\stackrel{s}\hookrightarrow type(T) \}
 \\ \\
-\langle \Sigma_1 : \intersem{T_1}, \Sigma_2 : \intersem{T_2} \rangle : \intersem{T} &=& \{ s \in L_T \ | \ s \filter type(T) \in
-\langle \Sigma_1 \filter type(T_1), \Sigma_2 \filter type(T_2) \rangle \\
-&& \zand\ s \filter T_1 \in \Sigma_1 \zand\ s \filter T_2 \in \Sigma_2 \}
+\langle \Sigma_1 : \intersem{T_1}, \Sigma_2 : \intersem{T_2} \rangle : \intersem{T} &= \{ s \in L_T \ | &
+ ( s \filter T_1 \in \Sigma_1 \zand\ s \filter T_2 = \epsilon)
+    \zor ( s \filter T_1 = \epsilon \zand s \filter T_2 \in \Sigma_2) \\
+&& \zand\ type(T_1)\stackrel{s}\hookrightarrow type(T) \ \zand\ type(T_2)\stackrel{s}\hookrightarrow type(T) \}
 \\ \\
-(\Sigma' : \intersem{T'})^\dagger : \intersem{T} &=& \{ s \in L_T \ | \ s \filter type(T) \in
-    (\Sigma' \filter type(T'))^\dagger\\
-&& \zand\ s \filter T' \in \Sigma' \}
+(\Sigma' : \intersem{T'})^\dagger : \intersem{T} &= \{ s \in L_T \ | \ &
+\mbox {for all initial $m$ in $\sem{type(T)}$, } (s \filter m) \filter T' \in \Sigma' \\
+&& \zand\ type(T')\stackrel{s}\hookrightarrow type(T) \}
 \\ \\
-\Lambda(\Sigma' : \intersem{T'}) : \intersem{T} &=& \{ s \in L_T \ | \ s \filter type(T) \in
-    \Lambda(\Sigma' \filter type(T'))\\
-&& \zand\ s \filter T' \in \Sigma' \}\end{eqnarray*}
+\Lambda(\Sigma' : \intersem{T'}) : \intersem{T} &= \{ s \in L_T \ | & s \filter T' \in \Sigma' \ \zand\ type(T')\stackrel{s}\hookrightarrow type(T) \}
+\end{eqnarray*}
 
 \item Uncovered composition $(\Sigma_1 : \intersem{T_1})\ ;^U\ (\Sigma_2
 :\intersem{T_2})$ defined on the game $\intersem{T}$
 
-    Suppose that $type(T_1) = A \multimap B_0 \times \ldots \times B_l$ and $type(T_2) = B_0 \times \ldots \times B_l \multimap C$ then $\Sigma_1 ;^U \Sigma_1$ is the
-set of uncovered plays obtained by performing the usual composition
-while ignoring and copying the internal moves from arenas in
+    Suppose that $type(T) = A \multimap C$, $type(T_1) = A^1
+\multimap B_0 \times \ldots \times B_l$ and $type(T_2) = B_0
+\times \ldots \times B_l \multimap C^2$.
+\begin{eqnarray*}
+\Sigma_1 \| \Sigma_2 &= \{ u \in L_T  \ | \ & u \upharpoonright T_1 \in \Sigma_1 \mbox{ and } u \upharpoonright T_2 \in \Sigma_2 \\
+&& \zand\ C^2\stackrel{u}\hookrightarrow C\ \zand\ (A^1)^-\stackrel{u}\hookrightarrow A^-  \\
+&& \zand\ \parbox[t]{8cm}{for any initial $m$ in $A^1$, if $m$ is justified in $u \filter type(T_1)$ by $b\in B_j$,
+itself justified by $c \in C^2$ in $u \filter type(T_2)$ then $m$ justified by $c$ in $u \filter type(T)$ \} }
+\end{eqnarray*}
+
+$$ \Sigma_1 ;^U \Sigma_2 = \{ cover(u,(0..l)\setminus U) \ | \ u \in \Sigma_1 \| \Sigma_2 \}$$
+where $cover(u,C) = u \filter \left( M_T \setminus \Union_{j\in
+C} B_j \right)$ {\it i.e.}~the subsequence of $u$ obtained by
+removing moves in $\Union_{j\in C} B_j$. Hence
+$\Sigma_1;^{\{0..l\}} \Sigma_2 = \Sigma_1 \| \Sigma_2$.
+
+In other words $\Sigma_1 ;^U \Sigma_1$ is the set of uncovered
+plays obtained by performing the usual composition while
+ignoring and copying the internal moves from arenas in
 $\intersem{T_1}$ or $\intersem{T_2}$ and preserving any internal
-move produced by the composition in some component $B_k$ for $k \in
-U$. Formally:
-$$ \Sigma_1 \| \Sigma_2 = \{ u \in L_T  \ | \ u \upharpoonright T_1 \in \Sigma_1 \mbox{ and } u \upharpoonright T_2 \in \Sigma_2  \}$$
-$$ \Sigma_1 ;^U \Sigma_2 = \{ cover(u,U) \ | \ u \in \Sigma_1 \| \Sigma_2 \}$$
-where $cover(u,U)$ denotes the subsequence of $u$ obtained by
-removing nodes that are in $B_j$ for some $j \in ( 0..l )
-\setminus U$ (hence $\Sigma_1;^{\{0..l\}} \Sigma_2 = \Sigma_1 \|
-\Sigma_2$);
+move produced by the composition in some component $B_k$ for $k
+\in U$.
 \end{itemize}
 \end{definition}
-We write $\mathcal{I}$ to denote the set of all revealed strategies.
-\smallskip
-
-\emph{Remark:} $\mathcal{I}$ is not a category since composition is
-not associative and there is no identity interaction strategy.
+We write $\mathcal{I}$ for the set of all revealed strategies. Note
+that $\mathcal{I}$ is not a category since composition is not
+associative and there is no identity interaction strategy.
 
 
 

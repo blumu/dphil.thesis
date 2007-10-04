@@ -67,7 +67,12 @@ $\lambda$-expressions given by computation trees.
 \section{Computation tree}
 We work in the general setting of the simply-typed
 $\lambda$-calculus extended with a fixed set $\Sigma$ of
-higher-order constants.
+higher-order uninterpreted constants \footnote{A constant $f$ is
+  \emph{uninterpreted} if the small-step semantics of the language
+  does not contain any rule of the form $f \dots \rightarrow e$. $f$
+  can be regarded as a data constructor.}
+
+For the rest of the section we fix a simply-typed term $\Gamma \vdash M :T$.
 
 \subsection{$\eta$-long normal form}
 
@@ -174,6 +179,7 @@ $\Gamma \vdash s$ is homogeneously safe.
 The computation tree of a term is a certain tree representation of its
 $\eta$-long normal form. It is defined as follows:
 \begin{definition}[Computation tree]
+\label{dfn:comptree}
 For any term $M$ in $\eta$-normal form we define the tree $\tau(M)$ by induction
 on the structure of the term.
 Since $M$ is in $\eta$-normal form, there are only two cases:
@@ -225,28 +231,27 @@ The nodes (and leaves) of the tree are of three kinds:
 \item application nodes labelled @,
 \item variable or constant nodes labelled $\alpha$ for some constant or variable $\alpha$.
 \end{itemize}
-We write $N$ for the set of nodes of $\tau(M)$, $N_\Sigma$ for the set of $\Sigma$-labelled nodes,
+
+Let us first fix some notations. We write $N$ for the set of nodes of $\tau(M)$, $N_\Sigma$ for the set of $\Sigma$-labelled nodes,
 $N_@$ for the set of @-labelled nodes, $N_{var}$ for the set of variable nodes,
 $N_{fv}$ for the subset of $N_{var}$ constituted of free-variable nodes and $r$ for the root of $\tau(M)$.
-
 
 Let $\mathcal{T}$ denote the set of $\lambda$-terms.
 Each subtree of the computation tree $\tau(M)$ represents a subterm of $\elnf{M}$.
 We define the function $\kappa : N \rightarrow \mathcal{T}$ that maps a node $n \in N$ to the subterm of $\elnf{M}$
-represented by the subtree of $\tau(M)$ rooted at $n$.
-In particular if $r$ is the root of $\tau(M)$ then $\kappa(r) = \elnf{M}$.
+corresponding to the subtree of $\tau(M)$ rooted at $n$.
+In particular $\kappa(r) = \elnf{M}$.
 
 \begin{definition}[Type and order of a node]
 \label{def:nodeorder}
 Suppose $\Gamma \vdash M : T$.
-Each node $n$ of $\tau(M)$ is assigned a type $type(n)$ defined as follows:
+The \defname{type} of a node $n$ of $\tau(M)$ written $type(n)$ is defined as follows:
 \begin{eqnarray*}
 type(r) &=& \Gamma \rightarrow T \\
 type(\alpha:A) &=& A, \mbox{ where $\alpha$ is a variable or constant} \\
-type(n) &=& B, \hbox{ where
-$\kappa(n) : B$ for $n \in (N_\lambda \union N_@) \setminus \{r \}$\ .}
+type(n) &=& \hbox{ type of the term $\kappa(n)$ for $n \in (N_\lambda \union N_@) \setminus \{r \}$\ .}
 \end{eqnarray*}
-The order of a node $n$ written $\ord{n}$ is defined to be $\ord{type(n)}$.
+The order of a node $n$ written $\ord{n}$ is defined to be the order of the type of $n$.
 \end{definition}
 
 In particular, $\ord{@} = 0$, $\ord{\lambda \overline{\xi}} = 1+ \max_{z\in \overline{\xi}} \ord{z}$ for $r \neq \lambda \overline{\xi}$
@@ -447,12 +452,14 @@ This is proved by an easy induction.
 \subsection{Adding value-leaves to the computation tree}
 \label{sec:adding_value_leaves}
 
-We now add leaves to the computation tree that has been defined in the previous section.
-These leaves, called \emph{value-leaves}, are attached to the nodes of the computation tree. Each
-value-leaf corresponds to a possible value of the base type $o$.
-We write $\mathcal{D}$ to denote the set of values of the base type
-$o$. The values leaves are added as follows: every
-node $n \in \tau(M)$ has a child leaf denoted by $v_n$ for each possible value $v \in \mathcal{D}$.
+We now add another ingredient to the computation tree defined in
+the previous section. Let $\mathcal{D}$
+denote the set of values of base type $o$.  We add
+\defname{value-leaves} to $\tau(M)$ as follows: Every node $n \in \tau(M)$ has one child leaf labelled $v_n$ for every possible value $v \in \mathcal{D}$.
+We write $V$ for the set of nodes and leaves of
+the computation tree.  For $\$$ ranging in $\{@, \lambda, var \}$,
+we write $V_\$$ to denote the set $N_\$ \union \{ v_n \ | \ n \in
+N_\$, v \in \mathcal{D} \}$.
 
 %If $n$ is a $\lambda$-node then its value-leaves are numbered from $1$ onwards.
 %If $n$ is a variable or constant node then its children nodes are numbered from $1$ to $arity(n)$ and
@@ -473,7 +480,7 @@ $$
 For the definition
 of P-view, O-view and visibility, value-leaves are treated as
 $\lambda$-nodes if they are at odd level in the computation tree and
-as variable nodes if there at a even level.
+as variable nodes if they are at an even level.
 
 From now the term ``computation tree'' refers to this extended
 definition.
@@ -491,111 +498,123 @@ nodes.
 
 \subsection{Traversal of the computation tree}
 \label{subsec:traversal}
-Intuitively, a \emph{traversal} is a justified sequence of nodes of the computation tree where each node indicates a step that is taken during the evaluation of the term.
+A \emph{traversal} is a justified sequence of nodes of the computation tree where each node indicates a step that is taken during the evaluation of the term.
 
 \subsubsection{Traversals for simply-typed $\lambda$-terms}
-We first define traversals for computation trees of simply typed $\lambda$-terms with no interpreted constants.
-We will then we show how to extend the definition to the general setting of $\lambda$-calculus augmented with interpreted constants.
 
-\begin{definition}[Traversals for simply-typed $\lambda$-terms]
-\label{def:traversal}
-In the simply-typed $\lambda$-calculus without interpreted constants, a traversal over a computation tree $\tau(M)$ is a justified sequence of nodes defined by induction on the rules
-given below. A \emph{maximal-traversal} is a traversal that cannot be
-extended by any rule. If $T$ denotes a computation tree then we write $\travset(T)$
-to denote the set of traversals of $T$. We also use the abbreviation $\travset(M)$ for $\travset(\tau(M))$.
+We first consider the simply-typed $\lambda$-calculus without interpreted constants.
+Everything remains valid in the presence of \emph{uninterpreted} constants as we can just
+consider them as free variables.
 
-\emph{Initialization rules}
-\begin{itemize}
-\item ($\epsilon$) The empty sequence of node $\epsilon$ is a traversal.
-\item (Root) The length 1 sequence $r$, where $r$ denotes the root of $\tau(M)$, is a traversal.
-\end{itemize}
+We define the notion of traversal over the computation tree $\tau(M)$.
+We will then we show how to extend the notion of traversal to more general settings with interpreted constants.
 
-\emph{Structural rules}
-\begin{itemize}
-\item (Lam) Suppose that $t \cdot \lambda \overline{\xi}$ is a traversal and $n$ is the only child node of $\lambda \overline{\xi}$ in
-the computation tree then
-$$t \cdot \lambda \overline{\xi} \cdot n$$
-is also a traversal
-where $n$ points to the \emph{only} occurrence of its enabler in $\pview{t \cdot \lambda \overline{\xi}}$.
-(Prop. \ref{prop:pviewtrav_is_path} shows that traversals are well-defined and that indeed $n$'s enabler occurs only once in the P-view at that point).
+\begin{definition}[Traversals for simply-typed $\lambda$-terms] \rm
+\label{def:traversal} The set $\travset(M)$ of \defname{traversals}
+over $\tau(M)$ is defined by induction over the following rules:
 
-In particular, if $n$ is a free variable node then $n$ points to the first node of $t$.
+\noindent \emph{Initialization rules}
+\begin{description}
+\item[\rulenamet{Empty}] $\epsilon \in \travset(M)$.
+\item[\rulenamet{Root}] The single-node sequence $r$, where $r$ denotes the root of $\tau(M)$, is a traversal.
+%$ r \in \travset(M)$.
+\end{description}
 
-\item (App) If $t \cdot @$ is a traversal then so is
-$$\Pstr{t \cdot (m){@} \cdot (n-m,60:0){n}}$$
+\noindent \emph{Structural rules}
+\begin{description}
+\item[\rulenamet{Lam}] If $t \cdot \lambda \overline{\xi}$ is a traversal then so is
+$t \cdot \lambda \overline{\xi} \cdot n$ where $n$ denotes $\lambda
+\overline{\xi}$'s child.
 
-{\it i.e.}~the next visited node is the $0^{th}$ child node of
-@: the node corresponding to the operator of the application.
-\end{itemize}
+Moreover if $n$ is a variable node then it
+points to the only
+occurrence of its enabler that is still present in $\pview{t
+\cdot \lambda \overline{\xi}}$.
+In particular, if $n$ is a free variable node then $n$ points to the first node of $t$ (the root). (Prop. \ref{prop:pviewtrav_is_path} will show that indeed $n$'s enabler occurs exactly once in the P-view since P-views correspond to paths in the tree.)
 
-\emph{Input-variable rules}
-\begin{itemize}
-\item (InputVar$^{val}$) If $t = t_1 \cdot x \cdot t_2$ is a traversal where $x \in N^{\upharpoonright r}_{var}$ and $x$ is the pending node in $t$ (i.e. $?(t)=?(t_1) \cdot x$) then for any $v \in \mathcal{D}$,
-$\Pstr[0.4cm]{t_1 \cdot (x){x} \cdot t_2 \cdot
-(xv-x,25:v){v_x}}$ is a traversal.
+\item[\rulenamet{App}] If $t \cdot @$ is a traversal then so is \Pstr[0.4cm]{t \cdot (m) @  \cdot (n-m,40:0) n}.
+%{\em i.e.}~the next visited node is the $0^{th}$ child node of
+%@: the node corresponding to the operator of the application.
+\end{description}
+
+\noindent \emph{Input-variable rules}
+\begin{description}
+\item[\rulenamet{InputVar$^{val}$}] If $t_1 \cdot x \cdot t_2$ is a traversal
+with $x \in N_{var}^{\upharpoonright r}$ and $?(t_1 \cdot x
+\cdot t_2)=?(t_1) \cdot x$ then so is \Pstr[0.4cm]{t_1 \cdot
+(x){x} \cdot t_2 \cdot (xv-x,38:v){v_x} } for all $v \in
+\mathcal{D}$.
+
+\item[\rulenamet{InputVar}] If $t_1 \cdot x \cdot t_2$ is a traversal with
+  $x \in N_{var}^{\upharpoonright r}$ and $x$ is the pending node in $t$ ($?(t_1 \cdot x \cdot
+  t_2)=?(t_1) \cdot x$) then so is $t_1 \cdot x \cdot t_2 \cdot
+  n$ for any $\lambda$-node $n$ whose parent occurs in
+  $\oview{t_1 \cdot x}$, $n$ pointing to some occurrence of its
+  parent node in $\oview{t_1 \cdot x}$.
+\end{description}
+
+\noindent \emph{Copy-cat answer rules}
+\begin{description}
+\item[\rulenamet{Answer-$@$}]
+  If \Pstr{t \cdot (app){@} \cdot (lz-app,60:0){\lambda
+\overline{z}}  \ldots  (lzv-lz,60:v){v}_{\lambda \overline{z}} }
+is a traversal then so is \Pstr[0.6cm]{t \cdot (app){@} \cdot
+(lz-app,60){\lambda \overline{z}} \ldots
+(lzv-lz,60:v){v}_{\lambda \overline{z}} \cdot
+(appv-app,45:v){v}_@}.
+
+\item[\rulenamet{Answer-$\lambda$}] If \Pstr[0.4cm]{t \cdot \lambda \overline{\xi} \cdot (x){x}  \ldots   (xv-x,50:v){v}_x}
+is a traversal then so is \Pstr[0.5cm]{t \cdot (lmd){\lambda
+\overline{\xi}} \cdot (x){x}  \ldots  (xv-x,50:v){v}_x  \cdot
+(lmdv-lmd,30:v){v}_{\lambda \overline{\xi}} }.
+
+\item[\rulenamet{Answer-$\lambda$'}] If \Pstr[0.4cm]{t \cdot \lambda \overline{\xi} \cdot (x){@}  \ldots   (xv-x,50:v){v}_@}
+is a traversal then so is \Pstr[0.5cm]{t \cdot (lmd){\lambda
+\overline{\xi}} \cdot (x){@}  \ldots  (xv-x,50:v){v}_@  \cdot
+(lmdv-lmd,30:v){v}_{\lambda \overline{\xi}} }.
+
+\item[\rulenamet{Answer-$var$}] If \Pstr[0.4cm]{t \cdot y \cdot (lmd){\lambda \overline{\xi}}
+\ldots (lmdv-lmd,50:v){v}_{\lambda \overline{\xi}} } is a
+traversal for some variable $y$ not in $N_{var}^{\upharpoonright
+r}$ then so is \Pstr[0.7cm]{t \cdot (y){y} \cdot (lmd){\lambda
+\overline{\xi}} \ldots (lmdv-lmd,30:v){v}_{\lambda
+\overline{\xi}}  \cdot (vy-y,50:v){v}_y }.
+
+\end{description}
+
+\begin{description}
+\item[\rulenamet{Var}]
+If \Pstr[0.5cm]{t' \cdot (n){n} \cdot (lx){\lambda \overline{x}}
+    \ldots (x-lx,50:i){x_i} } is a traversal for some variable
+    $x_i$ not in $N_{var}^{\upharpoonright r}$ then
+so is \Pstr[0.6cm]{ t' \cdot (n){n} \cdot
+    (lx){\lambda \overline{x}}  \ldots (x-lx,30:i){x_i}  \cdot
+    (letai-n,40:i){\lambda \overline{\eta_i}}
+     }.
+\end{description}
+A traversal that cannot be extended by any rule is said to be \emph{maximal}.
+\end{definition}
 
 
-\item (InputVar)
-If $t = t_1 \cdot x \cdot t_2$ is a traversal where $x \in
-N_{var}^{\upharpoonright r}$ and $x$ is the pending node in $t$
-(i.e. $?(t)=?(t_1) \cdot x$) then so is $\Pstr[0.4cm]{t_1 \cdot
-(m){x} \cdot t_2 \cdot (n-m,25:i){n}}$ for all $\lambda$-node
-$n$ whose parent occurs in $\oview{t_1 \cdot x}$, $n$ pointing
-to some occurrence of its parent node in $\oview{t_1 \cdot x}$.
-\end{itemize}
+A traversal always starts by visiting the root. Then it mainly
+follows the structure of the tree.
 
-\emph{Copy-cat rules}
-\begin{itemize}
-  \item \rulenamet{CCAnswer-@}
-  If $\Pstr{t \cdot (app){@} \cdot (lz-app,40:0){\lambda
-              \overline{z}} \cdot \ldots \cdot
-              (lzv-lz,30:v){v_{\lambda \overline{z}}}}$ is a
-              traversal then so is: $\Pstr{t \cdot (app){@}
-              \cdot (lz-app:40,0){\lambda \overline{z}} \cdot
-              \ldots \cdot (lzv-lz,30:v){v_{\lambda
-              \overline{z}}} \cdot (appv-app,30:v){v_@}}$.
+The \rulenamet{Var} rule is particular and needs further explanation.
+This rule permits the traversal to jump across the computation tree. The idea is that after visiting a
+non-input variable node $x$, a jump can be made to the node corresponding to
+the subterm that would be substituted for $x$ if all the
+$\beta$-redexes occurring in the term were to be reduced.
 
 
-  \item \rulenamet{CCAnswer-$\lambda$} If $\Pstr{t \cdot \lambda \overline{\xi} \cdot (x){x} \cdot \ldots \cdot (xv-x,30:v){v_x}}$ is a traversal then so is
-   $\Pstr{ t \cdot (lmd){\lambda \overline{\xi}} \cdot (x){x}
-              \cdot \ldots \cdot (xv-x,20:v){v_x} \cdot
-              (lmdv-lmd,20:v){v_{\lambda \overline{\xi}}}}$.
-
-    \item \rulenamet{CCAnswer-$\lambda$'} If $\Pstr{t \cdot \lambda \overline{\xi} \cdot (x){@} \cdot \ldots \cdot (xv-x,30:v){v_@}}$ is a traversal then so is
-   $\Pstr{ t \cdot (lmd){\lambda \overline{\xi}} \cdot (x){@}
-              \cdot \ldots \cdot (xv-x,20:v){v_@} \cdot
-              (lmdv-lmd,20:v){v_{\lambda \overline{\xi}}}}$.
-
-     \item \rulenamet{CCAnswer-var} If $\Pstr{t \cdot y \cdot (lmd){\lambda \overline{\xi}}
-                   \cdot \ldots \cdot (lmdv-lmd,30:v){v_{\lambda
-                   \overline{\xi}}}}$ is a traversal, where $y$
-                   is a non input-variable node, then the
-                   following is also a traversal:
-        $$\Pstr{ t \cdot (y){y}
-            \cdot (lmd){\lambda \overline{\xi}}
-            \cdot \ldots
-            \cdot (lmdv-lmd,30:v){v_{\lambda \overline{\xi}}}
-            \cdot (yv-y,40:v){v_y}}.$$
-
-
-\item \rulenamet{Var}
-If $t \cdot x_i$ is a traversal where $x_i$ is not an input-variable,
-then the rule (Var) permits to visit the node corresponding to the subterm that would be substituted
-for $x_i$ if all the $\beta$-redexes occurring in $M$ were reduced.
-
-The binding node $\lambda \overline{x}$ necessarily occurs previously
-in the traversal. Since $x$ is not hereditarily justified by the
-root, $\lambda \overline{x}$ is not the root of the tree and
-therefore its justifier $p$ - which is also its parent node - occurs
-immediately before itself it in the traversal. We do a case analysis
-on $p$:
-
-    \begin{itemize}
-    \item Suppose $p$ is an @-node then $\lambda \overline{x}$ is necessarily the first child node of $p$
-    and $p$ has exactly $|\overline{x}| + 1$ children nodes:
-    $$\pstree[levelsep=7ex]{\TR{\stackrel{\vdots}{@^{[p]}}}}
+Let $\lambda \overline{x}$ be $x$'s binder and suppose $x$ is the $i$th variable in $\overline{x}$.
+The binding node necessarily occurs previously in the traversal (this will be proved in Prop. \ref{prop:pviewtrav_is_path}). Since $x$ is not hereditarily justified by the root, $\lambda \overline{x}$ is not the root of the tree and therefore it is not the first node of the traversal.
+We do a case analysis on the node preceding $\lambda \overline{x}$:
+    \begin{itemize}[-]
+    \item If it is an @-node then $\lambda \overline{x}$ is necessarily the first child node of that node
+    and it has has exactly $|\overline{x}|$ siblings:
+    $$\pstree[levelsep=7ex]{\TR{\stackrel{\vdots}{@}}}
     {   \pstree[linestyle=dotted,levelsep=4ex]{\TR{\lambda \overline{x}}\treelabel{0}}
-            {\TR{x_i }}
+            {\TR{x }}
         \tree{\lambda \overline{\eta_1}}{\vdots}\treelabel{1}
         \TR[edge=\dotedge]{}
         \tree{\lambda \overline{\eta_i}}{\vdots}\treelabel{i}
@@ -604,50 +623,48 @@ on $p$:
     }
     $$
     In that case, the next step of the traversal is a jump to $\lambda \overline{\eta_i}$ -- the $i$th child of
-    @ -- which corresponds to the subterm that would be substituted for $x_i$ if the $\beta$-reduction was
+    @ -- which corresponds to the subterm that would be substituted for $x$ if the $\beta$-reduction was
     performed:
-    \vspace{0.3cm}
-    $$\Pstr{ t' \cdot
-            (n){@^{[p]}} \cdot
+    $$\Pstr[19pt]{ t' \cdot
+            (n){@} \cdot
             (lx){\lambda \overline{x}} \cdot \ldots \cdot
-            (x-lx,40:i){x_i} \cdot
+            (x-lx,40:i){x} \cdot
             (mi-n,40:i){\lambda \overline{\eta_i}} \cdot \ldots
             \in {\travset(M)}   }
     $$
 
-    \item Suppose $p$ is variable node $y$, then
-    necessarily the node $\lambda \overline{x}$ has been added to the traversal $t_{\leq y}$ using the (Var) rule
-    (this is proved in proposition \ref{prop:pviewtrav_is_path}(i)).
-    Therefore $y$ is substituted by the term $\kappa(\lambda \overline{x})$ during the evaluation of the term
-    and we have $\ord{y} = \ord{\lambda \overline{x}}$.
+    \item If it is a variable node $y$, then
+    the node $\lambda \overline{x}$ was necessarily added to the traversal $t_{\leq y}$ using the (Var) rule
+    (see proposition \ref{prop:pviewtrav_is_path}(i)).
+    Therefore $y$ is substituted by the term $\kappa(\lambda \overline{x})$ during the evaluation of the term.
 
-    Consequently, during reduction, the variable $x_i$ is substituted by the subterm represented by
-    $\lambda \overline{\eta_i}$ -- the $i$th child node of $y$.
-    Hence the following justified sequence is also a traversal:
-    \vspace{0.2cm}
-    $$\Pstr{ t' \cdot
-            (n){y^{[n]}} \cdot
+    Consequently, during reduction, the variable $x$ will be substituted by the subterm represented by
+    the $i$th child node of $y$. Hence the following justified sequence is also a traversal:
+    $$\Pstr[18pt]{ t' \cdot
+            (y){y} \cdot
             (lx){\lambda \overline{x}} \cdot \ldots \cdot
-            (x-lx,40:i){x_i} \cdot
-            (mi-n,40:i){\lambda \overline{\eta_i}} \cdot \ldots
+            (x-lx,40:i){x} \cdot
+            (mi-y,40:i){\lambda \overline{\eta_i}} \cdot \ldots
     }
     $$
     \end{itemize}
-\end{itemize}
-Note that a traversal always starts with the root of the tree.
-\end{definition}
 
 \begin{remark}
-Our notions of computation tree and traversal differ slightly from
-\cite{OngLics2006}.
+Our notions of computation tree and traversal differ slightly from \cite{OngLics2006}:
+\begin{itemize}[-]
+    \item In \cite{OngLics2006} computation trees can have uninterpreted first-order constants. But as we have already observed, uninterpreted constants can be just regarded as free variables thus we do not lose any expressivity here.
 
-Firstly, our computation trees do not have nodes labelled with (uninterpreted) first-order constants. On the other hand, there are nodes which are labelled by free variables of any order. Since uninterpreted constants can be regarded as free variables, we do not lose any expressivity. Also, the traversal rules (InputVar$^{val}$) and (InputVar) provide a more general version of the (Sig) rule of \cite{OngLics2006} that models free variables and not just ``constructor'' constants.
+    \item In \cite{OngLics2006}, constants are restricted to order one at most since computation tree
+    are used to model computation of tree structures. Here we don't need this restriction (as long as constants are uninterpreted - so we can regard them as free variables).
 
-Secondly we have introduced copy-cat rules that permit to visit the
-value-leaves of the computation tree. The presence of value-leaves
-is necessary to model free variables as well as the interpreted
-constants present in extensions of the $\lambda$-calculus such as
-\pcf\ or \ialgol.
+
+    \item In our setting, we have to deal with \emph{free} variables.
+    To model free variables we need the traversal rules \rulenamet{InputVar$^{val}$}, \rulenamet{InputVar}
+    as well as the copy-cat answer rules. Whereas in \cite{OngLics2006}, the rule called \rulenamet{Sig} suffices to model the first-order constants necessary to construct tree structures.
+
+    \item In our setting, the introduction of value-leaves
+    is necessary in order to model free variables as well as interpreted constants. (We will use them to model the constants of \pcf\ and \ialgol).
+    \end{itemize}
 \end{remark}
 
 \begin{example}
@@ -780,12 +797,12 @@ then $u_2 = \epsilon$.
 \end{lemma}
 \begin{proof}
 By case analysis on the rule used to visit the node
-$n$ in $t$. The only relevant rules are (Var), (CCAnswer-var), (InputVar$^{val}$), (InputVar)
+$n$ in $t$. The only relevant rules are (Var), (Answer-var), (InputVar$^{val}$), (InputVar)
 and the constant rules.
 Since the term is in $\beta$-normal form, there is no @-node in $\tau(M)$ and therefore (Var) cannot be used.
 Since $m$ is not hereditarily justified by the root, it is not an input-variable and therefore the rules
 (InputVar$^{val}$) and (InputVar) cannot be used.
-For the rule (CCAnswer-var) the result follows from the well-bracketedness of traversals.
+For the rule (Answer-var) the result follows from the well-bracketedness of traversals.
 For constant rules, the result follows from the well-behaviour of constant rules (condition WB).
 \end{proof}
 
@@ -900,19 +917,16 @@ simply-typed $\lambda$-calculus with a given set of higher-order
 constants $\Sigma$. The operational semantics of these constants is
 given by certain reduction rules. We assume that a fully abstract
 model of the calculus is provided by means of a category of
-well-bracketed games. For instance, suppose that $\Sigma$ consists
-of the set of \pcf\ constants then we consider the traditional
+well-bracketed games. For instance, if $\Sigma$ consists
+of the \pcf\ constants then we consider the traditional
 category of games and innocent well-bracketed strategies
 \cite{hylandong_pcf,abramsky94full}.
 
-We choose to represent strategies by a prefix-closed set instead of
-an ``even length prefix''-closed set. This permits us to avoid
-considerations on the parity of the length of traversals when
-proving the correspondence between traversals and game semantics. We
-write $\sem{\Gamma \vdash M : A}$ for the strategy denoting the
-simply-typed term $\Gamma \vdash M : A$ and $\prefset(S)$ to denote
-the prefix-closure of the set $S$.
 
+In the literature, a strategy is commonly defined as a set of plays closed by
+even-length prefixing. However, for our purpose here, it is more convenient to represent strategies using \emph{prefix-closed} set of plays. This saves us from considerations on the parity of traversal length when
+showing the correspondence between traversals and game semantics.
+ For the rest of the section we fix a simply-typed term $\Gamma \vdash M :T$. We write $\sem{\Gamma \vdash M : T}$ for its strategy denotation (in the standard cartesian closed category of games and innocent strategies \cite{abramsky94full, hylandong_pcf}). We use the notation $\prefset(S)$ to denote the prefix-closure of the set $S$.
 
 \subsection{Relationship between computation trees and arenas}
 
@@ -1012,33 +1026,64 @@ In the next section, we show how to define this mapping in a systematic manner.
 \subsubsection{Formal definition}
 
 Let us establish precisely the relationship between arenas of the
-game semantics and the computation trees. Let $\Gamma \vdash M : A$
-be a term in $\eta$-long normal form. The computation tree $\tau(M)$
-is represented by a pair $(V,E)$ where $V$ is the set of vertices of
-the trees and $E$ is the edges relation. $V = N \union L$ where $N$
+game semantics and the computation trees. Suppose $\Gamma \vdash M : T$
+is in $\eta$-long normal form. We suppose that computation tree $\tau(M)$
+is given by a pair $(V,E)$ where $V$ is the set of vertices of
+and $E \subseteq V \times V$ is the parent-child relation. We have $V = N \union L$ where $N$
 is the set of nodes and $L$ is the set of value-leaves.
-The relation $E \subseteq V \times V$ gives the parent-child relation on the vertices of the tree.
+
+\emph{Notations:}
 We write $V_\$$ for $N_\$ \union (E(N_\$) \inter L)$ where $\$$ ranges over $\{@, var, \Sigma, fv \}$.
-
-
 Let $\mathcal{D}$ be the set of values of the base type $o$. If $n$ is a node in $N$ then the value-leaves attached to the node $n$ are written $v_n$ where $v$ ranges in $\mathcal{D}$.
 Similarly, if $q$ is a question in $\sem{A}$ then the answer moves enabled by $q$ are written $v_q$ where $v$ ranges in $\mathcal{D}$.
 
-If $A$ is an arena and $q$ is a move in $A$ then we write $A_q$ to
-denote the subarena of $A$ rooted at $q$.
+\begin{definition}[Mapping from nodes to moves]\rm
+\label{def:phi_psi mapping} Let $q$ be a question move of $\sem{T}$
+and $n \in N$ such that $n$ and $q$ are of type
+$(A_1,\ldots,A_p,o)$ for some $p\geq 0$.  Let $\{ q^1, \ldots, q^p \} \union \{ v_q \ |
+\ v \in \mathcal{D} \}$ be the set of moves enabled by $q$ where
+each $q^i$ is of type $A_i$. Let $T(n)$ denote the type of $\kappa(n)$ for $n \in N$.
+    \begin{itemize}[-]
+    \item The function $\psi_M^{n,q}$ from $V^{\upharpoonright n}$ to $\sem{T}$ is defined as:
+        \begin{eqnarray*}
+        \psi^{n,q}_M &=& \{ n \mapsto q \} \union  \{ v_n \mapsto v_q \ | \ v \in \mathcal{D} \}\\
+         &&\union \left\{
+                        \begin{array}{ll}
+                          \emptyset, & \hbox{if $p=0$\ ;} \\
+                          \Union_{m \in N | n \vdash_i m} \psi_M^{m, q^i}, & \hbox{if $p\geq1$ and $n\in N_{\lambda}$\ ;} \\
+                          \Union_{i=1..p} \psi_M^{n.i, q^i}, & \hbox{if $p\geq1$ and $n\in N_{var}$\ .}
+                        \end{array}
+                      \right.
+        \end{eqnarray*}
 
-\begin{definition}[Mapping from nodes to moves]
-\label{def:phi_procedure}
-For any term $\Gamma \vdash M :T$, we define a function $\psi_M^{n,q}$ where the parameter $n$ is a node of the computation tree $\tau(M)$ and the parameter $q$ is a question move of the arena $\sem{T}$ such that $q$ and $n$ are of type $(A_1. \ldots A_p, o)$ for some $p\geq 0$.
-Let $\vdash( q ) = \{ q^1, \ldots, q^p \} \union \{  v_q : v \in \mathcal{D} \}$.
+        We write $\psi_{\kappa(n)}$ for  $\psi_{\kappa(n)}^{n,q}$ where $q$ denotes the initial move of
+        $\sem{T(n)}$.\footnote{Arenas involved in the game semantics of simply-typed $\lambda$-calculus are all trees: they have a single initial move.}
 
-The function $\psi_N^{n,q}$ from $V^{\upharpoonright n}$ to $\sem{T}$ is defined as follows:
-\noindent
-\begin{itemize}
-\item[case 1] If $p=0$ ($n$ is labelled with $\lambda$ or with a ground type variable) then
-        $$\psi_M^{n,q} = \{ n \mapsto q \} \quad \union \quad  \{ v_n \mapsto v_q \ | \ v \in \mathcal{D} \}$$
+\item $\mathcal{M}_M$ is the following disjoint union of games:
+$$\mathcal{M}_M = \sem{\Gamma \rightarrow T} \quad \uplus \quad  \biguplus_{n \in N \inter E\relimg{N_@ \union N_\Sigma} } \sem{T(n)}.$$
 
-\item[case 2]  If $p\geq 1$ and $n \in N_{\lambda}$ with $n$ labelled $\lambda \overline{\xi} = \lambda \xi_1 \ldots \xi_p$ and with a child node labelled $\alpha$ then the computation tree and the arena $\sem{T}$ have the following forms (value-leaves and answer moves are not represented for simplicity):
+    \item The function $\varphi_M$ from $V_\lambda \union V_{var}$ to $\mathcal{M}_M$ is defined as:
+        \begin{equation*}
+                \varphi_M = \left\{
+                              \begin{array}{ll}
+                                \psi_M \union \Union_{n \in N \inter E \relimg{N_@ \union N_\Sigma}} \psi_{\kappa(n)} , & \hbox{if $M$ is closed;} \\
+                                \varphi_{\lambda x_1 \ldots x_n . M}, & \hbox{if $\Gamma = x_1 : X_1, \ldots, x_n : X_n$.}
+                              \end{array}
+                            \right.
+        \end{equation*}
+    \end{itemize}
+When there is no ambiguity we omit the subscript in $\varphi_M$ and $\psi_M$.
+\end{definition}
+
+
+
+It can easily be checked that the domain of definition of $\psi_M^{n,q}$ is indeed the set of nodes that are hereditarily enabled by $n$. This in turn implies that $\varphi_M$ is totally defined on $V_\lambda \union V_{var} = V\setminus (V_@ \union V_\Sigma)$ (since a node is either hereditarily justified by the root, by a @-node or by a $\Sigma$-node).
+
+\begin{remark} Let us detail slightly the definition of $\psi$:
+\begin{itemize} 
+\item If $p=0$ then $n$ is a dummy $\lambda$-node or a ground type variable: $\psi$ maps $n$ to the initial move $q$.
+
+\item  If $p\geq 1$ and $n \in N_{\lambda}$ with $n$ labelled $\lambda \overline{\xi} = \lambda \xi_1 \ldots \xi_p$ then the computation tree and the arena $\sem{T}$ have the following forms (value-leaves and answer moves are not represented for simplicity):
     $$ \tree{ \Rnode{r}\lambda \overline{\xi}  ^{[n]}}
         {
             \tree[levelsep=6ex]{\alpha}
@@ -1062,12 +1107,9 @@ The function $\psi_N^{n,q}$ from $V^{\upharpoonright n}$ to $\sem{T}$ is defined
     \ncline{->}{q4}{lmd2}
     $$
 
-    For each abstracted variable $\xi_i$ there exists a corresponding question move $q^i$ of the same order in the arena. $\psi_M^{n,q}$ maps each free occurrence of a variable $\xi_i$ to the corresponding move $q^i$:
-    $$
-    \psi_M^{n,q} =  \{ n \mapsto q \} \quad  \union \quad  \{ v_n \mapsto v_q \ | \ v \in \mathcal{D} \}
-                      \quad \union \quad  \Union_{\displaystyle m \in N | n \vdash_i m} \psi_M^{m, q^i}$$
+    For each abstracted variable $\xi_i$ there exists a corresponding question move $q^i$ of the same order in the arena. $\psi_M^{n,q}$ maps each free occurrence of $\xi_i$ in the computation tree to the move $q^i$.
 
-\item[case 3] If $p\geq 1$ and $n\in N_{var}$ then $n$ is labelled with a variable $x:(A_1,\ldots,A_p,o)$
+\item If $p\geq 1$ and $n\in N_{var}$ then $n$ is labelled with a variable $x:(A_1,\ldots,A_p,o)$
 with children nodes $\lambda \overline{\eta}_1$, \ldots, $\lambda \overline{\eta}_p$. The computation tree $\tau(M)$ and the arena $\sem{T}$ have the following forms:
     $$\tree{\Rnode{r}{x^{[n]}}}
         {   \tree{\TR{\lambda \overline{\eta}_1}}{\vdots} \TR{\ldots}
@@ -1090,45 +1132,10 @@ with children nodes $\lambda \overline{\eta}_1$, \ldots, $\lambda \overline{\eta
     \ncline{->}{q4}{lmd2}
     $$
 
-    $\psi_M^{n,q}$ maps each child node of $n$ to the corresponding question move $q^i$ of the same type
-in the arena $\sem{T}$:
-    $$\psi_M^{n,q} =
-         \{ n \mapsto q \} \quad \union\quad \{ v_n \mapsto v_q \ | \ v \in \mathcal{D}   \} \quad\union\quad     \Union_{i=1..m} \psi_M^{ \lambda \overline{\eta}_i, q^i}
-    $$
+    and $\psi_M^{n,q}$ maps each node $\lambda \overline{\eta}_i$ to the question move $q^i$.
 \end{itemize}
+\end{remark}
 
-Note that $\psi_M^{n,q}$ is only a partial function from $V$ to $A$ since it is defined only
-on nodes that are hereditarily justified by the root but not hereditarily justified by a free variable node. In other words, $\psi_M^{n,q}$ is undefined on nodes that are hereditarily justified by $N_{fv} \union N_@ \union N_\Sigma$.
-\end{definition}
-
-We write $\mathcal{M}_M$ to denote the following disjoint union of arenas:
-$$\mathcal{M}_M = \sem{\Gamma \rightarrow T} \quad \uplus \quad  \biguplus_{n \in N \inter E\relimg{N_@ \union N_\Sigma} } \sem{type(\kappa(n))}.$$
-
-Moves in $\mathcal{M}_M$ are implicitly tagged so it is possible to recover the arena in which they belong.
-
-
-\begin{definition}[Total mapping from nodes to moves]
-For a closed simply-typed term $\vdash M : T$
-we define the total function $\varphi_M : V_\lambda \union V_{var} \rightarrow \mathcal{M}_M$ as:
-\begin{align*}
-\varphi_M =
-        \psi_{\sem{\Gamma \rightarrow T}}^{r, q^0_{\sem{\Gamma \rightarrow T}}} \quad
-    \union \quad
-        \Union_{n \in N \inter E \relimg{N_@ \union N_\Sigma}}  \psi_{\sem{type(\kappa(n))}}^{n, q^0_{\sem{type(\kappa(n))}}}
-\end{align*}
-where $q^0_A$ denotes the only initial question of the arena $A$ (arenas involved in the game semantics of simply-typed $\lambda$-calculus have a single  root).
-
-For an open term $\Gamma \vdash M : T$
-with $\Gamma = x_1:X_1 \ldots x_p : X_p$ we define
-$\varphi_M$ as $\varphi_{\lambda x_1 \ldots x_n . M}$.
-
-When there is no ambiguity we omit the subscript in $\varphi_M$.
-\end{definition}
-
-Nodes of $\tau(M)$ are either hereditarily justified by the root, by
-a @-node or by a $\Sigma$-node, therefore $\varphi_M$ is totally
-defined on $V_\lambda \union V_{var} = V\setminus (V_@ \union
-V_\Sigma)$.
 
 \begin{example}
 Take $\lambda x . (\lambda g . g x) (\lambda y . y)$ with $x,y:o$
@@ -1183,7 +1190,7 @@ The following properties are immediate consequences of the definition of the pro
 \item[(i)] $\varphi$ maps $\lambda$-nodes to O-questions, variable nodes to
 P-questions, value-leaves of $\lambda$-nodes to P-answers and
 value-leaves of variable nodes to O-answers;
-\item[(ii)] $\varphi$ maps nodes of a given order to moves of the same order.
+\item[(ii)] $\varphi$ maps a node of a given order to a move of the same order.
 \end{itemize}
 \end{property}
 Remark: we recall that in definition \ref{def:nodeorder}, the
@@ -1196,8 +1203,8 @@ sequences of nodes: if $t = t_0 t_1 \ldots$ is a justified sequence
 of nodes in $V_\lambda \union V_{var}$ then $\varphi(t)$ is defined
 to be the following sequence of moves:
 $$\varphi(t) = \varphi(t_0)\ \varphi(t_1)\  \varphi(t_2) \ldots$$
-where the pointers of $\varphi(t)$ are defined to be exactly those
-of $t$. This definition implies that $\varphi : (V_\lambda \union
+equipped with the pointers of $t$.
+This definition implies that $\varphi : (V_\lambda \union
 V_{var})^* \rightarrow \mathcal{M}^*$ regarded as a function from
 pointer-less sequences of nodes to pointer-less sequences of moves
 is a monoid homomorphism.
@@ -1710,27 +1717,24 @@ isomorphic to the set of uncovered plays of the strategy denotation
 \cite{OngLics2006}), and that the set of traversal reductions is
 isomorphic to the strategy denotation.
 
-We fix a term $\Gamma \vdash M : T$ for the rest of this section.
-
 \subsubsection{Removing @-nodes from traversals}
 
 When defining computation trees, it was necessary to introduce
 application nodes (labelled @) in order to connect the operator and
 the operand of an application. The presence of @-nodes has also
 another advantage: it ensures that the lambda-nodes are all at even
-level in the computation tree. Consequently a traversal respects
-Alternation.
+level in the computation tree, and thus a traversal respects a certain form of
+alternation.
 
 Application nodes are however redundant in the sense that they do
-not play any role in the computation of the term. In other words,
-the @-nodes occurring in traversals are superfluous. In fact it is
+not play any role in the computation of the term. In fact it is
 necessary to filter them out if we want to establish the
 correspondence with the interaction game semantics.
 
 \begin{definition}[Filtering @-nodes in traversals]
 \label{dfn:appnode_filter}
 Let $t$ be a traversal of $\tau(M)$.
-We write $t-@$ for the sequence of nodes with pointers obtained by
+We write $t-@$ for the sequence of nodes-with-pointers obtained by
 \begin{itemize}
 \item removing from $t$ all @-nodes and value-leaves of a @-node;
 \item replacing any link pointing to an @-node by a link pointing to the immediate predecessor of @ in $t$.
@@ -1877,10 +1881,7 @@ We now state and prove the correspondence theorem for
 the simply-typed $\lambda$-calculus without interpreted constants
 ($\Sigma = \emptyset$). The result extends immediately to the
 simply-typed $\lambda$-calculus with \emph{uninterpreted} constants
-by considering constants as being free variables. We write $\sem{\Gamma \vdash
-M : A}$ for the strategy (in the standard cartesian closed category of games and innocent strategies
-(\cite{abramsky94full, hylandong_pcf}) denoting the simply-typed term $\Gamma
-\vdash M : A$.
+by considering constants as being free variables.
 
 \begin{proposition}
 \label{prop:rel_gamesem_trav} Let $\Gamma \vdash M : T$ be a
@@ -1915,7 +1916,7 @@ computation tree $\tau(M)$ has the following form:
     several traversals of $N_i$ for $i=1..p$. This schema is reminiscent of the way the evaluation copycat map $ev$ works in game semantics.
 
     The key idea is that every time the traversal pauses the traversal of a subterm and switches to another one,
-    the jump is permitted by one of the four copycat rules (Var), (CCAnswer-@), (CCAnswer-$\lambda$) or (CCAnswer-var).
+    the jump is permitted by one of the four copycat rules (Var), (Answer-@), (Answer-$\lambda$) or (Answer-var).
     We show by (a second) induction that these copycat rules define precisely what the copycat strategy $ev$ performs on sets of plays.
 
 %    In the game semantics, the evaluation map (a copy-cat strategy) copies this opening move to an initial move $m_0$ in the game
@@ -2127,7 +2128,7 @@ Hence we can conclude using the induction hypothesis.
     moves, $u$ is necessarily empty. Hence $m^1=v_{q_1}$.
 
     By the induction hypothesis, the last move in $t'$ is $\varphi(m^1) = v_{\lambda y_1}$.
-    Thus we can use the rule \rulenamet{CCAnswer-$\lambda$} to produce
+    Thus we can use the rule \rulenamet{Answer-$\lambda$} to produce
     the traversal $t = t' \cdot v_{\lambda \overline{\xi}}$ where $v_{\lambda
     \overline{\xi}}$ points to the first node in $t'$.
     Clearly we have $\varphi(t-@) = u$.
@@ -2234,8 +2235,8 @@ Hence we can conclude using the induction hypothesis.
 
         \item If $n^1$ is the value-leaf of a variable node $n^2$
         then we proceed the same way as in the previous
-        case: we use the rule (CCAnswer-$\lambda$) or
-        (CCAnswer-$\lambda$') to extend the traversal
+        case: we use the rule (Answer-$\lambda$) or
+        (Answer-$\lambda$') to extend the traversal
         $t'$.
 
         \item Suppose that $n^1$ is a lambda node, in which case $m^1$ is an O-move, then
@@ -2245,7 +2246,7 @@ Hence we can conclude using the induction hypothesis.
 
 
         \item If $n^1$ is a value-leaf of a $\lambda$-node then $n^2$ is a $\lambda$-node and $n^3$ is a variable node.
-        We can therefore use the rule (CCAnswer-var) or (CCAnswer-@) to extend the traversal $t'$.
+        We can therefore use the rule (Answer-var) or (Answer-@) to extend the traversal $t'$.
         \end{enumerate}
 
     \item Suppose $m \in T^{001}$ and $m^1 \in T^{000}$ then
@@ -2378,227 +2379,3 @@ t\upharpoonright r = (n){\lambda f z} \ (n4-n,50){f}^{[1]} \
 \end{asparablank}
 \end{tabular}
 \end{example}
-
-
-%%%%%%%%%%%%%%%%
-
-
-\section*{Appendix of the TLCA paper on Computation tree, traversals and correspondence}
-\label{sec:correspondence}
-
-In this section we adapt the notions of computation tree and
-traversals over the computation tree originally introduced in
-\cite{OngLics2006} to the context of the simply-typed lambda
-calculus without constants. Everything remains valid in the presence
-of \emph{uninterpreted}\footnote{A constant $f$ is
-  \emph{uninterpreted} if the small-step semantics of the language
-  does not contain any rule of the form $f \dots \rightarrow e$. $f$
-  can be regarded as a data constructor.}  constants since we can just
-consider them as free variables. Moreover there is no restriction on
-the order of these constants, contrary to \cite{OngLics2006} where
-constants need to be of order at most one. We will also state the
-\emph{Correspondence Theorem} (Theorem \ref{thm:correspondence})
-used in Sec. \ref{sec:gamesemaccount}.
-
-In the following we fix a simply typed term $\Gamma \vdash M :T$ and
-we consider its computation tree $\tau(M)$ as defined in Def.
-\ref{dfn:comptree}.
-
-
-
-\subsection{Computation tree with value-leaves}
-Let us first fix some notations. We write $r$ for the root of
-$\tau(M)$ and $N$, $N_@$, $N_\lambda$ and $N_{var}$ for the set of
-nodes, @-labelled nodes, $\lambda$-nodes and variable nodes
-respectively. For $n \in N$, $\kappa(n)$ denotes the subterm of
-$\elnf{M}$ corresponding to the subtree rooted at $n$, in particular
-$\kappa(r) = \elnf{M}$.  The \defname{type} of a variable node
-labelled $x$ is the type of $x$, the type of the root is
-$(A_1,\ldots,A_p, T)$ where $x_1:A_1,\ldots, x_p:A_p$ are the free
-variables of $M$ and the type of $n\in (N_\lambda \union N_@)
-\setminus \{ r \}$ is the type of $\kappa(n)$.
-
-
-We now add another ingredient to the computation tree that was not
-originally used in \cite{OngLics2006}.  We write $\mathcal{D}$ to
-denote the set of values of the base type $o$.  We add
-\defname{value-leaves} to $\tau(M)$ as follows: For each value $v
-\in \mathcal{D}$ and for each node $n \in N$ we attach the child
-leaf $v_n$ to $n$.  We write $V$ for the set of nodes and leaves of
-the computation tree.  For $\$$ ranging in $\{@, \lambda, var \}$,
-we write $V_\$$ to denote the set $N_\$ \union \{ v_n \ | \ n \in
-N_\$, v \in \mathcal{D} \}$.
-
-
-Everything that we have defined can be lifted to this new version of
-computation tree. A value-leaf has order $0$. The enabling relation
-$\vdash$ is extended so that every leaf is enabled by its parent
-node. A link going from a value-leaf $v_n$ to a node $n$ is labelled
-by $v$: \Pstr[0.4cm]{ (n) n \ldots (vn-n,35:v){v_n} }. For the
-definition of P-view and visibility, value-leaves are treated as
-$\lambda$-nodes if they are at an odd level in the computation tree,
-and as variable nodes if they are at an even level.
-
-
-
-\subsection{Traversals of the computation tree}
-\label{subsec:traversal}
-
-A \emph{traversal} is a justified sequence of nodes of the
-computation tree where each node indicates a step that is taken
-during the evaluation of the term.
-\begin{definition}\rm
-\label{def:traversal} The set $\travset(M)$ of \defname{traversals}
-over $\tau(M)$ is defined by induction over the following rules.
-
-\begin{description}
-\item[{\bf (Empty)}] $\epsilon \in \travset(M)$.
-\item[{\bf (Root)}] $ r \in \travset(M)$.
-\item[{\bf (Lam)}] If $t \cdot \lambda \overline{\xi}$ is a traversal then so is
-$t \cdot \lambda \overline{\xi} \cdot n$ where $n$ is $\lambda
-\overline{\xi}$'s child and if $n$ is a variable node then it
-points to the only\footnote{This is justified {\it a posteriori}
-by the fact that P-views are paths in the computation tree.}
-occurrence of its enabler that is still present in $\pview{t
-\cdot \lambda \overline{\xi}}$.
-
-\item[{\bf (App)}] If $t \cdot @$ is a traversal then so is \Pstr[0.4cm]{t \cdot (m) @  \cdot (n-m,40:0) n}.
-
-\item[{\bf (InputVar$^{val}$)}] If $t_1 \cdot x \cdot t_2$ is a traversal
-with $x \in N_{var}^{\upharpoonright r}$ and $?(t_1 \cdot x
-\cdot t_2)=?(t_1) \cdot x$ then so is \Pstr[0.4cm]{t_1 \cdot
-(x){x} \cdot t_2 \cdot (xv-x,38:v){v_x} } for all $v \in
-\mathcal{D}$.
-
-\item[{\bf (InputVar)}] If $t_1 \cdot x \cdot t_2$ is a traversal with
-  $x \in N_{var}^{\upharpoonright r}$ and $?(t_1 \cdot x \cdot
-  t_2)=?(t_1) \cdot x$ then so is $t_1 \cdot x \cdot t_2 \cdot
-  n$ for any $\lambda$-node $n$ whose parent occurs in
-  $\oview{t_1 \cdot x}$, $n$ pointing to some occurrence of its
-  parent node in $\oview{t_1 \cdot x}$.
-
-
-\item[{\bf (Copycat$^@$)}]
-  If \Pstr{t \cdot (app){@} \cdot (lz-app,60:0){\lambda
-\overline{z}}  \ldots  (lzv-lz,60:v){v}_{\lambda \overline{z}} }
-is a traversal then so is \Pstr[0.6cm]{t \cdot (app){@} \cdot
-(lz-app,60){\lambda \overline{z}} \ldots
-(lzv-lz,60:v){v}_{\lambda \overline{z}} \cdot
-(appv-app,45:v){v}_@}.
-
-\item[{\bf (Copycat$^\lambda$)}] If \Pstr[0.4cm]{t \cdot \lambda \overline{\xi} \cdot (x){x}  \ldots   (xv-x,50:v){v}_x}
-is a traversal then so is \Pstr[0.5cm]{t \cdot (lmd){\lambda
-\overline{\xi}} \cdot (x){x}  \ldots  (xv-x,50:v){v}_x  \cdot
-(lmdv-lmd,30:v){v}_{\lambda \overline{\xi}} }.
-
-\item[{\bf (Copycat$^{var}$)}] If \Pstr[0.4cm]{t \cdot y \cdot (lmd){\lambda \overline{\xi}}
-\ldots (lmdv-lmd,50:v){v}_{\lambda \overline{\xi}} } is a
-traversal for some variable $y$ not in $N_{var}^{\upharpoonright
-r}$ then so is \Pstr[0.7cm]{t \cdot (y){y} \cdot (lmd){\lambda
-\overline{\xi}} \ldots (lmdv-lmd,30:v){v}_{\lambda
-\overline{\xi}}  \cdot (vy-y,50:v){v}_y }.
-
-\item[{\bf (Var)}]
-If \Pstr[0.5cm]{t' \cdot (n){n} \cdot (lx){\lambda \overline{x}}
-    \ldots (x-lx,50:i){x_i} } is a traversal for some variable
-    $x_i$ not in $N_{var}^{\upharpoonright r}$ then
-so is \Pstr[0.6cm]{ t' \cdot (n){n} \cdot
-    (lx){\lambda \overline{x}}  \ldots (x-lx,30:i){x_i}  \cdot
-    (letai-n,40:i){\lambda \overline{\eta_i}}
-     }.
-\end{description}
-\end{definition}
-
-\begin{wrapfigure}[7]{r}{3.8cm}
-$
-% The next line must be commented out if and only if the paragraph appears at the top of the page (otherwise the vertical position of the figure in the margin is not correct)
-\rput[t](1.75cm,0.9cm) {\tree[levelsep=3ex,treesep=0.5cm]{\lambda} {
-    \tree{@}{
-        \pstree[linestyle=dotted]{\TR{\lambda y}\arclabel{0} }{
-            \tree{y}{
-                \tree{\lambda \overline{\eta_1}}{\vdots}%\arclabel{1}
-                \tree{\lambda \overline{\eta_i}}{\vdots}%\arclabel{i}
-                \tree{\lambda \overline{\eta_n}}{\vdots}%\arclabel{n}
-            }
-        }
-        \pstree[linestyle=dotted]{\TR{\lambda \overline{x}}
-            \arclabel{1}}{ \tree{x_i}{\TR{} \TR{}}}
-}}} $
-\end{wrapfigure}
-A traversal always starts by visiting the root. Then it mainly
-follows the structure of the tree. The (Var) rule permits to jump
-across the computation tree. The idea is that after visiting a
-variable node $x$, a jump is allowed to the node corresponding to
-the subterm that would be substituted for $x$ if all the
-$\beta$-redexes occurring in the term were reduced. The sequence
-\Pstr[0.8cm]{\lambda \cdot (app) @  \cdot (ly) {\lambda y}  \ldots
-(y-ly,35:1) y  \cdot (lx-app,38:1) {\lambda \overline{x}} \ldots
-(x-lx,30:i) {x_i} \cdot (leta-y,40:i) {\lambda \overline{\eta_i} }
-\ldots}
- is an example of traversal of the computation tree shown on the right.
-
-Application nodes are used to connect the operator and the operand
-of an application in the computation tree but since they do not play
-any role in the computation of the term, we can remove them from the
-traversals.  We write $t-@$ for the sequence of nodes-with-pointers
-obtained by removing from $t$ all @-nodes and value-leaves of
-@-nodes, any link pointing to an @-node being replaced by a link
-pointing to the immediate predecessor of @ in $t$.
-
-
-
-\subsection{Computation trees and arenas}
-We consider the well-bracketed game model of the simply-typed lambda
-calculus.  We choose to represent strategies using ``prefix-closed
-set of plays''. \footnote{In the literature, a strategy is commonly
-defined as a set of plays closed by taking a prefix of \emph{even}
-length. However for the purpose of showing the correspondence with
-traversals, the ``prefix-closed'' version is more appropriate.} We
-fix a term $\Gamma \vdash M : T$ and write $\sem{\Gamma \vdash M :
-T}$ for its strategy denotation. The answer moves of a question $q$
-are written $v_q$ where $v$ ranges in $\mathcal{D}$.
-
-\begin{definition}[Mapping from nodes to moves]\rm
-\label{def:phi_psi mapping} Let $q$ be a question move of $\sem{T}$
-and $n \in N$ such that $n$ and $q$ are of type
-$(A_1,\ldots,A_p,o)$.  Let $\{ q^1, \ldots, q^p \} \union \{ v_q \ |
-\ v \in \mathcal{D} \}$ be the set of moves enabled by $q$ where
-each $q^i$ is of type $A_i$. The function $\psi_M^{n,q}$ from
-$V^{\upharpoonright n}$ to $\sem{T}$ is defined as:
-\begin{eqnarray*}
-\psi^{n,q}_M &=& \{ n \mapsto q \} \union  \{ v_n \mapsto v_q \ | \ v \in \mathcal{D} \}\\
- &&\union \left\{
-                \begin{array}{ll}
-                  \emptyset, & \hbox{if $p=0$\ ;} \\
-                  \Union_{m \in N | n \vdash_i m} \psi_M^{m, q^i}, & \hbox{if $p\geq1$ and $n\in N_{\lambda}$\ ;} \\
-                  \Union_{i=1..p} \psi_M^{n.i, q^i}, & \hbox{if $p\geq1$ and $n\in N_{var}$\ .}
-                \end{array}
-              \right.
-\end{eqnarray*}
-Note that $\psi_M^{n,q}$ is only defined on nodes hereditarily
-enabled by $n$.  For any $n \in N$ let $A_n$ denote the type of
-$\kappa(n)$. We write $\psi_{\kappa(n)}$ for
-$\psi_{\kappa(n)}^{n,q}$ where $q$ denotes the initial move of
-$\sem{A_n}$.\footnote{Arenas involved in the game semantics of
-simply-typed lambda calculus are trees.}
-
-
-For a closed term $\vdash M : T$, the total function $\varphi_M$
-from $V_\lambda \union V_{var}$ to $\sem{T} \uplus \biguplus_{n \in
-N'_@} \sem{A_n}$ is defined as $\varphi_M = \psi_M \union \Union_{n
-\in N'_@} \psi_{\kappa(n)}$ where $N'_@$ denotes the set of children
-nodes of @-nodes.  For an open term $x_1 : X_1, \ldots, x_n : X_n
-\vdash M : T$, $\varphi_M$ is defined as $\varphi_{\lambda x_1
-\ldots x_n . M}$. When there is no ambiguity we omit the subscript
-in $\varphi_M$ and $\psi_M$.
-\end{definition}
-\begin{remark}
-$\varphi$ maps $\lambda$-nodes to O-questions, variable nodes to
-P-questions, value-leaves of $\lambda$-nodes to P-answers and
-value-leaves of variable nodes to O-answers. Moreover $\varphi$ maps
-nodes of a given order to moves of the same order.
-\end{remark}
-If $t = t_0 t_1 \ldots$ is a justified sequence of nodes in
-$V_\lambda \union V_{var}$ then $\varphi(t)$ is defined to be the
-sequence of moves $\varphi(t_0)\ \varphi(t_1) \ldots$ equipped with
-the pointers of $t$.

@@ -231,12 +231,15 @@ The nodes (and leaves) of the tree are of three kinds:
 \item application nodes labelled @,
 \item variable or constant nodes labelled $\alpha$ for some constant or variable $\alpha$.
 \end{itemize}
+A node is said to be \defname{prime} if it is the 0$^{th}$ child of an @-node.
 
-\emph{Notations:} We write $N$ for the set of nodes of $\tau(M)$,
+\emph{Notations:} We write $r$ for the root of $\tau(M)$. We write $E$ to denote the parent-child relation
+of the tree, $N$ for the set of nodes of $\tau(M)$,
 $N_\Sigma$ for the set of $\Sigma$-labelled nodes, $N_@$ for the set
-of @-labelled nodes, $N_{var}$ for the set of variable nodes,
-$N_{fv}$ for the subset of $N_{var}$ constituted of free-variable
-nodes and $r$ for the root of $\tau(M)$.
+of @-labelled nodes, $N_{\sf var}$ for the set of variable nodes,
+$N_{\sf fv}$ for the subset of $N_{\sf var}$ constituted of free-variable
+nodes, $N_{\sf spawn}$ for the set $N \inter E \relimg{N_@ \union N_\Sigma}$ constituted of children of constant-nodes and @-nodes and $N_{\sf prime}$ for the set of prime nodes.
+
 
 Let $\mathcal{T}$ denote the set of $\lambda$-terms.
 Each subtree of the computation tree $\tau(M)$ represents a subterm of $\elnf{M}$.
@@ -326,16 +329,14 @@ for all $i\in 0..p-1$.
 
 For any set of nodes $S$ we write $S^{\upharpoonright r}$ for $\{ n \in S \ | \ r  \vdash^* n \}$ -- the subset of $S$ constituted of
 nodes hereditarily enabled by $r$.
-We call \defname{input-variables nodes} the elements of $N_{var}^{\upharpoonright r}$ i.e.\
-variables that are hereditarily enabled by the root. $N_{var}^{\upharpoonright r}$ is also the set of nodes that are hereditarily enabled by a free variable or by a variable bound by the root.
+We call \defname{input-variables nodes} the elements of $N_{\sf var}^{\upharpoonright r}$ i.e.\
+variables that are hereditarily enabled by the root. $N_{\sf var}^{\upharpoonright r}$ is also the set of nodes that are hereditarily enabled by a free variable or by a variable bound by the root.
 \smallskip
 
 We use the following numbering conventions:
-\begin{itemize}[-]
-\item the first child of a @-node is numbered $0$,
-\item the first child of a variable or constant node is numbered $1$,
-\item variables in $\overline{\xi}$ are numbered from $1$ onward ($\overline{\xi} = \xi_1 \ldots \xi_n$).
-\end{itemize}
+the first child of a @-node is numbered $0$;
+the first child of a variable or constant node is numbered $1$;
+and variables in $\overline{\xi}$ are numbered from $1$ onward ($\overline{\xi} = \xi_1 \ldots \xi_n$).
 We write $n.i$ to denote the $i$th child of node $n$.
 
 \begin{definition}[Justified sequence of nodes]
@@ -353,13 +354,11 @@ $\lambda$-node $m$ or that $n$ is the $i^{\sf th}$ child of $m$.
 \end{definition}
 
 Note that justified sequences are also defined for open terms:
-occurrences of nodes in $N_{fv}$ must point to an occurrence of the
-root of the computation tree.
-
-A pointer in a justified sequence of nodes has
-one of the following forms: \vspace{2pt}
+occurrences of nodes in $N_{\sf fv}$ must point to an occurrence of the
+root of the computation tree. Thus a pointer in a justified sequence of nodes has
+one of the following forms:
 $$
-\Pstr{ (m){r} \cdot \ldots \cdot (n-m,40){z} }
+\Pstr[18pt]{ (m){r} \cdot \ldots \cdot (n-m,40){z} }
 \hspace{1.5cm}
 \Pstr{ (m){\lambda \overline{\xi}} \cdot \ldots \cdot (n-m,40:i){\xi_i} }
 \hspace{1.5cm}
@@ -367,13 +366,14 @@ $$
 \hspace{1.5cm}
 \Pstr{ (m){\alpha } \cdot \ldots \cdot (n-m,40:k){\lambda \overline{\eta}} }
 $$
-where $r$ denotes the root of $\tau(M)$, $z \in N_{fv}$, $\xi_1,
-\ldots \xi_n$ are bound variables, $\alpha \in N_{\Sigma} \union
-N_{var}$, $i \in 1..n$, $j$ ranges from $0$ to the number of
+for some occurrences $r$ of $\tau(M)$'s root, $z \in N_{\sf fv}$,
+bound variables $\xi_1,
+\ldots \xi_n$, $\alpha \in N_{\Sigma} \union
+N_{\sf var}$, $i \in 1..n$, $j$ ranges from $0$ to the number of
 children nodes of @ minus 1 and $k \in 1 ..arity(\alpha)$.
+\bigskip
 
-
-We write $s = t$ to denote that the justified sequences $t$ and $s$
+\emph{Notations}: We write $s = t$ to denote that the justified sequences $t$ and $s$
 have same nodes \emph{and} pointers. Justified sequence of nodes can
 be ordered using the prefix ordering: $t \sqsubseteq t'$ if and only
 if $t=t'$ or the sequence of nodes $t$ is a finite prefix of $t'$
@@ -381,24 +381,31 @@ if $t=t'$ or the sequence of nodes $t$ is a finite prefix of $t'$
 corresponding prefix of $t'$). Note that with this definition,
 infinite justified sequences can also be compared. This ordering
 gives rise to a complete partial order.
+We say that a node $n_0$ of a justified sequence is \defname{hereditarily justified} by $n_p$ if there are nodes $n_1, n_2, \ldots n_{p-1}$ in the sequence such that for all $i\in 0..p-1$, $n_i$ points to $n_{i+1}$.
+We write $t^\omega$ to denote the last occurrence of $t$ and $\ip(t)$ for the immediate prefix of $t$ obtained by removing $t$'s last node.
 
-We say that a node $n_0$ of a justified sequence is hereditarily justified by $n_p$ if there are nodes $n_1, n_2, \ldots n_{p-1}$ in
-the sequence such that for all $i\in 0..p-1$, $n_i$ points to $n_{i+1}$.
+We define a filtering operation on sequences of nodes:
+\begin{definition}[Hereditary filtering]
+Let $s$ be a justified  sequence of nodes from $\tau(M)$
+and $n$ be an occurrence in $t$ of some node $n \in N_{\sf spawn}$.
 
-If $H$ is a set of nodes and $s$ a justified sequence of nodes then we write $s \upharpoonright H$ to denote the subsequence of $s$ obtained by keeping only the nodes that are hereditarily justified by nodes in $H$. This subsequence is also a justified
-sequence of nodes. If $n$ denotes a node of $\tau(M)$ we abbreviate $s \upharpoonright \{ n \}$ into $ s\upharpoonright n$.
+We write $s \upharpoonright n$ to denote the subsequence of $s$ constituted of nodes that are hereditarily justified by $n$, where the pointer's target of all occurrences of free variable nodes in $t$ are set to $n$ (instead of $t$'s first node).
+
+Thus $s \upharpoonright n$ is a valid justified sequence of nodes of the tree $\tau(\kappa(n))$.
+\end{definition}
+
 
 \begin{lemma}
 \label{lem:filtercontinous}
-For any set of node $N$, the filtering function $\_ \upharpoonright N$ defined on the cpo of justified sequences ordered by the prefix ordering
+The filtering function $\_ \upharpoonright n$ defined on the cpo of justified sequences ordered by the prefix ordering
 is continuous.
 \end{lemma}
 \begin{proof}
-Clearly $\_ \upharpoonright N$ is monotonous.
-Suppose that $(t_i)_{i\in\omega}$ is a chain of justified sequence of nodes. Let $u$ be a finite prefix of $(\bigvee t_i) \upharpoonright r$.
-Then $u = s \upharpoonright r$ for some finite prefix $s$ of $\bigvee t_i$. Since $s$ is finite we must have $s \sqsubseteq t_j$ for some $j\in\omega$.
-Therefore $u \sqsubseteq t_j \upharpoonright r \sqsubseteq \bigvee (t_j \upharpoonright r)$.
-This is valid for any finite prefix $u$ therefore $(\bigvee t_i) \upharpoonright r \sqsubseteq \bigvee (t_j \upharpoonright r)$.
+Clearly $\_ \upharpoonright n$ is monotonous.
+Suppose that $(t_i)_{i\in\omega}$ is a chain of justified sequence of nodes. Let $u$ be a finite prefix of $(\bigvee t_i) \filter n$.
+Then $u = s \filter n$ for some finite prefix $s$ of $\bigvee t_i$. Since $s$ is finite we must have $s \sqsubseteq t_j$ for some $j\in\omega$.
+Therefore $u \sqsubseteq t_j \filter n \sqsubseteq \bigvee (t_j \filter  n)$.
+This is valid for any finite prefix $u$ therefore $(\bigvee t_i) \filter  n \sqsubseteq \bigvee (t_j \filter n)$.
 \end{proof}
 
 
@@ -432,7 +439,7 @@ The O-view of a justified sequence of nodes $t$ of $\tau(M)$, written $\oview{t}
  \oview{\epsilon} &=&  \epsilon \\
  \oview{s \cdot \lambda \overline{\xi} }  &=&  \oview{s} \cdot \lambda \overline{\xi} \\
  \oview{\Pstr{s \cdot (m){m} \cdot \ldots \cdot (x-m,30){x}}} &=&
-    \Pstr{ \oview{s} \cdot (m2){m} \cdot (n2-m2,60){x} } \qquad \mbox{ for $x \in N_{var}$ }\\
+    \Pstr{ \oview{s} \cdot (m2){m} \cdot (n2-m2,60){x} } \qquad \mbox{ for $x \in N_{\sf var}$ }\\
  \oview{s \cdot n }  &=&  n \qquad \mbox{ for $x \in N_@ \union N_\Sigma$ }
 \end{eqnarray*}
 \end{definition}
@@ -545,13 +552,13 @@ In particular, if $n$ is a free variable node then $n$ points to the first node 
 \noindent \emph{Input-variable rules}
 \begin{description}
 \item[\rulenamet{InputVar$^{val}$}] If $t_1 \cdot x \cdot t_2$ is a traversal
-with $x \in N_{var}^{\upharpoonright r}$ and $?(t_1 \cdot x
+with $x \in N_{\sf var}^{\upharpoonright r}$ and $?(t_1 \cdot x
 \cdot t_2)=?(t_1) \cdot x$ then so is \Pstr[0.4cm]{t_1 \cdot
 (x){x} \cdot t_2 \cdot (xv-x,38:v){v_x} } for all $v \in
 \mathcal{D}$.
 
 \item[\rulenamet{InputVar}] If $t_1 \cdot x \cdot t_2$ is a traversal with
-  $x \in N_{var}^{\upharpoonright r}$ and $x$ is the pending node in $t$ ($?(t_1 \cdot x \cdot
+  $x \in N_{\sf var}^{\upharpoonright r}$ and $x$ is the pending node in $t$ ($?(t_1 \cdot x \cdot
   t_2)=?(t_1) \cdot x$) then so is $t_1 \cdot x \cdot t_2 \cdot
   n$ for any $\lambda$-node $n$ whose parent occurs in
   $\oview{t_1 \cdot x}$, $n$ pointing to some occurrence of its
@@ -575,7 +582,7 @@ is a traversal then so is \Pstr[0.5cm]{t \cdot (lmd){\lambda
 
 \item[\rulenamet{Answer-var-$\lambda$}] If \Pstr[0.4cm]{t \cdot y \cdot (lmd){\lambda \overline{\xi}}
 \ldots (lmdv-lmd,50:v){v}_{\lambda \overline{\xi}} } is a
-traversal for some variable $y\not\in N_{var}^{\upharpoonright
+traversal for some variable $y\not\in N_{\sf var}^{\upharpoonright
 r}$ then so is \Pstr[0.7cm]{t \cdot (y){y} \cdot (lmd){\lambda
 \overline{\xi}} \ldots (lmdv-lmd,30:v){v}_{\lambda
 \overline{\xi}}  \cdot (vy-y,50:v){v}_y }.
@@ -590,7 +597,7 @@ is a traversal then so is \Pstr[0.5cm]{t \cdot (lmd){\lambda
 \item[\rulenamet{Var}]
 If \Pstr[0.5cm]{t' \cdot (n){n} \cdot (lx){\lambda \overline{x}}
     \ldots (x-lx,50:i){x_i} } is a traversal for some variable
-    $x_i$ not in $N_{var}^{\upharpoonright r}$ then
+    $x_i$ not in $N_{\sf var}^{\upharpoonright r}$ then
 so is \Pstr[0.6cm]{ t' \cdot (n){n} \cdot
     (lx){\lambda \overline{x}}  \ldots (x-lx,30:i){x_i}  \cdot
     (letai-n,40:i){\lambda \overline{\eta_i}}
@@ -714,12 +721,12 @@ $$\rulef{t = t_1\cdot n \cdot t_2 \in \travset \quad ?(t) = ?(t_1) \cdot n \quad
     \ m\in S(t)
    $$
 such that:
-\begin{itemize}[i.]
-  \item $n$ is a variable or a constant node ($n \in N_{\Sigma}\union N_{var}$);
+\begin{enumerate}[i.]
+  \item $n$ is a variable or a constant node ($n \in N_{\Sigma}\union N_{\sf var}$);
   \item $P$ expresses some condition on $t$;
   \item for every traversal $t$, $S(t)$ is some subset of $E(n)$, the set of children $\lambda$-nodes and value-leaves of $n$.
   If $S(t)$ has more than one element then the rule is non-deterministic.
-\end{itemize}
+\end{enumerate}
 \end{definition}
 Note that if $t$ is well-bracketed then $t'$ is also well-bracketed
 and if $?(t)$ satisfies alternation and visibility then so does
@@ -777,25 +784,26 @@ Rule \rulenamet{Lam}: we need to show that $n$'s enabler occurs only once in the
 %    This is because in a traversal, a non input-variable $y$ is always followed by a lambda node and whenever this lambda node is answered
 %    there is only one way to extend the traversal : by using the copy cat rule to answer the $y$ node.
 
-
-\begin{definition}[Traversal reduction]
-The \defname{reduction} of a traversal $t$ written $ t
-\upharpoonright r$, is the subsequence of $t$ obtained by keeping
-only the nodes that are hereditarily justified by $r$.
+\begin{definition}
+The \defname{reduction of a traversal} $t$ is define as the subsequence $ t
+\filter r$ where $r$ denotes the first node in $t$ (which is necessarily $\tau(M)$'s root).
 \end{definition}
 The effect of this transformation is the elimination of the
-``internal nodes'' of the computation.
-
-Since @-nodes and $\Sigma$-constants do not have pointers, the
+``internal nodes'' of the computation. Since @-nodes and $\Sigma$-constants do not have pointers, the
 reduction of traversal contains only nodes in $N_\lambda \union
-N_{var}$.
+N_{\sf var}$.
+
+We define the set
+$$\travset(M)^{\upharpoonright r} = \{ t  \upharpoonright r \ | \  t  \in \travset(M) \} \ . $$
+
+
 
 
 \begin{lemma}
-\label{lem:var_followedby_child} Let $M$ be a term in $\beta$-normal
-form and $t$ be a traversal of $\tau(M)$. If
+\label{lem:var_followedby_child} Suppose $M$ is in $\beta$-normal
+form. Let $t \travset(M)$. If
 $\Pstr{ t = u_1 \cdot (m){m} \cdot u_2 \cdot (n-m,30){n} }$
- where $m \in (N_{var} \union N_{\Sigma}) \setminus (N^{\upharpoonright r}_{var} \union N^{\upharpoonright r}_{\Sigma})$
+ where $m \in (N_{\sf var} \union N_{\Sigma}) \setminus (N^{\upharpoonright r}_{var} \union N^{\upharpoonright r}_{\Sigma})$
 then $u_2 = \epsilon$.
 \end{lemma}
 \begin{proof}
@@ -831,14 +839,14 @@ traversal and for the traversal $t = r$. Step case: consider a traversal $t$ and
 suppose that the property (i) is verified for all traversal shorter
 than $t$:
 \begin{itemize}[-]
-\item If $t = t' \cdot n$ with $n \in N_{var} \union N_{\Sigma}$ then:
+\item If $t = t' \cdot n$ with $n \in N_{\sf var} \union N_{\Sigma}$ then:
     \begin{align*}
     \pview{t} \upharpoonright  r
 &= \pview{t' \cdot n} \upharpoonright  r & (\mbox{definition of } t)\\
         &= (\pview{t'} \cdot n) \upharpoonright  r  & (\mbox{P-view computation}) \\
         &= \pview{t'} \upharpoonright  r  \cdot (n \upharpoonright  r)            & (\mbox{def. of filtering $\upharpoonright$}) \\
         &= \pview{t' \upharpoonright  r } \cdot (n \upharpoonright  r)           & (\mbox{induction hypothesis}) \\
-        &= \pview{t' \upharpoonright  r \cdot (n \upharpoonright  r) } & (\mbox{P-view computation, $n \in N_{var} \union N_{\Sigma}$}) \\
+        &= \pview{t' \upharpoonright  r \cdot (n \upharpoonright  r) } & (\mbox{P-view computation, $n \in N_{\sf var} \union N_{\Sigma}$}) \\
         &= \pview{(t' \cdot n ) \upharpoonright  r  }           & (\mbox{def. of filtering $\upharpoonright$}) \\
         &= \pview{t \upharpoonright  r  }
  & (\mbox{definition of } t).
@@ -929,8 +937,8 @@ even-length prefixing. However, for our purpose here, it is more convenient to r
 showing the correspondence between traversals and game semantics.
  For the rest of the section we fix a simply-typed term $\Gamma \vdash M :T$. We write $\sem{\Gamma \vdash M : T}$ for its strategy denotation (in the standard cartesian closed category of games and innocent strategies \cite{abramsky94full, hylandong_pcf}). We use the notation $\prefset(S)$ to denote the prefix-closure of the set $S$.
 
-\subsection{Relationship between computation trees and arenas}
-
+\subsection{Relating computation trees and games}
+Let us first study an example:
 \subsubsection{Example}
 Consider the following term $M \equiv \lambda f z . (\lambda g x . f (f x)) (\lambda y. y) z$ of type $(o \typear o) \typear o \typear o$.
 Its $\eta$-long normal form is $\lambda f z . (\lambda g x . f (f x)) (\lambda y. y) (\lambda .z)$.
@@ -966,7 +974,7 @@ $$
 \def\bow{\quad\psarc{->}(0,\yNull){1.5ex}{90}{270}}
 
 The figure below represents the computation tree (left) and the
-arena (right). The dashed line defines a partial function $\varphi$
+arena (right). The dashed line defines a partial function $\psi$
 from the set of nodes in the computation tree to the set of moves.
 For simplicity, we now omit answers moves when representing arenas.
 $$
@@ -995,23 +1003,22 @@ $$
 $$
 
 Consider the justified sequence of moves $s \in \sem{M}$:
- $$s = \Pstr[0.2cm][5pt]{(q1){q}^1\ (q3-q1,60){q}^3\ (q4-q3,60){q}^4\ (q3b-q1){q}^3\ (q4b-q3b,60){q}^4\ (q2-q1,30){q}^2 }
+ $$s = \Pstr[0.6cm][5pt]{(q1){q}^1\ (q3-q1,60){q}^3\ (q4-q3,60){q}^4\ (q3b-q1){q}^3\ (q4b-q3b,60){q}^4\ (q2-q1,30){q}^2 }
 \in \sem{M}$$
 
 There is a corresponding justified sequence of nodes in the computation tree:
-\vspace{0.5cm}
-$$r = \Pstr{
+$$r = \Pstr[0.8cm]{
         (q1){\lambda f z} \cdot
         (q3-q1,60){f}^{[6]} \cdot
         (q4-q3,60){\lambda^{[7]}} \cdot
         (q3b-q1,60){f}^{[8]} \cdot
         (q4b-q3b,50){\lambda^{[9]}} \cdot
         (q2-q1,50){z} }$$
-such that $s_i = \varphi(r_i)$ for all $i < |s|$.
+such that $s_i = \psi(r_i)$ for all $i < |s|$.
 
 The sequence $r$ is in fact the reduction of the following
-traversal: \vspace*{1cm}
-$$t = \Pstr{ (q1){\lambda f z} \cdot
+traversal:
+$$t = \Pstr[1.1cm]{ (q1){\lambda f z} \cdot
             (n2){@^{[2]}} \cdot (n3-n2,60){\lambda g x^{[3]}} \cdot
             (q3-q1,60){f}^{[6]} \cdot (q4-q3,60){\lambda^{[7]}} \cdot
             (q3b-q1,40){f}^{[8]} \cdot (q4b-q3b,70){\lambda^{[9]}} \cdot
@@ -1026,68 +1033,51 @@ In the next section, we show how to define this mapping in a systematic manner.
 
 \subsubsection{Formal definition}
 
-Let us establish precisely the relationship between arenas of the
-game semantics and the computation trees. Suppose $\Gamma \vdash M : T$
+We now establish formally the relationship between games and computation trees. Suppose $\Gamma \vdash M : T$
 is in $\eta$-long normal form. We suppose that computation tree $\tau(M)$
 is given by a pair $(V,E)$ where $V$ is the set of vertices of
-and $E \subseteq V \times V$ is the parent-child relation. We have $V = N \union L$ where $N$
-is the set of nodes and $L$ is the set of value-leaves.
+and $E \subseteq V \times V$ is the parent-child relation. We have $V = N \union VL$ where $N$
+and $VL$ are the set of nodes and value-leaves respectively.
 
 \emph{Notations:}
-We write $V_\$$ for $N_\$ \union (E(N_\$) \inter L)$ where $\$$ ranges over $\{@, var, \Sigma, fv \}$.
+We write $V_\$$ for $N_\$ \union (E(N_\$) \inter VL)$ where $\$$ ranges over $\{@, {\sf var}, \Sigma, {\sf fv} \}$.
 Let $\mathcal{D}$ be the set of values of the base type $o$. If $n$ is a node in $N$ then the value-leaves attached to the node $n$ are written $v_n$ where $v$ ranges in $\mathcal{D}$.
 Similarly, if $q$ is a question in $\sem{A}$ then the answer moves enabled by $q$ are written $v_q$ where $v$ ranges in $\mathcal{D}$.
 
-\begin{definition}[Mapping from nodes to moves]\rm
-\label{def:phi_psi mapping} Let $q$ be a question move of $\sem{T}$
-and $n \in N_\lambda$ such that $n$ and $q$ are of type
-$(A_1,\ldots,A_p,o)$ for some $p\geq 0$.  Let $\{ q^1, \ldots, q^p \} \union \{ v_q \ |
-\ v \in \mathcal{D} \}$ be the set of moves enabled by $q$ where
-each $q^i$ is of type $A_i$. 
-
+\begin{definition}[Mapping from nodes to moves]\hfill
+\label{def:phi_psi mapping}
 
     \begin{itemize}[-]
-    \item The function $\psi_M^{n,q}$ from $V^{\upharpoonright n}$ to $\sem{T}$ is defined as:
+    \item Let $n$ be a node in $N_\lambda \union N_{\sf var}$ and $q$ be a question move of some game $A$
+such that $n$ and $q$ are of type $(A_1,\ldots,A_p,o)$ for some $p\geq 0$. The function $\psi^{n,q}_A$ from $V^{\upharpoonright n}$ to $\sem{A}$ is defined as:
         \begin{eqnarray*}
-        \psi^{n,q}_M &=& \{ n \mapsto q \} \union  \{ v_n \mapsto v_q \ | \ v \in \mathcal{D} \}\\
+        \psi^{n,q}_A &=& \{ n \mapsto q \} \union  \{ v_n \mapsto v_q \ | \ v \in \mathcal{D} \}\\
          &&\union \left\{
                         \begin{array}{ll}
                           \emptyset, & \hbox{if $p=0$\ ;} \\
-                          \Union_{m \in N | n \vdash_i m} \psi_M^{m, q^i}, & \hbox{if $p\geq1$ and $n\in N_{\lambda}$\ ;} \\
-                          \Union_{i=1..p} \psi_M^{n.i, q^i}, & \hbox{if $p\geq1$ and $n\in N_{var}$\ .}
+                          \Union_{m \in N | n \vdash_i m} \psi^{m, q^i}_A, & \hbox{if $p\geq1$ and $n\in N_{\lambda}$\ ;} \\
+                          \Union_{i=1..p} \psi^{n.i, q^i}_A, & \hbox{if $p\geq1$ and $n\in N_{\sf var}$\ .}
                         \end{array}
                       \right.
         \end{eqnarray*}
+        where $\{ q^1, \ldots, q^p \} \union \{ v_q \ | \ v \in \mathcal{D} \}$ is the set of moves enabled by $q$ in $A$ (each $q^i$ being of type $A_i$).
 
-\item Let $\Gamma(n) \vdash \kappa(n) : T(n)$ be the subterm of $\elnf{M}$ rooted at $n$. The function $\psi_{\kappa(n)}$ is defined as $\psi_{\kappa(n)}^{n,q}$ where $q$ denotes the initial move of
-        $\sem{T(n)}$.\footnote{Arenas involved in the game semantics of simply-typed $\lambda$-calculus are all trees: they have a single initial move.}
+    \item We use the abbreviation $\psi_n$
+    for $\psi^{n,m}_{T(n)} : V^{\upharpoonright n} \rightarrow \sem{T(n)}$
+    where $m$ denotes $\sem{T(n)}$'s initial move.
 
-    \item We define $\mathcal{G}_M$ as the following disjoint union of games:
-    $$\mathcal{G}_M = \sem{\Gamma \rightarrow T} \quad \uplus \quad  \biguplus_{n \in N \inter E\relimg{N_@ \union N_\Sigma} } \sem{T(n)}.$$
-
-    \item The function $\varphi_M$ from $V_\lambda \union V_{var}$ to $\mathcal{G}_M$ is defined as:
-        \begin{equation*}
-                \varphi_M = \left\{
-                              \begin{array}{ll}
-                                \psi_M \union \Union_{n \in N \inter E \relimg{N_@ \union N_\Sigma}} \psi_{\kappa(n)} , & \hbox{if $M$ is closed;} \\
-                                \varphi_{\lambda x_1 \ldots x_n . M}, & \hbox{if $\Gamma = x_1 : X_1, \ldots, x_n : X_n$.}
-                              \end{array}
-                            \right.
-        \end{equation*}
+    \item Similarly we write $\psi_M$ (or just $\psi$ if this does not cause any ambiguity)
+    for $\psi^{r,m}_{\Gamma\rightarrow T}$ where $m$ denote $\sem{\Gamma\rightarrow T}$'s initial move.\footnote{Arenas involved in the game semantics of simply-typed $\lambda$-calculus are all trees: they have a single initial move.}
     \end{itemize}
-When there is no ambiguity we omit the subscript in $\varphi_M$ and $\psi_M$.
 \end{definition}
 
+It can easily be checked that the domain of definition of $\psi_n$ is indeed the set of nodes that are hereditarily enabled by $n$.
 
-
-It can easily be checked that the domain of definition of $\psi_M^{n,q}$ is indeed the set of nodes that are hereditarily enabled by $n$. This in turn implies that $\varphi_M$ is totally defined on $V_\lambda \union V_{var} = V\setminus (V_@ \union V_\Sigma)$ (since a node is either hereditarily justified by the root, by a @-node or by a $\Sigma$-node).
-
-
-Let us detail a bit more the definition of $\psi$:
+Let us detail a little the definition of $\psi_n$:
 \begin{itemize}
-\item If $p=0$ then $n$ is a dummy $\lambda$-node or a ground type variable: $\psi$ maps $n$ to the initial move $q$.
+\item If $p=0$ then $n$ is a dummy $\lambda$-node or a ground type variable: $\psi_n$ maps $n$ to the initial move $q$.
 
-\item  If $p\geq 1$ and $n \in N_{\lambda}$ with $n$ labelled $\lambda \overline{\xi} = \lambda \xi_1 \ldots \xi_p$ then the computation tree and the arena $\sem{T}$ have the following forms (value-leaves and answer moves are not represented for simplicity):
+\item  If $p\geq 1$ and $n \in N_{\lambda}$ with $n$ labelled $\lambda \overline{\xi} = \lambda \xi_1 \ldots \xi_p$ then the sub-computation tree rooted at $n$ and the arena $\sem{T(n)}$ have the following forms (value-leaves and answer moves are not represented for simplicity):
     $$ \tree{ \Rnode{r}\lambda \overline{\xi}  ^{[n]}}
         {
             \tree[levelsep=6ex]{\alpha}
@@ -1095,7 +1085,7 @@ Let us detail a bit more the definition of $\psi$:
             }
         }
     \hspace{3cm}
-    \tree{ \Rnode{q0}q }
+    \tree{ \Rnode{q0}m_n }
         {
             \tree[linestyle=dotted]{q^1}{\TR{} \TR{} }
             \tree[linestyle=dotted]{q^2}{\TR{} \TR{} }
@@ -1111,16 +1101,16 @@ Let us detail a bit more the definition of $\psi$:
     \ncline{->}{q4}{lmd2}
     $$
 
-    For each abstracted variable $\xi_i$ there exists a corresponding question move $q^i$ of the same order in the arena. $\psi_M^{n,q}$ maps each free occurrence of $\xi_i$ in the computation tree to the move $q^i$.
+    For each abstracted variable $\xi_i$ there exists a corresponding question move $q^i$ of the same order in the arena. $\psi_n$ maps each free occurrence of $\xi_i$ in the computation tree to the move $q^i$.
 
-\item If $p\geq 1$ and $n\in N_{var}$ then $n$ is labelled with a variable $x:(A_1,\ldots,A_p,o)$
-with children nodes $\lambda \overline{\eta}_1$, \ldots, $\lambda \overline{\eta}_p$. The computation tree $\tau(M)$ and the arena $\sem{T}$ have the following forms:
+\item If $p\geq 1$ and $n\in N_{\sf var}$ then $n$ is labelled with a variable $x:(A_1,\ldots,A_p,o)$
+with children nodes $\lambda \overline{\eta}_1$, \ldots, $\lambda \overline{\eta}_p$. The computation tree $\tau(M)$ rooted at $n$ and the arena $\sem{T(n)}$ have the following forms:
     $$\tree{\Rnode{r}{x^{[n]}}}
         {   \tree{\TR{\lambda \overline{\eta}_1}}{\vdots} \TR{\ldots}
         \tree{\TR{\lambda \overline{\eta}_p }}{\vdots}
         }
     \hspace{3cm}
-    \tree{ \Rnode{q0}q }
+    \tree{ \Rnode{q0}m_n }
         {
 \tree[linestyle=dotted]{\Rnode{q1}{q^1}}{\TR{} \TR{} }
             \tree[linestyle=dotted]{\Rnode{q2}{q^2}}{\TR{} \TR{} }
@@ -1136,23 +1126,15 @@ with children nodes $\lambda \overline{\eta}_1$, \ldots, $\lambda \overline{\eta
     \ncline{->}{q4}{lmd2}
     $$
 
-    and $\psi_M^{n,q}$ maps each node $\lambda \overline{\eta}_i$ to the question move $q^i$.
+    and $\psi_n$ maps each node $\lambda \overline{\eta}_i$ to the question move $q^i$.
 \end{itemize}
 
-\begin{remark}
-\label{rem:phi_preserves_her_enabling}
-$\varphi_M$ \defname{preserves hereditary enabling}: a node $n$ is hereditarily
- enabled by some node $n'$ in the computation tree $\tau(M)$ if and only if
-the move $\varphi_M(n)$ is hereditarily enabled by $\varphi_M(n')$ in the appropriate game from $\mathcal{G}_M$.
-\end{remark}
-
 \begin{example}
-Take $\lambda x . (\lambda g . g x) (\lambda y . y)$ with $x,y:o$
+Take $M = \lambda x . (\lambda g . g x) (\lambda y . y)$ with $x,y:o$
 and $g:(o,o)$. The diagram below represents the computation tree
 (middle), the arenas $\sem{(o,o), o}$ (left), $\sem{o , o}$ (right),
-$\sem{o\rightarrow o}$ (rightmost) and $\varphi = \psi \union
-\psi_{\lambda g.g x}^{\lambda g, q_{\lambda g}} \union \psi_{\lambda
-y.y}^{\lambda y, q_{\lambda y}}$ (dashed-lines).
+$\sem{o\rightarrow o}$ (rightmost), $\psi_{\lambda x}$,
+$\psi_{\lambda g}$ and $\psi_{\lambda y}$ (dashed-lines).
 $$\psset{levelsep=3.5ex}
 \pstree{\TR[name=root]{\lambda x}}
 {
@@ -1182,78 +1164,50 @@ $$\psset{levelsep=3.5ex}
         }
 }
 \psset{nodesep=1pt,arrows=->,arcangle=-20,arrowsize=2pt 1,linestyle=dashed,linewidth=0.3pt}
-\ncline{->}{root}{A1lx} \mput*{\psi}
+\ncline{->}{root}{A1lx} \mput*{\psi_{\lambda x}}
 \ncarc{->}{lgg1x}{A1x}
-\ncline{->}{lg}{A2lg} \mput*{\psi_{\lambda g.g x}^{\lambda g, q_{\lambda g}}}
+\ncline{->}{lg}{A2lg} \mput*{\psi_{\lambda g}}
 \ncline{->}{lgg}{A2g}
 \ncline{->}{lgg1}{A2g1}
-\ncline{->}{ly}{A3ly} \mput*{\psi_{\lambda y.y}^{\lambda y, q_{\lambda y}}}
+\ncline{->}{ly}{A3ly} \mput*{\psi_{\lambda y}}
 \ncline{->}{lyy}{A3y}
 $$
 \end{example}
 
-The following properties are immediate consequences of the definition:
 \begin{property} \
-\label{proper:phi_conserve_order}
-\begin{itemize}
-\item[(i)] $\varphi$ maps $\lambda$-nodes to O-questions, variable nodes to
+\label{proper:psi_properties}
+\begin{enumerate}[(i)]
+\item $\psi$ maps $\lambda$-nodes to O-questions, variable nodes to
 P-questions, value-leaves of $\lambda$-nodes to P-answers and
 value-leaves of variable nodes to O-answers;
-\item[(ii)] $\varphi$ maps a node of a given order to a move of the same order.
-\end{itemize}
-\end{property}
-We recall that in definition \ref{def:nodeorder}, the
-node-order is defined differently for the root $\lambda$-node and
-other $\lambda$-nodes. This convention was chosen to guarantee that
-property (ii) holds.
-
-
-
-\begin{lemma}
-  
-\end{lemma}
-
-
-\bigskip
-By extension, the function $\varphi$ is also defined on justified
-sequences of nodes: if $t = t_0 t_1 \ldots$ is a justified sequence
-of nodes in $V_\lambda \union V_{var}$ then $\varphi(t)$ is defined
-to be the following sequence of moves:
-$$\varphi(t) = \varphi(t_0)\ \varphi(t_1)\  \varphi(t_2) \ldots$$
-equipped with the pointers of $t$.
-This definition implies that $\varphi : (V_\lambda \union
-V_{var})^* \rightarrow \mathcal{G}^*$ regarded as a function from
-pointer-less sequences of nodes to pointer-less sequences of moves
-is a monoid homomorphism.
-
-\begin{property}
-\label{proper:phi_pview} Let $t$ be a justified sequence of nodes. The following properties hold:
-\begin{itemize}
-\item[(i)] $\varphi(t)$ and $t$ have the same pointers;
-\item[(ii)] the P-view of $\varphi(t)$ and the P-view of $t$ are computed
-identically: the set of indices of elements that must be removed
-from both sequences in order to obtain their P-view is the same;
-\item[(iii)] the O-view of $\varphi(t)$ and the O-view of $t$ are computed identically;
-%\item[(iv)] if $t$ is a justified sequence of nodes in $V_\lambda \union V_{var}$ then $?(\varphi(t)) =
-%\varphi(?(t))$,
-\end{itemize}
-%where $?(\varphi(t))$ denotes the subsequence of $\varphi(t)$ consisting of the unanswered questions
-%and $?(t)$ denotes the subsequence of $t$ consisting of the unmatched nodes (see the
-%definition in section \ref{sec:adding_value_leaves}).
+\item $\psi$ maps a node of a given order to a move of the same order;
+\item Let $s \in \travset(M)^{\filter r}$. The P-view (resp. O-view) of $\psi(s)$ and $s$ are computed
+identically {\it i.e.}~the set of occurrence positions that must be removed
+from each sequences in order to obtain their respective P-view (resp. O-view) is the same for both sequence.
+\end{enumerate}
 \end{property}
 \begin{proof}
-(i): By definition of $\varphi$, $t$ and $\varphi(t)$ have the same
-pointers;
+(i) and (ii) are direct consequences of the definition.
 
-(ii) and (iii): $\varphi$ maps lambda nodes to O-question,
-non-lambda nodes to P-question, value-leaves of lambda nodes to P-answers and
-value-leaves of non-lambda to O-answers. Therefore since $t$ and $\varphi(t)$ have the
+(iii) Because of (i) and since $t$ and $\psi(t)$ have the
 same pointers, the computations of the P-view (resp. O-view) of the
 sequence of moves and the P-view (resp. O-view) of the sequence of
-nodes follow the same steps;
-%
-%(iv) is a consequence of (i).
+nodes follow the same steps.
 \end{proof}
+The fact that we have defined the order of the root node differently from the order of other $\lambda$-nodes
+(Def. \ref{def:nodeorder}) should now make more sense to the reader: this definition permits us to state property (ii).
+\smallskip
+
+By extension, we can define the function $\psi_M$ on $\travset(M)^{\filter r}$, the set of justified
+sequences of nodes that are hereditarily justified by (the only occurrence of) the root $r$:
+\begin{definition}[Mapping sequences of nodes to sequences of moves]
+We define the function $\psi_M : \travset(M)^{\filter r} \rightarrow \sem{\Gamma \rightarrow T}$ as follows.
+If $s = s_0 s_1 \ldots \in \travset(M)^{\filter r}$ then:
+$$\psi_M(s) = \psi_M(s_0)\ \psi_M(s_1)\  \psi_M(s_2) \ldots$$
+where $\psi_M(s)$ is equipped with $s$'s pointers.
+
+Thus the pointer-free version of this function is a monoid homomorphism.
+\end{definition}
 
 
 \subsection{Interaction games}
@@ -1483,7 +1437,7 @@ $s\upharpoonright T'$, only pointers associated to a $m_i$
 belonging to $\mathcal{M}_{T'}$ are preserved.
 
 Note that since $M_T$ is a set of equivalence classes with
-respect to $\sim$, the filtering operator $\filter T'$
+respect to $\sim$, the filtering operator $\_ \filter T'$
 implicitly performs the ``retagging'' of the moves to the
 appropriate components of each game of the interaction game
 $\intersem{T'}$.
@@ -1564,16 +1518,18 @@ interaction strategy:
 \item Tensor product, pairing, promotion, currying:
 \begin{eqnarray*}
 (\Sigma_1 : \intersem{T_1}) \otimes (\Sigma_2 : \intersem{T_2}) : \intersem{T} &=\{ s \in L_T \ | \  &s \filter T_1 \in \Sigma_1 \zand\ s \filter T_2 \in \Sigma_2 \\
-&& \zand\ type(T_1)\stackrel{s}\hookrightarrow type(T) \ \zand\ type(T_2)\stackrel{s}\hookrightarrow type(T) \}
+&& \zand\ type(T_1)\stackrel{s}\hookrightarrow type(T) \\
+&& \zand\ type(T_2)\stackrel{s}\hookrightarrow type(T) \}
 \\ \\
 \langle \Sigma_1 : \intersem{T_1}, \Sigma_2 : \intersem{T_2} \rangle : \intersem{T} &= \{ s \in L_T \ | &
- ( s \filter T_1 \in \Sigma_1 \zand\ s \filter T_2 = \epsilon)
-    \zor ( s \filter T_1 = \epsilon \zand s \filter T_2 \in \Sigma_2) \\
-&& \zand\ type(T_1)\stackrel{s}\hookrightarrow type(T) \ \zand\ type(T_2)\stackrel{s}\hookrightarrow type(T) \}
+   ( (s \filter T_1 \in \Sigma_1 \zand\ s \filter T_2 = \epsilon) \\
+&&  \   \zor ( s \filter T_1 = \epsilon \zand s \filter T_2 \in \Sigma_2)) \\
+&& \zand\ type(T_1)\stackrel{s}\hookrightarrow type(T) \\
+&& \zand\ type(T_2)\stackrel{s}\hookrightarrow type(T) \}
 \\ \\
 (\Sigma' : \intersem{T'})^\dagger : \intersem{T} &= \{ s \in L_T \ | \ &
-\mbox {for all occurrence $m$ in $s$ of an initial $\sem{type(T)}$-move, }\\
-&& (s \filter m) \filter T' \in \Sigma' \\
+\mbox {for all occurrence $m$ in $s$ of an initial  }\\
+&& \mbox{ $\sem{type(T)}$-move, $(s \filter m) \filter T' \in \Sigma'$} \\
 && \zand\ type(T')\stackrel{s}\hookrightarrow type(T) \}
 \\ \\
 \Lambda(\Sigma' : \intersem{T'}) : \intersem{T} &= \{ s \in L_T \ | & s \filter T' \in \Sigma' \ \zand\ type(T')\stackrel{s}\hookrightarrow type(T) \}
@@ -1606,7 +1562,7 @@ move produced by the composition in some component $B_k$ for $k
 \end{itemize}
 \end{definition}
 
-\begin{remark}
+\begin{remark} \hfill
 \label{rem:interstrat}
 \begin{enumerate}[i.]
 \item We observe that for all strategy operator
@@ -1673,23 +1629,69 @@ $\sem{\Gamma \vdash M : A}$ if $M$ is in $\beta$-normal form, otherwise
 it is defined by structural induction on the \emph{$\eta$-long normal form of $M$}:
 \begin{eqnarray*}
 \intersem{\Gamma \vdash \lambda \overline{\xi} . M  : A} &=& \Lambda^{|\overline{\xi}|}(\intersem{\Gamma, \overline{\xi} \vdash M : o })  \\
-%\intersem{x_1 : X_1 \ldots x_l :X_l \vdash x_i : o} &=& \pi_i  \\
-%\intersem{\Gamma \vdash a :o } &=& \sem{\Gamma \vdash a : o}  \\
-\intersem{y_1 : Y_1 \ldots y_i : A_0 \ldots y_l : Y_l \vdash y_i N_1 \ldots N_p :o} &=& \langle \pi_i, \intersem{\Gamma \vdash N_1 : A_1}, \ldots, \intersem{\Gamma \vdash N_p : A_p}  \rangle \fatsemi ^{\{1..p\}} ev^p \\
+\intersem{\Gamma  \vdash x_i N_1 \ldots N_p :o} &=& \langle \pi_i, \intersem{\Gamma \vdash N_1 : A_1}, \ldots, \intersem{\Gamma \vdash N_p : A_p}  \rangle \fatsemi ^{\{1..p\}} ev^p \\
 \intersem{\Gamma \vdash f N_1 \ldots N_p : o} &=& \langle \intersem{\Gamma \vdash N_1 : A_1}, \ldots, \intersem{\Gamma \vdash N_p : A_p} \rangle^\dagger\  \|\ \sem{f} \\
 \intersem{\Gamma \vdash N_0 \ldots N_p : o} &=& \langle \intersem{\Gamma \vdash N_0 : A_0}, \ldots, \intersem{\Gamma \vdash N_p : A_p}  \rangle^\dagger\ \|\ ev^p
 \end{eqnarray*}
-where
-%$a:o$, $f : A_0$ are
-$f : A_0$ is a
- $\Sigma$-constants, $p\geq 1$, $A_0 =
-(A_1,\ldots,A_p,o)$ and $ev^p$ denotes the evaluation strategy with
-$p$ parameters.
-
-We write $\intersem{\Gamma \rightarrow A}_M$ to denote the
-interaction arena of the revealed strategy $\intersem{\Gamma \vdash
-M : A}$.
+where $\Gamma = x_1 : X_1 \ldots x_l : X_l$, $f : A_0$ is a $\Sigma$-constants, $p\geq 1$, $A_0 =
+(A_1,\ldots,A_p,o)$, $ev^p$ denotes the evaluation strategy with
+$p$ parameters and $X_i = A_0$ in the second equation.
 \end{definition}
+
+Figure \ref{fig:interaction_strategy_denotations} contains tree representations of the interaction games of the revealed strategy $\intersem{\Gamma \vdash M : A}$ for the application cases. These tree tell us all the information that we need about the strategy involved in $\intersem{M}$. For instance the revealed strategy $\Sigma$ is defined on the interaction arena $\intersem{T^{00}}$ whose root is $!A^0 \multimap B^0$; the strategy $ev$ is defined on the interaction arena $\intersem{T^1}$ with a single arena-node $!B^1 \multimap C^1$; thus plays of $ev$ do not contain uncovered moves.
+
+
+    \begin{figure}[htbp]
+        $$
+        \tree[levelsep=6ex,thistreesep=3cm]{\TR{\intersem{N_0 N_1 \ldots N_p :o}:T [!A\multimap C]}}
+                {   \tree[levelsep=6ex]{\TR{\Sigma^\dagger:T^0[!A^0\multimap !B_0^0\otimes \ldots \otimes !B_p^0 ]}}
+                        {
+                            \tree[levelsep=6ex,thistreesep=3cm]{\TR{\Sigma:T^{00}[!A^{00}\multimap B_0^{00}\times \ldots \times B_p^{00}]}}
+                            {
+                                \tree[levelsep=6ex]{\TR{\intersem{N_0}:T^{000}[!A^{000}\multimap B_0]}}{\Tfan[fansize=10ex]}
+                                \TR{\ldots}
+                                \tree[levelsep=6ex]{\TR{\intersem{N_p}:T^{00p}[!A^{00p}\multimap B_p]}}{\Tfan[fansize=10ex]}
+                            }
+                        }
+                    \TR{ ev:T^1[!B_0^1 \otimes \ldots \otimes !B_p^1 \multimap C] }
+                }
+       $$
+       \begin{center}
+       \emph{Tree-representation of the revealed strategy $\intersem{\Gamma \vdash N_0 N_1 \ldots N_p :o}$.}
+       \end{center}
+
+        $$
+        \tree[levelsep=6ex,thistreesep=3cm]{\TR{\intersem{x_i N_1 \ldots N_p :o}:T [!A\multimap C]}}
+                {   \tree[levelsep=6ex]{\TR{\Sigma^\dagger:T^0[!A^0\multimap !B_0^0\otimes \ldots \otimes !B_p^0 ]}}
+                        {
+                            \tree[levelsep=6ex,thistreesep=3cm]{\TR{\Sigma:T^{00}[!A^{00}\multimap B_0^{00}\times \ldots \times B_p^{00}]}}
+                            {
+                                \TR{\pi_i:T^{000}[!A^{000}\multimap B_0]}
+                                \tree[levelsep=6ex]{\TR{\intersem{N_1}:T^{001}[!A^{001}\multimap B_1]}}{\Tfan[fansize=10ex]}
+                                \TR{\ldots}
+                                \tree[levelsep=6ex]{\TR{\intersem{N_p}:T^{00p}[!A^{00p}\multimap B_p]}}{\Tfan[fansize=10ex]}
+                            }
+                        }
+                    \TR{ ev:T^1[!B_0^1 \otimes \ldots \otimes !B_p^1 \multimap C] }
+                }
+        $$
+       \begin{center}\emph{Tree-representation of the revealed strategy $\intersem{\overline{x}:\overline{X}\vdash x_i N_1 \ldots N_p :o}$}
+       \end{center}
+    \bigskip
+    {\small
+     Node labels are of the form $\Pi : T' [A]$ where $\Pi$ is a strategy, $T'$ is the corresponding interaction game and $A$ is the standard game lying at the root of the interaction game $T$. The games $A$, $B$ and $C$ are defined as follows:
+    \begin{eqnarray*}
+        A &=& \Gamma = X_1 \times \ldots \times X_n\\
+        B &=& \underbrace{((B_1' \times \ldots \times B_p') \rightarrow o')}_{B_0} \times B_1 \times \ldots \times B_p\\
+        C &=& o \ .
+    \end{eqnarray*}
+    Games are annotated with string  $s \in \{ 0..p \}^*$ in the exponent to indicate the path from the root to the corresponding node in the tree (each number in $s$ indicates which direction to take at the corresponding branch point).
+   }
+        \smallskip
+       \caption{Tree-representation of the revealed strategy in the application case.}
+      \label{fig:interaction_strategy_denotations}
+    \end{figure}
+
 
 \begin{remark}
 When computing an interaction strategy of the form
@@ -1746,7 +1748,7 @@ isomorphic to the set of uncovered plays of the strategy denotation
 \cite{OngLics2006}), and that the set of traversal reductions is
 isomorphic to the strategy denotation.
 
-\subsubsection{Removing @-nodes from traversals}
+\subsubsection{@-free traversals}
 
 When defining computation trees, it was necessary to introduce
 application nodes (labelled @) in order to connect the operator and
@@ -1760,7 +1762,7 @@ not play any role in the computation of the term. In fact it is
 necessary to filter them out if we want to establish the
 correspondence with the interaction game semantics.
 
-\begin{definition}[Filtering @-nodes in traversals]
+\begin{definition}[@-free traversal]
 \label{dfn:appnode_filter}
 Let $t$ be a traversal of $\tau(M)$.
 We write $t-@$ for the sequence of nodes-with-pointers obtained by
@@ -1802,34 +1804,75 @@ Justified sequences of nodes of the form $t-@$ for some traversal $t$ are not, s
 and since any $\lambda$-node justified by @ becomes justified by @'s parent which is also a $\lambda$-node. However we will treat them just as justified sequence.
 \end{remark}
 
-\begin{lemma} \hfill
-\label{lem:minus_at_plus_at}
-\begin{align*}
-\forall t \in \travset(M), \quad (t-@)+@ = \left\{
+\begin{lemma} \label{lem:minus_at_plus_at}
+$$\forall t \in \travset(M), \quad (t-@)+@ = \left\{
             \begin{array}{ll}
-              t, & \hbox{if $t^\omega \neq @$;} \\
-              \ip\ t, & \hbox{if $t^\omega = @$.}
+              t, & \hbox{if $t^\omega \neq @$\ ;} \\
+              \ip\ t, & \hbox{if $t^\omega = @$\ .}
             \end{array}
           \right.
-\end{align*}
+$$
 \end{lemma}
 \proof
-It follows directly from the definition of the operation -@ and +@.
+The result follows immediately from the definition of the operation -@ and +@.
 \qed
 \smallskip
 
-Let $r$ denote the root of $\tau(M)$. We introduce the following notations:
-\begin{eqnarray*}
-\travset(M)^{-@} &=& \{ t - @ \ | \  t \in \travset(M) \} \\
-\travset(M)^{\upharpoonright r} &=& \{ t  \upharpoonright r \ | \  t  \in \travset(M) \} \ .
-\end{eqnarray*}
+We introduce the following notation:
+$$
+\travset(M)^{-@} = \{ t - @ \ | \  t \in \travset(M) \}
+$$
 
 \begin{remark}
-If $M$ is $\beta$-normal then $\tau$ does not contain any
+If $M$ is $\beta$-normal then $\tau(M)$ does not contain any
 @-node therefore all nodes are hereditarily justified by $r$ and we
 have $\travset(M)^{-@} = \travset(M) = \travset(M)^{\upharpoonright
 r }$.
 \end{remark}
+
+\paragraph{Mapping @-free traversals to interaction plays}
+\hfill
+
+\notetoself{
+\begin{definition}[Mapping from nodes to moves]\hfill
+    \label{def:theta mapping}
+    Let $T$ be the interaction game of the interaction strategy $\intersem{M}$ and
+    $M_T$ be the set of equivalence class of moves from $\mathcal{M}$.
+
+
+    For $n \in N_{\sf prime}$, let $\Gamma(n) \vdash \kappa(n) : T(n)$ denote the subterm of $\elnf{M}$ rooted at $n$.
+    We define the disjoint union of games:
+    $$\mathcal{G}_M = \sem{\Gamma\rightarrow T} \quad \uplus \quad  \biguplus_{n \in N_{\sf prime} } \sem{T(n)}.$$
+    $$\mathcal{G}_M = \sem{\Gamma\rightarrow T} \quad \uplus \quad  \biguplus_{n \in N_{\sf spawn} } \sem{T(n)}.$$
+
+    We define the function $\varphi_M: V_\lambda \union V_{\sf var} \rightarrow M_T$
+    as:
+    \begin{equation*}
+        \varphi_M = \psi_{M} \quad \union \Union_{n \in N_{\sf prime}} \psi_{n}
+    \end{equation*}
+    where $q_0$ denotes $\sem{\Gamma\rightarrow T}$'s initial move.
+
+    We omit the subscript in $\varphi_M$ if it does not cause any ambiguity.
+\end{definition}
+
+
+$\varphi_M$ is indeed totally defined on $V_\lambda \union V_{\sf var} = V\setminus (V_@ \union V_\Sigma)$ (since a node is either hereditarily justified by the root, by a @-node or by a $\Sigma$-node).
+
+\begin{remark}
+\label{rem:phi_preserves_her_enabling}
+$\varphi_M$ \defname{preserves hereditary enabling}: a node $n$ is hereditarily
+ enabled by some node $n' \in N \inter E \relimg{N_@ \union N_\Sigma}$ in $\tau(M)$ if and only if
+ $\varphi(n)$ and $\varphi(n')$  are both played in the same game $A \in \mathcal{G}$ and
+the move $\varphi_M(n)$ is hereditarily enabled by $\varphi_M(n')$ in $A$.
+\end{remark}
+
+%If $t$ is a justified sequence of nodes in $V_\lambda \union V_{\sf var}$ then $?(\varphi(t)) =
+%\varphi(?(t))$.
+%where $?(\varphi(t))$ denotes the subsequence of $\varphi(t)$ consisting of the unanswered questions
+%and $?(t)$ denotes the subsequence of $t$ consisting of the unmatched nodes (see the
+%definition in section \ref{sec:adding_value_leaves}).
+
+}
 
 As we observed in a previous remark, sequences from $\travset(M)^{-@}$ are not, strictly speaking, proper justified sequences. Consequently the filtering operators introduced up to now are undefined on $\travset(M)^{-@}$. We now introduce a new filtering operation on $\travset(M)^{-@}$:
 \begin{definition}
@@ -1851,12 +1894,12 @@ where $n$ denotes the occurrence of $\tau(N)$'s root in $t$ whose image
 by $\varphi_M$ is the occurrence $m$.
 
 Consequently:
-$$(iii) \quad  \varphi_M(\travset^{-@}(M)) \filter \sem{\Gamma \rightarrow T} = \varphi_M(\travset^{\filter r}(M))\ .$$
+$$(iii) \quad  \varphi_M(\travset^{-@}(M)) \filter \sem{\Gamma \rightarrow T} = \psi_M(\travset^{\filter r}(M))\ .$$
 \end{lemma}
 \proof Let $t$ be a traversal of $M$:
 $$\begin{array}{lrclr}
 \mbox{i.}& \varphi( (t-@) \subtermfilter N ) &=& \varphi_M((t-@) \hefilter n ) & \mbox{(Def. subterm filtering)}\\
-          &&=& \varphi_M(t-@) \filter \sem{\Delta \rightarrow A}  & \parbox[t]{5.5cm}{(By remark \ref{rem:phi_preserves_her_enabling}, $\varphi_M$ preserves hered. enabling,  and  moves in $\sem{\Delta \rightarrow T}$ are all hered. enabled by the initial move $m = \varphi_M(n)$).} \\
+          &&=& \varphi_M(t-@) \filter \sem{\Delta \rightarrow A}  & \parbox[t]{5.5cm}{(By remark \ref{rem:phi_preserves_her_enabling}, $\varphi_M$ preserves hereditary enabling,  and  moves in $\sem{\Delta \rightarrow T}$ are all hereditarily enabled by the initial move $m = \varphi_M(n)$).} \\
 \\
 \mbox{ii.}& \varphi_M((t-@)\subtermfilter N) \hjfilter m
   &=& \varphi_M(t\hefilter n) \hjfilter m & \mbox{(Def. subterm filtering)}\\
@@ -1870,20 +1913,19 @@ $$\begin{array}{lrclr}
            &&=& \varphi( t \hefilter r ) & \mbox{(@-node are not justified).} \qed
 \end{array}$$
 
-The function $\varphi$ regarded as a function from the set of vertices $V_\lambda \union V_{var}$ of the computation tree to moves in arenas is not injective.
+The function $\varphi$ regarded as a function from the set of vertices $V_\lambda \union V_{\sf var}$ of the computation tree to moves in arenas is not injective.
 For instance the two occurrences of $x$ in the computation tree of the term $\lambda f x. f x x$ are mapped to the same question. However
 the function $\varphi$ defined on the set of traversals to interaction plays of game semantics is injective:
-\begin{lemma}[$\varphi$ is injective]
+\begin{lemma}[$\psi$ and $\varphi$ are injective]
 \label{lem:varphiinjective}
-$\varphi$ regarded as a function defined on the set of
-sequences of nodes is injective in the sense that for any two traversals $t_1$ and $t_2$:
+For any two traversals $t_1$ and $t_2$:
 \begin{itemize}
 \item[(i)] If $\varphi (t_1 - @ ) = \varphi (t_2 - @ )$ then $t_1-@ =t_2 -@$\ ;
-\item[(ii)] if $\varphi (t_1 \upharpoonright r ) = \varphi (t_2 \upharpoonright r )$ then $t_1\upharpoonright r = t_2\upharpoonright r$\ .
+\item[(ii)] if $\psi (t_1 \upharpoonright r ) = \psi (t_2 \upharpoonright r )$ then $t_1\upharpoonright r = t_2\upharpoonright r$\ .
 \end{itemize}
 \end{lemma}
 \begin{proof}
-For any node $n$ of a traversal $t$ we write $ptr(n)$ to denote the distance between $n$ and its justifier node in $t$. If $n$ has not link then we set $ptr(n)=0$. We also use the same notation for sequences of moves.
+For any node $n$ of a traversal $t$ let us write $ptr(n)$ to denote the distance between $n$ and its justifier node in $t$. If $n$ has not link then we set $ptr(n)=0$. We also use the same notation for sequences of moves.
 
 \begin{lemma}[Preleminary lemma]
 \label{lem:varphiinjective:prelem}
@@ -1898,12 +1940,12 @@ For any node $n$ of a traversal $t$ we write $ptr(n)$ to denote the distance bet
 \end{lemma}
 \begin{proof}
 Let $t \cdot n_1, t \cdot n_2 \in \travset$.
-First we remark that the traversal rules have a weak form of determinism which ensures that $n_1$ and $n_2$ belong to the same category of node i.e.\ they must be both in $N_{var}$, $N_@$ or $N_\lambda$.
+First we remark that the traversal rules have a weak form of determinism which ensures that $n_1$ and $n_2$ belong to the same category of node i.e.\ they must be both in $N_{\sf var}$, $N_@$ or $N_\lambda$.
 
 Suppose that $n_1, n_2 \in N_@$ then $t \cdot n_1$ and $t \cdot n_2$ were formed using the (App) rule. Since this rule is deterministic we must have $n_1=n_2$ which violates the second hypothesis.
 
 
-Suppose that $n_1,n_2\in N_{var}$. The traversals $t \cdot n_1$ and $t \cdot n_2$ must have been formed using either rule (Lam) or (App). But these two rules are deterministic and their domains of definition are disjoint. Hence again the second hypothesis is violated.
+Suppose that $n_1,n_2\in N_{\sf var}$. The traversals $t \cdot n_1$ and $t \cdot n_2$ must have been formed using either rule (Lam) or (App). But these two rules are deterministic and their domains of definition are disjoint. Hence again the second hypothesis is violated.
 
 Suppose that $n_1,n_2\in N_\lambda$ then
 the traversals $t \cdot n_1$ and $t \cdot n_2$ must have been formed using either rule (Root), (App), (Var) or (InputVar). Since all these rules have disjoint domains of definition, the same rule must have been use to form $t \cdot n_1$ and $t \cdot n_2$. Supposed that one of the rules (Root), (App) and (Var) has been used then since they are all deterministic we have $n_1=n_2$ which violates the second hypothesis. Consequently, the rule (InputVar) must have been used and therefore $n_1,n_2 \in N_\lambda^{\upharpoonright r}$. By definition of (InputVar), in order to have $n_1\neq n_2$ and $\varphi(n_1) = \varphi(n_2)$, the parent node of the last node in $t$ must occurs at more than one position in $\oview{t}$ and $n_1,n_2$ correspond to the child node of two different occurrences of that parent node in $\oview{t}$. But then the links associated to $n_1$ and $n_2$ will point to their respective occurrence of that parent node in $\oview{t}$ hence $ptr(n_1) \neq ptr(n_2)$.
@@ -1924,10 +1966,10 @@ If $n_1 \neq n_2$ then by Lemma \ref{lem:varphiinjective:prelem} we have $n_1,n_
 we have $t_1 = t' \cdot n_1 \cdot u_1$, $t_2 = t' \cdot n_2 \cdot u_2$ and either $n_1\neq n_2$ or $ptr(n_1) \neq ptr(n_2)$.
 
 If $n_1 = n_2$ then $ptr(n_1) \neq ptr(n_2)$. An   analysis of the traversal rules shows that the rule (InputVar) is the only rule which can visit the same node with two different pointers. Hence $n_1,n_2 \in N_\lambda^{\upharpoonright r}$.
-Therefore $\varphi( (t'\cdot n_1) \upharpoonright r ) = \varphi( (t'\upharpoonright r) \cdot n_1 )  \neq \varphi( (t'\upharpoonright r) \cdot n_2 )$. Hence    $\varphi( t_1\upharpoonright r ) \neq \varphi( t_2\upharpoonright r )$.
+Therefore $\psi( (t'\cdot n_1) \upharpoonright r ) = \psi( (t'\upharpoonright r) \cdot n_1 )  \neq \psi( (t'\upharpoonright r) \cdot n_2 )$. Hence    $\psi( t_1\upharpoonright r ) \neq \psi( t_2\upharpoonright r )$.
 
 If $n_1 \neq n_2$ then we can use Lemma \ref{lem:varphiinjective:prelem}
-to obtain $\varphi( t_1\upharpoonright r ) \neq \varphi( t_2\upharpoonright r )$.
+to obtain $\psi( t_1\upharpoonright r ) \neq \psi( t_2\upharpoonright r )$.
 \end{proof}
 
 \begin{corollary} \
@@ -1935,8 +1977,8 @@ to obtain $\varphi( t_1\upharpoonright r ) \neq \varphi( t_2\upharpoonright r )$
 \begin{itemize}
 \item[(i)] $\varphi$ defines a bijection from $\travset(M)^{-@}$
 to $\varphi(\travset(M)^{-@})$\ ;
-\item[(ii)] $\varphi$ defines a bijection from $\travset(M)^{\upharpoonright r}$ to
-$\varphi(\travset(M)^{\upharpoonright r})$\ .
+\item[(ii)] $\psi$ defines a bijection from $\travset(M)^{\upharpoonright r}$ to
+$\psi(\travset(M)^{\upharpoonright r})$\ .
 \end{itemize}
 \end{corollary}
 
@@ -1970,12 +2012,12 @@ computation tree:
 \begin{theorem}[The Correspondence Theorem]
 \label{thm:correspondence}
  For any simply-typed term $\Gamma \vdash M :T$,
-$\varphi_M$ defines a bijection from $\travset(M)^{\upharpoonright
+the function $\varphi_M$ defines a bijection from $\travset(M)^{\upharpoonright
 r}$ to $\sem{\Gamma \vdash M : T}$ and a bijection from
 $\travset(M)^{-@}$ to $\intersem{\Gamma \vdash M : T}$:
 \begin{eqnarray*}
  \varphi_M  &:& \travset(\Gamma \vdash M : T)^{-@} \stackrel{\cong}{\longrightarrow} \intersem{\Gamma \vdash M :T} \\
- \varphi_M  &:& \travset(\Gamma \vdash M : T)^{\upharpoonright r} \stackrel{\cong}{\longrightarrow} \sem{\Gamma \vdash M :T} \ .
+ \psi_M  &:& \travset(\Gamma \vdash M : T)^{\upharpoonright r} \stackrel{\cong}{\longrightarrow} \sem{\Gamma \vdash M :T} \ .
 \end{eqnarray*}
 
 \end{theorem}
@@ -1996,14 +2038,14 @@ $\travset(M)^{-@}$ to $\intersem{\Gamma \vdash M : T}$:
     say:
     \begin{eqnarray*}
     \varphi_M(\travset(M)^{-@}) &=& \intersem{\Gamma \vdash M : T} \\
-    \varphi_M(\travset(M)^{\upharpoonright r}) &=& \sem{\Gamma \vdash M :
+    \psi_M(\travset(M)^{\upharpoonright r}) &=& \sem{\Gamma \vdash M :
     T}
     \end{eqnarray*}
     The first equation implies the second one, indeed:
     \begin{align*}
     \sem{\Gamma \vdash M : T} &= \intersem{\Gamma \vdash M : T} \upharpoonright \sem{\Gamma \rightarrow T} & \mbox{(eq. \ref{eqn:int_std_gamsem})} \\
             &= \varphi_M(\travset^{-@}(M)) \upharpoonright \sem{\Gamma \rightarrow T} & \mbox{(by (i))}\\
-            &= \varphi_M(\travset^{\upharpoonright r}(M)) & \mbox{(lemma \ref{lem:varphi_filter})}
+            &= \psi_M(\travset^{\upharpoonright r}(M)) & \mbox{(lemma \ref{lem:varphi_filter})}
     \end{align*}
     therefore we just need to prove the first equation.
 \end{remark}
@@ -2116,40 +2158,22 @@ Hence we can conclude using the induction hypothesis.
         }}
     $$
     where $r_j$ denote the root of $\tau(N_j)$ for $j\in \{0..p\}$.
-    
+
     We have:
     $$
     \intersem{\Gamma \vdash M : o}
             =  \underbrace{\langle \intersem{\Gamma \vdash N_0 : B_0}, \ldots \intersem{\Gamma \vdash N_p : B_p} \rangle}_{\Sigma} \,^\dagger\ \| \ ev
     $$
 
-    The diagram below gives the tree-representation of $\intersem{M}$ and fixes names for the different games involved in this interaction strategy. Node labels are of the form $\Pi : T' [A]$ where $\Pi$ is a strategy, $T'$ is the corresponding interaction game and $A$ is the standard game lying at the root of the interaction game $T$.
-    $$
-    \tree[levelsep=6ex,thistreesep=3cm]{\TR{\intersem{M}:T [!A\multimap C]}}
-            {   \tree[levelsep=6ex]{\TR{\Sigma^\dagger:T^0[!A^0\multimap !B_0^0\otimes \ldots \otimes !B_p^0 ]}}
-                    {
-                        \tree[levelsep=6ex,thistreesep=3cm]{\TR{\Sigma:T^{00}[!A^{00}\multimap B_0^{00}\times \ldots \times B_p^{00}]}}
-                        {
-                            \tree[levelsep=6ex]{\TR{\intersem{N_0}:T^{000}[!A^{000}\multimap B_0]}}{\Tfan[fansize=10ex]}
-                            \TR{\ldots}
-                            \tree[levelsep=6ex]{\TR{\intersem{N_p}:T^{00p}[!A^{00p}\multimap B_p]}}{\Tfan[fansize=10ex]}
-                        }
-                    }
-                \TR{ ev:T^1[!B_0^1 \otimes \ldots \otimes !B_p^1] }
-            }
-    $$
-    where the games $A$, $B$ and $C$ are defined as follows:
+    We define the games $A$, $B$ and $C$ are defined as follows:
     \begin{eqnarray*}
         A &=& \Gamma = X_1 \times \ldots \times X_n\\
         B &=& \underbrace{((B_1' \times \ldots \times B_p') \rightarrow o')}_{B_0} \times B_1 \times \ldots \times B_p\\
         C &=& o \ .
     \end{eqnarray*}
-Games are annotated with string  $s \in \{ 0..p \}^*$ in the exponent to indicate the path from the root to the corresponding node in the tree (each number in $s$ indicates which direction to take at the corresponding branch point).
 
-The tree-representation tells us all the information that we need about the strategy involved in $\intersem{M}$. For instance the revealed strategy $\Sigma$ is defined on the interaction arena
-$\intersem{T^{00}}$ whose root is $!A^0 \multimap B^0$;
-the strategy $ev$ is defined on the interaction arena $\intersem{T^1}$ with a single arena-node $!B^1 \multimap C^1$; thus plays of $ev$ do not contain uncovered moves.
-
+    Figure \ref{fig:interaction_strategy_denotations} shows
+    a tree-representation of $\intersem{M}$ which fixes the names of the different games involved in the interaction strategy.
 
 %    Since $\varphi_M = \psi_M \union \varphi_{N_0} \union
 %    \varphi_{N_1}$ the induction hypothesis gives us:
@@ -2395,27 +2419,9 @@ Suppose that $m \in T^{000}$ and $m^1 \in T^{001}$.
         }}
     $$
     The interaction strategy
-    $$
-    \intersem{\Gamma \vdash M : o}
-            =  \underbrace{\langle \pi_i, \intersem{\Gamma \vdash N_1 : B_1}, \ldots \intersem{\Gamma \vdash N_p : B_p} \rangle}_{\Sigma} \,^\dagger\ ;^{\{1..p\}} \ ev \ .
-    $$
-    is represented on the following tree:
-    $$
-    \tree[levelsep=6ex,thistreesep=3cm]{\TR{\intersem{M}:T [!A\multimap C]}}
-            {   \tree[levelsep=6ex]{\TR{\Sigma^\dagger:T^0[!A^0\multimap !B_0^0\otimes \ldots \otimes !B_p^0 ]}}
-                    {
-                        \tree[levelsep=6ex,thistreesep=3cm]{\TR{\Sigma:T^{00}[!A^{00}\multimap B_0^{00}\times \ldots \times B_p^{00}]}}
-                        {
-                            \TR{\pi_i:T^{000}[!A^{000}\multimap B_0]}
-                            \tree[levelsep=6ex]{\TR{\intersem{N_1}:T^{001}[!A^{001}\multimap B_1]}}{\Tfan[fansize=10ex]}
-                            \TR{\ldots}
-                            \tree[levelsep=6ex]{\TR{\intersem{N_p}:T^{00p}[!A^{00p}\multimap B_p]}}{\Tfan[fansize=10ex]}
-                        }
-                    }
-                \TR{ ev:T^1[!B_0^1 \otimes \ldots \otimes !B_p^1] }
-            }
-    $$
-
+    $\intersem{\Gamma \vdash M : o}
+            =  \underbrace{\langle \pi_i, \intersem{\Gamma \vdash N_1 : B_1}, \ldots \intersem{\Gamma \vdash N_p : B_p} \rangle}_{\Sigma} \,^\dagger\ ;^{\{1..p\}} \ ev$
+    is represented on Figure \ref{fig:interaction_strategy_denotations}.
 
     The proof is identical to the previous case except that in the $\subseteq$ part of the proof:
     \begin{itemize}

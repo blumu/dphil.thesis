@@ -1,6 +1,6 @@
 % Copyright 2007 by William Blum (http://william.famille-blum.org/software/latex/index.html)
 \NeedsTeXFormat{LaTeX2e}
-\ProvidesClass{pstring}[2007/09/24 Package for representing pointer-strings]
+\ProvidesClass{pstring}[2007/10/12 Package for representing pointer-strings]
 
 \newif\ifRequestPSengine
 \newif\ifRequestPGFengine
@@ -81,6 +81,11 @@
 \gdef\pstrSetArrowAngle#1{\gdef\pstr@DefaultArrowAngle{#1}}
 \gdef\pstrSetArrowLabel#1{\gdef\pstr@DefaultArrowLabel{#1}}
 \gdef\pstrSetArrowLineWidth#1{\gdef\pstr@ArrowLineWidth{#1}}
+\gdef\pstrSetArrowLineStyle#1{\gdef\pstr@DefaultArrowLineStyle{#1}}
+\gdef\pstr@linestyledashed{dashed}
+\gdef\pstr@linestyledotted{dotted}
+\gdef\pstr@linestylesolid{solid}
+\gdef\pstr@linestylenone{none}
 
 
 % Default styles and arrow parameters
@@ -89,7 +94,7 @@
 \pstrSetArrowColor{orange}
 \pstrSetArrowAngle{45}
 \pstrSetArrowLineWidth{0.3pt}
-
+\pstrSetArrowLineStyle{\pstr@linestylesolid} % none, solid, dashed or dotted
 
 \def\@nil{}
 
@@ -216,9 +221,9 @@ curveto
 \newcommand{\linkNoStar}[2][]{
 \edef\options{#1}
 \ifx\options\@empty
-\def\opt{[linecolor=\pstr@DefaultArrowColor,linewidth=\pstr@ArrowLineWidth,offset=-2pt,nodesep=0pt,arcangleA=-#2, arcangleB=-#2]}
+\def\opt{[linecolor=\pstr@DefaultArrowColor,linestyle=\pstr@DefaultArrowLineStyle,linewidth=\pstr@ArrowLineWidth,offset=-2pt,nodesep=0pt,arcangleA=-#2, arcangleB=-#2]}
 \else
-\def\opt{[linecolor=\pstr@DefaultArrowColor,linewidth=\pstr@ArrowLineWidth,offset=-2pt,nodesep=0pt,arcangleA=-#2, arcangleB=-#2,#1]}
+\def\opt{[linecolor=\pstr@DefaultArrowColor,linestyle=\pstr@DefaultArrowLineStyle,linewidth=\pstr@ArrowLineWidth,offset=-2pt,nodesep=0pt,arcangleA=-#2, arcangleB=-#2,#1]}
 \fi
 \expandafter\ncarc\opt{->}
 }
@@ -227,9 +232,9 @@ curveto
 \newcommand{\linkStar}[2][]{
 \edef\options{#1}
 \ifx\options\@empty
-\def\opt{[linecolor=\pstr@DefaultArrowColor,linewidth=\pstr@ArrowLineWidth,offsetA=0pt,offsetB=2pt,nodesep=1pt,arcangleA=#2, arcangleB=#2]}
+\def\opt{[linecolor=\pstr@DefaultArrowColor,linestyle=\pstr@DefaultArrowLineStyle,linewidth=\pstr@ArrowLineWidth,offsetA=0pt,offsetB=2pt,nodesep=1pt,arcangleA=#2, arcangleB=#2]}
 \else
-\def\opt{[linecolor=\pstr@DefaultArrowColor,linewidth=\pstr@ArrowLineWidth,offsetA=0pt,offsetB=2pt,nodesep=1pt,arcangleA=#2, arcangleB=#2, #1]}
+\def\opt{[linecolor=\pstr@DefaultArrowColor,linestyle=\pstr@DefaultArrowLineStyle,linewidth=\pstr@ArrowLineWidth,offsetA=0pt,offsetB=2pt,nodesep=1pt,arcangleA=#2, arcangleB=#2, #1]}
 \fi
 \expandafter\ncHarc\opt{->}
 }
@@ -288,8 +293,9 @@ curveto
 %    #3 angle
 %    #4 label
 %    #5 arc color
-\def\pstr@PS@drawArrow#1#2#3#4#5{%
-  \link*[linecolor=#5,nodesep=\pstr@arcoptions]{#3}{#1}{#2} \lnklabel{#4}%
+%    #6 line style
+\def\pstr@PS@drawArrow#1#2#3#4#5#6{%
+  \link*[linecolor=#5,linestyle=#6,nodesep=\pstr@arcoptions]{#3}{#1}{#2} \lnklabel{#4}%
 }
 
 % Create the node and store the commands for the creation of the link in the list of tokens tok0
@@ -304,7 +310,7 @@ curveto
 %  #7 node content
 \gdef\pstr@PS@createNodeAndArrow#1#2#3#4#5#6#7{%
     \pstr@drawNode{#1}{#2}{#7}%
-    \pstr@drawArrow{#2}{#3}{#4}{#5}{#6}%
+    \pstr@drawArrow{#2}{#3}{#4}{#5}{#6}{\pstr@DefaultArrowLineStyle}%
 }
 
 
@@ -312,7 +318,7 @@ curveto
 %%Second way of creating a pointing string: user command \pstr
 %  \pstr[raiseamount][nodesep]{ sequencespecification }
 % example:
-%  \pstr[0.4cm][1pt]{ \lnk(b) this \lnk(a-b,45) that }
+%  \pstr[0.4cm][1pt]{ \nd(b) this \nd(a-b,45) that }
 
 \gdef\pstr@PS{\@ifnextchar[{\pstr@PS@i}{\pstr@PS@ii[0cm][1pt]}}
 % pstr with one optional parameter
@@ -374,8 +380,9 @@ curveto
 %    #2 target node name
 %    #3 angle
 %    #4 label
-%    #5 link color
-\def\pstr@PGF@drawArrow#1#2#3#4#5{%
+%    #5 line color
+%    #6 line style
+\def\pstr@PGF@drawArrow#1#2#3#4#5#6{%
     \def\angleB{#3}%
     \count255=180 \advance \count255 by -\angleB%
     \def\angleA{\number\count255}%
@@ -408,7 +415,26 @@ curveto
     %%%% draw using bezier curves
       \pgfpathmoveto{\ptA}\pgfpathcurveto{\cptC}{\cptD}{\ptB}%
     %%%%
-    \color{#5} \pgfusepath{stroke}%
+    \pgfsetcolor{#5}%
+
+    \def\linestyle{#6}
+    \ifx\linestyle\pstr@linestyledashed
+        \pgfsetdash{{3pt}{3pt}}{0cm}%
+        \pgfusepath{stroke}%
+    \else
+        \ifx\linestyle\pstr@linestyledotted
+            \pgfsetdash{{1pt}{3pt}}{0cm}%
+            \pgfusepath{stroke}%
+        \else
+            \ifx\linestyle\pstr@linestylenone
+
+            \else%solid
+                \pgfsetdash{}{0pt}%
+                \pgfusepath{stroke}%
+            \fi
+        \fi
+    \fi
+
 
    %%% Put the label on the link if there is one
     \def\label{#4}%
@@ -466,13 +492,13 @@ curveto
 %  #3 target node name
 %  #4 arrow angle
 %  #5 link label
-%  #6 link color
+%  #6 line color
 %  #7 node content
 \gdef\pstr@PGF@createNodeAndArrow#1#2#3#4#5#6#7{
     %\pstr@createpgfnode{s}{s}{\mbox{C[1($#1$)  2($#2$) 3($#3$) 4(#4) 5(#5) 6(#6)]} }
     \pstr@drawNode{#1}{#2}{#7}%
     % add the arrow to the list of arrows
-    \toks0={\pstr@drawArrow{#2}{#3}{#4}{#5}{#6}}%
+    \toks0={\pstr@drawArrow{#2}{#3}{#4}{#5}{#6}{\pstr@DefaultArrowLineStyle}}%
     \edef\act{\noexpand\pstr@ptrlist={\the\pstr@ptrlist \the\toks0}}%
     \act%
 }
@@ -498,8 +524,10 @@ curveto
   \pgfsetbaseline{0pt}%
   \pgfsetshapeminwidth{0cm}%
   \pgfsetshapeminheight{0cm}%
+  \pgfsetshapeinnerxsep{0pt}%
+  \pgfsetshapeinnerysep{0.3pt}%
   \pgfsetarrows{-stealth}%
-  \pgfsetlinewidth{0.3pt}%
+  \pgfsetlinewidth{\pstr@ArrowLineWidth}%
   \pstr@ptrlist={}% Create an empty list of links.
   \pstr@defineUserCommands% define the command \nd and \txt that the package user can use to define the sequence
   #3%
@@ -522,6 +550,7 @@ curveto
 %
 % It is called in the \pstr@PS and \pstr@PGF macros.
 \gdef\pstr@defineUserCommands{%
+    % node/link creation
     \def\nd##1(##2)##3{%
      % print out the text preceding the node specification
      \pstr@printText{##1}%
@@ -532,6 +561,8 @@ curveto
      % print out text
      \pstr@printText{##1}%
     }%
+    % creation of an additional arrow
+    \def\arrow{\pstr@drawArrow}%
 }
 
 %%%%
@@ -646,6 +677,9 @@ curveto
 
 Change log:
 -----------
+Version 0.3.3 12 Oct 2007:
+- it is possible to specify the line style with the option \pstrSetArrowLineStyle
+- additional arrows can be created with \arrow in the \pstr syntax mode (but not in \Pstr)
 
 Version 0.3.2 24 Sep 2007:
 - the file pstring.pro was not created when the preamble was precompiled using latexdaemon

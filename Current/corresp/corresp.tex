@@ -314,10 +314,10 @@ The \defname{enabling relation} $\vdash$ is defined on the set of
 nodes of the computation tree as follows. We write $m \vdash n$ and
 we say that $m$ enables $n$ if and only if
 \begin{itemize}
-\item $n$ is a bound variable node and $m$ is the binder of $n$. We will write $m \vdash_i n$ to precise that $n$
+\item $n$ is a variable node and $m$ is a prime node occurring in the path from the root to $n$;
+\item or $n$ is a bound variable node and $m$ is the binder of $n$. We will write $m \vdash_i n$ to precise that $n$
 is the $i^{\sf th}$ variable bound by $m$;
-\item or $n$ is a free variable node and $m$ is the root
- or a prime node occurring in the path from the root to $n$;
+\item or $n$ is a free variable node and $m$ is the root;
 \item or $n$ is a $\lambda$-node and $m$ is $n$'s parent node.
 \end{itemize}
 Note that in particular, free variable nodes are enabled by the root.
@@ -342,16 +342,16 @@ and variables in $\overline{\xi}$ are numbered from $1$ onward ($\overline{\xi} 
 We write $n.i$ to denote the $i$th child of node $n$.
 
 \begin{definition}[Justified sequence of nodes]
-A \defname{justified sequence of nodes} is a sequence of nodes of
-the computation tree $\tau(M)$ with pointers. For each occurrence $n$ in a justified
-sequence $s$:
+A \defname{justified sequence of nodes} is a sequence of nodes $s$
+of the computation tree $\tau(M)$ with pointers. For each occurrence
+$n$ in $s$:
 \begin{itemize}
   \item If $n$ is an @-node then it has no pointer attached to it;
-  \item If $n$ is a bound variable node or a $\lambda$-node different from the root
+  \item If $n$ is a $\lambda$-node different from the root
   then is has a main pointer to a node $m$ occurring before it the sequence and such that $m \vdash n$;
-  \item If $n$ is a \emph{free} variable node then it has a main pointer
-  to some occurrence of the root as well as auxiliary pointers
-  to other occurrences of nodes enabling $n$.
+  \item If $n$ is a variable node then it has one main pointer and
+  potentially auxiliary pointers; each of them pointing to a
+  preceding occurrence of a node $m$ verifying $m \vdash n$.
 \end{itemize}
 
 If $n$ points to $m$ then we say that $m$ \emph{justifies} $n$. We
@@ -360,33 +360,42 @@ represent this pointer in the sequence as follows \Pstr[0.4cm]{
 $n$ is labelled with the $i$th variable abstracted by the
 $\lambda$-node $m$ or that $n$ is the $i^{\sf th}$ child of $m$.
 
-For a free variable node $n$, the main link is represented with a solid line while
-auxiliary links are represented with dashed lines:
-\pstr[0.6cm]{\ldots  \nd(r){r} \ldots  \nd(l1){\lambda \overline{\xi}_1} \ldots \nd(l2){\lambda \overline{\xi}_2 } \ldots \nd(n-r,35){n}
- \arrow{n}{l1}{30}{}{blue}{dashed}
- \arrow{n}{l2}{30}{}{blue}{dashed}
- }.
-
+For a variable node $n$, the main link is represented with a solid
+line while auxiliary links are represented with dashed lines:
+$$\pstr[0.6cm]{ \ldots
+    \nd(l){\lambda \overline{x}}  \ldots
+    \nd(l1){\lambda \overline{\xi}_1} \ldots
+    \nd(l2){\lambda \overline{\xi}_2 } \ldots
+    \nd(n-l,35){n}
+    \arrow{n}{l1}{30}{}{blue}{dashed}
+    \arrow{n}{l2}{30}{}{blue}{dashed}
+} \ .$$
 \end{definition}
 
 Thus a pointer in a justified sequence of nodes has
 one of the following forms:
-$$
-\Pstr[18pt]{ (m){r} \cdot \ldots \cdot (n-m,40){z} }
- \hspace{1.5cm}
-\pstr[18pt]{\nd(l){\lambda \overline{\gamma}} \ldots \nd(n){z}
- \arrow{n}{l}{40}{}{blue}{dashed}}
-\hspace{1.5cm}
-\Pstr{ (m){\lambda \overline{\xi}} \cdot \ldots \cdot (n-m,40:i){\xi_i} }
-\hspace{1.5cm}
-\Pstr{ (m){@} \cdot \ldots \cdot (n-m,40:j){\lambda \overline{\eta}} }
-\hspace{1.5cm}
-\Pstr{ (m){\alpha } \cdot \ldots \cdot (n-m,40:k){\lambda \overline{\eta}} }
-$$
-for some occurrences $r$ of $\tau(M)$'s root, $z \in N_{\sf fv}$,
-prime node $\lambda \overline{\gamma}$ occurring in the path from $z$ to the root,
-variable $\xi_i$ bound by $\lambda \overline{\xi}$ for some $i \in 1..n$, $\alpha \in N_{\Sigma} \union N_{\sf var}$, $j$ ranges from $0$ to the number of
-children nodes of @ minus 1 and $k \in 1 ..arity(\alpha)$.
+
+\begin{tabular}{cllcp{8cm}}
+& \Pstr[13pt]{ (m){r} \cdot \ldots \cdot (n-m,40){z} }
+& or
+& \pstr{\nd(l){\lambda \overline{\gamma}} \ldots \nd(n){z}
+ \arrow{n}{l}{40}{}{blue}{dashed}},
+& \parbox[t]{8cm}{ for some occurrences $r$ of $\tau(M)$'s root, $z \in N_{\sf fv}$,
+$\lambda \overline{\gamma}$ a prime node occurring in the path from $z$ to the root; }
+\\
+or
+& \Pstr[13pt]{ (m){\lambda \overline{\xi}} \cdot \ldots \cdot (n-m,40:i){\xi_i} }
+& or
+& \pstr{ \nd(m){\lambda \overline{\gamma}} \cdot \ldots \cdot \nd(n){\xi_i}
+ \arrow{n}{m}{40}{}{blue}{dashed}},
+& for some variable $\xi_i$ bound by $\lambda \overline{\xi}$, $i \in 1..|\overline{\xi}|$, $\lambda \overline{\gamma}$ a prime node occurring in the path from $\xi_i$ to the root;
+\\
+or
+& \Pstr[13pt]{ (m){@} \cdot \ldots \cdot (n-m,40:j){\lambda \overline{\eta}} }
+& or
+& \Pstr{ (m){\alpha } \cdot \ldots \cdot (n-m,40:k){\lambda \overline{\eta}} },
+& for $\alpha \in N_{\Sigma} \union N_{\sf var}$, $j$ ranges from $0$ to the number of children nodes of @ minus 1 and $k \in 1 ..arity(\alpha)$.
+\end{tabular}
 \bigskip
 
 \emph{Notations}: We write $s = t$ to denote that the justified sequences $t$ and $s$
@@ -548,20 +557,27 @@ over $\tau(M)$ is defined by induction over the following rules:
 
 \noindent \emph{Structural rules}
 \begin{description}
-\item[\rulenamet{Lam}] If $t \cdot \lambda \overline{\xi}$ is a traversal then so is
-$t \cdot \lambda \overline{\xi} \cdot n$ where $n$ denotes $\lambda
-\overline{\xi}$'s child and:
-\begin{compactitem}[-]
-\item If $n \in N_@$ then it has no justifier;
-\item If $n \in N_{\sf var}$ then its main link
-points to the only occurrence\footnote{We will show in Prop. \ref{prop:pviewtrav_is_path} that P-views correspond to paths in the tree thus $n$'s enabler occurs exactly once in the P-view. In particular, if $n$ is a free variable node then its justifier is
-the root node occurring initially in $\pview{t \cdot \lambda \overline{\xi}}$.} of its enabler in $\pview{t\cdot \lambda \overline{\xi}}$;
-\item If $n\in N_{\sf fv}$ then it has auxiliary links
-pointing to each of the prime $\lambda$-nodes in $\pview{t\cdot \lambda \overline{\xi}}$.
-\end{compactitem}
-\item[\rulenamet{App}] If $t \cdot @$ is a traversal then so is \Pstr[0.4cm]{t \cdot (m) @  \cdot (n-m,40:0) n}.
-%{\em i.e.}~the next visited node is the $0^{th}$ child node of
-%@: the node corresponding to the operator of the application.
+    \item[\rulenamet{Lam}] If $t \cdot \lambda \overline{\xi}$ is a traversal then so is
+        $t \cdot \lambda \overline{\xi} \cdot n$ where $n$ denotes
+        $\lambda \overline{\xi}$'s child and:
+        \begin{compactitem}
+            \item If $n \in N_@$ then it has no justifier;
+            \item If $n \in N_{\sf var}$ then it has auxiliary links pointing to each of the prime $\lambda$-nodes in $\pview{t\cdot
+                \lambda \overline{\xi}}$ and:
+                \begin{compactitem}
+                    \item if  $n \not\in N_{\sf fv}$ then its main link points to the only occurrence\footnote{We will show in
+                    Prop. \ref{prop:pviewtrav_is_path} that P-views correspond to
+                    paths in the tree thus $n$'s enabler occurs exactly once in the
+                    P-view. In particular, if $n$ is a free variable node then its
+                    justifier is the root node occurring initially in $\pview{t
+                    \cdot \lambda \overline{\xi}}$.} of its enabler in
+                    $\pview{t\cdot \lambda \overline{\xi}}$;
+                    \item if  $n \in N_{\sf fv}$ then its main link points
+                    to the only occurrence of the root in
+                    $\pview{t \cdot \lambda \overline{\xi}}$.
+                \end{compactitem}
+        \end{compactitem}
+    \item[\rulenamet{App}] If $t \cdot @$ is a traversal then so is \Pstr[0.4cm]{t \cdot (m) @  \cdot (n-m,40:0) n}.
 \end{description}
 
 \noindent \emph{Input-variable rules}
@@ -863,7 +879,7 @@ than $t$:
         &=  r                                                & (\mbox{def. operator $\filter$})\\
         &=  \pview{(t' \filter  r ) \cdot r }    & (\mbox{def. P-view})\\
         &=  \pview{(t' \cdot r)  \filter  r }    & (\mbox{def. operator $\filter$})\\
-        &= \pview{t \filter  r }                & (\mbox{def. of } t)
+        &= \pview{t \filter  r }                & (\mbox{def. of } t).
     \end{align*}
 \item If $t = t' \cdot n$ with $n \in N_{\sf var} \union N_{\Sigma}$ then:
     \begin{align*}
@@ -1020,7 +1036,7 @@ $$
         \TR{\Rnode{q5}q^5}
     }
 \psset{nodesep=1pt,arrows=->,arcangle=-20,arrowsize=2pt 1,linestyle=dashed,linewidth=0.3pt}
-\ncline{->}{root}{q1} \aput*{:U}{\varphi}
+\ncline{->}{root}{q1} \aput*{:U}{\psi}
 \ncarc{->}{z}{q2}
 \ncline{->}{f}{q3}
 \ncline{->}{lmd}{q4}
@@ -1029,7 +1045,7 @@ $$
 $$
 
 Consider the justified sequence of moves $s \in \sem{M}$:
- $$s = \Pstr[0.6cm][5pt]{(q1){q}^1\ (q3-q1,60){q}^3\ (q4-q3,60){q}^4\ (q3b-q1){q}^3\ (q4b-q3b,60){q}^4\ (q2-q1,30){q}^2 }
+ $$s = \Pstr[12pt][5pt]{(q1){q}^1\ (q3-q1,60){q}^3\ (q4-q3,60){q}^4\ (q3b-q1){q}^3\ (q4b-q3b,60){q}^4\ (q2-q1,30){q}^2 }
 \in \sem{M}$$
 
 There is a corresponding justified sequence of nodes in the computation tree:
@@ -1044,13 +1060,15 @@ such that $s_i = \psi(r_i)$ for all $i < |s|$.
 
 The sequence $r$ is in fact the reduction of the following
 traversal:
-$$t = \Pstr[1.1cm]{ (q1){\lambda f z} \cdot
-            (n2){@^{[2]}} \cdot (n3-n2,60){\lambda g x^{[3]}} \cdot
-            (q3-q1,60){f}^{[6]} \cdot (q4-q3,60){\lambda^{[7]}} \cdot
-            (q3b-q1,40){f}^{[8]} \cdot (q4b-q3b,70){\lambda^{[9]}} \cdot
-            (n8-n3,35){x^{[10]}} \cdot
-            (n9-n2,30){\lambda^{[5]}} \cdot
-            (q2-q1,35){z} }
+$$t = \pstr[1.1cm]{ \nd(q1){\lambda f z} \cdot
+            \nd(n2){@^{[2]}} \cdot \nd(n3-n2,60){\lambda g x^{[3]}} \cdot
+            \nd(q3-q1,60){f}^{[6]} \cdot \nd(q4-q3,60){\lambda^{[7]}} \cdot
+            \nd(q3b-q1,40){f}^{[8]} \cdot \nd(q4b-q3b,70){\lambda^{[9]}} \cdot
+            \nd(n8-n3,35){x^{[10]}} \cdot
+            \nd(n9-n2,30){\lambda^{[5]}} \cdot
+            \nd(q2-q1,35){z}
+            \arrow{q3}{n3}{30}{}{blue}{dashed}
+            \arrow{q3b}{n3}{30}{}{blue}{dashed} }
 $$
 
 By representing side-by-side the computation tree and the type arena of a term in $\eta$-normal form we have observed
@@ -1065,45 +1083,74 @@ is given by a pair $(V,E)$ where $V$ is the set of vertices of
 and $E \subseteq V \times V$ is the parent-child relation. We have $V = N \union VL$ where $N$
 and $VL$ are the set of nodes and value-leaves respectively.
 
-\emph{Notations:}
-We write $V_\$$ for $N_\$ \union (E(N_\$) \inter VL)$ where $\$$ ranges over $\{@, {\sf var}, \Sigma, {\sf fv} \}$.
-Let $\mathcal{D}$ be the set of values of the base type $o$. If $n$ is a node in $N$ then the value-leaves attached to the node $n$ are written $v_n$ where $v$ ranges in $\mathcal{D}$.
-Similarly, if $q$ is a question in $\sem{A}$ then the answer moves enabled by $q$ are written $v_q$ where $v$ ranges in $\mathcal{D}$.
+\emph{Notations:} We write $V_\$$ for $N_\$ \union (E(N_\$) \inter
+VL)$ where $\$$ ranges over $\{@, {\sf var}, \Sigma, {\sf fv} \}$.
+Let $\mathcal{D}$ be the set of values of the base type $o$. If $n$
+is a node in $N$ then the value-leaves attached to the node $n$ are
+written $v_n$ where $v$ ranges in $\mathcal{D}$. Similarly, if $q$
+is a question in $A$ then the answer moves enabled by $q$ are
+written $v_q$ where $v$ ranges in $\mathcal{D}$.
 
 \begin{definition}[Mapping from nodes to moves]\hfill
 \label{def:phi_psi mapping}
 
     \begin{itemize}[-]
     \item Let $n$ be a node in $N_\lambda \union N_{\sf var}$ and $q$ be a question move of some game $A$
-such that $n$ and $q$ are of type $(A_1,\ldots,A_p,o)$ for some $p\geq 0$. The function $\psi^{n,q}_A$ from $V^{\filter n}$ to $\sem{A}$ is defined as:
+such that $n$ and $q$ are of type $(A_1,\ldots,A_p,o)$ for some
+$p\geq 0$. Let $D_n$ be the set of nodes and leaves form $N$
+that heredirarily enabled by $n$ and which are not free
+variables in $\kappa(n)$ nor hereditarily enabled by a free
+variable in $\kappa(n)$.
+
+The function $\psi^{n,q}_A$ from $D_n$ to $A$ is defined as:
         \begin{eqnarray*}
         \psi^{n,q}_A &=& \{ n \mapsto q \} \union  \{ v_n \mapsto v_q \ | \ v \in \mathcal{D} \}\\
          &&\union \left\{
                         \begin{array}{ll}
-                          \emptyset, & \hbox{if $p=0$\ ;} \\
-                          \Union_{m \in N | n \vdash_i m} \psi^{m, q^i}_A, & \hbox{if $p\geq1$ and $n\in N_{\lambda}$\ ;} \\
-                          \Union_{i=1..p} \psi^{n.i, q^i}_A, & \hbox{if $p\geq1$ and $n\in N_{\sf var}$\ .}
+                          \Union_{m \in N | n \vdash_i m} \psi^{m, q^i}_A, & \hbox{if $n\in N_{\lambda}$\ ;} \\
+                          \Union_{i=1..p} \psi^{n.i, q^i}_A, & \hbox{if $n\in N_{\sf var}$\ .}
                         \end{array}
                       \right.
         \end{eqnarray*}
         where $\{ q^1, \ldots, q^p \} \union \{ v_q \ | \ v \in \mathcal{D} \}$ is the set of moves enabled by $q$ in $A$ (each $q^i$ being of type $A_i$).
 
-    \item We use the abbreviation $\psi_n$
-    for $\psi^{n,m}_{T(n)} : V^{\filter n} \rightarrow \sem{T(n)}$
-    where $m$ denotes $\sem{T(n)}$'s initial move.
+%    \item We use the abbreviation $\psi_n$
+%    for $\psi^{n,m}_{\sem{T(n)}} : V^{n\vdash} \rightarrow
+%    \sem{T(n)}$ where $T(n)$ denotes the type of $\kappa(n)$ and
+%    $m$ denotes $\sem{T(n)}$'s initial move.
 
-    \item Similarly we write $\psi_M$ (or just $\psi$ if this does not cause any ambiguity)
-    for $\psi^{r,m}_{\Gamma\rightarrow T}$ where $m$ denote $\sem{\Gamma\rightarrow T}$'s initial move.\footnote{Arenas involved in the game semantics of simply-typed $\lambda$-calculus are all trees: they have a single initial move.}
+    \item Suppose $\Gamma = x_1:X_1, \ldots ,
+    x_k:X_k$. Let $q_0$ denote $\sem{\Gamma\rightarrow T}$'s
+    initial move \footnote{Arenas involved in the game semantics
+    of simply-typed $\lambda$-calculus are all trees: they have
+    a single initial move.} and suppose that the set of moves
+    enabled by $q_0$ in $\sem{\Gamma\rightarrow T}$ is
+     $\{ q_{x_1}, \ldots, q_{x_k}, q^1, \ldots, q^p \} \union \{
+    v_q \ | \ v \in \mathcal{D} \}$ where each $q^i$ is of type
+    $A_i$ and $q_{x_j}$ of type $X_j$.
+
+    We define $\psi_M : V^{r\vdash} \rightarrow
+    \sem{\Gamma\rightarrow T}$ (or just $\psi$ if this does not
+    cause any ambiguity) as follows:
+    \begin{eqnarray*}
+     \psi_M = \{ r \mapsto q_0 \} & \union&  \{ v_r \mapsto v_{q_0} \ | \ v \in \mathcal{D} \}\\
+& \union& \Union_{n \in N | r \vdash_i n} \psi^{n, q^i}_\sem{\Gamma\rightarrow T} \\
+& \union& \Union_{n \in N | n \mbox{ \small labelled } x_j, j \in \{ 1..k \} } \psi^{n, q_{x_j}}_\sem{\Gamma\rightarrow T}
+    \end{eqnarray*}
     \end{itemize}
 \end{definition}
 
-It can easily be checked that the domain of definition of $\psi_n$ is indeed the set of nodes that are hereditarily enabled by $n$.
+It can easily be checked that the domain of definition of $\psi_M$
+is indeed the set of nodes that are hereditarily enabled by the
+root.
 
-Let us detail a little the definition of $\psi_n$:
+Let us detail a little the definition of $\psi^{n,q}_A$.
 \begin{itemize}
-\item If $p=0$ then $n$ is a dummy $\lambda$-node or a ground type variable: $\psi_n$ maps $n$ to the initial move $q$.
+\item If $p=0$ then $n$ is a dummy $\lambda$-node or a ground type variable: $\psi^{n,q}_A$ maps $n$ to the initial move $q$.
 
-\item  If $p\geq 1$ and $n \in N_{\lambda}$ with $n$ labelled $\lambda \overline{\xi} = \lambda \xi_1 \ldots \xi_p$ then the sub-computation tree rooted at $n$ and the arena $\sem{T(n)}$ have the following forms (value-leaves and answer moves are not represented for simplicity):
+\item  If $p\geq 1$ and $n \in N_{\lambda}$ with $n$ labelled $\lambda \overline{\xi} = \lambda \xi_1 \ldots \xi_p$ then the sub-computation tree rooted at $n$ and the
+ arena $A$ have the following forms (value-leaves and answer
+ moves are not represented for simplicity):
     $$ \tree{ \Rnode{r}\lambda \overline{\xi}  ^{[n]}}
         {
             \tree[levelsep=6ex]{\alpha}
@@ -1111,7 +1158,7 @@ Let us detail a little the definition of $\psi_n$:
             }
         }
     \hspace{3cm}
-    \tree{ \Rnode{q0}m_n }
+    \tree{ \Rnode{q0}q }
         {
             \tree[linestyle=dotted]{q^1}{\TR{} \TR{} }
             \tree[linestyle=dotted]{q^2}{\TR{} \TR{} }
@@ -1127,16 +1174,21 @@ Let us detail a little the definition of $\psi_n$:
     \ncline{->}{q4}{lmd2}
     $$
 
-    For each abstracted variable $\xi_i$ there exists a corresponding question move $q^i$ of the same order in the arena. $\psi_n$ maps each free occurrence of $\xi_i$ in the computation tree to the move $q^i$.
+    For each abstracted variable $\xi_i$ there exists a
+    corresponding question move $q^i$ of the same order in the
+    arena. $\psi^{n,q}_A$ maps each free occurrence of $\xi_i$
+    in the computation tree to the move $q^i$.
 
 \item If $p\geq 1$ and $n\in N_{\sf var}$ then $n$ is labelled with a variable $x:(A_1,\ldots,A_p,o)$
-with children nodes $\lambda \overline{\eta}_1$, \ldots, $\lambda \overline{\eta}_p$. The computation tree $\tau(M)$ rooted at $n$ and the arena $\sem{T(n)}$ have the following forms:
+with children nodes $\lambda \overline{\eta}_1$, \ldots,
+$\lambda \overline{\eta}_p$. The computation tree $\tau(M)$
+rooted at $n$ and the arena $A$ have the following forms:
     $$\tree{\Rnode{r}{x^{[n]}}}
         {   \tree{\TR{\lambda \overline{\eta}_1}}{\vdots} \TR{\ldots}
         \tree{\TR{\lambda \overline{\eta}_p }}{\vdots}
         }
     \hspace{3cm}
-    \tree{ \Rnode{q0}m_n }
+    \tree{ \Rnode{q0}q }
         {
 \tree[linestyle=dotted]{\Rnode{q1}{q^1}}{\TR{} \TR{} }
             \tree[linestyle=dotted]{\Rnode{q2}{q^2}}{\TR{} \TR{} }
@@ -1152,7 +1204,8 @@ with children nodes $\lambda \overline{\eta}_1$, \ldots, $\lambda \overline{\eta
     \ncline{->}{q4}{lmd2}
     $$
 
-    and $\psi_n$ maps each node $\lambda \overline{\eta}_i$ to the question move $q^i$.
+    and $\psi^{n,q}_A$ maps each node $\lambda
+    \overline{\eta}_i$ to the question move $q^i$.
 \end{itemize}
 
 \begin{example}
@@ -1190,12 +1243,12 @@ $$\psset{levelsep=3.5ex}
         }
 }
 \psset{nodesep=1pt,arrows=->,arcangle=-20,arrowsize=2pt 1,linestyle=dashed,linewidth=0.3pt}
-\ncline{->}{root}{A1lx} \mput*{\psi_{\lambda x}}
+\ncline{->}{root}{A1lx} \mput*{\psi_M}
 \ncarc{->}{lgg1x}{A1x}
-\ncline{->}{lg}{A2lg} \mput*{\psi_{\lambda g}}
+\ncline{->}{lg}{A2lg} \mput*{\psi_{\lambda g. g x}}
 \ncline{->}{lgg}{A2g}
 \ncline{->}{lgg1}{A2g1}
-\ncline{->}{ly}{A3ly} \mput*{\psi_{\lambda y}}
+\ncline{->}{ly}{A3ly} \mput*{\psi_{\lambda y.y}}
 \ncline{->}{lyy}{A3y}
 $$
 \end{example}
@@ -1869,7 +1922,7 @@ $(t\filter n)-@ \subseqof (t-@) \filter n_0$ but $(t\filter n)-@ \neq (t-@) \fil
 
 
 Since traversals are well-bracketed, so are the sequences in $\travset^{-@}(M)$.
-On well-bracketed sequences (either traversals or @-free traversals), 
+On well-bracketed sequences (either traversals or @-free traversals),
 the function $?(\_)$ is defined as follows:
 \begin{eqnarray*}
   ?(\Pstr[0.4cm]{t \cdot (n){n} \ldots (nv-n){n_v} }  ) &=& ?(t) \\
@@ -1887,24 +1940,24 @@ the function $?(\_)$ is defined as follows:
 
   Suppose $n$ is her. just. by $n$ then so is $v_n$ therefore:
   $\Pstr[0.7cm]{{?(u\filter n)} = ?{((u_1\filter n)} \cdot (n){n} \cdot {(u_2\filter n)} \cdot (vn-n){v_n}}{)}
-   = ?(u_1\filter n)$ since by the I.H. $?(u_2\filter n) = ?(u_2) = \epsilon$. 
+   = ?(u_1\filter n)$ since by the I.H. $?(u_2\filter n) = ?(u_2) = \epsilon$.
    And again by the I.H. $?(u_1\filter n) = ?(u_1)$.
 
   Suppose $n$ is not her. just. by $n$ then so is $v_n$ therefore:
   $?(u\filter n) = ?((u_1\filter n) \cdot (u_2\filter n))$ and we can conclude using the induction hypothesis.
 
   \item If $u = u_1 \cdot n$ where $n$ is not a value-leaf. Then $?(u) = ?(u_1) \cdot n$.
-  And since by hypothesis $n$ is here. just. by $n$ we have 
+  And since by hypothesis $n$ is here. just. by $n$ we have
   $?(u \filter n) = ?(u_1\filter n ) \cdot n = ?(u_1) \cdot n$ by the induction hypothesis. \qed
   \end{compactitem}
 % end of proof
 
 \begin{lemma}
-Let $t$ be a traversal of $M$, $t'$ be a traversal of some subterm $M'$ such that 
+Let $t$ be a traversal of $M$, $t'$ be a traversal of some subterm $M'$ such that
 $t'-@ \subseqof t-@$. Then we have $t'\subseqof t$.
 \end{lemma}
 \begin{proof}
-  
+
 \end{proof}
 
 %\begin{definition}
@@ -2043,26 +2096,69 @@ For any node $n$ of a traversal $t$ let us write $ptr(n)$ to denote the distance
 
 \begin{lemma}[Preleminary lemma]
 \label{lem:varphiinjective:prelem}
-\begin{equation}
+\begin{equation*}
 \left(
   \begin{array}{ll}
-    t \cdot n_1, t \cdot n_2 \in \travset \\
+    t \cdot n_1, t \cdot n_2 \in \travset(M) \\
     \zand\ n_1 \neq n_2
   \end{array}
 \right)
- \mbox{ implies } n_1,n_2 \in N^{r\vdash}_{\lambda} \zand ( \varphi(n_1) \neq \varphi(n_2) \zor ptr(n_1) \neq ptr(n_2) ) \ . \end{equation}
+ \mbox{ implies } n_1,n_2 \in N^{r\vdash}_{\lambda} \zand ( \varphi(n_1) \neq \varphi(n_2) \zor ptr(n_1) \neq ptr(n_2) ) \ .
+ \end{equation*}
 \end{lemma}
 \begin{proof}
-Let $t \cdot n_1, t \cdot n_2 \in \travset$.
-First we remark that the traversal rules have a weak form of determinism which ensures that $n_1$ and $n_2$ belong to the same category of node i.e.\ they must be both in $N_{\sf var}$, $N_@$ or $N_\lambda$.
+Let $t \cdot n_1, t \cdot n_2 \in \travset(M)$. First we remark that
+the traversal rules have a weak form of determinism which ensures
+that $n_1$ and $n_2$ belong to the same category of node i.e.\ they
+must be both in $N_{\sf var}$, $N_@$, $N_\lambda$, $VL_{\sf var}$,
+$VL_@$, or $VL_\lambda$.
 
-Suppose that $n_1, n_2 \in N_@$ then $t \cdot n_1$ and $t \cdot n_2$ were formed using the (App) rule. Since this rule is deterministic we must have $n_1=n_2$ which violates the second hypothesis.
+\begin{compactitem}
+\item If $n_1, n_2 \in N_@$ then $t
+\cdot n_1$ and $t \cdot n_2$ were formed using the \rulenamet{App}
+rule. Since this rule is deterministic we must have $n_1=n_2$ which
+violates the second hypothesis.
 
+\item If $n_1, n_2 \in VL_@$ then the traversals were formed using the deterministic rule
+\rulenamet{Answer-$\lambda$-@} which again violates the second
+hypothesis.
 
-Suppose that $n_1,n_2\in N_{\sf var}$. The traversals $t \cdot n_1$ and $t \cdot n_2$ must have been formed using either rule (Lam) or (App). But these two rules are deterministic and their domains of definition are disjoint. Hence again the second hypothesis is violated.
+\item If $n_1,n_2\in N_{\sf var}$ then
+     $t \cdot n_1$ and $t \cdot n_2$ were formed using either rule \rulenamet{Lam} or \rulenamet{App}.
+     But these two rules are deterministic and their domains of definition are disjoint. Hence again the second
+     hypothesis is violated.
 
-Suppose that $n_1,n_2\in N_\lambda$ then
-the traversals $t \cdot n_1$ and $t \cdot n_2$ must have been formed using either rule (Root), (App), (Var) or (InputVar). Since all these rules have disjoint domains of definition, the same rule must have been use to form $t \cdot n_1$ and $t \cdot n_2$. Supposed that one of the rules (Root), (App) and (Var) has been used then since they are all deterministic we have $n_1=n_2$ which violates the second hypothesis. Consequently, the rule (InputVar) must have been used and therefore $n_1,n_2 \in N_\lambda^{r\vdash}$. By definition of (InputVar), in order to have $n_1\neq n_2$ and $\varphi(n_1) = \varphi(n_2)$, the parent node of the last node in $t$ must occurs at more than one position in $\oview{t}$ and $n_1,n_2$ correspond to the child node of two different occurrences of that parent node in $\oview{t}$. But then the links associated to $n_1$ and $n_2$ will point to their respective occurrence of that parent node in $\oview{t}$ hence $ptr(n_1) \neq ptr(n_2)$.
+\item If  $n_1, n_2 \in VL_{\sf var}$ then either the traversals were both formed using the deterministic rule
+\rulenamet{Answer-$\lambda$-var} in which case the second hypothesis
+is violated; or they were formed with \rulenamet{InputVar$^{val}$}
+in which case $n_1$ and $n_2$ are two value leaves belonging to
+$N^{r\vdash}_\lambda$ and justified by the same input variable node.
+Thus by definition of $\psi$, $\psi(n_1)\neq\psi(n_2)$.
+
+\item If  $n_1,n_2\in N_\lambda$ then the traversals $t \cdot n_1$
+    and $t \cdot n_2$ must have been formed using either rule
+    \rulenamet{Root}, \rulenamet{App}, \rulenamet{Var} or \rulenamet{InputVar}. Since all these rules have
+    disjoint domains of definition, the same rule must have been use to
+    form $t \cdot n_1$ and $t \cdot n_2$.
+    Now the rule \rulenamet{Root}, \rulenamet{App} or \rulenamet{Var} are all deterministic
+    therefore since $n_1\neq n_2$ the rule used is necessarily \rulenamet{InputVar}.
+
+    By definition of \rulenamet{InputVar}, $n_1$ and $n_2$ are two child
+    nodes in $N_\lambda^{r\vdash}$ of two occurrences of some node occurring in
+    $\oview{t_{\prefixof x}}$ where $x \in N^{r\vdash}_{\sf var}$
+    denotes the pending node at $t$. If $n_1$ and $n_2$ have the same
+    parent node in $\tau(M)$ then since $n_1\neq n_2$, by definition of
+    $\varphi$, $\varphi(n_1)\neq \varphi(n_2)$. If their parent node is
+    different, then $n_1$ and $n_2$ are justified by two different
+    occurrences in $t$ therefore $ptr(n_1) \neq ptr(n_2)$.
+
+\item If  $n_1,n_2\in VL_\lambda$ then either the traversals $t \cdot n_1$
+    and $t \cdot n_2$ were formed using
+    \rulenamet{Answer-var-$\lambda$} or they were formed with
+    \rulenamet{Answer-@-$\lambda$} but this is impossible since these two rules are
+    deterministic and we have $n_1 \neq n_2$.
+\end{compactitem}
+
 \end{proof}
 
 \noindent {\it (continuation of the proof of Lemma \ref{lem:varphiinjective})}
@@ -2415,16 +2511,22 @@ We do a case analysis on $m$: we either have $m\in C$ or $m\in T^0$:
         Consequently $t_j-@ = (t-@) \filter r_j \subseqof t-@$ which implies by Lemma \ref{} that $t_j \subseqof t$.
 
     \begin{enumerate}[(a)]
-    \item  Suppose $t_j$'s last move is \emph{not} visited by the rule \rulenamet{InputVar} nor $\rulename{InputVar^{val}}$. Since $\ip( t_j) \subseqof t'$, $t_j$ is a traversal of the subterm $N_j$ of $M$ and the last move of $t$ and $t_j$ coincide,
-        by Lemma \ref{lem:local_traversal_progression},
-        $t = t' \cdot t_j^\omega$ is a traversal of $M$.
+    \item  Suppose $t_j$'s last node is \emph{not} visited by the rule \rulenamet{InputVar} nor $\rulename{InputVar^{val}}$. Since $\ip( t_j) \subseqof t'$, $t_j$ is a traversal of the subterm $N_j$ of $M$ and the last node
+        of $t$ and $t_j$ coincide, by Lemma
+        \ref{lem:local_traversal_progression}, $t =
+        t' \cdot t_j^\omega$ is a traversal of $M$.
 
     \item Suppose $t_j$'s last move is visited with the rule \rulenamet{InputVar}.
 
     Then $t_j$ is of the form
     $$\Pstr[18pt]{ t_j = t' (z)z \cdot t'' \cdot (n-z){t_j^\omega}}$$
-for some $z \in N_\lambda^{\filter r_j}$ (see remark \ref{rem:inputvar})
-and some input-variable $x \in N^{\filter r_j}_{var}$ occurs in $z\cdot t'$ such that $x$ is the pending node in $\ip t_j = t' \cdot z \cdot t''$ ({\it i.e.}~ with $?(t' \cdot z \cdot t'')^\omega = x$).
+for some $z \in N_\lambda^{r_j\vdash}$ (see remark
+\ref{rem:inputvar}) and some input-variable $x \in
+N^{r_j\vdash}_{var}$ occurs in $z\cdot t'$ such that
+$x$ is
+ the pending node in $\ip\ t_j = t' \cdot z \cdot
+ t''$ ({\it i.e.}~ with $?(t' \cdot z \cdot
+ t'')^\omega = x$).
 
 Suppose that $z\in N^{r\vdash}$ then $z$ is a free variable of $M$ (and $N_j$).
 Since the O-view of $t_j$ coincides with the O-view of $t$

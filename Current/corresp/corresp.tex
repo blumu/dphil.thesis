@@ -32,7 +32,8 @@ Fortunately, the reduction operation preserves the good properties
 of traversals. This is guaranteed by the facts that the P-view of
 the reduction of a traversal is equal to the reduction of the P-view
 of the traversal, and the O-view of a traversal is the same as the
-O-view of its reduction (lemma \ref{lem:redtrav_trav}). \vspace{8pt}
+O-view of its reduction (Lemma \ref{lem:trav_filtering}).
+\vspace{8pt}
 
 \emph{Related works}: Traversals of a computation tree provide a way
 to perform \emph{local computation} of $\beta$-reductions as opposed
@@ -234,9 +235,10 @@ The nodes of the tree are of three kinds:
 A node is said to be \defname{prime} if it is the 0$^{th}$ child of an @-node.
 \bigskip
 
-\emph{Notations:} We write $r$ for the root of $\tau(M)$. We write $E$ to denote the parent-child relation
-of the tree, $V$ for the set of vertices (nodes and leaves) of the tree, $N$ for the set of nodes
-and $VL$ for the set of value-leaves. Thus $V = N \union VL$.
+\emph{Notations:} We write $r$ for the root of $\tau(M)$. We write
+$E$ to denote the parent-child relation of the tree, $V$ for the set
+of vertices (nodes and leaves) of the tree, $N$ for the set of nodes
+and $L$ for the set of value-leaves. Thus $V = N \union L$.
 
 We write $N_\Sigma$ for the set of $\Sigma$-labelled nodes, $N_@$ for the set
 of @-labelled nodes, $N_{\sf var}$ for the set of variable nodes,
@@ -263,8 +265,8 @@ type(r) &=& \Gamma \rightarrow T \\
 type(\alpha:A) &=& A, \mbox{ where $\alpha \in N_{\sf var} \union N_\Sigma$} \\
 type(n) &=& \hbox{ type of the term $\kappa(n)$ for $n \in (N_\lambda \union N_@) \setminus \{r \}$\ .}
 \end{eqnarray*}
-The order of a node $n$ written $\ord{n}$ is defined to be the order of the type of $n$.
-The order of a value-leaf $v \in VL$ is $0$.
+The order of a node $n$ written $\ord{n}$ is defined to be the order
+of the type of $n$. The order of a value-leaf $v \in L$ is $0$.
 \end{definition}
 
 In particular, $\ord{@} = 0$, $\ord{\lambda \overline{\xi}} = 1+
@@ -473,11 +475,11 @@ The P-view of a justified sequence of nodes $t$ of $\tau(M)$, written $\pview{t}
 $$\begin{array}{rcll}
  \pview{\epsilon} &=&  \epsilon \\
  \pview{s \cdot n }  &=&  \pview{s} \cdot n
-    & \mbox{for $n \in N_{\sf var} \union N_\Sigma \union N_@ \union VL_\lambda$;}
+    & \mbox{for $n \in N_{\sf var} \union N_\Sigma \union N_@ \union L_\lambda$;}
     \\
  \pview{\Pstr[10pt]{ s \cdot (m){m} \cdot \ldots \cdot (lmd-m,25){n}}} &=&
         \Pstr{ \pview{s} \cdot (m2){m} \cdot (lmd2-m2,60){n} }
-    & \mbox{for $n \in VL_{\sf var} \union VL_\Sigma \union VL_@ \union N_\lambda$;}
+    & \mbox{for $n \in L_{\sf var} \union L_\Sigma \union L_@ \union N_\lambda$;}
     \\
  \pview{s \cdot r }  &=&  r
     & \mbox{if $r$ is the root of the tree $\tau(M)$. }
@@ -496,11 +498,11 @@ The O-view of a justified sequence of nodes $t$ of $\tau(M)$, written $\oview{t}
 $$\begin{array}{rcll}
  \oview{\epsilon} &=&  \epsilon \\
  \oview{s \cdot n }  &=&  \oview{s} \cdot n
-    & \mbox{for $n \in VL_{\sf var} \union VL_\Sigma \union VL_@ \union N_\lambda$;}
+    & \mbox{for $n \in L_{\sf var} \union L_\Sigma \union L_@ \union N_\lambda$;}
     \\
  \oview{\Pstr[10pt]{s \cdot (m){m} \cdot \ldots \cdot (x-m,30){n}}} &=&
     \Pstr{ \oview{s} \cdot (m2){m} \cdot (n2-m2,60){n} }
-    & \parbox[t]{10cm}{for $n \in N_{\sf var} \union VL_\lambda$ (if $n \in N_{\sf var}$ then the represented pointer is its main link);}
+    & \parbox[t]{10cm}{for $n \in N_{\sf var} \union L_\lambda$ (if $n \in N_{\sf var}$ then the represented pointer is its main link);}
     \\
  \oview{s \cdot n }  &=&  n
     & \mbox{for $n \in N_@ \union N_\Sigma$ }
@@ -512,8 +514,7 @@ $$\begin{array}{rcll}
 We borrow some game semantic terminology:
 \begin{definition} A justified sequence of nodes $s$ satisfies:
 \begin{itemize}[-]
-\item \defname{Alternation} if for any two consecutive nodes in $s$, one is a $\lambda$-node
-and the other is not;
+\item \defname{Alternation} if for any two consecutive nodes in $s$, one is in $V_\lambda$ and not the other one;
 \item \defname{P-visibility} if for every variable node in $s$, all its justifiers (main and auxiliaries) occur in the P-view a that point;
 \item  \defname{O-visibility} if the justifier of each lambda node in $s$ occurs in the O-view a that point.
 \end{itemize}
@@ -628,21 +629,21 @@ so is \Pstr[0.5cm]{ t' \cdot (n){n} \cdot
 A traversal that cannot be extended by any rule is said to be \emph{maximal}.
 \end{definition}
 
-
-A traversal always starts by visiting the root. Then it mainly
-follows the structure of the tree.
-
-The \rulenamet{Var} rule is particular and needs further explanation.
-This rule permits the traversal to jump across the computation tree. The idea is that after visiting a
-non-input variable node $x$, a jump can be made to the node corresponding to
-the subterm that would be substituted for $x$ if all the
-$\beta$-redexes occurring in the term were to be reduced.
-
-
-Let $\lambda \overline{x}$ be $x$'s binder and suppose $x$ is the $i$th variable in $\overline{x}$.
-The binding node necessarily occurs previously in the traversal (this will be proved in Prop. \ref{prop:pviewtrav_is_path}). Since $x$ is not hereditarily justified by the root, $\lambda \overline{x}$ is not the root of the tree and therefore it is not the first node of the traversal.
-We do a case analysis on the node preceding $\lambda \overline{x}$:
-    \begin{itemize}[-]
+A traversal always starts with the root node and mainly follows the
+structure of the tree. The exception is the \rulenamet{Var} rule
+which permits the traversal to jump across the computation tree. The
+idea is that after visiting a non-input variable node $x$, a jump
+can be made to the node corresponding to the subterm that would be
+substituted for $x$ if all the $\beta$-redexes occurring in the term
+were to be reduced. Let $\lambda \overline{x}$ be $x$'s binder and
+suppose $x$ is the $i$th variable in $\overline{x}$. The binding
+node necessarily occurs previously in the traversal (this will be
+proved in Prop. \ref{prop:pviewtrav_is_path}). Since $x$ is not
+hereditarily justified by the root, $\lambda \overline{x}$ is not
+the root of the tree and therefore it is not the first node of the
+traversal. We do a case analysis on the node preceding $\lambda
+\overline{x}$:
+    \begin{itemize}
     \item If it is an @-node then $\lambda \overline{x}$ is necessarily the first child node of that node
     and it has has exactly $|\overline{x}|$ siblings:
     $$\pstree[levelsep=7ex]{\TR{\stackrel{\vdots}{@}}}
@@ -773,8 +774,7 @@ and we take the following condition as a prerequisite:
   \textbf{(Condition WB)} The constant traversal rules are well-behaved.
 \end{center}
 
-
-\subsubsection{Some properties of traversals}
+\bigskip
 
 \begin{proposition}[counterpart of proposition 6 from \cite{OngHoMchecking2006}]
 \label{prop:pviewtrav_is_path}
@@ -807,6 +807,7 @@ Rule \rulenamet{Lam}: we need to show that $n$'s main enabler occurs only once i
 %    there is only one way to extend the traversal : by using the copy cat rule to answer the $y$ node.
 
 
+\subsubsection{Traversal reduction}
 
 
 
@@ -814,122 +815,13 @@ Rule \rulenamet{Lam}: we need to show that $n$'s main enabler occurs only once i
 The \defname{reduction of a traversal} $t$ is define as the subsequence $t\filter r$ where $r$ denotes the only occurrence of $\tau(M)$'s root in $t$.
 \end{definition}
 The effect of this transformation is the elimination of the
-``internal nodes'' of the computation. Since @-nodes and $\Sigma$-constants do not have pointers, the
-reduction of traversal contains only nodes in $N_\lambda \union
-N_{\sf var}$.
+``internal nodes'' of the computation. Since @-nodes and
+$\Sigma$-constants do not have pointers, the reduction of traversal
+contains only nodes in $V_\lambda \union V_{\sf var}$.
 
 We define the set
 $$\travset(M)^{\filter r} = \{ t  \filter r \ | \  t  \in \travset(M) \} \ . $$
 
-
-
-
-\begin{lemma}
-\label{lem:var_followedby_child} Suppose $M$ is in $\beta$-normal
-form. Let $t \in \travset(M)$. If
-$\Pstr{ t = u_1 \cdot (m){m} \cdot u_2 \cdot (n-m,30){n} }$
- where $m \in (N_{\sf var} \union N_{\Sigma}) \setminus (N^{r\vdash}_{\sf var} \union N^{r\vdash}_{\Sigma})$
-then $u_2 = \epsilon$.
-\end{lemma}
-\begin{proof}
-By case analysis on the rule used to visit the node
-$n$ in $t$. The only relevant rules are (Var), (Answer-var), (InputVar$^{val}$), (InputVar)
-and the constant rules.
-Since the term is in $\beta$-normal form, there is no @-node in $\tau(M)$ and therefore (Var) cannot be used.
-Since $m$ is not hereditarily enabled by the root, it is not an input-variable and therefore the rules (InputVar$^{val}$) and (InputVar) cannot be used.
-For the rule (Answer-var) the result follows from the well-bracketedness of traversals.
-For constant rules, the result follows from the well-behaviour of constant rules (condition WB).
-\end{proof}
-
-\begin{lemma}[View of a traversal reduction]
-\label{lem:redtrav_trav} Suppose that $M$ is a $\beta$-normal term and let $t$ be a traversal of $\tau(M)$ then
-\begin{itemize}
-\item[(i)] $ \pview{t \filter  r } = \pview{t} \filter r$\ ;
-\item[(ii)] if $t^\omega \in N^{r\vdash}$ ({\it i.e.}~$t$'s last node is hereditarily justified by $r$) then
-    $\oview{t \filter r } = \oview{t}$\ .
-\end{itemize}
-\end{lemma}
-In the safe lambda calculus without interpreted constants this lemma
-follows immediately from the fact that $\travset(M) =
-\travset(M)^{\filter r }$ if $M$ is $\beta$-normal. Here we prove the result in a
-more general setting of a calculus extended with interpreted
-constants whose corresponding traversal rules are
-\emph{well-behaved}.
-
-
-\begin{proof}
-(i) By induction. It is trivially true for the empty
-traversal. Step case: consider a traversal $t$ and
-suppose that the property (i) is verified for all traversal shorter
-than $t$:
-\begin{itemize}[-]
-\item If $t = t' \cdot r$ then:
-    \begin{align*}
-    \pview{t} \upharpoonright  r
-        &=  \pview{t' \cdot r } \filter  r       & (\mbox{def. of } t)\\
-        &=  r \filter  r                         & (\mbox{def. P-view})\\
-        &=  r                                                & (\mbox{def. operator $\filter$})\\
-        &=  \pview{(t' \filter  r ) \cdot r }    & (\mbox{def. P-view})\\
-        &=  \pview{(t' \cdot r)  \filter  r }    & (\mbox{def. operator $\filter$})\\
-        &= \pview{t \filter  r }                & (\mbox{def. of } t).
-    \end{align*}
-\item If $t = t' \cdot n$ with $n \in N_{\sf var} \union N_{\Sigma}$ then:
-    \begin{align*}
-    \pview{t} \filter  r
-&= \pview{t' \cdot n} \filter  r & (\mbox{definition of } t)\\
-        &= (\pview{t'} \cdot n) \filter  r  & (\mbox{P-view computation}) \\
-        &= \pview{t'} \filter  r  \cdot (n \filter  r)            & (\mbox{def. of filtering $\filter$}) \\
-        &= \pview{t' \filter  r } \cdot (n \filter  r)           & (\mbox{induction hypothesis}) \\
-        &= \pview{t' \filter  r \cdot (n \filter  r) } & (\mbox{P-view computation, $n \in N_{\sf var} \union N_{\Sigma}$}) \\
-        &= \pview{(t' \cdot n ) \filter  r  }           & (\mbox{def. of filtering $\filter$}) \\
-        &= \pview{t \filter  r  }
- & (\mbox{definition of } t).
-    \end{align*}
-
-
-\item If $\Pstr{ t =  t' \cdot (m){m} \cdot  u \cdot (lmd-m,30){n}}$ with $n\in N_\lambda \setminus N^{r\vdash}_\lambda$ then we have $u = \epsilon$ by lemma
-    \ref{lem:var_followedby_child} and:
-        \begin{align*}
-        \pview{t} \filter  r
-        &= \pview{\Pstr{t' \cdot (m){m} \cdot (n-m,60){n}}} \filter  r
-                                                        & (u=\epsilon)\\
-        &= (\Pstr{\pview{t'} \cdot (m){m} \cdot (lmd-m,60){n}} ) \filter  r
-                                                        & (\mbox{P-view computation}) \\
-        &= \pview{t'} \filter  r                & (m, n \not\in N^{r\vdash}) \\
-        &= \pview{t' \filter  r }               & \mbox{(induction hypothesis)} \\
-        &= \pview{ (\Pstr{t' \cdot (m){m} \cdot (lmd-m,40){n}}) \filter r }
-                                                        & (m, n \not\in N^{r\vdash}) \\
-        &= \pview{ t \filter r }             & \mbox{(def. of $t$ \& $u = \epsilon$).}
-        \end{align*}
-
-\item If $\Pstr{ t =  t' \cdot (m){m} \cdot u \cdot (lmd-m,30){n} }$ with $n\in N^{r\vdash}_\lambda$ then:
-        \begin{align*}
-        \pview{t} \filter  r
-        &= \pview{\Pstr{t' \cdot (m){m} \cdot u \cdot (n-m,40){n}}} \filter  r
-                                                              & (\mbox{definition of } t)\\
-        &= (\Pstr{\pview{t'} \cdot (m){m} \cdot  (lmd-m,60){n}}) \filter  r
-                                                              & (\mbox{P-view computation}) \\
-        &= \Pstr{ \pview{t'} \filter  r \cdot (m){m} \cdot  (lmd-m,60){n} }
-                                                              & (m, n \in N^{r\vdash}) \\
-        &= \Pstr{ \pview{t'\filter r}  \cdot (m){m} \cdot  (lmd-m,60){n} }
-                                                              & \mbox{(induction hypothesis)} \\
-        &= \pview{ \Pstr{t' \filter r \cdot (m){m} \cdot {(u \filter r)} \cdot (lmd-m,35){n}}}
-                                                           & (\mbox{P-view computation}) \\
-        &= \pview{ (\Pstr{t' \cdot (m){m} \cdot u \cdot (lmd-m,35){n}}) \filter r }
-                                                           & (m, n \in N^{r\vdash}) \\
-        &= \pview{ t \filter r }                & \mbox{(def. of $t$).}
-        \end{align*}
-\end{itemize}
-(ii) By a straightforward induction similar to (i).
-\end{proof}
-
-\begin{remark}
-\label{rem:inputvar}
-Using the previous lemma we observe that in the definition of the rule \rulenamet{InputVar} we have
-$n \in N_\lambda^{r\vdash}$. Indeed,
-$\oview{t_1 \cdot x } = \oview{ (t_1 \cdot x) \filter r}$ therefore $n$
-is hereditarily enabled by $r$.
-\end{remark}
 
 \begin{lemma}[Traversal of $\beta$-normal terms]
 \label{lem:betaeta_trav}
@@ -950,6 +842,678 @@ therefore the ``or'' is exclusive : a node cannot be both hereditarily
 enabled by $r$ and by some node in $N_\Sigma$.
 \end{proof}
 
+
+
+
+\subsubsection{@-free traversals}
+
+When defining computation trees, it was necessary to introduce
+application nodes (labelled @) in order to connect the operator and
+the operand of an application. The presence of @-nodes has also
+another advantage: it ensures that the lambda-nodes are all at even
+level in the computation tree, and thus a traversal respects a
+certain form of alternation between lambda nodes and non-lambda
+nodes. Application nodes are however redundant in the sense that
+they do not play any role in the computation of the term. In fact it
+will be necessary to filter them out in order to establish the
+correspondence with the interaction game semantics.
+
+\begin{definition}[@-free traversal]
+\label{dfn:appnode_filter} Let $t$ be a traversal of $\tau(M)$. We
+write $t-@$ for the sequence of nodes-with-pointers obtained by
+\begin{itemize}
+\item removing from $t$ all @-nodes and value-leaves of some @-node;
+\item replacing any link pointing to an @-node by a link pointing to the immediate predecessor of @ in $t$.
+\end{itemize}
+
+Suppose $u = t-@$ is a sequence of nodes obtained by applying the
+previously defined transformation on the traversal $t$, then $t$ can
+be partially recovered from $u$ by reinserting the @-nodes as
+follows. For each @-node in the computation tree with parent node
+denoted by $p$, we perform the following operations:
+\begin{enumerate}
+\item replace every occurrence of the pattern $p \cdot n$ for some $\lambda$-node
+$n$,
+by $p \cdot @ \cdot n$;
+\item replace any link in $u$ starting from a $\lambda$-node and pointing to $p$ by a link pointing to the inserted @-node;
+\item if there is an occurrence in $u$ of a value-leaf $v_p$ pointing to $p$ then insert a value-leaf $v_@$
+immediately before $v_p$ and make it point to the node
+immediately following $p$ (which is also the $@$-node that we
+inserted in 1).
+\end{enumerate}
+We write $u+@$ for this second transformation.
+\end{definition}
+These transformations are well-defined because in a traversal, an
+@-node always occurs in-between two nodes $n_1$ and $n_2$ such that
+$n_1$ is the parent node of @ and $n_2$ is the first child node of @
+in the computation tree:
+$$      \pstree[levelsep=4ex]{\TR{n_1}\treelabel{0} }
+        {
+            \pstree[levelsep=3ex]{\TR{@}}
+            {
+                \tree{n_2}{\vdots}
+                \TR[edge=\dedge]{}
+                \TR[edge=\dedge]{}
+            }
+        }
+$$
+\begin{lemma} \label{lem:minus_at_plus_at}
+$$\forall t \in \travset(M), \quad (t-@)+@ = \left\{
+            \begin{array}{ll}
+              t, & \hbox{if $t^\omega \neq @$\ ;} \\
+              \ip\ t, & \hbox{if $t^\omega = @$\ .}
+            \end{array}
+          \right.
+$$
+\end{lemma}
+\proof The result follows immediately from the definition of the
+operation -@ and +@. \qed
+\bigskip
+
+We introduce the following set:
+$$
+\travset(M)^{-@} = \{ t - @ \ | \  t \in \travset(M) \} \ .
+$$
+
+\begin{remark}
+Sequences from $\travset(M)^{-@}$ are not, strictly speaking, proper
+justified sequences of nodes since after removing @-nodes, all prime
+$\lambda$-nodes become justified by their parent's parent which are
+also $\lambda$-nodes! Also these sequences do not respect
+alternation since two $\lambda$-nodes may become adjacent after
+removing a @-node.
+\end{remark}
+
+
+\begin{remark}
+If $M$ is $\beta$-normal then $\tau(M)$ does not contain any @-node
+therefore all nodes are hereditarily justified by $r$ and we have
+$\travset(M)^{-@} = \travset(M) = \travset(M)^{\filter r }$.
+\end{remark}
+
+
+
+Since sequences in $\travset(M)^{-@}$ are not strictly speaking
+proper justified sequences, the operations that we have defined for
+justified sequences are undefined on $\travset(M)^{-@}$. However we
+can extend the hereditary filtering operation to sequences of
+$\travset(M)^{-@}$: for $u\in \travset(M)^{-@}$ and $n$ some node
+occurrence in $u$, the sequence $u\filter n$ is defined to be the
+subsequence of $u$ consisting of nodes that are hereditarily
+justified by $n$. Note that since the operation $-@$ changes the
+justification pointers, the hereditary justification relation nodes
+of a traversal $t$ is different from the hereditary justification
+relation of the sequence $t-@$. Thus $(t\filter n)-@ \subseqof (t-@)
+\filter n_0$ but $(t\filter n)-@ \neq (t-@) \filter n$.
+
+For any traversal $t\in \travset(M)$ and node $n$ occurring in
+$t-@$, we write $t \filter^@ n$ to denote the sequence $((t-@)
+\filter n)+@$. Strictly speaking, the operation +@ has only been
+defined for sequence of $\travset^{-@}(M)$, therefore since $(t-@)
+\filter n$ is not of the form $t'-@$, the expression $((t-@) \filter
+n)+@$ is undefined. However one can trivially extend the definition
+of $+@$ to any sequence of node. Moreover we will see a {\em
+posteriori} that the sequence $(t-@) \filter n$ is indeed of the
+form $t'-@$ for some traversal $t'$ of the computation tree of some
+subterm of $M$.
+
+\bigskip
+
+
+Since traversals are well-bracketed, so are the sequences in
+$\travset^{-@}(M)$. On well-bracketed sequences (either traversals
+or @-free traversals), the function $?(\_)$ is defined as follows:
+\begin{eqnarray*}
+  ?(\Pstr[0.4cm]{t \cdot (n){n} \ldots (nv-n){n_v} }  ) &=& ?(t) \\
+    ?(t) \cdot n &=& ?(t)\cdot n    \quad \mbox{where $n\not\in L$} \ .
+\end{eqnarray*}
+
+\begin{lemma}
+  Let $u \in \travset^{-@}(M)$ and $n$ be the occurrence of a $\lambda$-node in $u$. If $u^\omega$ is hereditarily justified by $n$ then $?(u\filter n) = ?(u)$
+\end{lemma}
+\proof
+  By induction on the length of $u$. It is trivial for the empty traversal.
+  \begin{compactitem}
+  \item If $\Pstr[0.7cm]{u = u_1 \cdot (n){n} \cdot u_2 \cdot (vn-n){v_n}}$ then by well-bracketing, $?(u_2) = \epsilon$
+  and $?(u) = ?(u_1)$.
+
+  Suppose $n$ is her.\ just.\  by $n$ then so is $v_n$ therefore:
+  $\Pstr[0.7cm]{{?(u\filter n)} = ?{((u_1\filter n)} \cdot (n){n} \cdot {(u_2\filter n)} \cdot (vn-n){v_n}}{)}
+   = ?(u_1\filter n)$ since by the I.H. $?(u_2\filter n) = ?(u_2) = \epsilon$.
+   And again by the I.H. $?(u_1\filter n) = ?(u_1)$.
+
+  Suppose $n$ is not her.\ just.\  by $n$ then so is $v_n$ therefore:
+  $?(u\filter n) = ?((u_1\filter n) \cdot (u_2\filter n))$ and we can conclude using the induction hypothesis.
+
+  \item If $u = u_1 \cdot n$ where $n$ is not a value-leaf. Then $?(u) = ?(u_1) \cdot n$.
+  And since by hypothesis $n$ is here. just. by $n$ we have
+  $?(u \filter n) = ?(u_1\filter n ) \cdot n = ?(u_1) \cdot n$ by the induction hypothesis. \qed
+  \end{compactitem}
+% end of proof
+
+\begin{lemma}
+Let $t$ be a traversal of $M$, $t'$ be a traversal of some subterm
+$M'$ such that $t'-@ \subseqof t-@$. Then we have $t'\subseqof t$.
+\end{lemma}
+\begin{proof}
+
+\end{proof}
+
+\begin{lemma}
+\label{lem:trav_last_not_leaf} If $t \cdot n $ is a traversal with
+$n \in N_{\sf var} \union N_\Sigma \union N_@$ then $t^\omega \in
+N_\lambda$ (and therefore  $t^\omega$ is not a leaf: $n\not\in L$).
+\end{lemma}
+\begin{proof}
+This can be easily checked by inspecting the form of the traversal
+rules.
+\end{proof}
+
+
+\begin{lemma}[Traversal filtering lemma]
+\label{lem:trav_filtering} Let $\Gamma(r') \vdash \kappa(r') :
+T(r')$ be some subterm of $\elnf{M}$ for some $r'\in N_\lambda$. Let
+$t \in \travset(M)$ and $r_0$ be an occurrence of $r'$ in $t$. Let
+$M'$ denote the term $\kappa(r')$ and $N'$ be the set of nodes of
+the tree $\tau(\kappa(r'))$.
+
+\begin{enumerate}
+\item[(T)] If $t$'s last node is her.\ just.\ by $r_0$ in $t-@$ then
+ $(t-@)\filter r_0 \in \travset^{-@}(\kappa(r'))$,
+{\it i.e.}\ $t'-@ = (t-@)\filter r_0$ for some traversal $t' \in
+\travset(\kappa(r'))$.
+
+\item[(Var$\leftrightarrow\lambda$)] Suppose $t = \ldots \cdot m \cdot n$ where
+$m\in N_{\sf var} \union N_\Sigma \union N_@ \union L_\lambda$
+and $n\in L_{\sf var} \union L_\Sigma \union L_@ \union
+N_\lambda$.
+
+If $n$ is her.\ just.\  by $r_0$ in $t-@$ then so is $m$.
+
+If $m$ is her.\ just.\  by $r_0$ in $t-@$ and $m \in N'$ then
+$n$ is her.\ just.\  by $r_0$ in $t-@$ .
+
+\item[(O)]  hence if $t$'s last node is her.\ just.\ in $t-@$ by $r_0$ then all the nodes from $t-@$ occurring in
+$\oview{t}$ are also her.\ just.\ by $r_0$ in $t-@$ and
+therefore $\oview{t}_M \filter N' = \oview{t\filter^{@}
+r_0}_{M'}$.
+
+
+
+\item[($\lambda\rightarrow$Var)] \{DONE 3\} Suppose $t = \ldots \cdot \lambda \overline{\xi}\cdot y$.
+
+If $\lambda \overline{\xi}$ is  her.\ just.\ by $r_0$ in $t-@$
+then so is $y$.
+
+
+\item[($\lambda\leftarrow$Var)] Suppose $t = \ldots \cdot \lambda \overline{\xi} \cdot y$.
+
+ If $y$ is her.\ just.\  by $r_0$ in $t-@$ then so is $\lambda
+\overline{\xi}$.
+
+\item[(P)] \{DONE 1\} hence if $t$'s last node is not a leaf and it is her.\ just.\ by $r_0$ in $t-@$ then
+$\pview{t}^M \filter N' = \pview{t\filter^@ r_0}^{M'}$ and $r_0$
+occurs in $\pview{t}$;
+
+\item[(*)] \{DONE 2\} If $n$ is her.\ just.\ by $r_0$ in $t-@$ then $n \in N'$.
+\end{enumerate}
+\end{lemma}
+\begin{proof}
+  We prove all the properties simultaneously by induction on the traversal rules. The base cases \rulenamet{Empty} and \rulenamet{Root} are trivial.
+    \emph{Step case:} Take a traversal $t = u \cdot n \in  \travset(M)$ formed
+    using another rule and suppose that the property is verified for all traversal shorter than $t$:
+%  Suppose $u$'s last node is not in $(t-@)\filter r_0$. By visibility of traversals,
+%  $n$'s justifiers\footnote{We recall that if $n$ is a variable node then it may have auxiliary justifiers.} are in $\pview{u}$ or $\oview{u}$ (depending on the type of $n$), thus by
+%  Lemma \ref{lem:view_of_appfreefilter}, all $n$'s justifiers
+%  are not in $(t-@)\filter r_0$. Consequently $n\not\in (t-@)\filter r_0$ and therefore by the induction hypothesis $(v)$ holds for $t$.
+%  Furthermore we have $(t-@)\filter r_0 = (u-@)\filter r_0$ therefore by induction hypothesis on $u$
+%  property $(i)$ holds.
+   Since $n$ is her.\ just.\ by $r_0$ in $t-@$, by ($ii$) and (L$\leftarrow$V),
+  $u$'s last node is also her.\ just.\ by $r_0$ in $t-@$.
+
+
+\indent For $(T)$, $(Var$\leftrightarrow\lambda$)$,
+(L$\rightarrow$V), (L$\leftarrow$V) and $(*)$, we do a case analysis
+on the last traversal rule used:
+
+  \notetoself{
+  \begin{itemize}
+    \item \rulenamet{Lam}
+    Suppose $t = w \cdot \lambda \overline{\xi} \cdot n \in
+    \travset(M)$. By the induction hypothesis, for some
+    traversal $w' \in \travset(\M')$ we have $w'-@ = ((w \cdot
+    \lambda \overline{\xi}) -@)\filter r_0$. W.l.o.g. we can
+    assume that $w'^\omega \neq @$.
+
+    Since $\lambda \overline{\xi} = u^\omega$ is in $O$, $w'$'s
+     last node must be $\lambda \overline{\xi}$. Thus we can use
+     the rule \rulenamet{Lam} in $\tau(M')$ to produce the
+     traversal $w' \cdot n$ of $M'$ verifying
+    $(w' \cdot n) - @  = ((w \cdot \lambda \overline{\xi} \cdot
+    n) -@)\filter r_0$. Hence ($i$) holds.
+
+    \item \rulenamet{App}
+     Suppose $t = w \cdot \lambda \overline{\xi} \cdot @ \cdot n
+     \in \travset(M)$.
+
+     Since $n$ is her.\ just.\  by $r_0$ in $t-@$, so is
+     $\lambda \overline{\xi}$ and we have $(t-@) \filter r_0 =
+     (((w\cdot \lambda \overline{\xi})-@) \cdot n)\filter r_0 =
+                                    ((w\cdot \lambda
+    \overline{\xi})-@)\filter r_0 \cdot n$. By the induction
+    hypothesis $((w\cdot \lambda \overline{\xi}) -@)\filter r_0
+    = w'-@$ for some traversal $w'$ of $M$. Since $\lambda
+    \overline{\xi}$ is her.\ just.\  by $r_0$ w.l.o.g. we can
+    assume that the last move of $w'$ is $\lambda
+    \overline{\xi}$. Thus we can use the rule \rulenamet{Lam}
+    and \rulenamet{App} in $\tau(M')$ to obtain the traversal
+    $w' \cdot @ \cdot n$ of $M'$ and we have: $(t-@) \filter r_0
+    = (w'-@) \cdot n = (w' \cdot @ \cdot n) - @$.
+
+    \item \rulenamet{Answer-@-$\lambda$}, \rulenamet{Answer-$\lambda$-@},
+    \rulenamet{Answer-var-$\lambda$} and
+    \rulenamet{Answer-$\lambda$-var}. These cases are all
+    trivial application of the induction hypothesis.
+
+  \end{itemize}
+
+  ...}
+
+\noindent (P) We do a case analysis on the type of $t$'s last node:
+\begin{itemize}
+%\item If $t = t' \cdot r$ then:
+%    \begin{align*}
+%    \pview{t} \upharpoonright  r
+%        &=  \pview{t' \cdot r } \filter  r       & (\mbox{def. of } t)\\
+%        &=  r \filter  r                         & (\mbox{def. P-view})\\
+%        &=  r                                                & (\mbox{def. operator $\filter$})\\
+%        &=  \pview{(t' \filter  r ) \cdot r }    & (\mbox{def. P-view})\\
+%        &=  \pview{(t' \cdot r)  \filter  r }    & (\mbox{def. operator $\filter$})\\
+%        &= \pview{t \filter  r }                & (\mbox{def. of } t).
+%    \end{align*}
+
+\item The cases $t = t' \cdot n$ with $n\in L_\lambda$ or $n \in L_{\sf var} \union L_@ \union
+L_\Sigma$ do not happen since by assumption $n$ is not a
+leaf.
+
+\item If $t = t' \cdot n$ with $n \in N_{\sf var} \union
+N_\Sigma \union N_@$. By Lemma \ref{lem:trav_last_not_leaf},
+$t'^\omega \in N_\lambda$ therefore by ($\lambda\leftarrow$Var),
+$t'^\omega$ is also her. just. by $r_0$ in $t-@$ and $t'^\omega$
+is not a leaf, thus we can use the induction hypothesis on $t'$:
+    \begin{align*}
+    \pview{t}^M \filter N'
+&= \pview{t' \cdot n}^M \filter  N' & (\mbox{definition of } t)\\
+        &= (\pview{t'}^M \cdot n) \filter  N'  & (\mbox{P-view computation}) \\
+        &= \pview{t'}^M \filter  N'  \cdot n             & (\mbox{$n\in N'$ by (*)}) \\
+        &= \pview{t' \filter^@  r_0 }^{M'} \cdot n            & (\mbox{induction hypothesis}) \\
+        &= \pview{t' \filter^@  r_0 \cdot n }^{M'} & (\mbox{P-view in $M'$}) \\
+        &= \pview{(t' \cdot n ) \filter^@  r_0  }^{M'}           & (\mbox{$n$ is her.\ just.\ by $r_0$ in $t-@$}) \\
+        &= \pview{t \filter^@  r_0  }^{M'}
+ & (\mbox{definition of } t).
+    \end{align*}
+    Furthermore $\pview{t} = \pview{t'} \cdot n$. By the
+    induction hypothesis, $r_0 \in \pview{t'}$ therefore $r_0
+    \in \pview{t}$.
+
+
+%\item If $\Pstr{ t =  t' \cdot (m){m} \cdot  u \cdot (lmd-m,30){n}}$ with
+%$n\in N_\lambda$ and $n\not\in N^{r\vdash}$ then necessarily $m
+%    \in N_@ \union N_{\sf var} \union N_\Sigma $.
+%
+%Let us do a case analysis on the rule used to visit $n$ in $t$.
+%The only relevant rules are \rulenamet{App}, \rulenamet{Var},
+%\rulenamet{InputVar}. Since the term is in $\beta$-normal form,
+%there is no @-node in $\tau(M)$ therefore the rules
+%\rulenamet{App} and \rulenamet{Var} cannot be used. The rule
+%\rulenamet{InputVar} cannot be used either. Indeed, suppose that
+%it is the case then $m$ must belong to $\oview{t_{\prefixof x}}$
+%where $x \in N^{r\vdash}$ is the pending node in $t$. But then
+%by the induction hypothesis ($ii$), all the nodes in
+%$\oview{t_{\prefixof x}}$ are hereditarily justified by $r$
+%therefore we have $m\in N^{r\vdash}$ which contradicts the case
+%hypothesis $n\not\in N^{r\vdash}$.
+%
+%Hence this case does not occur.
+
+  %      \begin{align*}
+%        \pview{t} \filter  r
+%        &= \pview{\Pstr{t' \cdot (m){m} \cdot (n-m,60){n}}} \filter  r
+%                                                        & (u=\epsilon)\\
+%        &= (\Pstr{\pview{t'} \cdot (m){m} \cdot (lmd-m,60){n}} ) \filter  r
+%                                                        & (\mbox{P-view computation}) \\
+%        &= \pview{t'} \filter  r                & (m, n \not\in V^{r\vdash}) \\
+%        &= \pview{t' \filter  r }               & \mbox{(induction hypothesis)} \\
+%        &= \pview{ (\Pstr{t' \cdot (m){m} \cdot (lmd-m,40){n}}) \filter r }
+%                                                        & (m, n \not\in V^{r\vdash}) \\
+%        &= \pview{ t \filter r }             & \mbox{(def. of $t$ \& $u = \epsilon$).}
+%        \end{align*}
+
+\item If $\Pstr{ t =  t' \cdot (m){m} \cdot u \cdot (lmd-m,30){n} }$
+where $n \in N^{r'\vdash}_\lambda$ is her.\ just.\ by $r_0$ in
+$t-@$ and $n\neq r'$, then necessarily $m\in N_{\sf var} \union
+N_\Sigma \union N_@$ and $m$ is also her.\ just.\ by $r_0$ in
+$t-@$. By Lemma \ref{lem:trav_last_not_leaf}, $t'^\omega$ is not
+a leaf, and by ($\lambda\leftarrow$Var), $t'^\omega$ is her.\
+just.\ by $r_0$ in $t-@$, thus we can apply the induction
+hypothesis on $t'$:
+        \begin{align*}
+        \pview{t}^M \filter  N'
+        &= \pview{\Pstr{t' \cdot (m){m} \cdot u \cdot (n-m,40){n}}}^M \filter  N'
+                                                              & (\mbox{definition of } t)\\
+        &= (\Pstr{\pview{t'}^M \cdot (m){m} \cdot  (lmd-m,60){n}}) \filter  N'
+                                                              & (\mbox{P-view computation}) \\
+        &= \Pstr{ \pview{t'}^M \filter N' \cdot (m){m} \cdot  (lmd-m,60){n} }
+                                                              & (\mbox{$m, n \in N'$ by (*)}) \\
+        &= \Pstr{ \pview{t'\filter^@ r_0}^{M'}  \cdot (m){m} \cdot  (lmd-m,60){n} }
+                                                              & \mbox{(induction hypothesis)} \\
+        &= \pview{ \Pstr{t' \filter^@ r_0 \cdot (m){m} \cdot {(u \filter^@ r_0)} \cdot (lmd-m,35){n}}}^{M'}
+                                                           & \parbox[t]{6cm}{(P-view in $M'$, nodes in $m\cdot (u \filter^@ r_0) \cdot n$ are all in $N'$ by (*))} \\
+        &= \pview{ (\Pstr{t' \cdot (m){m} \cdot u \cdot (lmd-m,35){n}}) \filter^@ r_0 }^{M'}
+                                                           & (m, n \in N') \\
+        &= \pview{ t \filter^@ r_0 }^{M'}                & \mbox{(definition of $t$).}
+        \end{align*}
+    Furthermore $\pview{t} = \pview{t' \cdot m} \cdot n$. By the
+    induction hypothesis, $r_0 \in \pview{t' \cdot m}$ therefore
+    $r_0 \in \pview{t}$.
+
+\item If $t =  t' \cdot r_0$ then clearly $r_0 \in \pview{t}$ and:
+    \begin{align*}
+    \pview{t}^M \filter N'
+        &=  \pview{t' \cdot r_0 }^M \filter N'  & (\mbox{def. of } t)\\
+        &=  \pview{t'}^M \filter N' \cdot r_0 & (\mbox{def. P-view})\\
+        &=  \pview{(t'\filter^@ r_0) \cdot r_0 }^{M'}    & (\mbox{induction hypothesis})\\
+        &=  \pview{(t' \cdot r_0)  \filter^@ r_0 }^{M'}    & (\mbox{$r_0$ is her. just. by itself})\\
+        &= \pview{t \filter^@  r }^{M'}                & (\mbox{def. of } t).
+    \end{align*}
+
+\end{itemize}
+
+\indent (*)
+ By (P) we have $r_0 \in \pview{t_{\prefixof n}}$ therefore since
+the P-view of $t_{\prefixof n}$ gives the path from $n$ to the root,
+$n$ must be a descendant of $r'$ in the tree $\tau(M)$ thus $n\in
+N'$.
+\smallskip
+
+\indent ($\lambda\rightarrow$Var) The node $y$ was necessarily
+visited with the rule \rulenamet{Lam} since this is the only rule
+which can visit variable nodes. Thus $y$ points to all the prime
+lambda-nodes in $\pview{t_{\prefixof \lambda \overline{\xi}}}$ as
+well as the first $\lambda$-node in the P-view. But by (P), $r_0$
+must appear in $\pview{t_{\prefixof \lambda \overline{\xi}}}$ and
+the node $r_0$ is precisely either a prime node or the root node $r$
+in which case it must be the first node of $\pview{t_{\prefixof
+\lambda \overline{\xi}}}$. Hence $y$ necessarily points to $r_0$ and
+thus $y \in O$.
+\smallskip
+
+\indent ($\lambda\leftarrow$Var) By (P), $r_0$ appears in
+$\pview{t_{\prefixof \lambda \overline{\xi}}}$. Therefore since the
+P-view is the path to
+
+By P-visibility, $y$ points in $\pview{t_{\prefixof \lambda
+\overline{\xi}}}$, and
+\smallskip
+
+\indent (O) By case analysis similarly to (P).
+
+\end{proof}
+
+
+\begin{proof}
+  By induction on the length of the traversal. It is trivial for the empty traversal.
+\begin{itemize}
+\item  Suppose $t = t' \cdot @$ then $t-@ = t'-@$,
+   $\oview{t} = @$ and $\pview{t'}$ so we can conclude using the
+   induction hypothesis.
+
+\item  Suppose $t = \Pstr[12pt]{ t_1 \cdot (app){@} \cdot (a){\lambda \overline{\xi}}
+        \cdot t_2 \cdot (va-a){v_{\lambda \overline{\xi}}} \cdot
+          (vapp-app){v_@}}$ then $\pview{t} = \pview{t_1} \cdot
+          @ \cdot v_@$, $\oview{t} = @ \cdot \lambda
+          \overline{\xi}
+  \cdot v_{\lambda \overline{\xi}} \cdot v_@$ and $t-@ =
+  \Pstr[12pt]{ {(t_1-@)} \cdot (a){\lambda \overline{\xi}}
+        \cdot {(t_2-@)} \cdot (va-a){v_{\lambda \overline{\xi}}}
+        }$.
+
+  Let $m$ be a node in $t-@$. If $m$ occurs in $\oview{t}$ then
+  either $m=v_{\lambda \overline{\xi}}$ or $m=\lambda
+  \overline{\xi}$. These two moves are hereditarily justified by
+  the same nodes in $t-@$ therefore ($i$) and ($ii$) hold.
+
+  If $m$ occurs in $\pview{t}$ then it also occur in $\pview{t_1
+  \cdot @ \cdot \lambda \overline{\xi}}$ and in $(t_1\cdot @
+  \cdot \lambda \overline{\xi})-@$, thus by the induction
+  hypothesis on $t_1\cdot @ \cdot \lambda \overline{\xi}$, ($i$)
+  and ($ii$) hold.
+
+  \item  Suppose $t = \Pstr[12pt]{ t_1 \cdot (m){m} \cdot t_2 \cdot (n-m){n}}$
+  where $n \in N_{\sf var} \union N_\Sigma \union L_\lambda$. We
+  have $\pview{t} = \pview{t_1} \cdot m \cdot \pview{t_2} \cdot
+  n$ (by P-visibility of $t$) and $\oview{t} = \oview{t_1} \cdot
+  m \cdot n$.
+    Since $t$ is P-visible, $n$'s justifiers\footnote{We recall
+    that if $n$ is a variable node then it may have several
+    auxiliary justifiers.} are all in $\pview{t}$.
+
+  Let $p$ be a node occurring in $t-@$. ($i$) If $n$ is her.
+  just. by $r_0$ then so is its main justifier $m$. Suppose
+  $p\in \pview{t}$.
+
+   therefore by the induction hypothesis, all the nodes in
+  $\pview{t_1 \cdot m}$ that are in $t-@$ are her. just by
+  $r_0$.
+
+
+thus by the induction hypothesis, all $n$'s justifiers occurring
+in $t-@$ are not her.\ just.\  by $r_0$. Consequently neither is
+$n$. Thus
+
+   or $\oview{t_{<n}}$ (depending on the type of $n$),
+  \end{itemize}
+\end{proof}
+
+\begin{corollary}
+\label{cor:redtrav_trav} Suppose that  $M$ is in $\beta$-normal
+form. Let $t$ be a non-empty traversal of $M$ and $r$ denote the
+only occurrence of the root in $t$.
+
+If $t^\omega \in V^{r\vdash}$ ({\it i.e.}~$t$'s last node is
+hereditarily justified by $r$) then
+\begin{enumerate}[(i)]
+\item if $t^\omega \in N$ ({\it i.e.}~$t$'s last node is not a leaf) then $ \pview{t \filter  r } = \pview{t}$ \ ;
+\item $\oview{t \filter r } = \oview{t}$\ .
+\end{enumerate}
+\end{corollary}
+\begin{proof}
+Since $M$ is $\beta$-normal we have $t= t-@$ and $t\filter r = t
+\filter^@ r$. (i) Suppose $t^\omega \not\in L$. Applying the
+previous lemma with $r'=r$ gives: $\pview{t\filter^@ r} =
+\pview{t}\filter N = \pview{t}$. (ii) Similarly, if $t^\omega \in
+V^{r\vdash}$ then the previous lemma gives $\oview{t\filter^@ r} =
+\oview{t} \filter N = \oview{t}$.
+\end{proof}
+Note that in the safe lambda calculus without interpreted constants
+this lemma follows immediately from the fact that if $M$ is
+$\beta$-normal then $\travset(M) = \travset(M)^{\filter r }$.
+However the above result holds in the general settings of calculus
+with interpreted constants (in which case $\travset(M)$ is not equal
+to $\travset(M)^{\filter r }$) with \emph{well-behaved} traversal
+rules.
+
+\begin{remark}
+\label{rem:inputvar} Using this corollary we observe that in the
+definition of the rule \rulenamet{InputVar} we must have $n \in
+N_\lambda^{r\vdash}$. Indeed, since $x\in N^{r\vdash}$ the previous
+corollary gives $\oview{t_1 \cdot x } = \oview{ (t_1 \cdot x)
+\filter r}$. Thus since $n$ occurs $\oview{t_1 \cdot x }$, it must
+be hereditarily justified by $r$ and consequently the node $n$ is
+hereditarily enabled by the root.
+\end{remark}
+
+\paragraph{Mapping @-free traversals to interaction plays}
+    Let $I$ be the interaction game of the interaction strategy $\intersem{\Gamma \vdash M : T}$ and
+    $M_I$ be the set of equivalence class of moves from $\mathcal{M}_I$.
+
+    Let $r'$ be a lambda node in $N_{\sf spawn}$ and let $\Gamma(r') \vdash \kappa(r') : T(r')$ denote the subterm of $\elnf{M}$ rooted at $r'$ where $\Gamma(r')\subseteq \Gamma$.
+    The function $\psi_{\kappa(r')}$ maps nodes of $V^{r'\vdash}$
+    to moves of $\sem{\Gamma(r') \rightarrow T(r')}$. By definition,
+    the set of possible moves $\mathcal{M}_I$ of the interaction game $\intersem{I}$ contains the
+    moves from the game $\sem{\Gamma(r') \rightarrow A(r')}$. Hence $\psi_{\kappa(r')}$ can be regarded as a function from $V^{r'\vdash}$ to $\mathcal{M}_I$.
+
+    Every node in $n \in V\setminus V_@$ is either hereditarily enabled by the root or by some $\lambda$-node in $N_{\sf spawn}$ (the children nodes of @-nodes). Therefore we can define the relation $\psi^*_M$ from
+    $V\setminus V_@$ to $\mathcal{M}_I$ as follows:
+    $$ \psi^*_M = \psi_{M} \quad \union \Union_{r' \in N_{\sf spawn}} \psi_{\kappa(r')} \ .$$
+    It is totally defined on $V\setminus V_@$ since in the present setting where there is no $\Sigma$-constant, nodes are either hereditarily justified by the root or by an @-node.
+
+    $\psi^*_M$ is a relation and not a function since variable nodes can be hereditarily enabled by more than one nodes in $N_{\sf spawn}$  (a variable node is enabled by all the prime $\lambda$-nodes occurring in the path to the root) and thus the domains of definition of the relations $\psi_{\kappa(r')}$ for $r' \in N_{\sf spawn}$ may overlap.  However, it can be easily check that for any node $n \in V\setminus V_@$,
+    the moves in $\psi^*_M (n)$ are all $\sim$-equivalent. This leads us to the following definition:
+
+    \begin{definition}[Mapping from nodes to moves]
+        \label{def:phi mapping}
+        We define the \emph{function}
+        $\varphi_M:V\setminus V_@ \rightarrow M_T$ as follows: for each node $n \in V\setminus V_@$,
+        $\varphi_M(n)$ is defined as the $\sim$-equivalence class containing $\psi^*_M (n)$.
+
+        We omit the subscript in $\varphi_M$ if it does not cause any ambiguity.
+    \end{definition}
+    Assuming that there are not $\Sigma$-nodes, $\varphi_M$ is indeed totally defined on $V \setminus V_@ = V_\lambda \union V_{\sf var}$.
+
+\begin{definition}[Mapping sequences of nodes to sequences of moves]
+\label{dfn:phi_for_justsequ} We define the function $\varphi_M$ from
+$\travset(M)^{-@}$ to justified sequence of moves of $\intersem{I}$
+as follows. If $s = s_0 s_1 \ldots \in \travset(M)^{-@}$ then:
+$$\varphi_M(s) = \varphi_M(s_0)\ \varphi_M(s_1)\  \varphi_M(s_2) \ldots$$
+where $\varphi_M(s)$ is equipped with $s$'s pointers.
+\end{definition}
+
+\begin{example}
+Take $M = \lambda x^o . (\lambda g^{(o,o)} . g x z) (\lambda y^o .
+y)$. The diagram below represents the computation tree (middle) and
+the relation $\psi^*_M = \psi_{\lambda x}\union \psi_{\lambda g}
+\union \psi_{\lambda y}$ (dashed-lines).
+$$\psset{levelsep=3.5ex}
+\pstree{\TR[name=root]{\lambda x}}
+{
+    \pstree{\TR[name=App]{@}}
+    {
+            \pstree{\TR[name=lg]{\lambda g}}
+                { \pstree{\TR[name=lgg]{g}}{
+                        \pstree{\TR[name=lgg1]{\lambda}}
+                        { \TR[name=x]{x}  }
+                        \pstree{\TR[name=lgg2]{\lambda}}
+                        { \TR[name=z]{z}  }
+                        } }
+            \pstree{\TR[name=ly]{\lambda y}}
+                    {\TR[name=lyy]{y}}
+    }
+}
+\rput(4.5cm,-1cm){
+  \pstree{\TR[name=A1lx]{q_{\lambda x}}}
+        { \TR[name=A1x]{q_x}
+          \TR[name=A1z]{q_z} }
+}
+\rput(-6cm,-1.5cm){
+    \pstree{\TR[name=A2lg]{q_{\lambda g}}}
+    {
+        \TR[name=A2x]{q_x'}
+        \TR[name=A2z]{q_z'}
+        \pstree{\TR[name=A2g]{q_g}}
+        {  \TR[name=A2g1]{q_{g_1}}   }
+    }}
+\rput(2.5cm,-1.5cm){
+    \pstree{\TR[name=A3ly]{q_{\lambda y}}}
+        { \TR[name=A3y]{q_y}
+        }
+}
+\psset{nodesep=1pt,arrows=->,arcangle=-20,arrowsize=2pt 1,linestyle=dashed,linewidth=0.3pt}
+\ncline{->}{root}{A1lx} \mput*{\psi_M}
+\nccurve[angleA=-60,angleB=-150]{->}{x}{A1x}
+\ncarc{->}{z}{A1z}
+\ncarc[arcangle=30]{->}{x}{A2x}
+\nccurve[angleA=-150,angleB=-60]{->}{z}{A2z}
+\ncline{->}{lg}{A2lg} \mput*{\psi_{\lambda g. g x}}
+\ncline{->}{lgg}{A2g}
+\ncline{->}{lgg1}{A2g1}
+\ncline{->}{ly}{A3ly} \mput*{\psi_{\lambda y.y}}
+\ncline{->}{lyy}{A3y}
+$$
+\vspace{18pt}
+
+where $q_x'\sim q_x$, $q_z'\sim q_z$, $q_g\sim q_{\lambda y}$,
+$q_{g_1}\sim q_y$ and $q_{\lambda g}\sim q_{\lambda x}$.
+\end{example}
+
+
+\begin{lemma}[Filtering lemma for @-free traversals]
+\label{lem:varphi_filter} Let $r'\in N_\lambda$, $\Delta \vdash M' :
+A$ be the subterm of $\elnf{M}$ rooted at $r'$, $t\in\travset(M)$,
+$r'_0$ be an occurrence of $r'$ in $t$ and $m_0$ be the occurrence
+of the initial $A$-move $\varphi_M(r'_0)$ in $\varphi_M(t-@)$ then:
+$$\begin{array}{rrcl}
+(i)& \varphi_{M'}((t-@)\filter r'_0) &=& \varphi_M(t-@) \filter m_0 \\ \\
+(ii) & \varphi_M(\travset^{-@}(M)) \filter \sem{\Gamma \rightarrow T} &=& \psi_M(\travset^{\filter r}(M))\ .
+\end{array}
+$$
+\end{lemma}
+\proof ($i$) Firstly, by Lemma \ref{lem:trav_filtering},
+$(t-@)\filter r'_0$ is a traversal of $\travset(M')$ therefore
+$\varphi_{M'}((t-@)\filter r'_0)$ is well-defined. By Definition
+\ref{dfn:phi_for_justsequ} we must have $\varphi_{M}((t-@)\filter
+r'_0) = \varphi_M(t-@) \filter m_0$. Furthermore, because of the
+inductive definition of $\varphi_{M}$, $\varphi_{M'}$ coincides with
+the restriction of $\varphi_{M}$ to the set of nodes of the subtree
+of $\tau(M)$ rooted at $r'$. This allows us to conclude.
+
+
+($ii$) Let $H$ be the set of nodes of $\tau(M)$ which are mapped by
+$\varphi^*(M)$ to moves that are $\sim$-equivalent to moves in
+$\sem{\Gamma \rightarrow T}$. We show that $H = V^{r\vdash}$.
+
+Since $\psi_M \subseteq \varphi^*(M)$ and the image of $\psi(M)$ is
+$\sem{\Gamma \rightarrow T}$, $H$ must contain the domain of
+$\psi(M)$ which is $V^{r\vdash}$.
+
+Conversely, suppose that a node $n \in N\setminus N_@$ is mapped by
+$\varphi^*(M)$ to some move $m\in \mathcal{M}_I$ $\sim$-equivalent
+to some move in $\sem{\Gamma \rightarrow T}$.
+ If $m = \psi_M(n)$ then $n\in V^{r\vdash}$. Otherwise,
+$m = \psi_{\kappa(r')}(n)$ for some $r' \in N_{\sf spawn}$. There
+may be several node $r'$ such that $n$ belongs to the domain of
+definition of $\psi_{\kappa(r')}$. W.l.o.g. we can take $r'$ to be
+the one which is closest to the root $r$. Let $\Gamma(r') \vdash
+\kappa(r') : T(r')$.
+    \begin{compactitem}
+    \item Suppose that $m$ is $\sim$-equivalent to a move in the subgame $\sem{\Gamma}$ of $\sem{\Gamma \rightarrow T}$
+    then this means that $n$ is hereditarily justified by a free variable node in $M$ and therefore $n \in V^{r\vdash}$.
+
+    \item Suppose that $m$ is $\sim$-equivalent to a move in the subgame $\sem{T}$ of $\sem{\Gamma \rightarrow T}$
+    then $m$ necessarily belongs to the subgame $\Gamma(r')$ of $\sem{\Gamma(r')\rightarrow T(r')}$ .
+    Indeed, since $r'$'s parent node is an application node, moves in the subgame
+    $\sem{T(r')}$ correspond to internal moves of the application. By definition of
+    the interaction strategy for the application case, such moves can only be $\sim$-equivalent to other internal
+    moves and thus cannot be equivalent to move in $\sem{T}$.
+
+    Consequently, $n$ is her.\ just.\  by a free variable node $z$ in $\kappa(r')$. By assumption, $r'$ is the closest node to the root $r$ (excluding $r$ itself) for which $n$ belongs to $V^{r'\vdash}$ (the domain of definition of $\psi_{\kappa(r')}$). Hence $z$ is not bound by any $\lambda$-node occurring in the path to the root. Thus $z\in
+    V^{r\vdash}$ and therefore $n \in V^{r\vdash}$.
+    \end{compactitem}
+Hence $H = V^{r\vdash}$.
+
+Therefore for any traversal $t$ of $M$, $\varphi_M(t-@) \filter
+\sem{\Gamma \rightarrow T} = \varphi_M((t-@)\filter V^{r\vdash})$
+where $(t-@)\filter V^{r\vdash}$ is the subsequence of $t-@$
+consisting of nodes that are heditarily enabled by the root $r$.
+Furthermore, since the root appears only once in a traversal,
+``hereditary enabled by the root'' coincides with ``hereditary
+justified in $t$ by the only occurrence of $r$ in $t$'', and since
+nodes her.\ just.\  by @-nodes in $t$ are not her.\ just.\  by the
+root we have:
+$$\varphi_M((t-@)\filter V^{r\vdash}) = \varphi_M(t\filter r) \qquad \qed$$
+
+
+\bigskip
 
 
 \section{Game semantics correspondence}
@@ -1069,14 +1633,16 @@ In the next section, we show how to define this mapping in a systematic manner.
 
 \subsubsection{Formal definition}
 
-We now establish formally the relationship between games and computation trees. Suppose $\Gamma \vdash M : T$
-is in $\eta$-long normal form. We suppose that computation tree $\tau(M)$
-is given by a pair $(V,E)$ where $V$ is the set of vertices of
-and $E \subseteq V \times V$ is the parent-child relation. We have $V = N \union VL$ where $N$
-and $VL$ are the set of nodes and value-leaves respectively.
+We now establish formally the relationship between games and
+computation trees. Suppose $\Gamma \vdash M : T$ is in $\eta$-long
+normal form. We suppose that computation tree $\tau(M)$ is given by
+a pair $(V,E)$ where $V$ is the set of vertices of and $E \subseteq
+V \times V$ is the parent-child relation. We have $V = N \union L$
+where $N$ and $L$ are the set of nodes and value-leaves
+respectively.
 
 \emph{Notations:} We write $V_\$$ for $N_\$ \union (E(N_\$) \inter
-VL)$ where $\$$ ranges over $\{@, {\sf var}, \Sigma, {\sf fv} \}$.
+L)$ where $\$$ ranges over $\{@, {\sf var}, \Sigma, {\sf fv} \}$.
 Let $\mathcal{D}$ be the set of values of the base type $o$. If $n$
 is a node in $N$ then the value-leaves attached to the node $n$ are
 written $v_n$ where $v$ ranges in $\mathcal{D}$. Similarly, if $q$
@@ -1864,405 +2430,6 @@ isomorphic to the set of uncovered plays of the strategy denotation
 \cite{OngLics2006}), and that the set of traversal reductions is
 isomorphic to the strategy denotation.
 
-\subsubsection{@-free traversals}
-
-When defining computation trees, it was necessary to introduce
-application nodes (labelled @) in order to connect the operator and
-the operand of an application. The presence of @-nodes has also
-another advantage: it ensures that the lambda-nodes are all at even
-level in the computation tree, and thus a traversal respects a certain form of
-alternation.
-
-Application nodes are however redundant in the sense that they do
-not play any role in the computation of the term. In fact it is
-necessary to filter them out if we want to establish the
-correspondence with the interaction game semantics.
-
-\begin{definition}[@-free traversal]
-\label{dfn:appnode_filter}
-Let $t$ be a traversal of $\tau(M)$.
-We write $t-@$ for the sequence of nodes-with-pointers obtained by
-\begin{itemize}
-\item removing from $t$ all @-nodes and value-leaves of some @-node;
-\item replacing any link pointing to an @-node by a link pointing to the immediate predecessor of @ in $t$.
-\end{itemize}
-
-Suppose $u = t-@$ is a sequence of nodes obtained by applying the
-previously defined transformation on the traversal $t$, then $t$ can
-be partially recovered from $u$ by reinserting the @-nodes as
-follows. For each @-node @ in the computation tree with parent node
-denoted by $p$, we perform the following operations:
-\begin{enumerate}
-\item replace every occurrence of the pattern $p \cdot n$, where $n$ is a $\lambda$-nodes,
-by $p \cdot @ \cdot n$;
-\item replace any link in $u$ starting from a $\lambda$-node and pointing to $p$ by a link pointing to the inserted @-node;
-\item if there is an occurrence in $u$ of a value-leaf $v_p$ pointing to $p$ then insert a value-leaf $v_@$
-immediately before $v_p$ and make it point to the node immediately
-following $p$ (which is also the $@$-node that we inserted in 1).
-\end{enumerate}
-We write $u+@$ for this second transformation.
-\end{definition}
-These transformations are well-defined because in a traversal, an @-node
-always occurs in-between two nodes $n_1$ and $n_2$ such that  $n_1$ is the parent node of @
-and $n_2$ is the first child node of @ in the computation tree:
-$$      \pstree[levelsep=4ex]{\TR{n_1}\treelabel{0} }
-        {
-            \pstree[levelsep=3ex]{\TR{@}}
-            {
-                \tree{n_2}{\vdots}
-                \TR[edge=\dedge]{}
-                \TR[edge=\dedge]{}
-            }
-        }
-$$
-\begin{remark}
-Sequences from $\travset(M)^{-@}$ are not, strictly speaking, proper justified sequences of nodes since after removing @-nodes,
-all prime $\lambda$-nodes become justified by their parent's parent which are also $\lambda$-nodes! Also these sequences do not respect alternation since two $\lambda$-nodes may become adjacent after removing a @-node.
-\end{remark}
-
-\begin{lemma} \label{lem:minus_at_plus_at}
-$$\forall t \in \travset(M), \quad (t-@)+@ = \left\{
-            \begin{array}{ll}
-              t, & \hbox{if $t^\omega \neq @$\ ;} \\
-              \ip\ t, & \hbox{if $t^\omega = @$\ .}
-            \end{array}
-          \right.
-$$
-\end{lemma}
-\proof
-The result follows immediately from the definition of the operation -@ and +@.
-\qed
-\bigskip
-
-We introduce the following notation:
-$$
-\travset(M)^{-@} = \{ t - @ \ | \  t \in \travset(M) \}
-$$
-
-\begin{remark}
-If $M$ is $\beta$-normal then $\tau(M)$ does not contain any
-@-node therefore all nodes are hereditarily justified by $r$ and we
-have $\travset(M)^{-@} = \travset(M) = \travset(M)^{\filter
-r }$.
-\end{remark}
-
-
-
-As we have already remarked, sequences in $\travset(M)^{-@}$ are not strictly speaking proper justified sequences. Consequently the operations that we have defined for
-justified sequences are undefined on $\travset(M)^{-@}$.
-However we can extend the hereditary filtering operation to sequences of $\travset(M)^{-@}$:
-for $u\in \travset(M)^{-@}$ and $n$ some node occurrence in $u$, the sequence $u\filter n$ is defined
-to be the subsequence of $u$ consisting of nodes that are hereditarily justified by $n$.
-Note that since the operation $-@$ changes the justification pointers, the hereditary justification relation nodes of a traversal $t$ is different from the hereditary justification relation of the sequence $t-@$. Thus
-$(t\filter n)-@ \subseqof (t-@) \filter n_0$ but $(t\filter n)-@ \neq (t-@) \filter n$.
-
-
-
-Since traversals are well-bracketed, so are the sequences in $\travset^{-@}(M)$.
-On well-bracketed sequences (either traversals or @-free traversals),
-the function $?(\_)$ is defined as follows:
-\begin{eqnarray*}
-  ?(\Pstr[0.4cm]{t \cdot (n){n} \ldots (nv-n){n_v} }  ) &=& ?(t) \\
-    ?(t) \cdot n &=& ?(t)\cdot n    \quad \mbox{where $n\not\in VL$} \ .
-\end{eqnarray*}
-
-\begin{lemma}
-  Let $u \in \travset^{-@}(M)$ and $n$ be the occurrence of a $\lambda$-node in $u$. If $u^\omega$ is hereditarily justified by $n$ then $?(u\filter n) = ?(u)$
-\end{lemma}
-\proof
-  By induction on the length of $u$. It is trivial for the empty traversal.
-  \begin{compactitem}
-  \item If $\Pstr[0.7cm]{u = u_1 \cdot (n){n} \cdot u_2 \cdot (vn-n){v_n}}$ then by well-bracketing, $?(u_2) = \epsilon$
-  and $?(u) = ?(u_1)$.
-
-  Suppose $n$ is her. just. by $n$ then so is $v_n$ therefore:
-  $\Pstr[0.7cm]{{?(u\filter n)} = ?{((u_1\filter n)} \cdot (n){n} \cdot {(u_2\filter n)} \cdot (vn-n){v_n}}{)}
-   = ?(u_1\filter n)$ since by the I.H. $?(u_2\filter n) = ?(u_2) = \epsilon$.
-   And again by the I.H. $?(u_1\filter n) = ?(u_1)$.
-
-  Suppose $n$ is not her. just. by $n$ then so is $v_n$ therefore:
-  $?(u\filter n) = ?((u_1\filter n) \cdot (u_2\filter n))$ and we can conclude using the induction hypothesis.
-
-  \item If $u = u_1 \cdot n$ where $n$ is not a value-leaf. Then $?(u) = ?(u_1) \cdot n$.
-  And since by hypothesis $n$ is here. just. by $n$ we have
-  $?(u \filter n) = ?(u_1\filter n ) \cdot n = ?(u_1) \cdot n$ by the induction hypothesis. \qed
-  \end{compactitem}
-% end of proof
-
-\begin{lemma}
-Let $t$ be a traversal of $M$, $t'$ be a traversal of some subterm $M'$ such that
-$t'-@ \subseqof t-@$. Then we have $t'\subseqof t$.
-\end{lemma}
-\begin{proof}
-
-\end{proof}
-
-
-\begin{lemma}
-\label{lem:view_of_appfreefilter}
-Let $\Gamma(r') \vdash \kappa(r') : T(r')$ be some subterm of $\elnf{M}$ for some $r'\in N_\lambda$. Let $t \in \travset(M)$ and $r_0$ be an occurrence of $r'$ in $t$.
-Let $q$ denote $(t-@)$'s last node.
-\begin{enumerate}[(i)]
-\item If $q$ is her. just. by $r_0$ then all the nodes from $t-@$ occurring in
-$\oview{t}$ or $\pview{t}$ are her. just. by $r_0$ in $t-@$.
-
-\item If $q$ is not her. just. by $r_0$ then all the nodes from $t-@$ occurring in $\oview{t}$ or $\pview{t}$ are not her. just. by $r_0$ either.
-\end{enumerate}
-\end{lemma}
-\begin{proof}
-  By induction on the length of the traversal. It is trivial for the empty traversal.
-\begin{itemize}
-\item  Suppose $t = t' \cdot @$ then $t-@ = t'-@$,
-   $\oview{t} = @$ and $\pview{t'}$ so we can conclude using the induction hypothesis.
-
-\item  Suppose $t = \Pstr[12pt]{ t_1 \cdot (app){@} \cdot (a){\lambda \overline{\xi}}
-        \cdot t_2 \cdot (va-a){v_{\lambda \overline{\xi}}} \cdot (vapp-app){v_@}}$ then
-          $\pview{t} = \pview{t_1} \cdot @ \cdot v_@$, $\oview{t} = @ \cdot \lambda \overline{\xi}
-  \cdot v_{\lambda \overline{\xi}} \cdot v_@$ and
-  $t-@ = \Pstr[12pt]{ {(t_1-@)} \cdot (a){\lambda \overline{\xi}}
-        \cdot {(t_2-@)} \cdot (va-a){v_{\lambda \overline{\xi}}} }$.
-
-  Let $m$ be a node in $t-@$. If $m$ occurs in $\oview{t}$ then either $m=v_{\lambda \overline{\xi}}$ or $m=\lambda \overline{\xi}$. These two moves are hereditarily justified by the same nodes in $t-@$ therefore
-  ($i$) and ($ii$) hold.
-
-  If $m$ occurs in $\pview{t}$ then it also occur in $\pview{t_1 \cdot @ \cdot \lambda \overline{\xi}}$ and in $(t_1\cdot @ \cdot \lambda \overline{\xi})-@$, thus by the induction hypothesis
-  on $t_1\cdot @ \cdot \lambda \overline{\xi}$, ($i$) and ($ii$) hold.
-
-  \item  Suppose $t = \Pstr[12pt]{ t_1 \cdot (m){m} \cdot t_2 \cdot (n-m){n}}$
-  where $n \in N_{\sf var} \union N_\Sigma \union VL_\lambda$. We have $\pview{t} = \pview{t_1} \cdot m \cdot \pview{t_2} \cdot n$ (by P-visibility of $t$)
-  and $\oview{t} = \oview{t_1} \cdot m \cdot n$.
-    Since $t$ is P-visible, $n$'s justifiers\footnote{We recall that if $n$ is a variable node then it may have several auxiliary justifiers.} are all in $\pview{t}$.
-
-  Let $p$ be a node occurring in $t-@$.
-  ($i$) If $n$ is her. just. by $r_0$ then so is its main justifier $m$.
-  Suppose $p\in \pview{t}$.
-
-   therefore by the induction hypothesis,
-  all the nodes in $\pview{t_1 \cdot m}$ that are in $t-@$ are her. just by $r_0$.
-
-
-thus by the induction hypothesis, all $n$'s justifiers occurring in $t-@$ are not her. just. by $r_0$. Consequently neither is $n$. Thus
-
-   or $\oview{t_{<n}}$ (depending on the type of $n$),
-  \end{itemize}
-\end{proof}
-
-\begin{lemma}[Traversal filtering lemma]
-\label{lem:trav_filtering}
-Let $\Gamma(r') \vdash \kappa(r') : T(r')$ be some subterm of $\elnf{M}$ for some $r'\in N_\lambda$. Let $t \in \travset(M)$ and $r_0$ be an occurrence of $r'$ in $t$.
-
-\begin{enumerate}[(i)]
-\item $(t-@)\filter r_0 \in \travset^{-@}(\kappa(r'))$,
-{\it i.e.}\ $t'-@ = (t-@)\filter r_0$ for some traversal $t' \in \travset(\kappa(r'))$.
-
-\item If $t = \ldots \cdot y \cdot \lambda \overline{\xi}$ where $y$ is a variable node
-her. just. by $r_0$ in $t-@$ then either $y$ is a free variable in $M'$ or
-$\lambda \overline{\xi}$ is also her. just. by $r_0$ in $t-@$.
-
-\item If $t = \ldots \cdot n \cdot \lambda \overline{\xi}$ where $\lambda \overline{\xi}$ is 
-her. just. by $r_0$ in $t-@$ then $n$ is also her. just. by $r_0$ in $t-@$.
-
-\item If $t = \ldots \cdot \lambda \overline{\xi} \cdot y$, then
-$\lambda \overline{\xi}$ is her. just. by $r_0$ in $t-@$ if and only if $y$ is.
-
-\end{enumerate}
-\end{lemma}
-\begin{proof}
-  Let $M'$ denote the term $\kappa(r')$, $N'$ be the set of nodes of the tree $\tau(\kappa(r'))$.
-
-  We prove the result by induction on the traversal rules. The base cases \rulenamet{Empty} and \rulenamet{Root} are trivial. Take a traversal $t = u \cdot n \in  \travset(M)$ formed using another rule.
-  Suppose $u$'s last node is not in $(t-@)\filter r_0$. By visibility of traversals,
-  $n$'s justifiers\footnote{We recall that if $n$ is a variable node then it may have auxiliary justifiers.} are in $\pview{u}$ or $\oview{u}$ (depending on the type of $n$), thus by
-  Lemma \ref{lem:view_of_appfreefilter}, all $n$'s justifiers
-  are not in $(t-@)\filter r_0$. Consequently $n\not\in (t-@)\filter r_0$ and therefore by the induction hypothesis $(v)$ holds for $t$.
-
-  By Lemma \ref{lem:view_of_appfreefilter}, $n$ is not in
-  Furthermore we have $(t-@)\filter r_0 = (u-@)\filter r_0$ therefore by induction hypothesis on $u$
-  property $(i)$ holds.
-
-  Suppose that $u$'s last node is in $O$ then again by visibility and property
-  $(iv)$ $n$ is also in $O$. Let us do a case analysis:
-
-  \notetoself{
-  \begin{itemize}
-    \item \rulenamet{Lam}
-    Suppose $t = w \cdot \lambda \overline{\xi} \cdot n \in \travset(M)$.
-    By the induction hypothesis, for some traversal $w' \in \travset(\kappa(r'))$ we have
-    $w'-@ = ((w \cdot \lambda \overline{\xi}) -@)\filter r_0$.
-    W.l.o.g. we can assume that $w'^\omega \neq @$.
-
-    Since $\lambda \overline{\xi} = u^\omega$ is in $O$,
-     $w'$'s last node must be $\lambda \overline{\xi}$. Thus we can use the rule \rulenamet{Lam} in $\tau(M')$ to produce the traversal $w' \cdot n$ of $M'$ verifying
-    $(w' \cdot n) - @  = ((w \cdot \lambda \overline{\xi} \cdot n) -@)\filter r_0$. Hence ($i$) holds.
-
-    \item \rulenamet{App}
-     Suppose $t = w \cdot \lambda \overline{\xi} \cdot @ \cdot n \in \travset(M)$.
-
-     Since $n$ is her. just. by $r_0$ in $t-@$, so is $\lambda \overline{\xi}$ and
-     we have $(t-@) \filter r_0 = (((w\cdot \lambda \overline{\xi})-@) \cdot n)\filter r_0 =
-                                    ((w\cdot \lambda \overline{\xi})-@)\filter r_0 \cdot n$.
-    By the induction hypothesis $((w\cdot \lambda \overline{\xi}) -@)\filter r_0 = w'-@$ for some traversal $w'$ of $M$. Since $\lambda \overline{\xi}$ is her. just. by $r_0$ w.l.o.g. we can assume that the last move of $w'$ is
-    $\lambda \overline{\xi}$. Thus we can use the rule \rulenamet{Lam} and \rulenamet{App} in $\tau(M')$ to obtain
-    the traversal $w' \cdot @ \cdot n$ of $M'$ and we have:
-    $(t-@) \filter r_0 = (w'-@) \cdot n = (w' \cdot @ \cdot n) - @$.
-
-    \item \rulenamet{Answer-@-$\lambda$}, \rulenamet{Answer-$\lambda$-@},
-    \rulenamet{Answer-var-$\lambda$} and \rulenamet{Answer-$\lambda$-var}. These cases are all trivial application
-    of the induction hypothesis.
-
-  \end{itemize}
-
-  ...}
-\end{proof}
-
-\paragraph{Mapping @-free traversals to interaction plays}
-    Let $I$ be the interaction game of the interaction strategy $\intersem{\Gamma \vdash M : T}$ and
-    $M_I$ be the set of equivalence class of moves from $\mathcal{M}_I$.
-
-    Let $r'$ be a lambda node in $N_{\sf spawn}$ and let $\Gamma(r') \vdash \kappa(r') : T(r')$ denote the subterm of $\elnf{M}$ rooted at $r'$ where $\Gamma(r')\subseteq \Gamma$.
-    The function $\psi_{\kappa(r')}$ maps nodes of $V^{r'\vdash}$
-    to moves of $\sem{\Gamma(r') \rightarrow T(r')}$. By definition,
-    the set of possible moves $\mathcal{M}_I$ of the interaction game $\intersem{I}$ contains the
-    moves from the game $\sem{\Gamma(r') \rightarrow A(r')}$. Hence $\psi_{\kappa(r')}$ can be regarded as a function from $V^{r'\vdash}$ to $\mathcal{M}_I$.
-
-    Every node in $n \in V\setminus V_@$ is either hereditarily enabled by the root or by some $\lambda$-node in $N_{\sf spawn}$ (the children nodes of @-nodes). Therefore we can define the relation $\psi^*_M$ from
-    $V\setminus V_@$ to $\mathcal{M}_I$ as follows:
-    $$ \psi^*_M = \psi_{M} \quad \union \Union_{r' \in N_{\sf spawn}} \psi_{\kappa(r')} \ .$$
-    It is totally defined on $V\setminus V_@$ since in the present setting where there is no $\Sigma$-constant, nodes are either hereditarily justified by the root or by an @-node.
-
-    $\psi^*_M$ is a relation and not a function since variable nodes can be hereditarily enabled by more than one nodes in $N_{\sf spawn}$  (a variable node is enabled by all the prime $\lambda$-nodes occurring in the path to the root) and thus the domains of definition of the relations $\psi_{\kappa(r')}$ for $r' \in N_{\sf spawn}$ may overlap.  However, it can be easily check that for any node $n \in V\setminus V_@$,
-    the moves in $\psi^*_M (n)$ are all $\sim$-equivalent. This leads us to the following definition:
-
-    \begin{definition}[Mapping from nodes to moves]
-        \label{def:phi mapping}
-        We define the \emph{function}
-        $\varphi_M:V\setminus V_@ \rightarrow M_T$ as follows: for each node $n \in V\setminus V_@$,
-        $\varphi_M(n)$ is defined as the $\sim$-equivalence class containing $\psi^*_M (n)$.
-
-        We omit the subscript in $\varphi_M$ if it does not cause any ambiguity.
-    \end{definition}
-    Assuming that there are not $\Sigma$-nodes, $\varphi_M$ is indeed totally defined on $V \setminus V_@ = V_\lambda \union V_{\sf var}$.
-
-\begin{definition}[Mapping sequences of nodes to sequences of moves]
-\label{dfn:phi_for_justsequ}
-We define the function $\varphi_M$ from $\travset(M)^{-@}$ to justified sequence of moves of $\intersem{I}$ as follows.
-If $s = s_0 s_1 \ldots \in \travset(M)^{-@}$ then:
-$$\varphi_M(s) = \varphi_M(s_0)\ \varphi_M(s_1)\  \varphi_M(s_2) \ldots$$
-where $\varphi_M(s)$ is equipped with $s$'s pointers.
-\end{definition}
-
-\begin{example}
-Take $M = \lambda x^o . (\lambda g^{(o,o)} . g x z) (\lambda y^o . y)$. The diagram below represents the computation tree (middle) and the relation $\psi^*_M = \psi_{\lambda x}\union \psi_{\lambda g} \union \psi_{\lambda y}$ (dashed-lines).
-$$\psset{levelsep=3.5ex}
-\pstree{\TR[name=root]{\lambda x}}
-{
-    \pstree{\TR[name=App]{@}}
-    {
-            \pstree{\TR[name=lg]{\lambda g}}
-                { \pstree{\TR[name=lgg]{g}}{
-                        \pstree{\TR[name=lgg1]{\lambda}}
-                        { \TR[name=x]{x}  }
-                        \pstree{\TR[name=lgg2]{\lambda}}
-                        { \TR[name=z]{z}  }
-                        } }
-            \pstree{\TR[name=ly]{\lambda y}}
-                    {\TR[name=lyy]{y}}
-    }
-}
-\rput(4.5cm,-1cm){
-  \pstree{\TR[name=A1lx]{q_{\lambda x}}}
-        { \TR[name=A1x]{q_x}
-          \TR[name=A1z]{q_z} }
-}
-\rput(-6cm,-1.5cm){
-    \pstree{\TR[name=A2lg]{q_{\lambda g}}}
-    {
-        \TR[name=A2x]{q_x'}
-        \TR[name=A2z]{q_z'}
-        \pstree{\TR[name=A2g]{q_g}}
-        {  \TR[name=A2g1]{q_{g_1}}   }
-    }}
-\rput(2.5cm,-1.5cm){
-    \pstree{\TR[name=A3ly]{q_{\lambda y}}}
-        { \TR[name=A3y]{q_y}
-        }
-}
-\psset{nodesep=1pt,arrows=->,arcangle=-20,arrowsize=2pt 1,linestyle=dashed,linewidth=0.3pt}
-\ncline{->}{root}{A1lx} \mput*{\psi_M}
-\nccurve[angleA=-60,angleB=-150]{->}{x}{A1x}
-\ncarc{->}{z}{A1z}
-\ncarc[arcangle=30]{->}{x}{A2x}
-\nccurve[angleA=-150,angleB=-60]{->}{z}{A2z}
-\ncline{->}{lg}{A2lg} \mput*{\psi_{\lambda g. g x}}
-\ncline{->}{lgg}{A2g}
-\ncline{->}{lgg1}{A2g1}
-\ncline{->}{ly}{A3ly} \mput*{\psi_{\lambda y.y}}
-\ncline{->}{lyy}{A3y}
-$$
-\vspace{18pt}
-
-where $q_x'\sim q_x$, $q_z'\sim q_z$, $q_g\sim q_{\lambda y}$, $q_{g_1}\sim q_y$
-and $q_{\lambda g}\sim q_{\lambda x}$.
-\end{example}
-
-
-\begin{lemma}[Filtering lemma for @-free traversals]
-\label{lem:varphi_filter}
-Let $r'\in N_\lambda$, $\Delta \vdash M' : A$ be the subterm of $\elnf{M}$ rooted at $r'$, $t\in\travset(M)$, $r'_0$ be an occurrence of $r'$ in $t$
-and $m_0$ be the occurrence of the initial $A$-move $\varphi_M(r'_0)$ in $\varphi_M(t-@)$ then:
-$$\begin{array}{rrcl}
-(i)& \varphi_{M'}((t-@)\filter r'_0) &=& \varphi_M(t-@) \filter m_0 \\ \\
-(ii) & \varphi_M(\travset^{-@}(M)) \filter \sem{\Gamma \rightarrow T} &=& \psi_M(\travset^{\filter r}(M))\ .
-\end{array}
-$$
-\end{lemma}
-\proof
-($i$) Firstly, by Lemma \ref{lem:trav_filtering}, $(t-@)\filter r'_0$ is a traversal of $\travset(M')$ therefore
-$\varphi_{M'}((t-@)\filter r'_0)$ is well-defined. By Definition \ref{dfn:phi_for_justsequ} we must have
-$\varphi_{M}((t-@)\filter r'_0) = \varphi_M(t-@) \filter m_0$. Furthermore, because of
-the inductive definition of $\varphi_{M}$, $\varphi_{M'}$ coincides with the restriction of $\varphi_{M}$ to the set of nodes of the subtree of $\tau(M)$ rooted at $r'$. This allows us to conclude.
-
-
-($ii$) Let $H$ be the set of nodes of $\tau(M)$ which are mapped by
-$\varphi^*(M)$ to moves that are $\sim$-equivalent to moves in $\sem{\Gamma \rightarrow T}$.
-We show that $H = V^{r\vdash}$.
-
-Since $\psi_M \subseteq \varphi^*(M)$ and the image of $\psi(M)$ is $\sem{\Gamma \rightarrow T}$, $H$ must contain the domain of $\psi(M)$ which is $V^{r\vdash}$.
-
-Conversely, suppose that a node $n \in N\setminus N_@$ is mapped by $\varphi^*(M)$
-to some move $m\in \mathcal{M}_I$ $\sim$-equivalent to some move in $\sem{\Gamma \rightarrow T}$.
- If $m = \psi_M(n)$ then $n\in V^{r\vdash}$. Otherwise,
-$m = \psi_{\kappa(r')}(n)$ for some $r' \in N_{\sf spawn}$.
-There may be several node $r'$ such that $n$ belongs to the domain of definition of
-$\psi_{\kappa(r')}$. W.l.o.g. we can take $r'$ to be the one which is closest to the root $r$.
-Let $\Gamma(r') \vdash  \kappa(r') : T(r')$.
-    \begin{compactitem}
-    \item Suppose that $m$ is $\sim$-equivalent to a move in the subgame $\sem{\Gamma}$ of $\sem{\Gamma \rightarrow T}$
-    then this means that $n$ is hereditarily justified by a free variable node in $M$ and therefore $n \in V^{r\vdash}$.
-
-    \item Suppose that $m$ is $\sim$-equivalent to a move in the subgame $\sem{T}$ of $\sem{\Gamma \rightarrow T}$
-    then $m$ necessarily belongs to the subgame $\Gamma(r')$ of $\sem{\Gamma(r')\rightarrow T(r')}$ .
-    Indeed, since $r'$'s parent node is an application node, moves in the subgame
-    $\sem{T(r')}$ correspond to internal moves of the application. By definition of
-    the interaction strategy for the application case, such moves can only be $\sim$-equivalent to other internal
-    moves and thus cannot be equivalent to move in $\sem{T}$.
-
-    Consequently, $n$ is her. just. by a free variable node $z$ in $\kappa(r')$. By assumption, $r'$ is the closest node to the root $r$ (excluding $r$ itself) for which $n$ belongs to $V^{r'\vdash}$ (the domain of definition of $\psi_{\kappa(r')}$). Hence $z$ is not bound by any $\lambda$-node occurring in the path to the root. Thus $z\in
-    V^{r\vdash}$ and therefore $n \in V^{r\vdash}$.
-    \end{compactitem}
-Hence $H = V^{r\vdash}$.
-
-Therefore for any traversal $t$ of $M$,
-$\varphi_M(t-@) \filter \sem{\Gamma \rightarrow T} =
-\varphi_M((t-@)\filter V^{r\vdash})$
-where $(t-@)\filter V^{r\vdash}$ is the subsequence of $t-@$ consisting of nodes that are heditarily enabled
-by the root $r$. Furthermore, since the root appears only once in a traversal, ``hereditary enabled by the root'' coincides with ``hereditary justified in $t$ by the only occurrence of $r$ in $t$'', and since nodes her. just. by @-nodes in $t$ are not her. just. by the root we have:
-$$\varphi_M((t-@)\filter V^{r\vdash}) = \varphi_M(t\filter r) \qquad \qed$$
-
-
-\bigskip
-
-
 
 The function $\varphi_M$ regarded as a function from the set of vertices $V \setminus V_@$ of the computation tree to moves in arenas is not injective (for instance the two occurrences of $x$ in the computation tree of $\lambda f x. f x x$ are mapped to the same question move). However the function $\varphi_M$ defined on the set of @-free traversals is injective, and similarly the function $\psi_M$ defined on the set of traversal reduction is injective:
 \begin{lemma}[$\psi_M$ and $\varphi_M$ are injective]
@@ -2287,12 +2454,11 @@ For any node occurrence $n$ in a traversal $t$ let us write $ptr(n)$ to denote t
  \mbox{ implies } n_1,n_2 \in V^{r\vdash}_{\lambda} \zand ( \psi(n_1) \neq \psi(n_2) \zor ptr(n_1) \neq ptr(n_2) ) \ .
  \end{equation*}
 \end{lemma}
-\proof
-Let $t \cdot n_1, t \cdot n_2 \in \travset(M)$. First we remark that
-the traversal rules have a weak form of determinism which ensures
-that $n_1$ and $n_2$ belong to the same category of node {\it i.e.}\ they
-must be both in $N_{\sf var}$, $N_@$, $N_\lambda$, $VL_{\sf var}$,
-$VL_@$, or $VL_\lambda$.
+\proof Let $t \cdot n_1, t \cdot n_2 \in \travset(M)$. First we
+remark that the traversal rules have a weak form of determinism
+which ensures that $n_1$ and $n_2$ belong to the same category of
+node {\it i.e.}\ they must be both in $N_{\sf var}$, $N_@$,
+$N_\lambda$, $L_{\sf var}$, $L_@$, or $L_\lambda$.
 
 \begin{compactitem}
 \item If $n_1, n_2 \in N_@$ then $t
@@ -2300,7 +2466,7 @@ $VL_@$, or $VL_\lambda$.
 rule. Since this rule is deterministic we must have $n_1=n_2$ which
 violates the second hypothesis.
 
-\item If $n_1, n_2 \in VL_@$ then the traversals were formed using the deterministic rule
+\item If $n_1, n_2 \in L_@$ then the traversals were formed using the deterministic rule
 \rulenamet{Answer-$\lambda$-@} which again violates the second
 hypothesis.
 
@@ -2309,7 +2475,7 @@ hypothesis.
      But these two rules are deterministic and their domains of definition are disjoint. Hence again the second
      hypothesis is violated.
 
-\item If  $n_1, n_2 \in VL_{\sf var}$ then either the traversals were both formed using the deterministic rule
+\item If  $n_1, n_2 \in L_{\sf var}$ then either the traversals were both formed using the deterministic rule
 \rulenamet{Answer-$\lambda$-var} in which case the second hypothesis
 is violated; or they were formed with \rulenamet{InputVar$^{val}$}
 in which case $n_1$ and $n_2$ are two different value leaves belonging to
@@ -2331,7 +2497,7 @@ Thus by definition of $\psi$, $\psi(n_1)\neq\psi(n_2)$.
     different, then $n_1$ and $n_2$ are necessarily justified by two different
     occurrences in $t$ therefore $ptr(n_1) \neq ptr(n_2)$.
 
-\item If  $n_1,n_2\in VL_\lambda$ then either the traversals $t \cdot n_1$
+\item If  $n_1,n_2\in L_\lambda$ then either the traversals $t \cdot n_1$
     and $t \cdot n_2$ were formed using
     \rulenamet{Answer-var-$\lambda$} or they were formed with
     \rulenamet{Answer-@-$\lambda$} but this is impossible since these two rules are

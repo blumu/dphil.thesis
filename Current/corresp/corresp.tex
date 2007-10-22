@@ -32,7 +32,7 @@ Fortunately, the reduction operation preserves the good properties
 of traversals. This is guaranteed by the facts that the P-view of
 the reduction of a traversal is equal to the reduction of the P-view
 of the traversal, and the O-view of a traversal is the same as the
-O-view of its reduction (Lemma \ref{lem:trav_filtering}).
+O-view of its reduction (Proposition \ref{prop:trav_filtering}).
 \vspace{8pt}
 
 \emph{Related works}: Traversals of a computation tree provide a way
@@ -332,7 +332,29 @@ is the $i^{\sf th}$ variable bound by $m$;
 \item or $n$ is a $\lambda$-node and $m$ is $n$'s parent node.
 \end{itemize}
 Note that in particular, free variable nodes are enabled by the root.
+Table \ref{tab:enabler_type} recapitulates the possible node types for the enabler node 
+depending on the type of $n$.
 \end{definition}
+
+
+\begin{table}[htbp]
+$$
+\begin{array}{ccl}
+\mbox{If } n\in \_  & \mbox{then} & m\in \_ \\ \hline
+N_\lambda & & N_{\sf var} \union N_\Sigma \union N_@ \\
+L_{\sf var} & & N_{\sf var} \\
+L_@ & &  N_@ \\
+L_\Sigma & & N_\Sigma\\
+\\
+N_{\sf var} & & N_\lambda\\
+N_\Sigma & & \mbox{n.a.} \\
+N_@ & & \mbox{n.a.} \\
+L_\lambda & & N_\lambda\\
+\end{array}
+$$
+\caption[Type of the justifying node]{Type of the enabler node in $m\vdash n$.}
+\label{tab:enabler_type}
+\end{table}
 
 We say that a node $n_0$ of the computation tree is \defname{hereditarily enabled} by $n_p \in N$ if there are nodes $n_1,\ldots, n_{p-1} \in N$ such that $n_{i+1}$ enables $n_{i}$
 for all $i\in 0..p-1$.
@@ -367,15 +389,12 @@ $n$ in $s$:
 \end{itemize}
 
 If $n$ points to $m$ then we say that $m$ \defname{justifies} $n$.
-
-If $n$ is a leaf $v_m$ then we represent the link in the sequence as
-$\Pstr{ (m){m} \cdot \ldots \cdot (vm-m,40:v){v_m} }$.
 If $n$ is a node then we represent this pointer in the sequence as \Pstr[0.4cm]{
 (m){m} \ldots (n-m,45:i) n } where the label indicates that either
 $n$ is labelled with the $i$th variable abstracted by the
 $\lambda$-node $m$ or that $n$ is the $i^{\sf th}$ child of $m$.
-
-
+For leaves, pointers are represented as
+$\Pstr{ (m){m} \cdot \ldots \cdot (vm-m,40:v){v_m} }$.
 For a variable node $n$, the main link is represented with a solid
 line while auxiliary links are represented with dashed lines:
 $$\pstr[0.6cm]{ \ldots
@@ -418,6 +437,7 @@ or
 \end{tabular}
 \bigskip
 
+
 We say that a node $n$ in of a justified sequence of nodes is
 \defname{matched} by the value-leaf $v_n$ if there is an occurrence of $v_n$ for some value $v$ in the
 sequence that points to $n$, otherwise we say that $n$ is
@@ -441,15 +461,19 @@ We say that a node $n_0$ of a justified sequence is \defname{hereditarily justif
 We write $t^\omega$ to denote the last occurrence of $t$ and $\ip(t)$ for the immediate prefix of $t$ obtained by removing $t$'s last occurrence.
 \smallskip
 
-\subsubsection{Hereditary enabling filtering}
+\subsubsection{Filtering}
 
-We define a filtering operation on justified sequences of nodes:
+We define two different filtering operation on justified sequences of nodes.
+
+Let $A$ be a subset of $V$, the set of nodes and leaves of $\tau(M)$, and $t$ be a justified sequence of nodes then we write $t\filter A$ for the subsequence of $t$ consisting of nodes in $A$.
+
 \begin{definition}[Hereditary filtering]
 Let $t$ be a justified sequence of nodes of $\travset(M)$ and
 $n$ be some occurrence in $t$ of a node in $N_\lambda$.
 
 We define the justified sequence $t \filter n$ as the subsequence of $t$ consisting of nodes hereditarily justified by the occurrence $n$ in $t$.
-After applying this operation, free-variable nodes may lose some of their pointers. We therefore reassign a main pointers: the main link attached to every free variable occurrence points to $n$ in $t\filter n$.
+This operation can cause variable nodes to lose some of their pointers. If the main pointer of variable node is
+lost then it is replaced in $t\filter n$ by a link pointing to the occurrence $n$.
 \end{definition}
 Thus $s \filter n$ is a valid justified sequence of nodes of the tree $\tau(\kappa(n))$.
 
@@ -543,8 +567,11 @@ We will then we show how to extend the notion of traversal to more general setti
 
 \begin{definition}[Traversals for simply-typed $\lambda$-terms] \rm
 \label{def:traversal} The set $\travset(M)$ of \defname{traversals}
-over $\tau(M)$ is defined by induction over the following rules:
+over $\tau(M)$ is defined by induction over the rules of Table \ref{tab:trav_rules}.
+A traversal that cannot be extended by any rule is said to be \emph{maximal}.
+\end{definition}
 
+\begin{table}[htbp]
 \noindent \emph{Initialization rules}
 \begin{description}
 \item[\rulenamet{Empty}] $\epsilon \in \travset(M)$.
@@ -626,8 +653,9 @@ so is \Pstr[0.5cm]{ t' \cdot (n){n} \cdot
     (letai-n,40:i){\lambda \overline{\eta_i}}
      }.
 \end{description}
-A traversal that cannot be extended by any rule is said to be \emph{maximal}.
-\end{definition}
+\caption[Traversal rules for the simply-typed lambda-calculus]{Traversal rules for the simply-typed $\lambda$-calculus}
+\label{tab:trav_rules}
+\end{table}
 
 A traversal always starts with the root node and mainly follows the
 structure of the tree. The exception is the \rulenamet{Var} rule
@@ -737,29 +765,33 @@ $$ \Pstr{ \lambda \cdot
 
 \begin{definition}[Well-behaved traversal rule]
 \label{def:wellbehaved_traversal} A traversal rule is
-\defname{well-behaved} if it can be stated under the following form:
-$$\rulef{t = t_1\cdot n \cdot t_2 \in \travset \quad ?(t) = ?(t_1) \cdot n \quad P(t)}
-  { \stackrel{  \rule{0pt}{3pt} }{\Pstr[5pt]{ t' = t_1\cdot (n){n} \cdot t_2 \cdot (m-n,35){m} \in \travset}}
-   }
-    \ m\in S(t)
-   $$
-such that:
-\begin{enumerate}[i.]
-  \item $n$ is a variable or a constant node ($n \in N_{\Sigma}\union N_{\sf var}$);
-  \item $P$ expresses some condition on $t$;
-  \item for every traversal $t$, $S(t)$ is some subset of $E(n)$, the set of children $\lambda$-nodes and value-leaves of $n$.
-  If $S(t)$ has more than one element then the rule is non-deterministic.
+\defname{well-behaved} if it can be stated under one of the following two forms:
+\begin{enumerate}[(i)]
+\item 
+    $$\rulef{t = t_1\cdot c \cdot t_2 \in \travset(M) \quad ?(t)^\omega = c \quad P(t)}
+      { \stackrel{  \rule{0pt}{3pt} }{\Pstr[5pt]{ t' = t_1\cdot (c){c} \cdot t_2 \cdot (v-c,35){v(t)} \in {\travset(M)}}}
+             }
+       $$
+    where:
+    \begin{compactitem}
+      \item $c$ is a constant node ($c \in N_{\Sigma}$);
+      \item $P(t)$ is a predicate expressing some condition on $t$;
+      \item $v(t)$ is a value-leaf of the constant node $c$ that is determined by the traversal $t$.
+    \end{compactitem}
+
+\item 
+$$\rulef{t \in \travset(M) \quad ?(t)^\omega = x \quad P(t)}
+  { \stackrel{  \rule{0pt}{3pt} }{\Pstr[5pt]{ t \cdot {n(t)} \in {\travset(M)}}}
+   }$$
+where:
+    \begin{compactitem}
+      \item $x$ is a variable node her.\ just.\ by some constant node ($n \in N^{N_\Sigma\vdash}_{\sf var}$);
+      \item $P(t)$ is a predicate expressing some condition on $t$;
+      \item where $n(t)$ is a lambda-node determined by $t$, and its link, also determined by $t$, points to some occurrence of its parent node in $\oview{t_{\prefixof x}}$.
+    \end{compactitem}
 \end{enumerate}
+Note that such rules preserve well-bracketing, alternation and visibility.
 \end{definition}
-Note that if $t$ is well-bracketed then $t'$ is also well-bracketed
-and if $?(t)$ satisfies alternation and visibility then so does
-$?(t')$.
-
-
-\begin{example} The rule (InputVar$^{val}$) is an example of non-deterministic well-behaved traversal rule where $S(t)$ is precisely the set of children value-leaves of $n$:
-$S(t) = \{ v_n \ | \ v \in \mathcal{D} \} $.
-However (InputVar) is not well-behaved since it can jump to any node in the O-view at that point and not necessarily to a children node of the last pending node.
-\end{example}
 
 In the presence of higher-order interpreted constants, additional rules must be specified to indicate how
 the constant nodes should be traversed in the computation tree. These rules
@@ -773,6 +805,13 @@ and we take the following condition as a prerequisite:
 \begin{center}
   \textbf{(Condition WB)} The constant traversal rules are well-behaved.
 \end{center}
+
+
+\begin{remark}
+    The definition of well-behavior is in fact derived from the definition of the rules \rulenamet{InputVar$^{val}$} and \rulenamet{InputVar}.  In fact while we can regard uninterpreted constants as free variables, interpreted constants can be seen as a generalization of the notion of free variable. The extra power of the well-behaved constant rules
+    over the input-variable rules lies in their ability to restrict the set of possible nodes to visit depending on the shape of the traversal $t$.
+\end{remark}
+
 
 \bigskip
 
@@ -1018,24 +1057,20 @@ For $r'$ a lambda node in $N_\lambda$,
 let $M^{(r')}$ denote the term $\kappa(r')$ and $N^{(r')}$ denote the set of vertices and nodes of $\tau(M^{(r')})$
 (thus $N^{(r')} = E^*(\{r'\})$).
 %Let $\Gamma(r') \vdash M^{(r')} : T(r')$ be some subterm of $\elnf{M}$ 
-\begin{lemma}[Traversal filtering lemma]
-    \label{lem:trav_filtering} 
+\begin{proposition}[Traversal filtering]
+    \label{prop:trav_filtering} 
     Let $t \in \travset(M)$.
     \begin{itemize}
-        \item Let $r'\in N_\lambda$.
+            \item[(T)] %Suppose $t^\omega$ is her.\ just.\ in $t-@$ by some 
+            For any occurrence $r_0$ in $t$ of some lambda node $r'\in N_\lambda$ we have
+             $t\filter^@ r_0 \in \travset(M^{(r')})$.
 
-            \begin{enumerate}
-            \item[(T)] If $t$'s last occurrence is her.\ just.\ by
-            some occurrence $r_0$ of $r'$ in $t-@$ then
-             $(t-@)\filter r_0 \in \travset^{-@}(\kappa(r'))$,
-            {\it i.e.}\ $t'-@ = (t-@)\filter r_0$ for some traversal $t' \in
-            \travset(\kappa(r'))$.
-
-            \item[(P)] \{DONE\} If $t$'s last occurrence belongs to $N^{(r')}$ ({\it i.e.}\ it is a non-leaf node of the tree $\tau(M^{(r')})$) then there is an occurrence $r_0$ of $r'$ in $t$ such that
+            \item[(P)] If $t^\omega$ belongs to $N^{(r')}$ for some lambda node $r'\in N_\lambda$
+            ({\it i.e.}\ $t^\omega$ is a non-leaf node of the subtree of $\tau(M)$ rooted at $r'$) then there is an occurrence $r_0$ of $r'$ in $t$ such that
             \begin{itemize}
             \item $\pview{t} = \ldots r_0 \cdot u$;
-            \item all the occurrences in $u$ that are not @-nodes are her.\ just.\ by $r_0$
-            and not her.\ just.\ by any other occurrence of $r'$ in $t-@$;
+            \item all the occurrences in $u$ that are not @-nodes are her.\ just.\ in $t-@$ by $r_0$
+            and not by any other occurrence of $r'$;
             \item all the occurrences in $u$ are in $N^{(r')}$;
             \item $\pview{t}^M \filter N^{(r')} = r_0\cdot u =  \pview{t\filter^@ r_0}^{M^{(r')}}$;
             \end{itemize}
@@ -1054,9 +1089,8 @@ let $M^{(r')}$ denote the term $\kappa(r')$ and $N^{(r')}$ denote the set of ver
             %If $m$ is in $V'$ and is her.\ just.\ by $r_0$ in $t-@$ then
             %so is $n$.
             %%$n$ is her.\ just.\  by $r_0$ in $t-@$ .
-            \end{enumerate}
 
-        \item (O) Suppose $|t|>0$.
+        \item[(O)] Suppose $|t|>0$.
             \begin{enumerate}[a.]
             \item If $t= \ldots \cdot m \cdot n$ where
             $m\in N_{\sf var} \union N_\Sigma \union N_@ \union L_\lambda$
@@ -1076,7 +1110,7 @@ let $M^{(r')}$ denote the term $\kappa(r')$ and $N^{(r')}$ denote the set of ver
             \end{enumerate}
 
     \end{itemize}
-\end{lemma}
+\end{proposition}
 
 
 \begin{proof}
@@ -1355,7 +1389,7 @@ nodes preceding $r_0$ are not in $N^{(r')}$, and by the third point all the node
 \begin{corollary}
 \label{cor:redtrav_trav} Suppose that  $M$ is in $\beta$-normal
 form. Let $t$ be a non-empty traversal of $M$ and $r$ denote the
-only occurrence of the root in $t$.
+only occurrence of $\tau(M)$'s root in $t$.
 \begin{enumerate}[(i)]
 \item If $t^\omega \in N$ ({\it i.e.}~$t$'s last occurrence is not a leaf) then $ \pview{t \filter  r } = \pview{t}$ \ ;
 \item If $t^\omega \in V^{r\vdash}$ ({\it i.e.}~$t$'s last occurrence is
@@ -1494,7 +1528,7 @@ $$\begin{array}{rrcl}
 \end{array}
 $$
 \end{lemma}
-\proof ($i$) Firstly, by Lemma \ref{lem:trav_filtering},
+\proof ($i$) Firstly, by Proposition \ref{prop:trav_filtering},
 $(t-@)\filter r'_0$ is a traversal of $\travset(M^{(r')})$ therefore
 $\varphi_{M^{(r')}}((t-@)\filter r'_0)$ is well-defined. By Definition
 \ref{dfn:phi_for_justsequ} we must have $\varphi_{M}((t-@)\filter
@@ -1532,7 +1566,7 @@ the one which is closest to the root $r$. Let $\Gamma(r') \vdash
     the interaction strategy for the application case, such moves can only be $\sim$-equivalent to other internal
     moves and thus cannot be equivalent to move in $\sem{T}$.
 
-    Consequently, $n$ is her.\ just.\  by a free variable node $z$ in $\kappa(r')$. By assumption, $r'$ is the closest node to the root $r$ (excluding $r$ itself) for which $n$ belongs to $V^{r'\vdash}$ (the domain of definition of $\psi_{\kappa(r')}$). Hence $z$ is not bound by any $\lambda$-node occurring in the path to the root. Thus $z\in
+    Consequently, $n$ is her.\ just.\ by a free variable node $z$ in $\kappa(r')$. By assumption, $r'$ is the closest node to the root $r$ (excluding $r$ itself) for which $n$ belongs to $V^{r'\vdash}$ (the domain of definition of $\psi_{\kappa(r')}$). Hence $z$ is not bound by any $\lambda$-node occurring in the path to the root. Thus $z\in
     V^{r\vdash}$ and therefore $n \in V^{r\vdash}$.
     \end{compactitem}
 Hence $H = V^{r\vdash}$.

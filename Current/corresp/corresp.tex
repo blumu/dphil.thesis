@@ -32,7 +32,7 @@ Fortunately, the reduction operation preserves the good properties
 of traversals. This is guaranteed by the facts that the P-view of
 the reduction of a traversal is equal to the reduction of the P-view
 of the traversal, and the O-view of a traversal is the same as the
-O-view of its reduction (Proposition \ref{prop:trav_filtering}).
+O-view of its reduction (Lemma \ref{lem:oview_trav_filtering}).
 \vspace{8pt}
 
 \emph{Related works}: Traversals of a computation tree provide a way
@@ -473,7 +473,7 @@ corresponding prefix of $t'$). Note that with this definition,
 infinite justified sequences can also be compared. This ordering
 gives rise to a complete partial order.
 We say that a node $n_0$ of a justified sequence is \defname{hereditarily justified} by $n_p$ if there are nodes $n_1, n_2, \ldots n_{p-1}$ in the sequence such that for all $i\in 0..p-1$, $n_i$ points to $n_{i+1}$.
-We write $t^\omega$ to denote the last occurrence of $t$ and $\ip(t)$ for the immediate prefix of $t$ obtained by removing $t$'s last occurrence. We write $\jp(t)$ for the sequence $t_{\prefixof j}$ where $j$ is 
+We write $t^\omega$ to denote the last occurrence of $t$ and $\ip(t)$ for the immediate prefix of $t$ obtained by removing $t$'s last occurrence. We write $\jp(t)$ for the sequence $t_{\prefixof j}$ where $j$ is
 the main justifier of $t^\omega$ in $t$.
 \smallskip
 
@@ -603,7 +603,7 @@ A traversal that cannot be extended by any rule is said to be \emph{maximal}.
 \noindent {\bf Initialization rules}
 \begin{description}
 \item[\rulenamet{Empty}] $\epsilon \in \travset(M)$.
-\item[\rulenamet{Root}] The single-node sequence $r$, where $r$ denotes the root of $\tau(M)$, is a traversal.
+\item[\rulenamet{Root}] The sequence constituted of a single occurrence of $\tau(M)$'s root is a traversal.
 \end{description}
 
 \noindent {\bf Structural rules}
@@ -619,9 +619,7 @@ A traversal that cannot be extended by any rule is said to be \emph{maximal}.
                     \item if  $n \not\in N_{\sf fv}$ then its main link points to the only occurrence\footnote{We will show in
                     Prop. \ref{prop:pviewtrav_is_path} that P-views correspond to
                     paths in the tree thus $n$'s enabler occurs exactly once in the
-                    P-view. In particular, if $n$ is a free variable node then its
-                    justifier is the root node occurring initially in $\pview{t
-                    \cdot \lambda \overline{\xi}}$.} of its enabler in
+                    P-view.} of its enabler in
                     $\pview{t\cdot \lambda \overline{\xi}}$;
                     \item if  $n \in N_{\sf fv}$ then its main link points
                     to the only occurrence of the root in
@@ -633,20 +631,26 @@ A traversal that cannot be extended by any rule is said to be \emph{maximal}.
 
 \emph{\bf Input-variable rules}
 \begin{description}
-\item[\rulenamet{InputVar$^{val}$}] If $t_1 \cdot x \cdot t_2$ is a traversal
+\item[\rulenamet{InputValue}] If $t_1 \cdot x \cdot t_2$ is a traversal
 where $x \in N_{\sf var}^{\theroot\vdash}$ is the pending node ($?(t_1 \cdot x
-\cdot t_2)^\omega=x$) then so is \Pstr[0.4cm]{t_1 \cdot
+\cdot t_2)^\omega=x$) then so is \Pstr[0.5cm]{t_1 \cdot
 (x){x} \cdot t_2 \cdot (xv-x,38:v){v_x} } for all $v \in
 \mathcal{D}$.
 
-\item[\rulenamet{InputVar}] If $t$ is a traversal with a pending node
-  $x \in N_{\sf var}^{r\vdash}$ then so is $t \cdot n$ for any $\lambda$-node $n$ whose parent occurs in  $\oview{t_{\prefixof x}}$, $n$ pointing to some occurrence of its
-  parent node in $\oview{t_{\prefixof x}}$.
+\item[\rulenamet{InputVar}] If $t$ is a traversal with
+$t^\omega \in N_{\sf var}\union L_\lambda$
+with an unmatched occurrence $y \in N_{\sf var}^{\theroot\vdash}$ appearing in $\oview{t}$ then so is $t \cdot n$ for any child node $n$ of $y$, $n$ pointing to $y$.
+
+%%%%%%%%%%%%%
+% The following formulation is equivalent to the preceding one:
+%
+%\item[\rulenamet{InputVar}] If $t$ is a traversal with pending node  $x \in N_{\sf var}^{\theroot\vdash}$ then so is $t \cdot n$ for any $\lambda$-node $n$ whose parent occurs in  $\oview{t_{\prefixof x}}$, $n$ pointing to some occurrence of its  parent node in $\oview{t_{\prefixof x}}$.
+%%%%%%%%%%%%%
 \end{description}
 
-\emph{\bf Copy-cat answer rules}
+\emph{\bf Copy-cat rules}
 \begin{description}
-\item[\rulenamet{Answer-@-$\lambda$}]
+\item[\rulenamet{Value$^{\lambda\mapsto@}$}]
   If \Pstr{t \cdot (app){@} \cdot (lz-app,60:0){\lambda
 \overline{z}}  \ldots  (lzv-lz,60:v){v}_{\lambda \overline{z}} }
 is a traversal then so is \Pstr[0.5cm]{t \cdot (app){@} \cdot
@@ -654,19 +658,19 @@ is a traversal then so is \Pstr[0.5cm]{t \cdot (app){@} \cdot
 (lzv-lz,60:v){v}_{\lambda \overline{z}} \cdot
 (appv-app,45:v){v}_@}.
 
-\item[\rulenamet{Answer-$\lambda$-@}] If \Pstr[0.4cm]{t \cdot \lambda \overline{\xi} \cdot (x){@}  \ldots   (xv-x,50:v){v}_@}
+\item[\rulenamet{Value$^{@\mapsto\lambda}$}] If \Pstr[0.4cm]{t \cdot \lambda \overline{\xi} \cdot (x){@}  \ldots   (xv-x,50:v){v}_@}
 is a traversal then so is \Pstr[0.5cm]{t \cdot (lmd){\lambda
 \overline{\xi}} \cdot (x){@}  \ldots  (xv-x,50:v){v}_@  \cdot
-(lmdv-lmd,30:v){v}_{\lambda \overline{\xi}} }.
+(lmdv-lmd,33:v){v}_{\lambda \overline{\xi}} }.
 
-\item[\rulenamet{Answer-var-$\lambda$}] If \Pstr[0.4cm]{t \cdot y \cdot (lmd){\lambda \overline{\xi}}
+\item[\rulenamet{Value$^{\lambda\mapsto{\sf var}}$}] If \Pstr[0.4cm]{t \cdot y \cdot (lmd){\lambda \overline{\xi}}
 \ldots (lmdv-lmd,50:v){v}_{\lambda \overline{\xi}} } is a
-traversal for some variable $y\not\in N_{\sf var}^{\theroot\vdash}$ then so is \Pstr[0.5cm]{t \cdot (y){y} \cdot (lmd){\lambda
+traversal where $y\in N_{\sf var} \setminus N_{\sf var}^{\theroot\vdash}$ then so is \Pstr[0.5cm]{t \cdot (y){y} \cdot (lmd){\lambda
 \overline{\xi}} \ldots (lmdv-lmd,30:v){v}_{\lambda
 \overline{\xi}}  \cdot (vy-y,50:v){v}_y }.
 
-\item[\rulenamet{Answer-$\lambda$-var}] If \Pstr[0.4cm]{t \cdot \lambda \overline{\xi} \cdot (x){x}  \ldots   (xv-x,50:v){v}_x}
-is a traversal then so is \Pstr[0.5cm]{t \cdot (lmd){\lambda
+\item[\rulenamet{Value$^{{\sf var}\mapsto\lambda}$}] If \Pstr[0.4cm]{t \cdot \lambda \overline{\xi} \cdot (x){x}  \ldots   (xv-x,50:v){v}_x}
+is a traversal where $x\in N_{\sf var}$ then so is \Pstr[0.5cm]{t \cdot (lmd){\lambda
 \overline{\xi}} \cdot (x){x}  \ldots  (xv-x,50:v){v}_x  \cdot
 (lmdv-lmd,30:v){v}_{\lambda \overline{\xi}} }.
 \end{description}
@@ -674,8 +678,8 @@ is a traversal then so is \Pstr[0.5cm]{t \cdot (lmd){\lambda
 \begin{description}
 \item[\rulenamet{Var}]
 If \Pstr[0.5cm]{t' \cdot (n){n} \cdot (lx){\lambda \overline{x}}
-    \ldots (x-lx,50:i){x_i} } is a traversal for some variable
-    $x_i$ not in $N_{\sf var}^{\theroot\vdash}$ then
+    \ldots (x-lx,50:i){x_i} } is a traversal where
+    $x_i \in N_{\sf var} \setminus N_{\sf var}^{\theroot\vdash}$ then
 so is \Pstr[0.5cm]{ t' \cdot (n){n} \cdot
     (lx){\lambda \overline{x}}  \ldots (x-lx,30:i){x_i}  \cdot
     (letai-n,40:i){\lambda \overline{\eta_i}}
@@ -683,7 +687,7 @@ so is \Pstr[0.5cm]{ t' \cdot (n){n} \cdot
 \end{description}
 \caption[Traversal rules for the simply-typed
 lambda-calculus]{Traversal rules for the simply-typed
-$\lambda$-calculus} \label{tab:trav_rules}
+$\lambda$-calculus.} \label{tab:trav_rules}
 \end{FramedTable}
 
 A traversal always starts with the root node and mainly follows the
@@ -749,7 +753,7 @@ Our notions of computation tree and traversal differ slightly from \cite{OngLics
 
 
     \item In our setting, we have to deal with \emph{free} variables.
-    To model free variables we need the traversal rules \rulenamet{InputVar$^{val}$}, \rulenamet{InputVar}
+    To model free variables we need the traversal rules \rulenamet{InputValue}, \rulenamet{InputVar}
     as well as the copy-cat answer rules. Whereas in \cite{OngLics2006}, the rule called \rulenamet{Sig} suffices to model the first-order constants necessary to construct tree structures.
 
     \item In our setting, the introduction of value-leaves
@@ -761,7 +765,7 @@ Our notions of computation tree and traversal differ slightly from \cite{OngLics
 Consider the following computation tree:
 $$\tree{\lambda}
 {
-    \tree{@}
+    \tree[nodesep=4pt]{@}
     {
         \pstree[levelsep=8ex,linestyle=dotted]{\TR{\lambda y}\treelabel{0} }
         {
@@ -798,8 +802,11 @@ $$ \Pstr{ \lambda \cdot
 \begin{enumerate}[(i)]
 \item
     $$\rulef{t = t_1\cdot c \cdot t_2 \in \travset(M) \quad ?(t)^\omega = c \quad P(t)}
-      { \stackrel{  \rule{0pt}{3pt} }{\Pstr[5pt]{ t' = t_1\cdot (c){c} \cdot t_2 \cdot (v-c,35){v(t)} \in {\travset(M)}}}
-             }
+      {
+        \stackrel{\rule{0pt}{3pt} }{
+            \Pstr[8pt]{ t' = t_1\cdot (c){c} \cdot t_2 \cdot (v-c,35){v(t)} \in {\travset(M)}}
+            }
+       }
        $$
     where:
     \begin{compactitem}
@@ -837,7 +844,7 @@ and we take the following condition as a prerequisite:
 
 
 \begin{remark}
-    The definition of well-behavior is in fact derived from the definition of the rules \rulenamet{InputVar$^{val}$} and \rulenamet{InputVar}.  In fact while we can regard uninterpreted constants as free variables, interpreted constants can be seen as a generalization of the notion of free variable. The extra power of the well-behaved constant rules
+    The definition of well-behavior is in fact derived from the definition of the rules \rulenamet{InputValue} and \rulenamet{InputVar}.  In fact while we can regard uninterpreted constants as free variables, interpreted constants can be seen as a generalization of the notion of free variable. The extra power of the well-behaved constant rules
     over the input-variable rules lies in their ability to restrict the set of possible nodes to visit depending on the shape of the traversal $t$.
 \end{remark}
 
@@ -850,7 +857,7 @@ Let $t$ be a traversal. Then:
 \begin{itemize}
 \item[(i)] $t$ is a well-defined and well-bracketed justified sequence;
 \item[(ii)] $t$ is a well-defined justified sequence verifying alternation, P-visibility and O-visibility;
-\item[(iii)] If $t^\omega \in N$ {\it i.e.}~$t$'s last occurrence is not a value-leaf, then $\pview{t}$ is the path in the computation tree going from the root to the node $t^\omega$.
+\item[(iii)] If $t^\omega \not\in L_\lambda$ {\it i.e.}~$t$'s last occurrence is not a lambda value-leaf, then $\pview{t}$ is the path in the computation tree going from the root to the node $t^\omega$.
 \end{itemize}
 \end{proposition}
 
@@ -1098,7 +1105,7 @@ Let us write $t^+$ for the sequence-with-pointers obtained from $t$ by adding
 pointers further pointers as follows: for every occurrence of
 a $@$ or $\Sigma$ node $m$ in $t$ we add a pointer going from $m$ to its predecessor in $t$ (which is necessarily an occurrence of its parent node).
 
-For any traversal $t\in \travset(M)$ and node $n$ occurring in $t$, 
+For any traversal $t\in \travset(M)$ and node $n$ occurring in $t$,
 we write $t \filter^\star n$ to denote the sequence $t^+ \filter n$: the
 sequence of nodes in $t$ that are hereditarily justified by $n$ \emph{in $t^+$}.
 In essence, the effect of this operation is to compute the sequence $((t-@-\Sigma)\filter n)+\Sigma+@$ (provided that $t$ does not end with an @/$\Sigma$-node).
@@ -1108,7 +1115,7 @@ then $s \filter^\star n$ denotes the sequence of nodes in $s$ that are hereditar
 
 
 If $n$ is an occurrence of a lambda node $r' \in N_\lambda$ then we will call $t \filter^\star n$
-a \defname{sub-traversal of the computation tree $\tau(M)$}. This appellation will be justified by Proposition 
+a \defname{sub-traversal of the computation tree $\tau(M)$}. This appellation will be justified by Proposition
 \ref{prop:trav_filtering} stating that $t \filter^\star n$ is a traversal of the sub-computation tree
 of $\tau(M)$ rooted at $r'$.
 \bigskip
@@ -1125,23 +1132,43 @@ The result follows immediately from the following two observations:
 Nodes that are not her.\ just.\ by $r$ in $t$ may become
 her.\ just.\ by $r$ in $t^\star$, however these nodes are not hereditarily \emph{enabled}
  by $\tau(M)$'s root and thus are not in $V^{\theroot\vdash}$.
- 
+
 Reciprocally, all the nodes that are hereditarily justified by $r$ in $t$ are necessarily
 hereditarily \emph{enabled} by the root and also appear in $t^\star$.
 \end{proof}
 
+
 \begin{lemma}
-\label{lem:instarfilter_imp_insubtree}
-Let $r_0$ be an occurrence in $t$ of a lambda-node $r' \in N_\lambda$.
-If $n$ occurs in $t \filter^\star r_0$ then $n$ is in $N^{(r')}$.
+Let $t$ be a traversal
+and  $r_0$ be an occurrence of a lambda node $r'$ in $t$.
+\begin{compactitem}
+  \item Suppose that \Pstr[0.5cm]{t = \ldots (j){j} \ldots (vj-j){v_j}} with $v_j \in L = L_@ \union L_\Sigma \union L_{\sf var} \union L_\lambda$.
+      Then $v_j$ appears in $t\filter^\star r_0$ if and only if
+      $j$ appears in $t\filter^\star r_0$.
+  \item Suppose that \Pstr[0.5cm]{t = \ldots (j){j} \ldots (n-j){\lambda \overline{\xi}}} where $\lambda \overline{\xi} \in N_\lambda$
+          and $\lambda \overline{\xi} \neq r_0$.
+          Then $\lambda \overline{\xi}$ appears in $t\filter^\star r_0$ if and only if $j$ appears in $t\filter^\star r_0$.
+
+  \item Suppose that \pstr[0.6cm]{t =
+    \ldots \nd(j0){j_0}
+    \ldots \nd(j1){j_1}
+    \ldots \nd(jk){j_k}
+    \ldots \nd(n-j0){y}
+    \arrow{n}{j1}{30}{}{blue}{dashed}
+    \arrow{n}{jk}{30}{}{blue}{dashed}
+    } where $y\in N_{\sf var}$ and $j_0$ is $y$'s main justifier
+    and $j_1$, \ldots $j_k$ are the auxiliary justifiers.
+    Then $y$ appears in $t\filter^\star r_0$ if and only if 
+      for some $i \in \{0..k\}$, $j_i$ appears in $t\filter^\star r_0$.
+\end{compactitem}
 \end{lemma}
 \begin{proof}
-Justification pointers attached to a node $n$ in $t^\star$ can only point to
- occurrences of nodes that lies in the path from $n$ to the root
- in the computation tree. Therefore if $n$ is her.\
- just.\ by $r_0$ in $t^\star$ then it must be in the subtree of $\tau(M)$ rooted
- at $r'$ and  therefore $n$ must belong to $N^{(r')}$.
+  It is a direct consequence of the definition of $t\filter^\star r_0$: if $t$'s last occurrence is not $r_0$ then it appears in
+  $t\filter^\star r_0$ if and only if one of its justifiers appears in $t\filter^\star r_0$.
 \end{proof}
+For the third case, we will see that in fact
+all $y$'s auxiliary justifiers occurring after $j_i$ must also appear in $t\filter^\star r_0$. (This is due to the fact that the auxiliary justifiers all appear in the P-view and that by Lemma \ref{lem:pview_trav_filtering} (to be stated later on) all the nodes in the P-view occurring after $r_0$ also appear in $t\filter^\star r_0$).
+
 
 It is easy to see that because traversals are well-bracketed (Proposition \ref{prop:pviewtrav_is_path}), so are the sequences in $\travset^\star(M)$. Moreover:
 \begin{lemma}
@@ -1150,7 +1177,7 @@ It is easy to see that because traversals are well-bracketed (Proposition \ref{p
   $$?(t\filter^\star r_0) = ?(t) \filter^\star r_0 \ .$$
 \end{lemma}
 \proof
- By definition, the operation $t \filter^\star r_0$ removes an occurrence of a value-leaf in $t$ 
+ By definition, the operation $t \filter^\star r_0$ removes an occurrence of a value-leaf in $t$
 if and only if it also removes its justifier. \qed
 % end of proof
 
@@ -1168,102 +1195,78 @@ $M'$ such that $t'-@ \subseqof t-@$. Then we have $t'\subseqof t$.
 \subsubsection{Sub-traversal filtering}
 
 For any lambda node $r'$ in $N_\lambda$ we write
-$M^{(r')}$ for the term $\kappa(r')$ and $N^{(r')}$ for the set of vertices and nodes of the sub computation tree $\tau(M^{(r')})$ (thus $N^{(r')} = E^*(\{r'\})$).
+$M^{(r')}$ for the term $\kappa(r')$ and $V^{(r')}$ for the set of nodes and leaves of the sub computation tree $\tau(M^{(r')})$ (thus $V^{(r')} = E^*(\{r'\})$).
 
-\begin{proposition}[Traversal filtering]
-    \label{prop:trav_filtering}
-    Let $t \in \travset(M)$.
-    \begin{itemize}
-            \item[(P)] 
-            \begin{compactitem}
-            \item[(a)] If $t^\omega$ belongs to $N^{(r')}$ for some lambda node $r'\in N_\lambda$
-            ({\it i.e.}\ $t^\omega$ is an occurrence of non-leaf node of the subtree of $\tau(M)$ rooted at $r'$) then there is an occurrence $r_0$ of $r'$ in $t$ such that
-            \begin{itemize}
-            \item $\pview{t} = \ldots r_0 \cdot u$;
-            \item all the occurrences in $u$ must appear in $t\filter^\star r_0$ and do not appear
-            in any sequence $t\filter^\star r_1$ for any occurrence $r_1$ of $r'$ different from $r'$;
-            \item $\pview{t}^M \filter N^{(r')} = r_0\cdot u =  \pview{t\filter^\star r_0}^{M^{(r')}}$;
-            \end{itemize}
-
-            \item[(b)] If $t$'s last occurrence is not in $N^{(r')}$ then
-            all the occurrences in $\pview{t}$ are not in
-            $N^{(r')}$ and do not appear in any sequence $t\filter^\star r_0$ for some 
-            occurrence $r_0$ of $r'$ in $t$.
-            \end{compactitem}
-
-        \item[(O)]
-            \begin{compactitem}
-            \item[(a)] If $t= \ldots \cdot m \cdot n$ where
-            $m\in N_{\sf var} \union N_\Sigma \union N_@ \union
-            L_\lambda$ and $n\in N_\lambda \union L_{\sf var}
-            \union L_\Sigma \union L_@$ then
-            $m$ and $n$ are in the same thread in $t$: they are her.\ just.\ by the same initial occurrence (which is either $\tau(M)$'s root, a $\Sigma$-constant or an @-node);
-
-            \item[(b)] All the nodes in $\oview{t}$ belong to the same thread.
-
-            \item[(c)]   Let $r_0$ be an occurrence in $t$ of a lambda-node $r' \in N_\lambda$.
-            Suppose that $t^\omega\in V^{\theroot\vdash}$ and $t^\omega$ is not the occurrence $r_0$.
-
-             If $t^\omega$ appears in $t \filter^\star r_0$ then all the nodes and leaves occurring after $r_0$ in $\oview{t}$ also appear in $t \filter^\star r_0$.
-
-             If $t^\omega$ does not appear in $t \filter^\star r_0$ then all the nodes and leaves occurring after $r_0$ in $\oview{t}$ do not appear in $t \filter^\star r_0$.
-             
-            \item[(d)] Suppose $|t|>0$. Let $r_0$ be an occurrence in $t$ of a lambda node
-$r'$ in $N_\lambda$. If $t^\omega \in V^{\theroot\vdash}$ and $t^\omega$ appears in $t \filter^\star r_0$ then $\oview{t}_M\filter^\star r_0 = \oview{t\filter^\star r_0}_{M^{(r')}}$.
-            \end{compactitem}
-
-       \item[(T)]
-            For any occurrence $r_0$ in $t$ of some lambda node
-             $r'\in N_\lambda$ we have $t\filter^\star r_0 \in
-             \travset(M^{(r')})$.
-    \end{itemize}
-\end{proposition}
+\begin{lemma}
+\label{lem:instarfilter_imp_insubtree}
+Let $r_0$ be an occurrence in $t$ of a lambda-node $r' \in N_\lambda$.
+If $n$ occurs in $t \filter^\star r_0$ then $n$ is in $V^{(r')}$.
+\end{lemma}
+\begin{proof}
+Justification pointers attached to a node $n$ in $t^\star$ can only point to
+ occurrences of nodes that lies in the path from $n$ to the root
+ in the computation tree. Therefore if $n$ is her.\
+ just.\ by $r_0$ in $t^\star$ then it must be in the subtree of $\tau(M)$ rooted
+ at $r'$ and  therefore $n$ must belong to $V^{(r')}$.
+\end{proof}
 
 
+\begin{lemma}[Filtering of a traversal's P-view]
+\label{lem:pview_trav_filtering}
+   Let $t \in \travset(M)$ such that $t^\omega \not\in L_\lambda$.
+        \begin{compactitem}
+        \item[(a)] If $t^\omega$ belongs to $V^{(r')}$ for some lambda node $r'\in N_\lambda$
+        ({\it i.e.}\ $t^\omega$ belongs to the subtree of $\tau(M)$ rooted at $r'$) then there is an occurrence $r_0$ of $r'$ in $t$ such that
+        \begin{itemize}
+        \item $\pview{t} = \ldots r_0 \cdot u$;
+        \item all the occurrences in $u$ must appear in $t\filter^\star r_0$ and do not appear
+        in any sequence $t\filter^\star r_1$ for any occurrence $r_1$ of $r'$ different from $r'$;
+        \item $\pview{t}^M \filter V^{(r')} = r_0\cdot u =  \pview{t\filter^\star r_0}^{M^{(r')}}$;
+        \end{itemize}
+
+        \item[(b)] If $t$'s last occurrence is not in $V^{(r')}$ then
+        all the occurrences in $\pview{t}$ are not in
+        $V^{(r')}$ and do not appear in any sequence $t\filter^\star r_0$ for some
+        occurrence $r_0$ of $r'$ in $t$.
+        \end{compactitem}
+\end{lemma}
 \proof
-We prove (P), (O) and (T) simultaneously by induction on the
-traversal rules. The base cases \rulenamet{Empty} and
+Firstly we observe that the equality $\pview{t}^M \filter V^{(r')} = r_0\cdot u$
+in the fourth point is implied by the third point. Indeed since $t$'s last move in not a lambda leaf,
+by Proposition \ref{prop:pviewtrav_is_path}, the P-view $\pview{t_{\prefixof r_0}}^M$ is the path from $r'$ to the root of the computation tree therefore all the nodes preceding $r_0$ are not in $V^{(r')}$, and by the third point all the nodes in $u$ are in $V^{(r')}$.
+
+We prove the result by induction on the traversal rules. The base cases \rulenamet{Empty} and
 \rulenamet{Root} are trivial. \emph{Step case:} Take a traversal $t
-\in \travset(M)$ such that $|t|>1$. Suppose that the properties are
-verified for any traversal shorter than $t$.
-
-\begin{itemize}
-\item (P) Firstly we observe that the equality $\pview{t}^M \filter N^{(r')} = r_0\cdot u$
-in the fourth point is implied by the third point. Indeed the
-P-view $\pview{t_{\prefixof r_0}}^M$ is the path from $r'$ to the root $r$ therefore all the
-nodes preceding $r_0$ are not in $N^{(r')}$, and by the third point all the nodes in $u$ are in $N^{(r')}$.
-
-We do a case analysis on the type of the last node in $t$:
+\in \travset(M)$ such that $|t|>1$. We do a case analysis on the type of the last occurrence in $t$:
     \begin{compactitem}
-    \item The cases $t = t' \cdot n$ with $n\in L_\lambda$ or $n \in L_{\sf var} \union L_@ \union
-    L_\Sigma$ do not happen since by assumption $n$ is not a
-    leaf.
+    \item The cases $t = t' \cdot n$ with $n\in L_\lambda$ does not happen since by assumption $n$ is not a
+    lambda leaf.
 
     \item If $t = t' \cdot n$ with $n \in N_{\sf var} \union
     N_\Sigma \union N_@$ then by lemma
     \ref{lem:trav_last_not_leaf}, $t'^\omega$ is $n$'s
     parent in $\tau(M)$.
 
-    (a) Suppose $n$ is in $N^{(r')}$. Since $n$ is not a lambda
+    (a) Suppose $n$ is in $V^{(r')}$. Since $n$ is not a lambda
     node, its parent node $t'^\omega$ necessarily belong to
-    $N^{(r')}$. Then by the induction hypothesis,
+    $V^{(r')}$. Then by the induction hypothesis,
     $\pview{t'^\omega} = \ldots r_0 \cdot u$ where $r_0$ is
     an occurrence of $r'$ in $t^\star$ and all the nodes in
     $u$ appear in $t\filter^\star r_0$ and not in any
     other sequence $t\filter^\star r_1$ for any occurrence $r_1\neq r_0$ of $r'$. By P-visibility, $n$'s
     justifiers all appear in $\pview{t'}$:
     those occurring before $r_j$ do not belong
-    to $N^{(r')}$ since they appear on the path from $r'$ to
+    to $V^{(r')}$ since they appear on the path from $r'$ to
     the root $r$; and those occurring in $u$ all appear in $t\filter^\star r_0$.
     Consequently, $n$ must also appear in $t\filter^\star r_0$ and not in any
     other sequence $t\filter^\star r_1$ for any occurrence $r_1\neq r_0$ of $r'$.
 
     Moreover:
         \begin{align*}
-        \pview{t}^M \filter N^{(r')}
-    &= \pview{t' \cdot n}^M \filter  N^{(r')} & (\mbox{definition of } t)\\
-            &= (\pview{t'}^M \cdot n) \filter  N^{(r')}  & (\mbox{P-view computation}) \\
-            &= \pview{t'}^M \filter N^{(r')}  \cdot n             & \parbox[t]{6cm}{(\raggedleft since $n$ is in $N^{(r')}$, where $n$'s justifiers are those from the sequence $t$ that are in $N^{(r')}$)} \\
+        \pview{t}^M \filter V^{(r')}
+    &= \pview{t' \cdot n}^M \filter  V^{(r')} & (\mbox{definition of } t)\\
+            &= (\pview{t'}^M \cdot n) \filter  V^{(r')}  & (\mbox{P-view computation}) \\
+            &= \pview{t'}^M \filter V^{(r')}  \cdot n             & \parbox[t]{6cm}{(\raggedleft since $n$ is in $V^{(r')}$ and where $n$'s justifiers are those from the sequence $t$ that are in $V^{(r')}$)} \\
             &= \pview{t' \filter^\star  r_0 }^{M^{(r')}} \cdot n            & (\mbox{induction hypothesis}) \\
             &= \pview{t' \filter^\star  r_0 \cdot n }^{M^{(r')}} & (\mbox{P-view in $M^{(r')}$}) \\
             &= \pview{(t' \cdot n ) \filter^\star  r_0  }^{M^{(r')}}           & (\mbox{$n$ is her.\ just.\ by $r_0$ in $t^\star$}) \\
@@ -1271,69 +1274,98 @@ We do a case analysis on the type of the last node in $t$:
      & (\mbox{definition of } t).
         \end{align*}
 
-    (b) Suppose $n$ is not in $N^{(r')}$ then necessarily its parent node $t'^\omega$ does not belong to $N^{(r')}$ either.
-    Therefore by the induction hypothesis, all the nodes in $\pview{t'}$ do not belong to 
+    (b) Suppose $n$ is not in $V^{(r')}$ then necessarily its parent node $t'^\omega$ does not belong to $V^{(r')}$ either.
+    Therefore by the induction hypothesis, all the nodes in $\pview{t'}$ do not belong to
     $t\filter^\star r_0$ for any occurrence $r_0$ of $r'$. By P-visibility, $n$'s justifiers all appear in $\pview{t'}$ therefore, $n$ does not belong to $t\filter^\star r_0$ for any occurrence $r_0$ of $r'$.
 
 
     \item If $\Pstr[0.6cm]{ t =  t' \cdot (m){m} \cdot u \cdot (lmd-m,30){n} }$
-    where $n \in N_\lambda$ and $n$ is not an occurrence of $r'$ then necessarily $m\in N_{\sf var} \union
+    where $n \in N_\lambda \union L_{\sf var} \union L_@ \union
+    L_\Sigma$ and $n$ is not an occurrence of $r'$ then necessarily $m\in N_{\sf var} \union
     N_\Sigma \union N_@$ and $m$ is $n$'s parent in $\tau(M)$.
 
-    (a) Suppose that $n\in N^{(r')}$. Since $m$ is the parent of
-    the node $n$ in $N^{(r')}$ which is not the the root of
+    (a) Suppose that $n\in V^{(r')}$. Since $m$ is the parent of
+    the node $n$ in $V^{(r')}$ which is not the the root of
     $\tau(M^{(r')})$, necessarily $m$ also belongs to
-    $N^{(r')}$. Therefore by the induction hypothesis, there
-    is some occurrence $r_0$ of $r'$ in $t$ such that
-    $\pview{r' \cdot m} = \ldots r_0 \cdot u$ and all the
-    nodes in $u$ belong to $N^{(r')}$, and all the
-    occurrences in $u$ appear in $t\filter^\star r_0$
-    and not in any $t\filter^\star r_1$ for any occurrence $r_1\neq r_0$ of $r'$.
-    Since $n$'s only justifier points in $\pview{r' \cdot
-    m}$, $n$ must also verifies the second point of (a).
-
+    $V^{(r')}$. Thus we can use the induction hypothesis on $t' \cdot m$: for some occurrence $r_0$
+     of $r'$ in $t$ we have
+    $\pview{r' \cdot m} = \ldots r_0 \cdot w$; all the
+    nodes in $w$ belong to $V^{(r')}$; and all the
+    occurrences in $w$ appear in $(t'\cdot m)\filter^\star r_0$
+    and not in any $(t'\cdot m)\filter^\star r_1$ for any occurrence $r_1\neq r_0$ of $r'$.
+    Since the justifier of $n$ is in $\pview{t' \cdot  m}$, these properties must clearly also hold for $t$.
     Moreover:
             \begin{align*}
-            \pview{t}^M \filter  N^{(r')}            &= \pview{\Pstr{t' \cdot (m){m} \cdot u \cdot (n-m,40){n}}}^M \filter  N^{(r')}
-                                                                  & (\mbox{definition of } t)\\
-            &= (\pstr{\pview{t' \cdot \nd(m){m} }^M \cdot \nd(lmd-m,60){n}}) \filter  N^{(r')}                                                                  & (\mbox{P-view in $M$}) \\
-            &= \pstr[0.4cm]{ \pview{t' \cdot \nd(m){m} }^M \filter N^{(r')} \cdot \nd(lmd-m,30){n} }
-                                                                  & (\mbox{$n \in N^{(r')}$}) \\
+            \pview{t}^M \filter  V^{(r')}            &= \pview{\Pstr{t' \cdot (m){m} \cdot u \cdot (n-m,40){n}}}^M \filter  V^{(r')}
+                & (\mbox{definition of } t)\\
+            &= (\pstr{\pview{t' \cdot \nd(m){m} }^M \cdot \nd(lmd-m,60){n}}) \filter  V^{(r')}
+                & (\mbox{P-view in $M$}) \\
+            &= \pstr[0.4cm]{ \pview{t' \cdot \nd(m){m} }^M \filter V^{(r')} \cdot \nd(lmd-m,30){n} }
+                & (\mbox{$n \in V^{(r')}$}) \\
             &= \pstr[0.4cm]{ \pview{(t' \cdot \nd(m){m})\filter^\star r_0}^{M^{(r')}}  \cdot  \nd(lmd-m,30){n} }
-                                                                  & \mbox{(induction hypothesis)} \\
+                & \mbox{(induction hypothesis)} \\
             &= \pstr[0.4cm]{ \pview{t' \cdot \filter^\star r_0 \cdot \nd(m){m}}^{M^{(r')}}  \cdot  \nd(lmd-m,35){n} }
-                                                                  & \mbox{($m$ appears in $t\filter^\star r_0$)} \\
+                & \mbox{($m$ appears in $t\filter^\star r_0$)} \\
             &= \pview{ \Pstr{t' \filter^\star r_0 \cdot (m){m} \cdot {(u \filter^\star r_0)} \cdot (lmd-m,35){n}}}^{M^{(r')}}
-                                                               & \parbox[t]{6cm}{(P-view in $M^{(r')}$: nodes in $(u \filter^\star r_0) \cdot n$ are all in $N^{(r')}$
-                                                               by Lemma \ref{lem:instarfilter_imp_insubtree})} \\
+                & \parbox[t]{6cm}{(P-view in $M^{(r')}$: nodes and leaves in $(u \filter^\star r_0) \cdot n$ are all in $V^{(r')}$
+                    by Lemma \ref{lem:instarfilter_imp_insubtree})} \\
             &= \pview{ (\Pstr{t' \cdot (m){m} \cdot u \cdot (lmd-m,35){n}}) \filter^\star r_0 }^{M^{(r')}}
-                                                               & (\mbox{$m$ and $n$ appear in $t\filter^\star r_0$}) \\
-            &= \pview{ t \filter^\star r_0 }^{M^{(r')}}        & \mbox{(definition of $t$).}
+                & (\mbox{$m$ and $n$ appear in $t\filter^\star r_0$}) \\
+            &= \pview{ t \filter^\star r_0 }^{M^{(r')}}
+                & \mbox{(definition of $t$).}
             \end{align*}
 
-    (b) Suppose $n$ is not in $N^{(r')}$ then necessarily its parent node $m$ does not belong to $N^{(r')}$ either.     Therefore by the induction hypothesis, all the nodes in $\pview{t' \cdot m}$ do not belong to
+    (b) Suppose $n$ is not in $V^{(r')}$ then necessarily its parent node $m$ does not belong to $V^{(r')}$ either. Therefore by the induction hypothesis, all the nodes in $\pview{t' \cdot m}$ do not belong to
     $t\filter^\star r_0$ for any occurrence $r_0$ of $r'$. Hence since the only justifier of $n$ is $m$, $n$ must also not appear in $t\filter^\star r_0$ for any occurrence $r_0$ of $r'$
-   
 
-    \item If $t =  t' \cdot r_0$ where $r_0$ is an occurrence of $r'$, then $r_0 \in N^{(r')}$, $\pview{t}^M = \pview{t'}^M \cdot r_0$. Since $\pview{t}$ is the path from the root to $r'$, all the nodes occurring before $r_0$ in $\pview{t'}$ do not belong to $N^{(r')}$. Hence:
+
+    \item If $t =  t' \cdot r_0$ where $r_0$ is an occurrence of $r'$, then $r_0 \in V^{(r')}$, $\pview{t}^M = \pview{t'}^M \cdot r_0$. Since $\pview{t}$ is the path from the root to $r'$, all the nodes occurring before $r_0$ in $\pview{t'}$ do not belong to $V^{(r')}$. Hence:
         \begin{align*}
-        \pview{t}^M \filter N^{(r')}
-            &=  \pview{t'}^M \filter N^{(r')} \cdot r_0 & (\mbox{P-view in $M$})\\
-            &=  r_0                                     & (\mbox{nodes in $\pview{t'}_{\prefixof r_0}$ do not belong to $N^{(r')}$}) \\
+        \pview{t}^M \filter V^{(r')}
+            &=  \pview{t'}^M \filter V^{(r')} \cdot r_0 & (\mbox{P-view in $M$})\\
+            &=  r_0                                     & (\mbox{nodes in $\pview{t'}_{\prefixof r_0}$ do not belong to $V^{(r')}$}) \\
             &=  \pview{r_0 }^{M^{(r')}}                 & (\mbox{P-view in $M^{(r')}$})\\
-            &= \pview{t \filter^\star  r_0 }^{M^{(r')}} & \mbox{($t \filter^\star  r_0 = r_0$)}.
+            &= \pview{t \filter^\star  r_0 }^{M^{(r')}} & \mbox{($t \filter^\star  r_0 = r_0$)}. \qed
         \end{align*}
-
     \end{compactitem}
+%end of proof
 
 
-\item (O)  We first show (a), (b) and (c) by induction on the last traversal rule used to form $t$.
+\begin{lemma}[Filtering of a traversal's O-view]
+\label{lem:oview_trav_filtering}
+   Let $t \in \travset(M)$.
+    \begin{compactitem}
+    \item[(a)] If $t= \ldots \cdot m \cdot n$ where
+    $m\in N_{\sf var} \union N_\Sigma \union N_@ \union
+    L_\lambda$ and $n\in N_\lambda \union L_{\sf var}
+    \union L_\Sigma \union L_@$ then
+    $m$ and $n$ are in the same thread in $t$: they are her.\ just.\ by the same initial occurrence (which is either $\tau(M)$'s root, a $\Sigma$-constant or an @-node);
+
+    \item[(b)] All the nodes in $\oview{t}$ belong to the same thread.
+
+    \item[(c)]   Let $r_0$ be an occurrence in $t$ of a lambda-node $r' \in N_\lambda$.
+    Suppose that $t^\omega\in V^{\theroot\vdash}$ and $t^\omega$ is not the occurrence $r_0$.
+
+     If $t^\omega$ appears in $t \filter^\star r_0$ then all the nodes and leaves occurring after $r_0$ in $\oview{t}$ also appear in $t \filter^\star r_0$.
+
+     If $t^\omega$ does not appear in $t \filter^\star r_0$ then all the nodes and leaves occurring after $r_0$ in $\oview{t}$ do not appear in $t \filter^\star r_0$.
+
+    \item[(d)] Suppose $|t|>0$. Let $r_0$ be an occurrence in $t$ of a lambda node
+    $r'$ in $N_\lambda$. Supposet $t^\omega \in V^{\theroot\vdash}$ and $t^\omega$ appears in $t \filter^\star r_0$.
+     
+     If $r_0$ appears in $\oview{t}$ then $\oview{t\filter^\star r_0}_{M^{(r')}} = \oview{t}_M\filter^\star r_0$.
+     Otherwise $\oview{t\filter^\star r_0}_{M^{(r')}} = r_0 \cdot (\oview{t}_M\filter^\star r_0)$.
+    \end{compactitem}
+\end{lemma}
+\proof
+We show (a), (b), (c) simultaneously by induction on the last traversal rule used to form $t$.
 The results trivially hold for the case \rulenamet{Empty} and \rulenamet{Root}.
+
 \emph{Step case:}
-Let us first consider the rules \rulenamet{Lam}, \rulenamet{App}, \rulenamet{Answer-$\lambda$-var} and
-\rulenamet{Answer-$\lambda$-@}. In these cases, $t$'s last node is not in $N_\lambda\union L_{\sf var} \union L_\Sigma \union L_@$ which does not correspond to the hypothesis of (a) therefore we do not need to show (a).
-For (b) the result holds trivially: we have $\oview{t} = \jp t \cdot t^\omega$ where $t^\omega$ points in $\jp t$
-so we conclude by using the induction hypothesis on $\jp t$.
+Let us first consider the rules \rulenamet{Lam}, \rulenamet{App}, \rulenamet{Value$^{{\sf var}\mapsto\lambda}$} and
+\rulenamet{Value$^{@\mapsto\lambda}$}. In these cases, $t$'s last node is not in $N_\lambda\union L_{\sf var} \union L_\Sigma \union L_@$ which does not correspond to the hypothesis of (a) therefore we do not need to show (a).
+For (b) the result holds trivially: we have $\oview{t} = \jp(t) \cdot t^\omega$ where $t^\omega$ points in $\jp(t)$
+so we conclude by using the induction hypothesis on $\jp(t)$.
 
 For (c), suppose that $t^\omega\in V^{\theroot\vdash}$ and $t^\omega$ is not the occurrence $r_0$.
 We just need to show that $t^\omega$ appears in $t \filter^\star r_0$ if and only if its main justifier
@@ -1350,38 +1382,38 @@ does; the induction hypothesis then permits us to conclude. We do a case analysi
         \Pstr[0.6cm]{t = \ldots r_0 \ldots (l){\lambda \overline{x}} \cdot \ldots \cdot (n-l,40:0) n}
         where $\lambda \overline{x}$ is $n$'s binder.
 
-        If $n$ does not appear in $t \filter^\star r_0$ then necessarily its binder does not either hence we can conclude using the induction hypothesis on $t_{\prefixof \lambda \overline{xi}}$.
+        If $n$ does not appear in $t \filter^\star r_0$ then necessarily its binder does not either hence we can conclude using the induction hypothesis on $t_{\prefixof \lambda \overline{x}}$.
 
-        If $n$ appears in $t \filter^\star r_0$ then by (P),
+        If $n$ appears in $t \filter^\star r_0$ then by Lemma \ref{lem:pview_trav_filtering},
         $r_0$ necessarily occurs in the P-view $\pview{t}$ and all the nodes and leaves occurring after
-        $r_0$ in $\pview{t}$ are her.\ just.\ by $r_0$ in $t^\star$.
-        Hence since all the justifiers of $n$ are in the P-view, they must all be her.\ just.\ by $r_0$ in $t^\star$.
-        Consequently $\lambda \overline{x}$ appears in $t \filter^\star r_0$.
+        $r_0$ in $\pview{t}$ also appear in $t\filter^\star r_0$.
+        Thus, since $n$'s justifiers are all in the P-view, they must all appear in $t\filter^\star r_0$.
+        In particular its main justifier $\lambda \overline{x}$ must appear in $t \filter^\star r_0$.
 
 
     \item[\rulenamet{App}] Take \Pstr[0.4cm]{t \cdot (m) @  \cdot (n-m,40:0) n}. $n$ is justified by an @-node
     therefore it cannot be in $N^{\theroot\vdash}$. Hence this case does not happen.
 
-    \item[\rulenamet{Answer-$\lambda$-@}] Take \Pstr[0.5cm]{t = t' \cdot (lmd){\lambda
+    \item[\rulenamet{Value$^{@\mapsto\lambda}$}] Take \Pstr[0.5cm]{t = t' \cdot (lmd){\lambda
     \overline{\xi}} \cdot (x){@}  \ldots  (xv-x,50:v){v}_@  \cdot
     (lmdv-lmd,30:v){v}_{\lambda \overline{\xi}} }.
 
     Clearly since $v_{\lambda \overline{\xi}}$ is a value-leaf, it appears in $t \filter^\star r_0$ if and only its justifier does.
 
-    \item[\rulenamet{Answer-$\lambda$-var}] Take \Pstr[0.5cm]{t = t' \cdot (lmd){\lambda
+    \item[\rulenamet{Value$^{{\sf var}\mapsto\lambda}$}] Take \Pstr[0.5cm]{t = t' \cdot (lmd){\lambda
     \overline{\xi}} \cdot (x){x}  \ldots  (xv-x,50:v){v}_x  \cdot
     (lmdv-lmd,30:v){v}_{\lambda \overline{\xi}} }.
 
     The proof is the same as in the previous case.
 \end{compactitem}
-
+\smallskip
 We now consider the remaining rules.
-For these cases, (b) is a direct consequence of (a).
-For (c), it suffices to show that if $t^\omega \in V^{\theroot\vdash}$ then
+For these rules, (b) is a direct consequence of (a).
+For (c), it suffices to show that whenever $t^\omega \in V^{\theroot\vdash}$,
 $t^\omega$ appears in $t \filter^\star r_0$ if and only if $t^{\omega^2}$ does.
-We show (a) and (c) by case analysis:
+Let us show (a) and (c):
 \begin{compactitem}
-\item[\rulenamet{InputVar$^{val}$}] Take \Pstr[0.4cm]{t =
+\item[\rulenamet{InputValue}] Take \Pstr[0.4cm]{t =
     t_1 \cdot (x){x} \cdot t_2 \cdot (xv-x,38:v){v_x} } for some
     $v \in \mathcal{D}$.
 
@@ -1453,7 +1485,7 @@ We show (a) and (c) by case analysis:
 
     \end{compactitem}
 
-    \item[\rulenamet{Answer-@-$\lambda$}]
+    \item[\rulenamet{Value$^{\lambda\mapsto@}$}]
       Take \Pstr[0.7cm]{t = t' \cdot (app){@} \cdot
     (lz-app,60){\lambda \overline{z}} \ldots
     (lzv-lz,60:v){v}_{\lambda \overline{z}} \cdot
@@ -1463,7 +1495,7 @@ We show (a) and (c) by case analysis:
     (c) This case does not happen since $t$'s last node is in $V_@$
     which contradicts the hypothesis that $t^\omega$ is in $V^{\theroot\vdash}$.
 
-     \item[\rulenamet{Answer-var-$\lambda$}] Take \Pstr[0.7cm]{t = t' \cdot (y){y} \cdot
+     \item[\rulenamet{Value$^{\lambda\mapsto{\sf var}}$}] Take \Pstr[0.7cm]{t = t' \cdot (y){y} \cdot
     (lmd){\lambda \overline{\xi}} \ldots
     (lmdv-lmd,30:v){v}_{\lambda \overline{\xi}}  \cdot
     (vy-y,50:v){v}_y } for some variable $y$ not in $N_{\sf var}^{\theroot\vdash}$.
@@ -1486,32 +1518,35 @@ We show (a) and (c) by case analysis:
         (c) By (a), the last two nodes in $t$ are both not in $N_{\sf var}^{\theroot\vdash}$.
             But by assumption $t$'s last node is in $V^{\theroot\vdash}$ therefore this rules cannot be used.
 
-    \item[(Constant rules)] For (a) the proof is similar to the cases \rulenamet{InputVar} and
-    \rulenamet{InputVar$^{val}$} (using the fact that constant
+    \item[(Constant rules)] 
+    (a) the proof is similar to the cases \rulenamet{InputVar} and
+    \rulenamet{InputValue} (using the fact that constant
     rules are well-behaved).
-    For (b) the proof is is similar to the cases \rulenamet{Var} and
-    \rulenamet{Answer-@-$\lambda$}.
+
+    (c) the proof is similar to the cases \rulenamet{Var} and
+    \rulenamet{Value$^{\lambda\mapsto@}$}.
     \end{compactitem}
     \bigskip
 
-    Now we show (d) by case analysis on the type of the last occurrence in $t$:
+    We now show (d) by induction. The result is trivial for the empty traversal. Consider a traversal $t$ with $|t|>0$.
+    We proceed by case analysis on the type of $t$'s last occurrence:
     \begin{itemize}
     \item If $t =  t' \cdot r_0$ then $t \filter^\star r_0 = r_0$ and  $\oview{t}_M \filter^\star r_0 = r_0 = \oview{t \filter^\star r_0}_{M^{(r')}}$.
 
     \item If $t = t' \cdot n$ with $n \in N_\lambda \union L_{\sf var} \union
     L_\Sigma \union L_@$ where $n$ is not the occurrence $r_0$.
-    
+
     Since $n$ appears in $t\filter^\star r_0$, its only justifier (which is in $\oview{t'}$ by O-visibility) must also appear in $t\filter^\star r_0$.
 
-    By (c), $t'$'s last occurrence appears in $t \filter^\star r_0$ hence we can apply
-    the induction hypothesis (O) on $t'$ which gives us $\oview{t}_M = \oview{t' \filter^\star  r_0}_{M^{(r')}}$.  Thus:
+    By (b), $t'$'s last occurrence is in $V^{(r')}$ and by (c), it appears in $t \filter^\star r_0$. Hence we can apply
+    the I.H. on $t'$ which gives us $\oview{t}_M = \oview{t' \filter^\star  r_0}_{M^{(r')}}$.  Thus:
         \begin{align*}
         \oview{t}_M \filter^\star r_0
     &= \oview{t' \cdot n}_M \filter^\star r_0 & (\mbox{definition of } t)\\
             &= \oview{t'}_M \filter^\star r_0 \cdot n  & \parbox[t]{7cm}{(\raggedleft O-view in $M$, $n$'s justifier appears in $\oview{t'}\filter^\star r_0$ by the previous remark)} \\
             &= \oview{t' \filter^\star  r_0 }_{M^{(r')}} \cdot n            & (\mbox{induction hypothesis}) \\
             &= \oview{t' \filter^\star  r_0 \cdot n}_{M^{(r')}} & \parbox[t]{7cm}{\raggedleft (O-view in $M^{(r')}$:
-             $n$ is indeed a node of in $\tau(M^{(r')})$ by Lemma \ref{lem:instarfilter_imp_insubtree})} \\
+             $n$ is indeed a node of $\tau(M^{(r')})$ by Lemma \ref{lem:instarfilter_imp_insubtree})} \\
             &= \oview{(t' \cdot n ) \filter^\star  r_0  }_{M^{(r')}}           & (\mbox{$n$ occurs in $t\filter^\star r_0$}) \\
             &= \oview{t \filter^\star  r_0  }_{M^{(r')}}
      & (\mbox{definition of } t).
@@ -1520,33 +1555,55 @@ We show (a) and (c) by case analysis:
     \item If $\Pstr{ t =  t' \cdot (m){m} \cdot u \cdot (lmd-m,30){n} }$
     where $n \in N_{\sf var} \union N_\Sigma \union N_@ \union L_\lambda$ then necessarily
     $m\in N_\lambda \union L_{\sf var} \union L_\Sigma \union L_@$.
+    
 
-By (b) the nodes in the O-view are all in the same thread as $n$ and
-by (c) all the nodes and leaves occurring after $r_0$ in the O-view appear in
-$t \filter^\star r_0$. In particular since $\oview{t} = \oview{t' \cdot m} \cdot n$, $m$ appears in $t \filter^\star r_0$ and we can apply the induction hypothesis (O) on $t' \cdot m$ which gives us $\oview{t' \cdot m}_M \filter^\star r_0 = \oview{(t' \cdot m)\filter^\star r_0 }_{M^{(r')}}$.
-Hence:
-    \begin{align*}
-            \oview{t}_M \filter^\star r_0
-            &= \oview{\Pstr{t' \cdot (m){m} \cdot u \cdot (n-m,40){n}}}_M \filter^\star r_0
-                    & (\mbox{definition of } t)\\
-            &= (\pstr{\oview{t' \cdot \nd(m){m}}_M  \cdot \nd(lmd-m,60){n}}) \filter^\star r_0
-                    & (\mbox{O-view in $M$ }) \\
-            &= \pstr[0.4cm]{ \oview{t' \cdot \nd(m){m}}_M \filter^\star r_0  \cdot  \nd(lmd-m,30){n} }
-                    & (\mbox{$n$ appears in $t \filter^\star r_0$}) \\
-            &= \pstr[0.4cm]{ \oview{(t' \cdot \nd(m){m} )\filter^\star r_0}_{M^{(r')}} \cdot \nd(lmd-m,25){n} }
-                    & \mbox{(induction hypothesis)} \\
-            &= \pstr[0.4cm]{ \oview{t'\filter^\star r_0 \cdot \nd(m){m}}_{M^{(r')} } \cdot \nd(lmd-m,25){n} }
-                    & \mbox{($m$ appears in $t \filter^\star r_0$)} \\
-            &= \oview{ \Pstr[0.4cm]{t' \filter^\star r_0 \cdot (m){m} \cdot {(u \filter^\star r_0)} \cdot (lmd-m,30){n}}}_{M^{(r')}}
-                    & \parbox[t]{5cm}{\raggedleft(O-view in $M^{(r')}$, nodes in $m\cdot (u \filter^\star r_0) \cdot n$ are all in $N^{(r')}$)} \\
-            &= \oview{ (\Pstr{t' \cdot (m){m} \cdot u \cdot (lmd-m,35){n}}) \filter^\star r_0 }_{M^{(r')}}
-                    & \mbox{($m$ and $n$ both appear in } t \filter^\star r_0) \\
-            &= \oview{ t \filter^\star r_0 }_{M^{(r')}}
-                    & \mbox{(definition of $t$).} \qed
-    \end{align*}
-    \end{itemize}
 
-\item (T) Suppose $t = t' \cdot n$.
+By (b) the nodes in the O-view are all in the same thread as $n$ therefore $m$ is in $V^{(r')}$.
+
+        \begin{itemize}
+        \item Suppose that $r_0$ occurs before $m$ in $t$.
+
+            By (c) all the nodes and leaves occurring after $r_0$ in the O-view appear in
+            $t \filter^\star r_0$, in particular since $m$ is in the O-view $\oview{t}$ and $r_0$ occurs before $m$, $m$ must appear in $t \filter^\star r_0$ and we can apply the I.H. on $t' \cdot m$ which gives us $\oview{t' \cdot m}_M \filter^\star r_0 = \oview{(t' \cdot m)\filter^\star r_0 }_{M^{(r')}}$.
+            Hence:
+                \begin{align*}
+                        \oview{t}_M \filter^\star r_0
+                        &= \oview{\Pstr{t' \cdot (m){m} \cdot u \cdot (n-m,40){n}}}_M \filter^\star r_0
+                                & (\mbox{definition of } t)\\
+                        &= (\pstr{\oview{t' \cdot \nd(m){m}}_M  \cdot \nd(lmd-m,60){n}}) \filter^\star r_0
+                                & (\mbox{O-view in $M$ }) \\
+                        &= \pstr[0.4cm]{ \oview{t' \cdot \nd(m){m}}_M \filter^\star r_0  \cdot  \nd(lmd-m,30){n} }
+                                & (\mbox{$n$ appears in $t \filter^\star r_0$}) \\
+                        &= \pstr[0.4cm]{ \oview{(t' \cdot \nd(m){m} )\filter^\star r_0}_{M^{(r')}} \cdot \nd(lmd-m,25){n} }
+                                & \mbox{(induction hypothesis)} \\
+                        &= \pstr[0.4cm]{ \oview{t'\filter^\star r_0 \cdot \nd(m){m}}_{M^{(r')} } \cdot \nd(lmd-m,25){n} }
+                                & \mbox{($m$ appears in $t \filter^\star r_0$)} \\
+                        &= \oview{ \Pstr[0.4cm]{t' \filter^\star r_0 \cdot (m){m} \cdot {(u \filter^\star r_0)} \cdot (lmd-m,30){n}}}_{M^{(r')}}
+                                & \parbox[t]{5cm}{\raggedleft(O-view in $M^{(r')}$, nodes in $m\cdot (u \filter^\star r_0) \cdot n$ are all in $V^{(r')}$)} \\
+                        &= \oview{ (\Pstr{t' \cdot (m){m} \cdot u \cdot (lmd-m,35){n}}) \filter^\star r_0 }_{M^{(r')}}
+                                & \mbox{($m$ and $n$ both appear in } t \filter^\star r_0) \\
+                        &= \oview{ t \filter^\star r_0 }_{M^{(r')}}
+                                & \mbox{(definition of $t$).}
+            \end{align*}
+
+        \item Suppose that $r_0$ occurs before $m$ in $t$. 
+
+        \end{itemize}
+\end{itemize}
+
+    \qed
+
+\begin{proposition}[Traversal filtering]
+    \label{prop:trav_filtering}
+    Let $t \in \travset(M)$. For any occurrence $r_0$ in $t$ of some lambda node
+    $r'\in N_\lambda$ we have $t\filter^\star r_0 \in \travset(M^{(r')})$.
+\end{proposition}
+\proof
+    We proceed by by induction on the traversal rules. The base cases \rulenamet{Empty} and
+    \rulenamet{Root} are trivial. \emph{Step case:} Take a traversal $t = t' \cdot n
+    \in \travset(M)$. Suppose that the properties are
+    verified for any traversal shorter than $t$.
+
     Suppose that $n$ does not appear in $t \filter^\star r_0$ then
     the result follows by applying the induction hypothesis on $t'$.
     Suppose that $n$ appears in $t \filter^\star r_0$.
@@ -1557,44 +1614,72 @@ Hence:
     We have $t' = \ldots \cdot \lambda \overline{\xi}$.
     By the induction hypothesis, $t' \filter^\star r_0 \in \travset(M^{(r')})$.
 
-    The last move of $t'$ is in the P-view $\pview{t}$ therefore by (P),
-    $t'^\omega$ must occur in $t\filter^\star r_0$. Therefore
-    $ \lambda \overline{\xi}$ is the last node in $t'\filter^\star r_0$.
+    Since $\lambda \overline{\xi}$ is in the P-view $\pview{t}$, by Lemma \ref{lem:pview_trav_filtering}
+    it must occur in $t\filter^\star r_0$ and therefore
+    it is the last occurrence in $t'\filter^\star r_0$.
     Thus we can use the rule \rulenamet{Lam} in $\tau(M^{(r')})$ to produce the
-     traversal $u = (t'\filter^\star r_0) \cdot n$ of $M^{(r')}$.
-     
+    traversal $u = (t'\filter^\star r_0) \cdot n$ of $M^{(r')}$.
+
     We have $t \filter^\star r_0 = (t'\filter^\star r_0) \cdot n$, but in order
      to state the equality $u = t \filter^\star r_0$ it remains to prove that $n$'s justifiers in $t \filter^\star r_0$ are the same as $n$'s justifiers in $u$.
-     
+
      The justifiers of $n$ in $u$ are defined as follows:
       \begin{compactitem}
             \item If $n \in N_@ \union N_\Sigma$ then it has no justifier;
             \item If $n \in N_{\sf var}$ then it has auxiliary links pointing to each of the prime $\lambda$-nodes in $\pview{t'\filter^\star r_0}$. Furthermore,
                 if  $n \not\in N_{\sf fv}$ then its main link points to the only occurrence of its enabler in $\pview{t'\filter^\star r_0}$ and if  $n \in N_{\sf fv}$ then its main link points to $r_0$.
         \end{compactitem}
-     
-     On the other hand in $t \filter^\star r_0$, 
+
+     On the other hand in $t \filter^\star r_0$,
      $n$ points to all its justifiers in $\pview{t'}$ that also appear in $t'\filter^\star r_0$.
-     
-     By (P) we have that $\pview{t'\filter^\star r_0} = \pview{t}_{\suffixof r_0} = r_0 \cdot w$ where all the nodes in
-     $w$ occur in $t \filter^\star r_0$. Hence $n$'s justifiers in $u$ correspond precisely to 
+
+     By Lemma \ref{lem:pview_trav_filtering} we have that $\pview{t'\filter^\star r_0} = \pview{t}_{\suffixof r_0} = r_0 \cdot w$ where all the nodes in
+     $w$ occur in $t \filter^\star r_0$. Hence $n$'s justifiers in $u$ correspond precisely to
      the justifiers of $n$ in $t \filter^\star r_0$ and therefore $u = t \filter^\star r_0$.
-     
-    \item \rulenamet{App} $t' = \ldots \cdot \lambda \overline{\xi} \cdot @$: the proof is identical to the previous case.
 
-  \notetoself{ unfinished }
+    \item \rulenamet{App} $t = \ldots \cdot \lambda \overline{\xi} \cdot @$.
+    Again, since $\lambda \overline{\xi}$ is in the P-view $\pview{t}$, by Lemma \ref{lem:pview_trav_filtering}
+    it must be the last occurrence in $t'\filter^\star r_0$.
+    By the induction hypothesis, $t' \filter^\star r_0$ is a traversal of $\tau(M^{(r')})$
+    therefore we can use the rule \rulenamet{App} in $\tau(M^{(r')})$ to produce the
+    traversal $(t'\filter^\star r_0) \cdot n = t \filter^\star r_0$ of $M^{(r')}$.
 
 
-    \item \rulenamet{Answer-$\lambda$-@} Take \Pstr[0.5cm]{t = t' \cdot (lmd){\lambda
+    \item \rulenamet{Value$^{@\mapsto\lambda}$} Take \Pstr[0.5cm]{t = t' \cdot (lmd){\lambda
     \overline{\xi}} \cdot (x){@}  \ldots  (xv-x,50:v){v}_@  \cdot
     (lmdv-lmd,30:v){v}_{\lambda \overline{\xi}} }.
 
+    The occurrence $v_{\lambda \overline{\xi}}$ appears $t\filter^\star r_0$
+    therefore since $r_0$ is not a lambda node, its justifier $\lambda \overline{\xi}$
+    also appear in $t\filter^\star r_0$. Moreover since $@$ and $v_@$ are her.\ just.\ by
+    $\lambda \overline{\xi}$, they must also appear in $t\filter^\star r_0$.
 
-    \item \rulenamet{Answer-$\lambda$-var} Take \Pstr[0.5cm]{t = t' \cdot (lmd){\lambda
+    By the induction hypothesis $t' \filter^\star r_0$ is a traversal of $\tau(M^{(r')})$
+    therefore since the occurence $\lambda \overline{\xi}$, @, $v_@$, $v_{\lambda \overline{\xi}}$ all
+    appear in $t\filter^\star r_0$ we can use the rule \rulenamet{Value$^{@\mapsto\lambda}$}
+    in $M^{(r')}$ to form the traversal $(t'\filter^\star r_0) \cdot n = t \filter^\star r_0$ of $M^{(r')}$.
+
+    \item \rulenamet{Value$^{\lambda\mapsto@}$}
+      Take \Pstr[0.7cm]{t = t' \cdot (app){@} \cdot
+    (lz-app,60){\lambda \overline{z}} \ldots
+    (lzv-lz,60:v){v}_{\lambda \overline{z}} \cdot
+    (appv-app,45:v){v}_@}.
+    Again, since $v_@$ appears in $t \filter^\star r_0$, necessarily the occurrences @, $\lambda \overline{z}$, $v_{\lambda \overline{z}}$ and $v_@$ must all appear in $t \filter^\star r_0$. Hence using the induction hypothesis and the rule \rulenamet{Value$^{\lambda\mapsto@}$} in $M^{(r')}$ we obtain that $t \filter^\star r_0$ is a traversal of $M^{(r')}$.
+
+    \item \rulenamet{Value$^{{\sf var}\mapsto\lambda}$} Take \Pstr[0.5cm]{t = t' \cdot (lmd){\lambda
     \overline{\xi}} \cdot (x){x}  \ldots  (xv-x,50:v){v}_x  \cdot
     (lmdv-lmd,30:v){v}_{\lambda \overline{\xi}} }.
 
-   \item \rulenamet{InputVar$^{val}$} Take \Pstr[0.4cm]{t =
+    Again, since $v_{\lambda \overline{\xi}}$ is in $t \filter^\star r_0$, so must be
+    $\lambda \overline{\xi}$, and therefore by applying Lemma \ref{lem:pview_trav_filtering} on $t_{\prefixof x}$, so must
+    be $x$ and $v_x$. Hence we can use the induction hypothesis to
+    form the traversal $t \filter^\star r_0$ of $M^{(r')}$.
+
+
+  \notetoself{ unfinished }
+%    The proof is identical to the previous case.
+
+   \item \rulenamet{InputValue} Take \Pstr[0.4cm]{t =
     t_1 \cdot (x){x} \cdot t_2 \cdot (xv-x,38:v){v_x} } for some
     $v \in \mathcal{D}$.
 
@@ -1603,15 +1688,7 @@ Hence:
     t' \cdot n$ where $n$ points in $\oview{t_{\prefixof x}}$ where $x$ is the pending node
     in $t'$.
 
-
-    \item \rulenamet{Answer-@-$\lambda$}
-      Take \Pstr[0.7cm]{t = t' \cdot (app){@} \cdot
-    (lz-app,60){\lambda \overline{z}} \ldots
-    (lzv-lz,60:v){v}_{\lambda \overline{z}} \cdot
-    (appv-app,45:v){v}_@}.
-
-
-     \item \rulenamet{Answer-var-$\lambda$} Take \Pstr[0.7cm]{t = t' \cdot (y){y} \cdot
+    \item \rulenamet{Value$^{\lambda\mapsto{\sf var}}$} Take \Pstr[0.7cm]{t = t' \cdot (y){y} \cdot
     (lmd){\lambda \overline{\xi}} \ldots
     (lmdv-lmd,30:v){v}_{\lambda \overline{\xi}}  \cdot
     (vy-y,50:v){v}_y } for some variable $y$ not in $N_{\sf var}^{\theroot\vdash}$.
@@ -1623,13 +1700,34 @@ Hence:
         (letai-p,40:i){\lambda \overline{\eta_i}} } for some
         variable $x_i$ not in $N_{\sf var}^{\theroot\vdash}$.
 
+    If $\lambda \overline{\eta_i}$ is the occurrence $r_0$ then the traversal $t\filter^\star r_0 = r_0$ cam be formed using the rule \rulenamet{Root}.
+
+    Suppose that $\lambda \overline{\eta_i}$ is not the occurrence $r_0$.
+
+%    If $p$ is an @-node then we can conclude as in rule \rulename{Value$^{\lambda\mapsto@}$}.
+%    Otherwise, $p$ must be a variable node $y$ that does not belong to $N^{\theroot\vdash}$.
+
+    Then both $\lambda \overline{\eta_i}$ and its justifier $p$ must appear in $t\filter^\star r_0$. However $\lambda \overline{x}$ and $x_i$ do not necessarily appear in $t\filter^\star r_0$.
+
+    We do a case analysis on whether or not $x$ belongs to the sub-computation tree  $\tau(M^{(r')})$ or not:
+    \begin{compactitem}
+    \item If $x \in V^{(r')}$ then since $p$ appears in $t\filter^\star r_0$, by applying Lemma \ref{lem:pview_trav_filtering}
+    on $t_{\prefixof \lambda \overline{x}}$ we have that $x$ and $\lambda \overline{x}$ also appear in $t\filter^\star r_0$. Hence we can use the I.H. together with the rule \rulenamet{Var} in $M^{(r')}$ to form the traversal $t \filter^\star r_0$ of $M^{(r')}$.
+
+    \item Suppose that $x \not \in V^{(r')}$ then necessarily its binder node $\lambda \overline{x}$ is not in $V^{(r')}$ either. Therefore the two consecutive
+        nodes $n$ and $\lambda \overline{x}$ are such that
+        the first is in $V^{(r')}$ (by Lemma \ref{lem:instarfilter_imp_insubtree}) but not the other. The only rule capable of performing such a ``jump'' in the computation tree is the rule \rulenamet{Var}. By Lemma \ref{lem:oview_trav_filtering}, these two nodes must belong to the same thread initiated by some @-node. This @-node hereditarily justifies a node lying outside $V^{(r')}$ hence it must be itself outside $V^{(r')}$. Thus the node $y$ is hered.\ just.\ by an @-node
+        lying outside $V^{(r')}$ which mean that $y$ is a free variable in $M^{(r')}$!
+
+        We can therefore make use of the rule \rulenamet{InputVar} in $M^{(r')}$ to produce the traversal $t \filter^\star r_0$ of $M^{(r')}$.
+
+
+    \end{compactitem}
 
     \item (Constant rules)  using the fact that constant
     rules are well-behaved
-
   \end{itemize}
-
-\end{itemize}
+\qed
 % end of proof
 
 \begin{corollary}
@@ -1638,12 +1736,12 @@ Let $t$ be a non-empty traversal of $M$ and $r$ denote the only occurrence of $\
 root in $t$. If $t^\omega \in V^{\theroot\vdash}$ then $$\oview{t\filter r} = \oview{t}\filter r = \oview{t} \ .$$
 \end{corollary}
 \begin{proof}
-It follows immediately from the fact that, by the previous proposition (O)(b), all the occurrence in $\oview{t}$ belong to the same thread and therefore are all hereditarily justified by $r$.
+It follows immediately from the fact that, by the previous Lemma \ref{lem:oview_trav_filtering}(b), all the occurrence in $\oview{t}$ belong to the same thread and therefore are all hereditarily justified by $r$.
 \end{proof}
 
 \begin{remark}
 \label{rem:inputvar} In the rule \rulenamet{InputVar}, the visited node $n$ is necessarily in $N_\lambda^{\theroot\vdash}$. Indeed since $x$ is in $N^{\theroot\vdash}$, by
-the previous proposition all the nodes and leaves in 
+the previous proposition all the nodes and leaves in
 $\oview{t_1 \cdot x}$ must be in the same thread as $x$ and thus are all hereditarily justified
 by $r$. Since $n$ points in $\oview{t_1 \cdot x}$ it must also be
 hereditarily justified by $r$.
@@ -2410,7 +2508,7 @@ The function $\psi^{n,q}_A$ from $D_n$ to $A$ is defined as:
     cause any ambiguity) as follows:
     \begin{eqnarray*}
      \psi_M = && \{ r \mapsto q_0 \}  \union  \{ v_r \mapsto v_{q_0} \ | \ v \in \mathcal{D} \}\\
-& \union& \Union_{n \in N_{\sf var} | r\vdash_i n} \psi^{n, q^i}_\sem{\Gamma\rightarrow T} \\
+& \union& \Union_{n \in N_{\sf var} | \theroot\vdash_i n} \psi^{n, q^i}_\sem{\Gamma\rightarrow T} \\
 & \union& \Union_{n \in N_{\sf fv} | n \mbox{ \small labelled } x_j, j \in \{ 1..k \} } \psi^{n, q_{x_j}}_\sem{\Gamma\rightarrow T}
     \end{eqnarray*}
     \end{itemize}
@@ -2720,7 +2818,7 @@ $$
 $t\filter^\star r'_0$ is a traversal of $\travset(M^{(r')})$ therefore
 the sequence $(t\filter^\star r'_0) \filter r'_0 = t^\star \filter r'_0$ belongs
 of $\travset^\star(M^{(r')})$ and therefore the expression $\varphi_{M^{(r')}}(t^\star \filter r'_0)$ is well-defined. By Definition \ref{dfn:phi_for_justsequ}, the sequences
-$\varphi_M(t^\star)$ and $t^\star$ have the same justification pointers therefore 
+$\varphi_M(t^\star)$ and $t^\star$ have the same justification pointers therefore
  we must have $\varphi_{M}(t^\star \filter r'_0) = \varphi_M(t^\star) \filter m_0$. Finally, because of the inductive definition of $\varphi_{M}$, $\varphi_{M^{(r')}}$ coincides with
 the restriction of $\varphi_{M}$ to $M^{(r')}$.
 
@@ -2811,7 +2909,7 @@ rule. Since this rule is deterministic we must have $n_1=n_2$ which
 violates the second hypothesis.
 
 \item If $n_1, n_2 \in L_@$ then the traversals were formed using the deterministic rule
-\rulenamet{Answer-$\lambda$-@} which again violates the second
+\rulenamet{Value$^{@\mapsto\lambda}$} which again violates the second
 hypothesis.
 
 \item If $n_1,n_2\in N_{\sf var}$ then
@@ -2820,8 +2918,8 @@ hypothesis.
      hypothesis is violated.
 
 \item If  $n_1, n_2 \in L_{\sf var}$ then either the traversals were both formed using the deterministic rule
-\rulenamet{Answer-$\lambda$-var} in which case the second hypothesis
-is violated; or they were formed with \rulenamet{InputVar$^{val}$}
+\rulenamet{Value$^{{\sf var}\mapsto\lambda}$} in which case the second hypothesis
+is violated; or they were formed with \rulenamet{InputValue}
 in which case $n_1$ and $n_2$ are two different value leaves belonging to
 $V^{\theroot\vdash}_\lambda$ and justified by the same input variable node.
 Thus by definition of $\psi$, $\psi(n_1)\neq\psi(n_2)$.
@@ -2843,8 +2941,8 @@ Thus by definition of $\psi$, $\psi(n_1)\neq\psi(n_2)$.
 
 \item If  $n_1,n_2\in L_\lambda$ then either the traversals $t \cdot n_1$
     and $t \cdot n_2$ were formed using
-    \rulenamet{Answer-var-$\lambda$} or they were formed with
-    \rulenamet{Answer-@-$\lambda$} but this is impossible since these two rules are
+    \rulenamet{Value$^{\lambda\mapsto{\sf var}}$} or they were formed with
+    \rulenamet{Value$^{\lambda\mapsto@}$} but this is impossible since these two rules are
     deterministic and $n_1 \neq n_2$. \qed
 \end{compactitem}
 
@@ -2902,7 +3000,7 @@ to $n$'s justifier in $t' \cdot n$.
 \end{lemma}
 \begin{proof}
   Let $M^{(r')}$ denote the term $\kappa(r')$ and
-  $N^{(r')}$ denote the set of nodes of $\tau(M^{(r')})$.
+  $V^{(r')}$ denote the set of nodes of $\tau(M^{(r')})$.
 
   \notetoself{By induction on the traversal.
   It is trivial for the rules \rulenamet{Empty} and \rulenamet{Root}.
@@ -2912,14 +3010,14 @@ to $n$'s justifier in $t' \cdot n$.
     By the induction hypothesis,
     $t' \cdot \lambda \overline{\xi} \filter M^{(r')} \in \travset(M^{(r')})$.
 
-    Suppose that $n \in N^{(r')}$ then since $n$ is not a lambda node, its parent node
-    $\lambda \overline{\xi}$ is necessarily also in $N^{(r')}$ therefore
+    Suppose that $n \in V^{(r')}$ then since $n$ is not a lambda node, its parent node
+    $\lambda \overline{\xi}$ is necessarily also in $V^{(r')}$ therefore
     $(t'\filter M^{(r')}) \cdot \lambda \overline{\xi} \in \travset(M^{(r')})$ so we can use the rule \rulenamet{Lam} in $\tau(M^{(r')})$ to produce the traversal
     $(t'\filter M^{(r')}) \cdot \lambda \overline{\xi} \cdot n =
     (t' \cdot \lambda \overline{\xi} \cdot n ) \filter M^{(r')}$ of $M^{(r')}$.
 
 
-    Suppose that $n \not\in N^{(r')}$ then since $n$ is not a lambda node, its parent node is not in $N^{(r')}$ either therefore
+    Suppose that $n \not\in V^{(r')}$ then since $n$ is not a lambda node, its parent node is not in $V^{(r')}$ either therefore
     $(t' \cdot \lambda \overline{\xi} \cdot n) \filter M^{(r')}
     = t' \filter M^{(r')} \in \travset(M^{(r')})$.
 
@@ -3006,7 +3104,7 @@ $\travset(M)^{-@}$ to $\intersem{\Gamma \vdash M : T}$:
     several traversals of $N_i$ for $i=1..p$. This schema is reminiscent of the way the evaluation copycat map $ev$ works in game semantics.
 
     The key idea is that every time the traversal pauses the traversal of a subterm and switches to another one,
-    the jump is permitted by one of the four ``copycat'' rules \rulenamet{Var}, \rulenamet{Answer-@-$\lambda$}, \rulenamet{Answer-$\lambda$-var} or \rulenamet{Answer-var}.
+    the jump is permitted by one of the four ``copycat'' rules \rulenamet{Var}, \rulenamet{Value$^{\lambda\mapsto@}$}, \rulenamet{Value$^{{\sf var}\mapsto\lambda}$} or \rulenamet{Value-var}.
     We show by (a second) induction that these copycat rules define precisely what the copycat strategy $ev$ performs on sets of plays.
 
 %    In the game semantics, the evaluation map (a copy-cat strategy) copies this opening move to an initial move $m_0$ in the game
@@ -3182,7 +3280,7 @@ We do a case analysis on $m$: we either have $m\in C$ or $m\in T^0$:
     moves, $u''$ is necessarily empty.
 
     Consequently, by the induction hypothesis, the last move in $t'$ is $\varphi(v_{q_0'}) = v_{\lambda y_1}$.
-    The rules \rulenamet{Answer-@-$\lambda$} and \rulenamet{Answer-$\lambda$-@} permits us to extend
+    The rules \rulenamet{Value$^{\lambda\mapsto@}$} and \rulenamet{Value$^{@\mapsto\lambda}$} permits us to extend
     the traversal $t'$ into $t' \cdot v_@ \cdot v_{\lambda \overline{\xi}}$ where $v_@$ and $v_{\lambda
     \overline{\xi}}$ point to the second and first node of $t$ respectively. Clearly we have $\varphi_M((t'\cdot v_@ \cdot v_{\lambda \overline{\xi}})-@) = u$.
 
@@ -3361,7 +3459,7 @@ Suppose that $m \in T^{000}$ and $m^1 \in T^{001}$.
     \begin{itemize}
         \item In the base case of the induction where $|u|=2$,
         the rule \rulenamet{InputVar} is used instead of \rulenamet{App} to visit the node $x$ instead of $@$;
-        \item in the step case of the induction, for the subcase $m\in C$, the rules \rulenamet{Answer-var-$\lambda$} and \rulenamet{Answer-$\lambda$-var} are used instead of \rulenamet{Answer-@-$\lambda$} and \rulenamet{Answer-$\lambda$-@} respectively;
+        \item in the step case of the induction, for the subcase $m\in C$, the rules \rulenamet{Value$^{\lambda\mapsto{\sf var}}$} and \rulenamet{Value$^{{\sf var}\mapsto\lambda}$} are used instead of \rulenamet{Value$^{\lambda\mapsto@}$} and \rulenamet{Value$^{@\mapsto\lambda}$} respectively;
         \item in the step case $m\in T^0$, when $m$ is hereditarily justified by a move $b \in B_j$ for
          $j\in \{1 .. p\}$ the proof remains unchanged. The case where $m$ is hereditarily justified by a move $b \in B_0$ is treated as follows: $m$ is played by the projection strategy $\pi$ denoting $x$.
          Since $m$ is played in $B_0' = B_1' \times \ldots \times B_p'$ it must be also hereditarily justified by some initial move $b'$ of $B_k'$ for some $k \in \{1.. p\}$ or by an initial move in $o'$. But moves of $B_k'$ are $\sim$-equivalent to the corresponding move in $B_k$ and similarly $o'$ is $\sim$-equivalent to $o$, therefore we fall back to the previous case of the induction where $m$ is hereditarily justified by some initial move $b\in B_k$ for $k\in \{1..p\}$ or some initial move in $o$!

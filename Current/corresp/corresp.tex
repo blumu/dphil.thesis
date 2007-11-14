@@ -790,54 +790,130 @@ and $x_j \in V^{\lambda \overline{\eta}_{i'} \vdash}$).
 
 \subsubsection{Traversals for interpreted constants}
 
-In the presence of higher-order interpreted constants, additional rules must be specified to indicate how
-the constant nodes should be traversed in the computation tree. These rules are specific to the language that is being studied.
-In the last section of this chapter we will define such traversals for the interpreted constants of
-\pcf\ and \ialgol.
+The framework that we have established up to know aims at providing
+a computation model of simply-typed lambda terms. It is however
+possible to extend it to other higher-order languages that are based
+on the simply-typed lambda calculus. To achieve, one needs to
+complete the core traversal rules from Table \ref{tab:trav_rules}
+with new rules describing the behaviour of the interpreted constants
+of the language considered. For instance in the case of \pcf, we
+need to define rules for the interpreted constant $\pcfcond$ that
+replicate the behaviour of the conditional operation. (In a
+forthcoming section of this chapter we will give a complete
+definition of the constant traversal rules for \pcf\ and \ialgol.)
 
-From now on, we consider a simply-typed $\lambda$-calculus language extended with higher-order interpreted constants for which some constant traversal rules have been defined and
-we take as a  prerequisite that all the constant rules are well-behaved in the following sense:
-\begin{definition}[Well-behaved traversal rule]
-\label{def:wellbehaved_traversal} A traversal rule is
-\defname{well-behaved} if it can be stated under one of the following two forms:
-    $$\rulename{\Sigma\mbox{-Value}}\ \rulef{t = t_1\cdot \alpha \cdot t_2 \in \travset(M) \quad ?(t)^\omega = \alpha \quad P(t)}
-      {
-        \stackrel{\rule{0pt}{3pt} }{
-            \Pstr[8pt]{ t' = t_1\cdot (\alpha){\alpha} \cdot t_2 \cdot (v-c,35){v(t)} \in {\travset(M)}}
-            }
-       }
-       $$
-or
-$$\rulename{\Sigma}/\rulename{\Sigma\mbox{-Var}}\ \rulef{t \in \travset(M) \quad ?(t)^\omega = \alpha \quad P(t)}
-  { \stackrel{  \rule{0pt}{3pt} }{\Pstr[5pt]{ t \cdot {n(t)} \in {\travset(M)}}}
-   }$$
-    where:
-    \begin{compactitem}
-      \item $\alpha$ is a constant node or a variable node her.\ just.\ by some constant node ($\alpha \in N_\Sigma \union N^{N_\Sigma\vdash}_{\sf var}$);
-      \item $P(t)$ is a predicate expressing some condition on $t$;
-      \item $v(t)$ is a value-leaf of the constant node $c$ that is determined by the traversal $t$;
-      \item $n(t)$ is a lambda-node determined by $t$, and its link, also determined by $t$, points to some occurrence of its parent node in $\oview{t_{\prefixof \alpha}}$.
-    \end{compactitem}
-%\end{enumerate}
-Clearly, such rules preserve well-bracketing, alternation and visibility.
+We mentioned before that uninterpreted constants can be regarded as
+free variables. In the same way, we can consider interpreted
+constants as a \emph{generalization} of free variables: for both of
+them, the ``code'' describing their computational behaviour is not
+defined within the scope of the term; it is instead assumed that the
+environment knows how to interpret them. Free variables, however,
+have less power than interpreted constants in that when evaluating
+an applicative term with a free variable in head position, the
+evaluation of the head variable does not depend on the result of the
+evaluation of its parameter; whereas for applicative term with an
+interpreted constant in head position, the evaluation can be driven
+by the result of the the evaluation of its parameter. (e.g.\ the
+\pcf\ constant $\pcfcond$ is capable of branching between two of its
+parameters depending on the result of the evaluation of its first
+parameter.)
+
+Based on these observation, we can define a prototype for constant
+traversal rules based on the definition of the rules
+\rulenamet{InputValue} and \rulenamet{InputVar}:
+\begin{definition}[Constant traversal rule]
+    \label{def:constant_traversal} A \defname{constant traversal} has
+    one of the following two forms:
+        $$\rulename{\Sigma\mbox{-Value}}\ \rulef{t = t_1\cdot \alpha \cdot t_2 \in \travset(M) \quad ?(t)^\omega = \alpha \quad P(t)}
+          {
+            \stackrel{\rule{0pt}{3pt} }{
+                \Pstr[8pt]{ t' = t_1\cdot (alpha){\alpha} \cdot t_2 \cdot (v-alpha,35){v(t)} \in {\travset(M)}}
+                }
+           }
+           $$
+    or
+    $$\rulename{\Sigma}/\rulename{\Sigma\mbox{-Var}}\ \rulef{t \in \travset(M) \quad ?(t)^\omega = \alpha \quad P(t)}
+      { \stackrel{  \rule{0pt}{3pt} }{\Pstr[5pt]{ t \cdot {n(t)} \in {\travset(M)}}}
+       }$$
+        where:
+        \begin{compactitem}
+          \item $\alpha$ is a constant node or a variable node her.\ just.\ by some constant node ($\alpha \in N_\Sigma \union N^{N_\Sigma\vdash}_{\sf var}$);
+          \item $P(t)$ is a predicate expressing some condition on $t$;
+          \item $v(t)$ is a value-leaf of the constant node $c$ that is determined by the traversal $t$;
+          \item $n(t)$ is a lambda-node determined by $t$, and its link, also determined by $t$, points to some occurrence of its parent node in $\oview{t_{\prefixof \alpha}}$.
+        \end{compactitem}
+    Clearly, such rules preserve well-bracketing, alternation and
+    visibility.
 \end{definition}
 
-In addition, we complete the constant rules with the  copy-cat rule:
+\begin{remark}
+The extra power of the constant rules over the input-variable rules
+\rulenamet{InputValue} and \rulenamet{InputVar} lies in their
+ability to restrict the set of possible nodes to visit depending on
+the shape of the traversal $t$ (predicate $P(t)$).
+\end{remark}
+
+From now on, to make our argument as general as possible, we
+consider a simply-typed $\lambda$-calculus language extended with
+higher-order interpreted constants for which some constant traversal
+rules have been defined (in the sense of Def.
+\ref{def:constant_traversal}). Furthermore, we complete the set of
+rules with the following additional copy-cat rule:
 \begin{quote}
-\rulenamet{Value$^{\Sigma\mapsto\lambda}$} If \Pstr[0.4cm]{t \cdot \lambda \overline{\xi} \cdot (x){c}  \ldots   (xv-x,50:v){v}_c}
-is a traversal where $c\in\Sigma$ then so is \Pstr[0.5cm]{t \cdot (lmd){\lambda
-\overline{\xi}} \cdot (x){c}  \ldots  (xv-x,50:v){v}_c  \cdot
-(lmdv-lmd,33:v){v}_{\lambda \overline{\xi}} }.
+\rulenamet{Value$^{\Sigma\mapsto\lambda}$} If \Pstr[0.4cm]{t \cdot
+\lambda \overline{\xi} \cdot (x){c}  \ldots   (xv-x,50:v){v}_c} is a
+traversal where $c\in\Sigma$ then so is \Pstr[0.5cm]{t \cdot
+(lmd){\lambda \overline{\xi}} \cdot (x){c}  \ldots  (xv-x,50:v){v}_c
+\cdot (lmdv-lmd,33:v){v}_{\lambda \overline{\xi}} }.
 \end{quote}
 
 
+We now introduce a special kind of constant traversal rules:
+\begin{definition}[Well-behaved traversal rule]
+\label{def:wellbehaved_traversal} A constant traversal rules is
+    \defname{well-behaved} if
+    for every traversal  \Pstr[0.5cm]{ t \cdot (a){\alpha} \cdot u \cdot (n-a,35){n}} formed with the rule
+    we have $?(u) = \epsilon$.
+\end{definition}
+
+The rule $\rulename{\Sigma\mbox{-Value}}$, for instance, is clearly
+well-behaved (because of well-bracketing of traversals), whereas
+$\rulename{\Sigma}/\rulename{\Sigma\mbox{-Var}}$ is not well-behaved
+in general since $n(t)$ does not necessarily points to the pending
+node in $t$.
+
+\begin{lemma}
+\label{lem:sigma_order1_are_wellbehaved} If $\Sigma$-constants have
+order $1$ at most, then constant rules are necessarily all
+well-behaved.
+\end{lemma}
+\proof In the computation tree, an order-$1$ constant hereditarily
+enables only its immediate children (which are all dummy lambda
+nodes $\lambda$). Hence a traversal formed with the rule
+$\rulename{\Sigma}/\rulename{\Sigma\mbox{-Var}}$ is of the form:
+$$\Pstr[0.5cm]{ t = \ldots \cdot (a){\alpha} \cdot u \cdot
+ (n-a,35){\lambda}}$$
+where $\alpha$ appears in $\oview{t}$.
+
+If $u=\epsilon$  then the result trivially holds. Otherwise, $u$'s
+first node has necessarily been visited with the rule
+$\rulename{\Sigma}/\rulename{\Sigma\mbox{-Var}}$ thus $u$'s first
+node is a dummy lambda node $\lambda'$ pointing to $\alpha$. Since
+$\alpha$ occurs in $\oview{t}$ and since the node $\lambda'$ enables
+only its value-leaf in the computation tree, $t$ must be of the
+following shape:
+$$\pstr[0.5cm]{ t = \ldots \cdot \nd(a){\alpha} \cdot \underbrace{\nd(lp-a,35){\lambda'} \cdot  \ldots \cdot \nd(v-lp){v_{\lambda'}} \ldots }_{u} \cdot
+ \nd(l-a,35){\lambda}}$$
+for some value leaf $v_{\lambda'}$ of $\lambda'$.
+
+Again, the node following $v_{\lambda'}$ must be a dummy lambda node
+pointing to $\alpha$. By iterating the same argument we obtain that
+the segment $u$ is a repetition of segments of the form
+\Pstr[0.5cm]{(lp){\lambda'} \cdot  \ldots (v-lp){v_{\lambda'}}}.
+Hence $?(u)=\epsilon$. \qed
+%%% end of proof
 
 
-\begin{remark}
-    We observe that the well-behaved rules give a generalized
-    version of the rules \rulenamet{InputValue} and \rulenamet{InputVar}: The extra power of the well-behaved rules over the input-variable rules lies in their ability to restrict the set of possible nodes to visit depending on the shape of the traversal $t$.
-    This suggests that interpreted constants can be seen as a generalization of the notion of free variable (whereas uninterpreted constants and free variables can be identified).
-\end{remark}
 
 \subsubsection{Property of traversals}
 
@@ -854,8 +930,7 @@ Let $t$ be a traversal. Then:
 This is the counterpart of proposition 6 from
 \cite{OngHoMchecking2006} which is proved by induction on the
 traversal rules. This proof can be easily adapted to take into
-account the constant rules (using the assumption that constants
-rules are well-behaved) and the presence of value-leaves in the
+account the constant rules and the presence of value-leaves in the
 traversal.
 \begin{proof}
 The proof of (i), (ii) and (iii) is done simultaneously by induction on the traversal rules. We consider the rules \rulenamet{Var} and \rulenamet{Lam} only.
@@ -863,8 +938,6 @@ The proof of (i), (ii) and (iii) is done simultaneously by induction on the trav
 Rule \rulenamet{Var}: we just give a partial proof of (i). See proposition 6 from \cite{OngHoMchecking2006} for the details of (i), (ii) and (iii). We have to show that in the second case of the \rulenamet{Var} rule, where $p$ is a variable node $y$, the node $\lambda \overline{x}$ has necessarily been added to the traversal $t_{\leq y}$ using the \rulenamet{Var} rule. This is immediate since if the rule \rulenamet{InputVar} was used to produce $t_{<y} \cdot y \cdot \lambda \overline{x}$ this would imply that $\lambda \overline{x}$ is hereditarily justified by the root which in turn implies that $x_i$ is an input-variable which contradicts \rulenamet{Var}'s hypothesis.
 
 Rule \rulenamet{Lam}: we need to show that $n$'s binder occurs only once in the P-view at that point. By the induction hypothesis (iii) we have that $\pview{t \cdot \lambda \overline{\xi}}$ is a path in the computation tree from the root to $\lambda \overline{\xi}$. But $n$'s binder occurs only once in this path, therefore the traversal $t \cdot \lambda \overline{\xi} \cdot n$ is well-defined and satisfies P-visibility. Thus (i) and (ii) are verified. Furthermore $n$ is a child of $\lambda \overline{\xi}$ therefore (iii) also holds.
-
-For the constant rules, the proof relies on the fact that these rules are well-behaved.
 \end{proof}
 
 %In particular to prove that the copy-cat rules are well-defined, one needs to ensure that
@@ -2232,13 +2305,16 @@ Clearly the conditions (w1) to (w8) hold. Hence we can reuse Proposition 4.3 for
 % end of proof
 \bigskip
 
-If we consider the sequence n some more specific cases the equality $\pview{t\filter r} = \pview{t}\filter r$ also holds:
+The problem with the previous result is that it does not give us an
+equality. If we consider the subsequence consisting of unmatched
+nodes, however, then we obtain an equality:
 \begin{lemma}
-\label{lem:betanf_orde1const_trav_pview_red}
-Suppose that $M$ is in $\beta$-normal form and all the $\Sigma$-constants are of order $1$ at most.
-Let $t$ be a non-empty traversal of $M$ and $r$ denote the only occurrence of $\tau(M)$'s
-root in $t$. If $t$'s last occurrence is not a leaf then
-$$ \pview{t} \filter r = \pview{t \filter  r }\ .$$
+\label{lem:betanf_orde1const_trav_pview_red} Suppose that $M$ is in
+$\beta$-normal form and all the $\Sigma$-constants are well-behaved.
+Let $t$ be a non-empty traversal of $M$ and $r$ denote the only
+occurrence of $\tau(M)$'s root in $t$. If $t$'s last occurrence is
+not a leaf then
+$$ ?(\pview{t}) \filter r = ?(\pview{t \filter  r })\ .$$
 \end{lemma}
 \proof
 By induction. It is trivial for the empty

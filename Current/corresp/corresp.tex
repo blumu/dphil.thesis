@@ -208,16 +208,17 @@ $$ \tau^*( \alpha s_1 \ldots s_m : o) =
 $$
 
 \item If $n \geq 1$ then:
-$$ \tau^*((\lambda x.s) s_1 \ldots s_n : o) =
-    \tree{\lambda}
+\begin{align*}
+ \tau^*((\lambda x.s) s_1 \ldots s_n : o) &=\\
+   & \tree{\lambda}
     {
         \pstree[levelsep=3ex]
             { \TR{@} }
             {
-            \SubTree{\tau^*(\lambda x.s)}    \SubTree{\tau^*(s_1)} \SubTree[linestyle=none]{\ldots} \SubTree{\tau^*(s_n)}
+            \SubTree{\tau^*(\lambda x.s)} \SubTree{\tau^*(s_1)} \SubTree[linestyle=none]{\ldots} \SubTree{\tau^*(s_n)}
             }
     }
-$$
+\end{align*}
 \end{enumerate}
 
 Let $M$ be a simply-typed term not necessarily in $\eta$-normal form. Let $\mathcal{D}$ denote the set of values of base type $o$. The \defname{computation tree} of $M$, written $\tau(M)$ is the tree obtained from
@@ -604,9 +605,9 @@ A traversal that cannot be extended by any rule is said to be \emph{maximal}.
 \emph{\bf Input-variable rules}
 \begin{description}
 \item[\rulenamet{InputValue}] If $t_1 \cdot x \cdot t_2$ is a traversal
-where $x \in N_{\sf var}^{\theroot\vdash}$ is the pending node then so is \Pstr[0.5cm]{t_1 \cdot
-(x){x} \cdot t_2 \cdot (xv-x,38:v){v_x} } for all $v \in
-\mathcal{D}$.
+with pending node $x \in N_{\sf var}^{\theroot\vdash}$ then so
+is \Pstr[0.5cm]{t_1 \cdot (x){x} \cdot t_2 \cdot
+(xv-x,38:v){v_x} } for all $v \in \mathcal{D}$.
 
 \item[\rulenamet{InputVar}] If $t$ is a traversal with pending node  $x \in N_{\sf var}^{\theroot\vdash}$ then so is $t \cdot n$ for any $\lambda$-node $n$ whose parent occurs in  $\oview{t_{\prefixof x}}$, $n$ pointing to some occurrence of its  parent node in $\oview{t_{\prefixof x}}$.
 \end{description}
@@ -1835,7 +1836,7 @@ $$\begin{array}{rcll}
     \\
  \longoview{\Pstr[15pt]{s \cdot (m){m} \cdot \ldots \cdot (x-m,30){n}}} &=&
     \Pstr{ \longoview{s} \cdot (m2){m} \cdot (n2-m2,60){n} }
-    & \parbox[t]{10cm}{for $n \in N_{\sf var} \union L_\lambda \union N_@ \union N_\Sigma$.}
+    & \mbox{for $n \in N_{\sf var} \union L_\lambda \union N_@ \union N_\Sigma$.}
 \end{array}$$
 \end{definition}
 Contrary to the O-view $\oview{t}$, $\longoview{t}$ may contain
@@ -2310,12 +2311,12 @@ equality. In the particular case where intepreted constants are well
 behaved, however, if we consider the subsequence consisting of
 unmatched nodes, then we obtain a nice equality:
 \begin{lemma}
-\label{lem:betanf_orde1const_trav_pview_red} Suppose that $M$ is in
-$\beta$-normal form and all the $\Sigma$-constants are well-behaved.
-Let $t$ be a non-empty traversal of $M$ and $r$ denote the only
-occurrence of $\tau(M)$'s root in $t$. If $t$'s last occurrence is
-not a leaf then
-$$ ?(\pview{t}) \filter r = ?(\pview{t \filter  r })\ .$$
+\label{lem:betanf_wellbehavedconst_trav_pview_red} Suppose that $M$
+is in $\beta$-normal form and all the $\Sigma$-constants are
+well-behaved. Let $t$ be a non-empty traversal of $M$ and $r$ denote
+the only occurrence of $\tau(M)$'s root in $t$. If $t$'s last
+occurrence is not a leaf then
+$$ ?(\pview{t}) \filter r = \pview{?(t) \filter  r }\ .$$
 \end{lemma}
 \proof By induction. It is trivial for the empty traversal. Step
 case: consider a traversal $t$ and suppose that the property (i) is
@@ -2323,25 +2324,52 @@ verified for all traversal shorter than $t$. We first observe that
 since $t$ contains at most a single occurrence $r$ of the root
 $\theroot$, an occurrence $n$ in $t$ is hereditarily justified by
 $r$ if and only if the corresponding node in $\tau(M)$ is
-hereditarily enabled by $\theroot$. Let us do a case analysis on
-$t$'s last node:
+hereditarily enabled by $\theroot$. Thus $t\filter r = t \filter
+N^{\theroot \vdash}$. Let us do a case analysis on $t$'s last node:
 \begin{itemize}
-\item The case $t^\omega \in N_@$ does not happen since $M$ is $\beta$-normal.
+\item $t^\omega \in N_@$. This case does not happen since $M$ is $\beta$-normal.
 
-\item If $t = t' \cdot n$ with $n \in N_{\sf var} \union N_\Sigma$ then:
+\item $t = t' \cdot n$ with $n \in N_{\sf var} \union N_\Sigma$ then:
     \begin{align*}
     ?(\pview{t}) \filter  r
         &= ?(\pview{t' \cdot n}) \filter  r & (\mbox{definition of } t)\\
         &= ?(\pview{t'} \cdot n) \filter  r  & (\mbox{P-view computation}) \\
         &= ?(\pview{t'}) \filter  r  \cdot (n \filter  r)            & (\mbox{def. of filtering $\filter$}) \\
-        &= ?(\pview{t' \filter r}) \cdot (n \filter  r)           & (\mbox{induction hypothesis}) \\
-        &= ?(\pview{t' \filter  r \cdot (n \filter  r) }) & (\mbox{P-view computation, $n \in N_{\sf var} \union N_{\Sigma}$}) \\
-        &= ?(\pview{(t' \cdot n ) \filter  r })           & (\mbox{def. of filtering $\filter$}) \\
-        &= ?(\pview{t \filter  r  })
+        &= \pview{?(t') \filter r} \cdot (n \filter  r)           & (\mbox{induction hypothesis}) \\
+        &= \pview{?(t') \filter  r \cdot (n \filter  r) } & (\mbox{P-view computation, $n \in N_{\sf var} \union N_{\Sigma}$}) \\
+        &= \pview{(?(t') \cdot n ) \filter  r }           & (\mbox{def. of filtering $\filter$}) \\
+        &= \pview{?(t) \filter  r  }
  & (\mbox{definition of } t).
     \end{align*}
+\end{itemize}
+Suppose that $t^\omega$ is a lambda node:
+\begin{itemize}
+\item $t^\omega \in N^{@\vdash}_\lambda$. Since the term is in $\beta$-normal form, there is no
+    @-node in $\tau(M)$ so the rules \rulenamet{App} and
+    \rulenamet{Var} are unused, hence this case does not happen.
 
-\item If $t=r$ then the result holds trivially.
+\item $t^\omega \in N^{N_\Sigma\vdash}_\lambda$. We have $t =  t' \cdot \rnode{m}{m} \cdot  u \cdot \rnode{lmd}{n}
+    \link[nodesep=1pt]{30}{lmd}{m}$ with $n\in N^{N_\Sigma
+    \vdash}_\lambda$ and $m \in N_{\sf var} \union N_\Sigma$.
+    The occurrence $n$ is necessarily visited with a
+    \rulenamet{$\Sigma$}-rule. Since, by assumption, these rules
+    are well-behaved we have $?(u) = \epsilon$. Hence:
+        \begin{align*}
+        ?(\pview{t}) \filter  r
+        &= ?(\pview{t' \cdot \rnode{m}{m} \cdot u \cdot \rnode{n}{n}}) \filter  r
+               \link[nodesep=1pt]{60}{n}{m}                   & (\mbox{Def. of $t$})\\
+        &= ?(\pview{t'} \cdot \rnode{m}{m} \cdot \rnode{lmd}{n} ) \filter  r
+               \link[nodesep=1pt]{60}{lmd}{m}                 & (\mbox{P-view computation}) \\
+        &= ?(\pview{t'}) \filter  r                & (m, n \not\in N^{\theroot \vdash}) \\
+        &= \pview{?(t') \filter  r }               & \mbox{(induction hypothesis)} \\
+        &= \pview{ ?(t' \cdot \rnode{m}{m} \cdot \rnode{lmd}{n}) \filter r }
+\link[nodesep=1pt,ncurv=0.7]{40}{lmd}{m}                                                          & (m, n \not\in N^{\theroot \vdash}) \\
+        &= \pview{ ?(t' \cdot \rnode{m}{m} \cdot u \cdot \rnode{lmd}{n}) \filter r }
+\link[nodesep=1pt,ncurv=0.7]{40}{lmd}{m}                                                          & (?(u)=\epsilon) \\
+        &= \pview{ ?(t) \filter r }                & \mbox{(def. of $t$ \& $u = \epsilon$).}
+        \end{align*}
+
+\item $t^\omega \in N^{\theroot\vdash}_\lambda$. If $t=r$ then the result holds trivially.
 %%%% THE PREVIOUS CASE MUST BE REPLACED BY THE FOLLOWING COMMENTED LINES IF THE CALCULUS
 %%%% CONSIDERED ALLOWS THE USE OF THE TENSOR PRODUCT IN THE SYNTAX (in which case the traversals need to be redefine
 %%%% to allow the root to be visited several times).
@@ -2354,34 +2382,9 @@ $t$'s last node:
 %        &=  \pview{(t' \cdot r)  \filter  r }    & (\mbox{def. operator $\filter$})\\
 %        &= \pview{t \filter  r }                & (\mbox{def. of } t).
 %    \end{align*}
-
-
-\item If $t =  t' \cdot \rnode{m}{m} \cdot  u \cdot \rnode{lmd}{n}
-    \link[nodesep=1pt]{30}{lmd}{m}$ with $n\in N_\lambda \setminus N^{\theroot \vdash}_\lambda$ then necessarily $m \in N_@ \union N_{\sf var} \union N_\Sigma $.
-
-    Let us do a case analysis on the rule used to visit $n$ in
-    $t$. Since the term is in $\beta$-normal form, there is no
-    @-node in $\tau(M)$ so the rules \rulenamet{App} and
-    \rulenamet{Var} are unused. Since $n\not\in N^{\theroot
-    \vdash}_\lambda$, $n$ cannot be visited by the rule
-    \rulenamet{InputVar}. Hence $n$ is necessarily visited with
-    a \rulenamet{$\Sigma$} rule, but since $\Sigma$-constants
-    are well-behaved, we have $?(u) = \epsilon$. Hence:
-        \begin{align*}
-        ?(\pview{t} \filter  r)
-        &= \pview{t' \cdot \rnode{m}{m} \cdot \rnode{n}{n}} \filter  r
-               \link[nodesep=1pt]{60}{n}{m}                   & (u=\epsilon)\\
-        &= (\pview{t'} \cdot \rnode{m}{m} \cdot \rnode{lmd}{n} ) \filter  r
-               \link[nodesep=1pt]{60}{lmd}{m}                 & (\mbox{P-view computation}) \\
-        &= \pview{t'} \filter  r                & (m, n \not\in N^{\theroot \vdash}) \\
-        &= \pview{t' \filter  r }               & \mbox{(induction hypothesis)} \\
-        &= \pview{ (t' \cdot \rnode{m}{m} \cdot \rnode{lmd}{n}) \filter r }
-\link[nodesep=1pt,ncurv=0.7]{40}{lmd}{m}                                                          & (m, n \not\in N^{\theroot \vdash}) \\
-        &= \pview{ t \filter r }                & \mbox{(def. of $t$ \& $u = \epsilon$).}
-        \end{align*}
-
-\item If $t =  t' \cdot \rnode{m}{m} \cdot u \cdot \rnode{lmd}{n}
-    \link[nodesep=1pt]{30}{lmd}{m}$ with $n\in N^{\theroot \vdash}_\lambda$ then:
+Otherwise $t =  t' \cdot \rnode{m}{m} \cdot u \cdot
+\rnode{lmd}{n} \link[nodesep=1pt]{30}{lmd}{m}$ for some $n\in
+    N^{\theroot \vdash}_\lambda$ and:
         \begin{align*}
         ?(\pview{t}) \filter  r
         &= ?(\pview{t' \cdot \rnode{m}{m} \cdot u \cdot \rnode{n}{n}}) \filter  r
@@ -2390,15 +2393,15 @@ $t$'s last node:
                \link[nodesep=1pt]{60}{lmd}{m}                 & (\mbox{P-view computation}) \\
         &= ?(\pview{t'}) \filter  r \cdot \rnode{m}{m} \cdot  \rnode{lmd}{n}
                \link[nodesep=1pt]{60}{lmd}{m}                 & (m, n \in N^{\theroot \vdash}) \\
-        &= ?(\pview{t'\filter r})  \cdot \rnode{m}{m} \cdot  \rnode{lmd}{n}
+        &= \pview{?(t')\filter r}  \cdot \rnode{m}{m} \cdot  \rnode{lmd}{n}
                \link[nodesep=1pt]{60}{lmd}{m}                 & \mbox{(induction hypothesis)} \\
-        &= ?(\pview{t'\filter r}  \cdot \rnode{m}{m} \cdot  \rnode{lmd}{n} )
-               \link[nodesep=1pt]{60}{lmd}{m}                 & \mbox{($m$ and $n$ are unmatched)} \\
-        &= ?(\pview{ t' \filter r\cdot \rnode{m}{m} \cdot (u \filter r) \cdot \rnode{lmd}{n}})
+        &= \pview{ ?(t') \filter r \cdot \rnode{m}{m} \cdot (?(u) \filter r) \cdot \rnode{lmd}{n}}
 \link[nodesep=1pt,ncurv=0.6]{35}{lmd}{m}                                                          & (\mbox{P-view computation}) \\
-        &= ?(\pview{ (t' \cdot \rnode{m}{m} \cdot u \cdot \rnode{lmd}{n}) \filter r })
+        &= \pview{ (?(t') \cdot \rnode{m}{m} \cdot\ ?(u) \cdot \rnode{lmd}{n}) \filter r }
 \link[nodesep=1pt,ncurv=0.7]{35}{lmd}{m}                                                          & (m, n \in N^{\theroot \vdash}) \\
-        &= ?(\pview{ t \filter r })                & \mbox{(def. of $t$).} \qed
+        &= \pview{ ?(t' \cdot \rnode{m}{m} \cdot u \cdot \rnode{lmd}{n}) \filter r }
+\link[nodesep=1pt,ncurv=0.7]{35}{lmd}{m}                                                          & \mbox{($m$ and $n$ are unmatched)} \\
+        &= \pview{ ?(t) \filter r }                & \mbox{(def. of $t$).} \qed
         \end{align*}
 \end{itemize}
 % end of proof
@@ -2858,7 +2861,16 @@ where $\Gamma = x_1 : X_1 \ldots x_l : X_l$, $f : A_0$ is a $\Sigma$-constants, 
 $p$ parameters and $X_i = A_0$ in the second equation.
 \end{definition}
 
-Figure \ref{fig:interaction_strategy_denotations} contains tree representations of the interaction games of the revealed strategy $\intersem{\Gamma \vdash M : A}$ for the application cases. These trees tell us all the information that we need about the strategy involved in $\intersem{M}$. For instance the revealed strategy $\Sigma$ is defined on the interaction game $\intersem{T^{00}}$ whose root is $!A^0 \multimap B^0$; the strategy $ev$ is defined on the interaction game $\intersem{T^1}$ with a single game-node $!B_0^1 \otimes \ldots \otimes !B_p^1 \multimap o$; thus plays of $ev$ do not contain any uncovered move.
+Figure \ref{fig:interaction_strategy_denotations} contains tree
+representations of the interaction games involved in the revealed
+strategy $\intersem{\Gamma \vdash M : A}$ for the application cases.
+These trees tell us all the information that we need about the
+strategy involved in $\intersem{M}$. For instance the revealed
+strategy $\Sigma$ is defined on the interaction game
+$\intersem{T^{00}}$ whose root is $!A^0 \multimap B^0$; the strategy
+$ev$ is defined on the interaction game $\intersem{T^1}$ with a
+single game-node $!B_0^1 \otimes \ldots \otimes !B_p^1 \multimap o$;
+thus plays of $ev$ do not contain any uncovered move.
 
 
     \begin{figure}[htbp]
@@ -3299,10 +3311,11 @@ The fact that we have defined the order of the root node differently from the or
 By extension, we can define the function $\psi_M$ on $\travset(M)^{\filter r}$, the set of justified
 sequences of nodes that are hereditarily justified by (the only occurrence of) the root $r$:
 \begin{definition}[Mapping sequences of nodes to sequences of moves]
-We define the function $\psi_M$ from $\travset(M)^{\filter r}$ to justified sequence of moves of $\sem{\Gamma \rightarrow T}$ as follows.
-If $s = s_0 s_1 \ldots \in \travset(M)^{\filter r}$ then:
-$$\psi_M(s) = \psi_M(s_0)\ \psi_M(s_1)\  \psi_M(s_2) \ldots$$
-where $\psi_M(s)$ is equipped with $s$'s pointers.
+We define the function $\psi_M$ from $\travset(M)^{\filter r}$ to
+justified sequence of moves of $\sem{\Gamma \rightarrow T}$ as
+follows. If $u = u_0 u_1 \ldots \in \travset(M)^{\filter r}$ then:
+$$\psi_M(u) = \psi_M(u_0)\ \psi_M(u_1)\  \psi_M(u_2) \ldots$$
+where $\psi_M(u)$ is equipped with $u$'s pointers.
 
 Thus the pointer-free version of this function is a monoid homomorphism.
 \end{definition}
@@ -3325,9 +3338,11 @@ Thus the pointer-free version of this function is a monoid homomorphism.
     $$ \psi^*_M = \psi_{M} \quad \union \Union_{r' \in N_{\sf spawn}} \psi_{\kappa(r')} \ .$$
     This relation is totally defined on $V\setminus (V_@ \union V_\Sigma)$ since nodes are either hereditarily justified by the root, by an @-node or by a $\Sigma$-node.
 
-%    $\psi^*_M$ is a relation and not a function since variable nodes can be hereditarily enabled by more than one nodes in $N_{\sf spawn}$  (a variable node is enabled by all the spawn $\lambda$-nodes occurring in the path to the root) and thus the domains of definition of the relations $\psi_{\kappa(r')}$ for $r' \in N_{\sf spawn}$ may overlap.  It can be easily check, however, that for any node $n \in V\setminus (V_@ \union V_\Sigma)$,
-%    the moves in $\psi^*_M (n)$ are all $\sim$-equivalent. This leads us to the following definition:
-
+    $\psi^*_M$ is a relation and not a function since variable nodes are hereditarily enabled by
+    each of the node $r'$ in $N_{\sf spawn}$ (with respect to the computation tree $\tau(\kappa(r'))$).
+    and thus the relations $\psi_{\kappa(r')}$ for $r' \in N_{\sf spawn}$ have domains of definition that can overlap.
+    It can be easily check, however, that for any node $n \in V\setminus (V_@ \union V_\Sigma)$,
+    the moves in $\psi^*_M (n)$ are all $\sim$-equivalent, which leads us to the following definition:
     \begin{definition}[Mapping from nodes to moves]
         \label{def:phi mapping}
         We define the \emph{function}
@@ -3341,9 +3356,9 @@ Thus the pointer-free version of this function is a monoid homomorphism.
 \begin{definition}[Mapping sequences of nodes to sequences of moves]
 \label{dfn:phi_for_justsequ} We define the function $\varphi_M$ from
 $\travset(M)^\star$ to justified sequence of moves of $\intersem{I}$
-as follows. If $s = s_0 s_1 \ldots \in \travset(M)^\star$ then:
-$$\varphi_M(s) = \varphi_M(s_0)\ \varphi_M(s_1)\  \varphi_M(s_2) \ldots$$
-where $\varphi_M(s)$ is equipped with $s$'s pointers.
+as follows. If $u = u_0 u_1 \ldots \in \travset(M)^\star$ then:
+$$\varphi_M(s) = \varphi_M(u_0)\ \varphi_M(u_1)\  \varphi_M(u_2) \ldots$$
+where $\varphi_M(u)$ is equipped with $u$'s pointers.
 \end{definition}
 
 \begin{example}
@@ -3411,14 +3426,14 @@ $r'_0$ be an occurrence of $r'$ in $t$ and $m_0$ be the occurrence
 of the initial $A$-move $\varphi_M(r'_0)$ in $\varphi_M(t^\star)$ then:
 $$\begin{array}{rrcl}
 (i)& \varphi_{M^{(r')}}(t^\star \filter r'_0) &=& \varphi_M(t^\star) \filter m_0 \\ \\
-(ii) & \varphi_M(\travset(M)^\star) \filter \sem{\Gamma \rightarrow T} &=& \psi_M(\travset(M)^{\filter r})\ .
+(ii) & \varphi_M(\travset(M)^\star)^- \filter \sem{\Gamma \rightarrow T} &=& \psi_M(\travset(M)^{\filter r})\ .
 \end{array}
 $$
 \end{lemma}
 \proof ($i$) Firstly, by Proposition \ref{prop:trav_filtering},
 $t\filterplus r'_0$ is a traversal of $\travset(M^{(r')})$ therefore
-the sequence $(t\filterplus r'_0) \filter r'_0 = t^\star \filter
-r'_0$ belongs of $\travset(M^{(r')})^\star$ and therefore the
+the sequence $(t\filterplus r'_0)^\star = t^\star \filter r'_0$
+belongs to $\travset(M^{(r')})^\star$ which guarantees that the
 expression $\varphi_{M^{(r')}}(t^\star \filter r'_0)$ is
 well-defined. By Definition \ref{dfn:phi_for_justsequ}, the
 sequences $\varphi_M(t^\star)$ and $t^\star$ have the same
@@ -3441,7 +3456,7 @@ to some move in $\sem{\Gamma \rightarrow T}$.
  If $m = \psi_M(n)$ then $n\in V^{\theroot\vdash}$. Otherwise,
 $m = \psi_{\kappa(r')}(n)$ for some $r' \in N_{\sf spawn}$. There
 may be several node $r'$ such that $n$ belongs to the domain of
-definition of $\psi_{\kappa(r')}$. W.l.o.g. we can take $r'$ to be
+definition of $\psi_{\kappa(r')}$. W.l.o.g.\ we can take $r'$ to be
 the one which is closest to the root $r$. Let $\Gamma(r') \vdash
 \kappa(r') : T(r')$.
     \begin{compactitem}
@@ -3458,14 +3473,13 @@ the one which is closest to the root $r$. Let $\Gamma(r') \vdash
     Consequently, $n$ is her.\ just.\ by a free variable node $z$ in $\kappa(r')$. By assumption, $r'$ is the closest node to the root $r$ (excluding $r$ itself) for which $n$ belongs to $V^{r'\vdash}$ (the domain of definition of $\psi_{\kappa(r')}$). Hence $z$ is not bound by any $\lambda$-node occurring in the path to the root. Thus $z\in
     V^{\theroot\vdash}$ and therefore $n \in V^{\theroot\vdash}$.
     \end{compactitem}
-Hence $H = V^{\theroot\vdash}$.
-
-Hence for any traversal $t$ of $M$, $\varphi_M(t^\star) \filter
-\sem{\Gamma \rightarrow T} = \varphi_M(t^\star\filter V^{\theroot\vdash})$
-which is in turn equal to $ \varphi_M(t\filter r) = \psi_M(t\filter r)$
-by Lemma \ref{lem:he_filter_root_is_hj_filter_r}. \qed
-
-\notetoself{Review the use of lemma \ref{lem:he_filter_root_is_hj_filter_r}}
+Hence $H = V^{\theroot\vdash}$. Consequently, for any traversal $t$
+of $M$ we have $\varphi_M(t^\star) \filter \sem{\Gamma \rightarrow
+T} = \varphi_M(t^\star\filter V^{\theroot\vdash})$. Thus
+$\varphi_M(t^\star)^- \filter \sem{\Gamma \rightarrow T} =
+\varphi_M((t^\star\filter V^{\theroot\vdash})^-)$ which is equal to
+$ \varphi_M(t\filter r)$ by Lemma
+\ref{lem:he_filter_root_is_hj_filter_r}. \qed
 
 
 \subsection{The correspondence theorem for the simply-typed $\lambda$-calculus without interpreted constants}
@@ -3479,19 +3493,11 @@ isomorphic to the set of uncovered plays of the strategy denotation
 isomorphic to the strategy denotation.
 
 
-The function $\varphi_M$ regarded as a function from the set of vertices $V \setminus V_@$ of the computation tree to moves in arenas is not injective. (For instance the two occurrences of $x$ in the computation tree of $\lambda f x. f x x$ are mapped to the same question move.) However the function $\varphi_M$ defined on the set of @-free traversals is injective, and similarly the function $\psi_M$ defined on the set of traversal reduction is injective:
-\begin{lemma}[$\psi_M$ and $\varphi_M$ are injective]
-\label{lem:varphiinjective}
-For any two traversals $t_1$ and $t_2$:
-\begin{itemize}
-\item[(i)] If $\varphi (t_1^\star) = \varphi (t_2^\star)$ then $t_1^\star =t_2^\star$\ ;
-\item[(ii)] if $\psi (t_1 \filter r ) = \psi (t_2 \filter r )$ then $t_1\filter r = t_2\filter r$\ .
-\end{itemize}
-\end{lemma}
-For any node occurrence $n$ in a traversal $t$ let us write $ptr(n)$
-to denote the distance between $n$ and its justifier in $t$. If
-$n$ has no justifier then we set $ptr(n)=0$. We use the same
-notation for occurrences in a sequence of moves.
+\emph{Notation:} For any node occurrence $n$ in a justified sequence
+(of nodes or of moves) $u$ we write $\ptrdist_u(n)$, or just
+$\ptrdist(n)$ if there is no ambiguity, to denote the distance
+between $n$ and its justifier in $u$ if it has one, and $0$
+otherwise.
 
 \begin{lemma}[Preleminary lemma]
 \label{lem:varphiinjective:prelem}
@@ -3502,15 +3508,20 @@ notation for occurrences in a sequence of moves.
     \zand\ n_1 \neq n_2
   \end{array}
 \right)
- \mbox{ implies } n_1,n_2 \in V^{\theroot\vdash}_{\lambda} \zand ( \psi(n_1) \neq \psi(n_2) \zor ptr(n_1) \neq ptr(n_2) ) \ .
+ \mbox{ implies } n_1,n_2 \in V^{\theroot\vdash}_{\lambda} \zand ( \psi(n_1) \neq \psi(n_2) \zor \ptrdist(n_1) \neq \ptrdist(n_2) ) \ .
  \end{equation*}
 \end{lemma}
-\proof Let $t \cdot n_1, t \cdot n_2 \in \travset(M)$. First we
-remark that the traversal rules have a weak form of determinism
-which ensures that $n_1$ and $n_2$ belong to the same category of
-node {\it i.e.}\ they must be both in $N_{\sf var}$, $N_@$,
-$N_\lambda$, $L_{\sf var}$, $L_@$, or $L_\lambda$.
+\proof Take $t \cdot n_1, t \cdot n_2 \in \travset(M)$. Suppose that
+$n_1$ and $n_2$ belong to two distinct categories of node ($N_{\sf
+var}$, $N_@$, $N_\lambda$, $L_{\sf var}$, $L_@$, or $L_\lambda$)
+then necessarily one must be visited with the rule
+\rulenamet{InputVar} and the other by \rulenamet{InputVal} (they are
+the only rules that have a common domain of definition), thus one is
+a leaf-node and the other is an internal node which implies that
+$\psi(n_1) \neq \psi(n_2)$.
 
+Otherwise, $n_1$ and $n_2$ belong to the same node category. Let us
+do a case analysis:
 \begin{compactitem}
 \item If $n_1, n_2 \in N_@$ then $t
 \cdot n_1$ and $t \cdot n_2$ were formed using the \rulenamet{App}
@@ -3518,8 +3529,8 @@ rule. Since this rule is deterministic we must have $n_1=n_2$ which
 violates the second hypothesis.
 
 \item If $n_1, n_2 \in L_@$ then the traversals were formed using the deterministic rule
-\rulenamet{Value$^{@\mapsto\lambda}$} which again violates the second
-hypothesis.
+\rulenamet{Value$^{@\mapsto\lambda}$} which again violates the
+second hypothesis.
 
 \item If $n_1,n_2\in N_{\sf var}$ then
      $t \cdot n_1$ and $t \cdot n_2$ were formed using either rule \rulenamet{Lam} or \rulenamet{App}.
@@ -3527,11 +3538,12 @@ hypothesis.
      hypothesis is violated.
 
 \item If  $n_1, n_2 \in L_{\sf var}$ then either the traversals were both formed using the deterministic rule
-\rulenamet{Value$^{{\sf var}\mapsto\lambda}$} in which case the second hypothesis
-is violated; or they were formed with \rulenamet{InputValue}
-in which case $n_1$ and $n_2$ are two different value leaves belonging to
-$V^{\theroot\vdash}_\lambda$ and justified by the same input variable node.
-Thus by definition of $\psi$, $\psi(n_1)\neq\psi(n_2)$.
+\rulenamet{Value$^{{\sf var}\mapsto\lambda}$} in which case the
+second hypothesis is violated; or they were formed with
+\rulenamet{InputValue} in which case $n_1$ and $n_2$ are two
+different value leaves belonging to $V^{\theroot\vdash}_\lambda$ and
+justified by the same input variable node. Thus by definition of
+$\psi$, $\psi(n_1)\neq\psi(n_2)$.
 
 \item If  $n_1,n_2\in N_\lambda$ then the traversals $t \cdot n_1$
     and $t \cdot n_2$ must have been formed using either rule
@@ -3546,7 +3558,7 @@ Thus by definition of $\psi$, $\psi(n_1)\neq\psi(n_2)$.
     parent node in $\tau(M)$ then since $n_1\neq n_2$, by definition of
     $\psi$, $\psi(n_1)\neq \psi(n_2)$. If their parent node is
     different, then $n_1$ and $n_2$ are necessarily justified by two different
-    occurrences in $t$ therefore $ptr(n_1) \neq ptr(n_2)$.
+    occurrences in $t$ therefore $\ptrdist(n_1) \neq \ptrdist(n_2)$.
 
 \item If  $n_1,n_2\in L_\lambda$ then either the traversals $t \cdot n_1$
     and $t \cdot n_2$ were formed using
@@ -3554,30 +3566,82 @@ Thus by definition of $\psi$, $\psi(n_1)\neq\psi(n_2)$.
     \rulenamet{Value$^{\lambda\mapsto@}$} but this is impossible since these two rules are
     deterministic and $n_1 \neq n_2$. \qed
 \end{compactitem}
+%end of proof
 
 
-\proof[Proof of Lemma \ref{lem:varphiinjective}]
-
-(i) The result is trivial is either $t_1$ or $t_2$ is empty.
-Suppose that $t_1-@\neq t_2-@$ then necessarily $t_1 \neq t_2$, thus there are some sequences $t'$, $u_1$, $u_2$ and some nodes $n_1,n_2$ such that
- $t_1 = t' \cdot n_1 \cdot u_1$, $t_2 = t' \cdot n_2 \cdot u_2$ with either $n_1\neq n_2$ or $ptr(n_1) \neq ptr(n_2)$.
-
-If $n_1 = n_2$ then $ptr(n_1) \neq ptr(n_2)$ therefore $n_1,n_2 \not\in N_@$ (otherwise we would have $ptr(n_1) = 0 = ptr(n_2)$). Since $ptr(\varphi(n_1)) = ptr(n_1)$ and  $ptr(\varphi(n_2)) = ptr(n_2)$ we must have $\varphi(t' \cdot n_1) \neq \varphi(t' \cdot n_2)$. Since $n_1,n_2 \not\in N_@$ we also have $\varphi((t' \cdot n_1)-@) \neq \varphi((t' \cdot n_2)-@)$. Hence $\varphi(t_1-@) \neq \varphi(t_2-@)$.
-
-If $n_1 \neq n_2$ then by Lemma \ref{lem:varphiinjective:prelem} we have $n_1,n_2 \not\in N_@$ and
-either $ptr(n_1) \neq ptr(n_2)$ or $\psi(n_1) \neq \psi(n_2)$ which implies $\varphi(n_1) \neq \varphi(n_2)$.
-In both cases, we obtain $\varphi(t_1-@) \neq \varphi(t_2-@)$.
 
 
-(ii) Suppose that $t \filter r \neq t' \filter r$ then necessarily $t \neq t'$ which in turn implies that for some sequences $t_1'$, $t_2'$, $u_1$, $u_2$ and some nodes $n_1 \neq n_2$
-we have $t_1 = t' \cdot n_1 \cdot u_1$, $t_2 = t' \cdot n_2 \cdot u_2$ and either $n_1\neq n_2$ or $ptr(n_1) \neq ptr(n_2)$.
+The function $\varphi_M$ regarded as a function from the set of
+vertices $V \setminus V_@$ of the computation tree to moves in
+arenas is not injective. (For instance the two occurrences of $x$ in
+the computation tree of $\lambda f x. f x x$ are mapped to the same
+question move.) However the function $\varphi_M$ defined on the set
+of @-free traversals is injective, and similarly the function
+$\psi_M$ defined on the set of traversal reduction is injective:
 
-If $n_1 = n_2$ then $ptr(n_1) \neq ptr(n_2)$. An analysis of the traversal rules shows that \rulenamet{InputVar} is the only rule that can visit the same node with two different pointers, thus $n_1,n_2 \in V_\lambda^{\theroot\vdash}$
-and therefore $\psi( (t'\cdot n_1) \filter r ) = \psi( (t'\filter r) \cdot n_1 )  \neq \psi( (t'\filter r) \cdot n_2 )$. Consequently $\psi( t_1\filter r ) \neq \psi( t_2\filter r )$.
+\begin{lemma}[$\psi_M$ and $\varphi_M$ are injective]
+\label{lem:varphiinjective}
+For any two traversals $t_1$ and $t_2$:
+\begin{itemize}
+\item[(i)] If $\varphi (t_1^\star) = \varphi (t_2^\star)$ then $t_1^\star =t_2^\star$\ ;
+\item[(ii)] if $\psi (t_1 \filter r ) = \psi (t_2 \filter r )$ then $t_1\filter r = t_2\filter r$\ .
+\end{itemize}
+\end{lemma}
+\proof \noindent (i) The result is trivial if either $t_1$ or $t_2$
+is empty. Otherwise, suppose that $t_1^\star\neq t_2^\star$ then
+necessarily $t_1 \neq t_2$. W.l.o.g.\ we can assume that the two
+traversals differ only by their last node (or last node's pointer).
+Thus we have $t_1 = t \cdot n_1$ and $t_2 = t \cdot n_2$ for some
+sequence $t$ and some occurrences $n_1, n_2$ where either $n_1$ and
+$n_2$ are two distinct node in the computation tree or
+$\ptrdist(n_1) \neq \ptrdist(n_2)$.
 
-If $n_1 \neq n_2$ then Lemma \ref{lem:varphiinjective:prelem}
-gives $\psi( t_1\filter r ) \neq \psi( t_2\filter r )$. \qed
+If $n_1 = n_2$ and $\ptrdist(n_1) \neq \ptrdist(n_2)$ then $n_1,n_2$
+are not @-nodes nor $\Sigma$-nodes (since for such nodes we would
+have $\ptrdist(n_1) = 0 = \ptrdist(n_2)$). By definition of the
+sequence $\varphi(t_1)$ we have $\ptrdist(\varphi(n_1)) =
+\ptrdist(n_1)$ and similarly $\ptrdist(\varphi(n_2)) =
+\ptrdist(n_2)$ thus $\varphi(t' \cdot n_1) \neq \varphi(t' \cdot
+n_2)$. Finally since $n_1,n_2 \not\in (N_@ \union N_\Sigma)$ we also
+have $\varphi((t' \cdot n_1)^\star) \neq \varphi((t' \cdot
+n_2)^\star)$. Hence $\varphi(t_1^\star) \neq \varphi(t_2^\star)$.
 
+If $n_1 \neq n_2$ then by Lemma \ref{lem:varphiinjective:prelem}
+$n_1,n_2$ are not @-nodes or $\Sigma$-nodes (since such nodes are
+not her.\ just.\ by the root) and we have either $\ptrdist(n_1) \neq
+\ptrdist(n_2)$ or $\varphi(n_1) = \psi(n_1) \neq \psi(n_2) =
+\varphi(n_2)$. Clearly both cases imply $\varphi(t_1^\star) \neq
+\varphi(t_2^\star)$.
+\smallskip
+
+\noindent (ii) Suppose that $t_1 \filter r \neq t_2 \filter r$ then
+necessarily $t_1 \neq t_2$. W.l.o.g.\ we can assume that the two
+sequences differ only by their last occurrence. Hence we have $t_1 =
+t \cdot n_1$, $t_2 = t' \cdot n_2$ for some sequence $t$ and some
+nodes $n_1, n_2$ where either $n_1\neq n_2$ or $\ptrdist(n_1) \neq
+\ptrdist(n_2)$.
+
+If $n_1 \neq n_2$ then Lemma \ref{lem:varphiinjective:prelem} gives
+$\psi( t_1\filter r ) \neq \psi( t_2\filter r )$.
+
+If $n_1 = n_2$ then $\ptrdist(n_1) \neq \ptrdist(n_2)$.
+\rulenamet{InputVar} and \rulenamet{InputValue} are the only rules
+that can visit the same node with two different pointers, thus $n_1$
+and $n_2$ must be in $V_\lambda^{\theroot\vdash}$. Since $r$ is the
+only occurrence of the root $\theroot$ in the traversals, both $n_1$
+and $n_2$ are her.\ just.\ by $r$. Hence:
+\begin{equation*}
+\psi(t_1\filter r) = \psi(t\filter r) \cdot \psi(n_1) \mbox{ for $i
+\in \{1..2\}$}
+\end{equation*}
+where $\ptrdist_{\psi(t_i\filter r)}(\psi(n_i)) =
+\ptrdist_{t_i\filter r}(n_i)$.
+
+Furthermore, since $\ptrdist(n_1) \neq \ptrdist(n_2)$ and
+${t_1}_{<n_1} = {t_2}_{<n_2}$ we have $\ptrdist_{t_1\filter r}(n_1)
+\neq \ptrdist_{t_2\filter r}(n_2)$. Thus $\psi(t_1\filter r) \neq
+\psi(t_2\filter r)$. \qed
+%end of proof
 
 
 \begin{corollary} \hfill
@@ -3642,9 +3706,15 @@ to $n$'s justifier in $t' \cdot n$.
 \end{proof}
 
 
-This lemma says that extending a traversal locally also extends the traversal globally: the traversal $t$ of $M$ can be extended by extending a ``sub-traversal'' $t'$ of some sub-term $M^{(r')}$.
-This is not obvious since $t'$ is a subsequence of $t$ which means that
-the nodes in $t'$ are also present in $t$ with the same pointers but with some other nodes interleaved in between. However these interleaved nodes are inserted in a preservative way which allows us to apply the rule used to extend $t'$ on $t$.
+This lemma says that extending a traversal locally also extends the
+traversal globally: the traversal $t$ of $M$ can be extended by
+extending a sub-traversal $t'$ of some sub-term $M^{(r')}$. This is
+not obvious since $t'$ is a subsequence of $t$ which means that the
+nodes in $t'$ are also present in $t$ with the same pointers but
+with some other nodes interleaved in between. However these
+interleaved nodes are inserted in a preservative way which allows us
+to apply the rule that was used to extend sub-traversal $t'$ on the
+traversal $t$.
 \bigskip
 
 The following theorem establishes a correspondence between the
@@ -3922,7 +3992,7 @@ We do a case analysis on $m$: we either have $m\in C$ or $m\in T^0$:
          &= \varphi_{M}(t^\star) \filter b \filter T^{00j}
             & \mbox{(By Eq. \ref{eqn:corresp_phi_t_minu_at_eq_u})} \\
          &= \varphi_{N_j}(t^\star \filter r_j )
-            & \mbox{(By Lemma \ref{}).}
+            & \mbox{(By Lemma \ref{lem:varphi_filter}(i)).}
         \end{align*}
 
         But by Corollary \ref{cor:varphi_bij}, $\varphi_{N_j}$ is a bijection from $\travset(N_j)^\star$ to

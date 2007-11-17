@@ -2911,12 +2911,13 @@ thus plays of $ev$ do not contain any uncovered move.
        \end{center}
     \bigskip
     {\small
-     Node labels are of the form $\Pi : T' [A]$ where $\Pi$ is a strategy, $T'$ is the corresponding interaction game and $A$ is the standard game lying at the root of the interaction game $T$. The games $A$ and $B$ are defined as follows:
+     Node labels are of the form $\Pi : T[A]$ where $\Pi$ is a strategy, $T$ is the corresponding interaction game and $A$
+     is the standard game lying at the root of the interaction game $T$. The games $A$ and $B$ are defined as follows:
     \begin{eqnarray*}
         A &=& \Gamma = X_1 \times \ldots \times X_n\\
         B &=& \underbrace{((B_1' \times \ldots \times B_p') \rightarrow o')}_{B_0} \times B_1 \times \ldots \times B_p
     \end{eqnarray*}
-    Games are annotated with string  $s \in \{ 0..p \}^*$ in the exponent to indicate the path from the root to the corresponding node in the tree (each number in $s$ indicates which direction to take at the corresponding branch point).
+    Games are annotated with string  $s \in \{ 0..p \}^*$ in the exponent to indicate the path from the root to the corresponding node in the tree (each digit in $s$ indicates which direction to take at the corresponding branch point).
    }
         \smallskip
        \caption{Tree-representation of the revealed strategy in the application case.}
@@ -3661,15 +3662,17 @@ simply-typed $\lambda$-calculus without interpreted constants
 simply-typed $\lambda$-calculus with \emph{uninterpreted} constants
 since we can regard constants as being free variables.
 
-\begin{lemma}[Local Traversal Extension]
-\label{lem:local_traversal_progression}
-Let $M^{(r')}$ be a subterm of $M$, $t \in \travset(M)$,
-$t' \in \travset(M^{(r')})$ such that $t,t' \neq \epsilon$, $t\subseqof t'$
-and the last occurrence of $t$ and $t'$ coincide.
-If we can form a traversal $t' \cdot n$ of $\tau(M^{(r')})$ using a rule different from \rulenamet{InputVar} and $\rulename{InputVar^{val}}$ then
-$ t \cdot n$ is a traversal in $\travset(M)$
-where $n$'s justifier in $t \cdot n$ is the occurrence corresponding
-to $n$'s justifier in $t' \cdot n$.
+\begin{lemma}[Sub-traversal progression]
+\label{lem:subtraversal_progression} Let $M^{(r')}$ be a subterm of
+$M$, $t \in \travset(M)$ and $r_0$ be an occurrence of $r'$ in $t$.
+Let $t' = t \filter^+ r_0$ be the sub-traversal of $t$ (which
+belongs to $\travset(M^{(r')})$ by Prop. \ref{prop:trav_filtering}.
+
+If we can form a traversal $t' \cdot n$ of $\tau(M^{(r')})$ using a
+rule different from \rulenamet{InputVar} and
+$\rulename{InputVar^{val}}$ then the sequence $t \cdot n$, where the
+justifier of $n$ in $t \cdot n$ is defined as the occurrence that
+justifies $n$ in $t' \cdot n$, is a traversal in $\travset(M)$ .
 \end{lemma}
 \begin{proof}
   Let $M^{(r')}$ denote the term $\kappa(r')$ and
@@ -3848,16 +3851,17 @@ Hence we can conclude using the induction hypothesis.
     $B_0 = (B_1,\ldots,B_p,o)$ and $p\geq 1$.
 
     The tree $\tau(M)$ has the following form:
-    $$ \tree[levelsep=6ex]{\lambda^{[r]}}
+    $$ \tree[levelsep=6ex]{\lambda^{[\theroot]}}
         { \tree[levelsep=6ex]{@}
             {
-            \tree[levelsep=3mm,edge=\noedge]{\TR{{\lambda y_1 \ldots y_p}^{[r_0]}}}{\Tr[ref=t]{\pstribox{\tau(N_0)}}}
-            \tree[levelsep=3mm,edge=\noedge]{\TR{[r_1]}}{\Tr[ref=t]{\pstribox{\tau(N_1)}}}
+            \tree[levelsep=3mm,edge=\noedge]{\TR{{\lambda y_1 \ldots y_p}^{[\theroot_0]}}}{\Tr[ref=t]{\pstribox{\tau(N_0)}}}
+            \tree[levelsep=3mm,edge=\noedge]{\TR{[\theroot_1]}}{\Tr[ref=t]{\pstribox{\tau(N_1)}}}
              \TR{\ldots}
-            \tree[levelsep=3mm,edge=\noedge]{\TR{[r_p]}}{\Tr[ref=t]{\pstribox{\tau(N_p)}}}
+            \tree[levelsep=3mm,edge=\noedge]{\TR{[\theroot_p]}}{\Tr[ref=t]{\pstribox{\tau(N_p)}}}
         }}
     $$
-    where $r_j$ denote the root of $\tau(N_j)$ for $j\in \{0..p\}$.
+    where $\theroot_j$ denote the root of $\tau(N_j)$ for $j\in
+    \{0..p\}$.
 
     We have:
     $$
@@ -3897,7 +3901,10 @@ Hence we can conclude using the induction hypothesis.
 with \rulenamet{Empty}. Clearly $\varphi(t) = u$.
     \item If $|u|=1$ then $u=q_0$ is the initial move in $C$. The traversal $t=\lambda$ formed with the rule \rulenamet{Root} verifies $\varphi(t) = u$.
     \item If $|u|=2$ then necessarily $u = q_0 \cdot q_0'$. The rules \rulenamet{Root}, \rulenamet{App}
-and \rulenamet{Lam} permit us to build the traversal $t = \lambda^{[r]} \cdot @ \cdot \lambda \overline{y}^{[r_0]}$ which clearly verifies $\varphi_M(t\star) = u$.
+and \rulenamet{Lam} permit us to build the traversal $t =
+\lambda^{[\theroot]} \cdot @ \cdot \lambda
+\overline{y}^{[\theroot_0]}$ which clearly verifies
+$\varphi_M(t^\star) = u$.
     \end{compactitem}
 
     \emph{Step cases}: Suppose that $u = u' \cdot m \in
@@ -3917,10 +3924,10 @@ and \rulenamet{Lam} permit us to build the traversal $t = \lambda^{[r]} \cdot @ 
     & \mbox{or equivalently} & \left\{
     \begin{array}{ll}
         u \in L_T \\
-        \hbox{for any initial $m$ in $!B_0^0 \otimes \ldots \otimes !B_p^0$ there is $j \in \{0..p\}$ such that } \\
+        \hbox{for any initial $b$ in $!B_0^0 \otimes \ldots \otimes !B_p^0$ there is $j \in \{0..p\}$ such that } \\
         \left\{\begin{array}{ll}
-            u \filter m \filter T^{00j} \in \intersem{N_j} \label{eq:def_z} \\
-            u \filter m \filter T^{00k} = \epsilon \quad \mbox{ for every } k\in \{1..p\}\setminus\{j\} \label{eq:b}
+            u \filter b \filter T^{00j} \in \intersem{N_j} \label{eq:def_z} \\
+            u \filter b \filter T^{00k} = \epsilon \quad \mbox{ for every } k\in \{1..p\}\setminus\{j\} \label{eq:b}
         \end{array}
         \right. \\
         u \filter B^1_0 = u \filter B^1_1, \ldots, B^1_p, C
@@ -3994,41 +4001,75 @@ We do a case analysis on $m$: we either have $m\in C$ or $m\in T^0$:
          &= \varphi_{N_j}(t^\star \filter r_j )
             & \mbox{(By Lemma \ref{lem:varphi_filter}(i)).}
         \end{align*}
+        where $r_j$ denotes the occurrence of the root
+        $\theroot_j$ in $t$ that is mapped to the
+        occurrence $b$ in $\varphi_{M}(t^\star)$.
 
-        But by Corollary \ref{cor:varphi_bij}, $\varphi_{N_j}$ is a bijection from $\travset(N_j)^\star$ to
-        $\varphi_{N_j}( \travset(N_j)^\star )$ therefore:
-         $$t_j^\star = t^\star \filter r_j $$
-
-        By Eq. \ref{eqn:starfilter_filterplusstar} from Section \ref{sec:tstar} we
-        have $t^\star \filter r_j = (t\filterplus
-        r_j)^\star$. Hence since $t_j^\omega$ and
-        $t^\omega$ are not in $N_@$ we have
-        $t_j = t \filterplus r_j$.
+        But $\varphi_{N_j}$ is a bijection from
+        $\travset(N_j)^\star$ to $\varphi_{N_j}(
+        \travset(N_j)^\star )$ (Corollary
+        \ref{cor:varphi_bij}) therefore we have
+        $t_j^\star = t^\star \filter r_j $. Equation
+        \ref{eqn:starfilter_filterplusstar} from Section
+        \ref{sec:tstar} gives $t^\star \filter r_j =
+        (t\filterplus r_j)^\star$. Hence since
+        $t_j^\omega$ and $t^\omega$ are not in $N_@$ we
+        have:
+        $$t_j = t \filterplus r_j \ .$$
 
     \begin{enumerate}[(a)]
-    \item  Suppose $t_j$'s last occurrence is \emph{not} visited by the rule \rulenamet{InputVar} nor $\rulename{InputVar^{val}}$. Since $\ip( t_j) \subseqof t'$, $t_j$ is a traversal of the subterm $N_j$ of $M$ and the last occurrence
-        of $t$ and $t_j$ coincide, by Lemma
-        \ref{lem:local_traversal_progression}, $t =
-        t' \cdot t_j^\omega$ is a traversal of $M$.
+    \item  Suppose $t_j$'s last occurrence is \emph{not}  visited by the rule \rulenamet{InputVar} nor $\rulename{InputVar^{val}}$.
+         Since $\ip(t_j) = t' \filterplus r_j$ and
+        $t_j$ is a traversal of the subterm $N_j$ of
+        $M$, by Lemma
+        \ref{lem:subtraversal_progression}, $t = t'
+        \cdot t_j^\omega$ is a traversal of $M$.
 
     \item Suppose $t_j$'s last move is visited with the rule \rulenamet{InputVar}.
 
     Then $t_j$ is of the form
-    $$\Pstr[18pt]{ t_j = t' (z)z \cdot t'' \cdot (n-z){t_j^\omega}}$$
-for some $z \in N_\lambda^{r_j\vdash}$ (see remark
-\ref{rem:inputvar}) and some input-variable $x \in
-N^{r_j\vdash}_{var}$ occurs in $z\cdot t'$ such that
-$x$ is
- the pending node in $\ip\ t_j = t' \cdot z \cdot
- t''$ ({\it i.e.}~ with $?(t' \cdot z \cdot
- t'')^\omega = x$).
+    $$\Pstr[18pt]{ t_j = w_1 \cdot (z)z \cdot w_2 \cdot (n-z){t_j^\omega}}$$
+where $t_j^\omega \in N_\lambda^{\theroot_j\vdash}$
+for some input-variable $z \in
+N^{\theroot_j\vdash}_{\sf var}$ occurring in
+$\oview{t_j}$.
 
-Suppose that $z\in N^{\theroot\vdash}$ then $z$ is a free variable of $M$ (and $N_j$).
-Since the O-view of $t_j$ coincides with the O-view of $t$
+By definition of $\psi_{N_j}$, $\psi_{N_j}(z)$ and
+$\psi_{N_j}(t_j^\omega)$ must be her.\ just.\ by $b
+\in B_j$ in $\psi_{N_j}(t_j\filter r_j)$.
+
+%Since $z$ is her.\ enabled by the $\theroot_j$ and
+%appears in $\ip(t_j) = t' \filterplus r_j$, it is
+%necessarily her.\ \emph{justified} by $r_j$ in
+%$t_j$. Therefore so is $t_j^\omega$.
+
+
+Since $t_j^\omega$ is her.\ enabled by the the root
+$\theroot_j$ which itself is enabled by an
+application node, it cannot be her.\ enabled by the
+root $\theroot$ in $M$. Therefore the move
+$\psi_{N_j}(t_j^\omega)$ is not played in $A$ (since
+only node that are her.\ enabled by the root are
+mapped to move in $A$). Hence $t_j^\omega \in B_j$.
+Similarly, $z \in t_j^\omega$.
+
+Thus:
+$$u = \Pstr{ \ldots \cdot (m3){m^3} \cdot
+                (m2){m^2} \cdot \ldots \cdot
+                (m1-m2,30){m^1} \cdot (m-m3,30){m} } $$
+
+
+
+
+
+
+Since the O-view of $t_j$ coincides with the O-view
+of $t$
 
     \item Suppose $t_j$'s last move is visited with the rule $\rulename{InputVar^{val}}$.
-    This case is similar to the previous one but the rule $\rulename{InputVar^{val}}$ is used instead
-    of $\rulename{InputVar}$.
+    This case is identical to the previous one
+    except that the rule $\rulename{InputVar^{val}}$
+    is used instead of $\rulename{InputVar}$.
     \end{enumerate}
 
 
@@ -4131,7 +4172,8 @@ Suppose that $m \in T^{000}$ and $m^1 \in T^{001}$.
             =  \underbrace{\langle \pi_i, \intersem{\Gamma \vdash N_1 : B_1}, \ldots \intersem{\Gamma \vdash N_p : B_p} \rangle}_{\Sigma} \,^\dagger\ ;^{\{1..p\}} \ ev$
     is represented on Figure \ref{fig:interaction_strategy_denotations}.
 
-    The proof is identical to the previous case except that in the $\subseteq$ part of the proof:
+    The proof is identical to the previous case except that in
+    the ``$\subseteq$'' part of the proof:
     \begin{itemize}
         \item In the base case of the induction where $|u|=2$,
         the rule \rulenamet{InputVar} is used instead of \rulenamet{App} to visit the node $x$ instead of $@$;

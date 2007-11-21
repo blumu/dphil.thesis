@@ -108,10 +108,10 @@ where $x$ and each $\varphi_i : A_i$ are variables and $\alpha$ is
 either a variable or a constant.
 \end{definition}
 
-For $n=0$, the first clause in the definition becomes:
+For $n=0$, we have:
 $$\elnf{x s_1 \ldots s_m : o} = \lambda . x \elnf{s_1} \elnf{s_2} \ldots \elnf{s_m},$$
 and we deliberately keep the \textsl{dummy} lambda in the right-hand
-side of the equation because it will play an important role in the
+side of the equation as it will play an important role in the
 correspondence with game semantics.
 
 
@@ -182,49 +182,45 @@ $\eta$-long normal form. It is defined as follows:
 
 \begin{definition}
 \label{dfn:comptree} Let $M$ be a simply-typed term in $\eta$-normal
-form. Then $M$ is either an abstraction or it can be written
-uniquely as $s_0 s_1 \ldots s_m : o$ for some $m\geq0$ where $s_0$
-is a variable, a constant or an abstraction and each of the $s_j$
-for $j\in 1..m$ is in $\eta$-normal form. We define the
-tree $\tau^*(M)$ by induction on the structure of the term as follows:
-\begin{enumerate}[-]
-\item If $n\geq0$ and $s$ is not an abstraction then:
-$$ \tau^*(\lambda x_1 \ldots x_n . s) =
-      \pstree[levelsep=3ex]
-        { \TR{\lambda x_1 \ldots x_n} }
-        { \SubTree{\tau^*(s)^{-}} }
-$$
-where $\tau^*(s)^{-}$ denotes the tree obtained after deleting the root of $\tau^*(s)$.
+form. Then $M$ must be of the form $\lambda \overline{x} . s_0 s_1
+\ldots s_m$ where $s_0 s_1 \ldots s_m$ is of ground type and either
+$s_0$ is a variable or a constant and $m\geq0$ or $s_0$ is an
+abstraction $\lambda\overline{y}.s$ and $m\geq1$, where $s$ and the
+$s_j$'s for $j\in 1..m$ are in $\eta$-normal form.
 
+We define the tree $\tau^*(M)$ by induction on the structure of the
+term as follows:
+\begin{enumerate}[-]
 \item If $m\geq0$ and $\alpha$ is a variable or constant then:
-$$ \tau^*( \alpha s_1 \ldots s_m : o) =
-    \tree{\lambda}
+$$ \tau^*( \lambda\overline{x} . \alpha s_1 \ldots s_m : o) =
+    \pssetcomptree
+    \tree{\lambda\overline{x}}
     {
-        \pstree[levelsep=3ex]
-            { \TR{\alpha} }
+        \tree[levelsep=3ex]{ \alpha }
             { \SubTree{\tau^*(s_1)} \SubTree[linestyle=none]{\ldots} \SubTree{\tau^*(s_m)}
             }
     }
 $$
 
-\item If $n \geq 1$ then:
+\item If $m \geq 1$ and $s_0$ is an abstraction then:
 \begin{align*}
- \tau^*((\lambda x.s) s_1 \ldots s_n : o) &=\\
-   & \tree{\lambda}
-    {
-        \pstree[levelsep=3ex]
-            { \TR{@} }
-            {
-            \SubTree{\tau^*(\lambda x.s)} \SubTree{\tau^*(s_1)} \SubTree[linestyle=none]{\ldots} \SubTree{\tau^*(s_n)}
-            }
-    }
+ \tau^*(\lambda\overline{x} . (\lambda\overline{y}.s) s_1 \ldots s_m : o)=
+   %\hspace{2cm}
 \end{align*}
+$$\pssetcomptree\tree{\lambda\overline{x}} { \tree[levelsep=3ex]{
+        @ } { \SubTree{\tau^*(\lambda\overline{y}.s)}
+            \SubTree{\tau^*(s_1)}
+            \SubTree[linestyle=none]{\ldots}
+            \SubTree{\tau^*(s_m)} }}$$
 \end{enumerate}
 
-Let $M$ be a simply-typed term not necessarily in $\eta$-normal form. Let $\mathcal{D}$ denote the set of values of base type $o$. The \defname{computation tree} of $M$, written $\tau(M)$ is the tree obtained from
-$\tau^*(\etanf{M})$ by adding leaves to the nodes of $\tau^*(\etanf{M})$ as follows:
-every node $n \in \tau(M)$ has a child leaf labelled $v_n$ for every possible value $v \in \mathcal{D}$.
-These leaves are called the \defname{value-leaves}.
+Let $M$ be a simply-typed term not necessarily in $\eta$-normal
+form. Let $\mathcal{D}$ denote the set of values of base type $o$.
+The \defname{computation tree} of $M$, written $\tau(M)$ is the tree
+obtained from $\tau^*(\etanf{M})$ by adding leaves to the nodes of
+$\tau^*(\etanf{M})$ as follows: every node $n \in \tau(M)$ has a
+child leaf labelled $v_n$, called \defname{value-leaf}, for every
+possible value $v \in \mathcal{D}$.
 \end{definition}
 
 The inner nodes of the tree are of three kinds:
@@ -287,26 +283,23 @@ r$ and if the root is $\lambda \overline{\xi}$ then $\ord{r} = 1 + \max_{z\in
 variable or constant nodes;
 
 \item for any ground type variable or constant $\alpha$,
-$\tau(\alpha) = \tau(\lambda . \alpha) =  \pstree[levelsep=3ex]
-    { \TR{\lambda } }
-    { \TR{\alpha}
-    }$;
+$\tau(\alpha) = \tau(\lambda . \alpha) =
+\pssetcomptree\tree[levelsep=3ex]{\lambda}{ \TR{\alpha} }$;
 
 \item for any higher-order variable or constant $\alpha : (A_1,\ldots,A_p,o)$, the computation tree $\tau(\alpha)$ has the following form:
-$ \pstree[levelsep=3ex]{\TR{\lambda}}
-        {\pstree[levelsep=3ex]
-                { \TR{\alpha} }
-                { \tree{\lambda \overline{\xi_1}}{\TR{\ldots}} \TR{\ldots} \tree{\lambda \overline{\xi_p}}{\TR{\ldots}}
-                }
+$ \pssetcomptree\tree[levelsep=3ex]{\lambda}{\tree{\alpha} {
+                \tree{\lambda \overline{\xi_1}}{\TR{\ldots}}
+                \TR{\ldots} \tree{\lambda
+                \overline{\xi_p}}{\TR{\ldots}} }
         }
 $;
 
 \item for any tree of the form
-        $ \pstree[levelsep=4ex]
-            { \TR{\lambda \overline{\varphi}} }
-            { \pstree[levelsep=3ex]
-                {\TR{n}}
-                {\TR{\lambda \overline{\xi_1}} \TR{\ldots} \TR{\lambda \overline{\xi_p}}}
+        $ \pssetcomptree\tree[levelsep=4ex]{\lambda
+            \overline{\varphi}} { \tree[levelsep=3ex]{n}
+            {\TR{\lambda
+                \overline{\xi_1}} \TR{\ldots} \TR{\lambda
+                \overline{\xi_p}}}
             }
         $,
     we have $\ord{\kappa(n)}=0$.
@@ -579,13 +572,13 @@ A traversal that cannot be extended by any rule is said to be \emph{maximal}.
 \begin{FramedTable}
 \noindent {\bf Initialization rules}
 \begin{description}
-\item[\rulenamet{Empty}] $\epsilon \in \travset(M)$.
-\item[\rulenamet{Root}] The sequence constituted of a single occurrence of $\tau(M)$'s root is a traversal.
+\item\rulenamet{Empty} $\epsilon \in \travset(M)$.
+\item\rulenamet{Root} The sequence constituted of a single occurrence of $\tau(M)$'s root is a traversal.
 \end{description}
 
 \noindent {\bf Structural rules}
 \begin{description}
-    \item[\rulenamet{Lam}] If $t \cdot \lambda \overline{\xi}$ is a traversal then so is
+    \item \rulenamet{Lam} If $t \cdot \lambda \overline{\xi}$ is a traversal then so is
         $t \cdot \lambda \overline{\xi} \cdot n$ where $n$ denotes
         $\lambda \overline{\xi}$'s child and:
         \begin{compactitem}
@@ -599,60 +592,108 @@ A traversal that cannot be extended by any rule is said to be \emph{maximal}.
             to the only occurrence of the root $\theroot$ in
             $\pview{t \cdot \lambda \overline{\xi}}$.
         \end{compactitem}
-    \item[\rulenamet{App}] If $t \cdot @$ is a traversal then so is \Pstr[0.4cm]{t \cdot (m) @  \cdot (n-m,40:0) n}.
+    \item \rulenamet{App} If $t \cdot @$ is a traversal then so is \Pstr[0.4cm]{t \cdot (m) @  \cdot (n-m,40:0) n}.
 \end{description}
 
 \emph{\bf Input-variable rules}
 \begin{description}
-\item[\rulenamet{InputValue}] If $t_1 \cdot x \cdot t_2$ is a traversal
-with pending node $x \in N_{\sf var}^{\theroot\vdash}$ then so
-is \Pstr[0.5cm]{t_1 \cdot (x){x} \cdot t_2 \cdot
-(xv-x,38:v){v_x} } for all $v \in \mathcal{D}$.
+\item \rulenamet{InputVar} If $t$ is a traversal with pending node  $x \in N_{\sf var}^{\theroot\vdash}$ then so is $t \cdot n$ for any $\lambda$-node $n$ whose parent occurs in  $\oview{t_{\prefixof x}}$, $n$ pointing to some occurrence of its  parent node in $\oview{t_{\prefixof x}}$.
 
-\item[\rulenamet{InputVar}] If $t$ is a traversal with pending node  $x \in N_{\sf var}^{\theroot\vdash}$ then so is $t \cdot n$ for any $\lambda$-node $n$ whose parent occurs in  $\oview{t_{\prefixof x}}$, $n$ pointing to some occurrence of its  parent node in $\oview{t_{\prefixof x}}$.
+\item \rulenamet{InputValue} If $t_1
+\cdot x \cdot t_2$ is a traversal with pending node $x \in
+N_{\sf var}^{\theroot\vdash}$ then so is \Pstr[0.5cm]{t_1 \cdot
+(x){x} \cdot t_2 \cdot (xv-x,38:v){v_x} } for all $v \in
+\mathcal{D}$.
 \end{description}
 
 \emph{\bf Copy-cat rules}
 \begin{description}
-\item[\rulenamet{Value$^{\lambda\mapsto@}$}]
-  If \Pstr{t \cdot (app){@} \cdot (lz-app,60:0){\lambda
-\overline{z}}  \ldots  (lzv-lz,60:v){v}_{\lambda \overline{z}} }
-is a traversal then so is \Pstr[0.5cm]{t \cdot (app){@} \cdot
-(lz-app,60){\lambda \overline{z}} \ldots
-(lzv-lz,60:v){v}_{\lambda \overline{z}} \cdot
-(appv-app,45:v){v}_@}.
-
-\item[\rulenamet{Value$^{@\mapsto\lambda}$}] If \Pstr[0.4cm]{t \cdot \lambda \overline{\xi} \cdot (x){@}  \ldots   (xv-x,50:v){v}_@}
-is a traversal then so is \Pstr[0.5cm]{t \cdot (lmd){\lambda
-\overline{\xi}} \cdot (x){@}  \ldots  (xv-x,50:v){v}_@  \cdot
-(lmdv-lmd,33:v){v}_{\lambda \overline{\xi}} }.
-
-\item[\rulenamet{Value$^{\lambda\mapsto{\sf var}}$}] If \Pstr[0.4cm]{t \cdot y \cdot (lmd){\lambda \overline{\xi}}
-\ldots (lmdv-lmd,50:v){v}_{\lambda \overline{\xi}} } is a
-traversal where $y\in N_{\sf var}^{@\vdash}$ then so is \Pstr[0.5cm]{t \cdot (y){y} \cdot (lmd){\lambda
-\overline{\xi}} \ldots (lmdv-lmd,30:v){v}_{\lambda
-\overline{\xi}}  \cdot (vy-y,50:v){v}_y }.
-
-\item[\rulenamet{Value$^{{\sf var}\mapsto\lambda}$}] If \Pstr[0.4cm]{t \cdot \lambda \overline{\xi} \cdot (x){x}  \ldots   (xv-x,50:v){v}_x}
-is a traversal where $x\in N_{\sf var}$ then so is \Pstr[0.5cm]{t \cdot (lmd){\lambda
-\overline{\xi}} \cdot (x){x}  \ldots  (xv-x,50:v){v}_x  \cdot
-(lmdv-lmd,30:v){v}_{\lambda \overline{\xi}} }.
-\end{description}
-
-\begin{description}
-\item[\rulenamet{Var}]
-If \Pstr[0.5cm]{t' \cdot (n){n} \cdot (lx){\lambda \overline{x}}
-    \ldots (x-lx,50:i){x_i} } is a traversal where
-    $x_i \in N_{\sf var}^{@\vdash}$ then
-so is \Pstr[0.5cm]{ t' \cdot (n){n} \cdot
+\item\rulenamet{Var}
+If \Pstr[0.5cm]{t \cdot (n){n} \cdot (lx){\lambda \overline{x}}
+    \ldots (x-lx,50:i){x_i} } is a traversal where $x_i \in
+    N_{\sf var}^{@\vdash}$ then so is \Pstr[0.5cm]{ t \cdot
+(n){n} \cdot
     (lx){\lambda \overline{x}}  \ldots (x-lx,30:i){x_i}  \cdot
     (letai-n,40:i){\lambda \overline{\eta_i}}
      }.
+
+\item\rulenamet{Value}
+  If \Pstr{t \cdot (m){m} \cdot (n){n}  \ldots
+(vn-n,60:v){v}_{n} } is a traversal where $n\in N$ then so is
+\Pstr[0.5cm]{t \cdot (m){m} \cdot (n){n} \ldots
+(vn-n,60:v){v}_{n} \cdot (vm-m,45:v){v}_m}.
 \end{description}
 \caption[Traversal rules for the simply-typed
 lambda-calculus]{Traversal rules for the simply-typed
-$\lambda$-calculus.} \label{tab:trav_rules}
+$\lambda$-calculus.}
+\label{tab:trav_rules}
 \end{FramedTable}
+
+\begin{remark} \hfill
+\begin{enumerate}
+\item
+    The rule \rulenamet{Value} from Table \ref{tab:trav_rules}
+    can be equivalently reformulated into four distinct rules
+    \rulenamet{Value$^{\lambda\mapsto@}$},
+    \rulenamet{Value$^{@\mapsto\lambda}$},
+    \rulenamet{Value$^{\lambda\mapsto{\sf var}}$} and
+    \rulenamet{Value$^{{\sf var}\mapsto\lambda}$}, each one
+    dealing with a different possible category for the nodes $n$
+    and $m$:
+    \begin{description}
+    \item[\rulenamet{Value$^{\lambda\mapsto@}$}]
+      If \Pstr{t \cdot (app){@} \cdot (lz-app,60:0){\lambda
+    \overline{z}}  \ldots  (lzv-lz,60:v){v}_{\lambda \overline{z}} }
+    is a traversal then so is \Pstr[0.5cm]{t \cdot (app){@} \cdot
+    (lz-app,60){\lambda \overline{z}} \ldots
+    (lzv-lz,60:v){v}_{\lambda \overline{z}} \cdot
+    (appv-app,45:v){v}_@}.
+
+    \item[\rulenamet{Value$^{@\mapsto\lambda}$}] If \Pstr[0.4cm]{t \cdot \lambda \overline{\xi} \cdot (x){@}  \ldots   (xv-x,50:v){v}_@}
+    is a traversal then so is \Pstr[0.5cm]{t \cdot (lmd){\lambda
+    \overline{\xi}} \cdot (x){@}  \ldots  (xv-x,50:v){v}_@  \cdot
+    (lmdv-lmd,33:v){v}_{\lambda \overline{\xi}} }.
+
+    \item[\rulenamet{Value$^{\lambda\mapsto{\sf var}}$}] If \Pstr[0.4cm]{t \cdot y \cdot (lmd){\lambda \overline{\xi}}
+    \ldots (lmdv-lmd,50:v){v}_{\lambda \overline{\xi}} } is a
+    traversal where $y\in N_{\sf var}^{@\vdash}$ then so is
+    \Pstr[0.5cm]{t \cdot (y){y} \cdot (lmd){\lambda \overline{\xi}}
+    \ldots (lmdv-lmd,30:v){v}_{\lambda \overline{\xi}}  \cdot
+    (vy-y,50:v){v}_y }.
+
+    \item[\rulenamet{Value$^{{\sf var}\mapsto\lambda}$}] If \Pstr[0.4cm]{t \cdot \lambda \overline{\xi} \cdot (x){x}  \ldots   (xv-x,50:v){v}_x}
+    is a traversal where $x\in N_{\sf var}$ then so is
+    \Pstr[0.5cm]{t \cdot (lmd){\lambda \overline{\xi}} \cdot (x){x}
+    \ldots  (xv-x,50:v){v}_x  \cdot (lmdv-lmd,30:v){v}_{\lambda
+    \overline{\xi}} }.
+    \end{description}
+    In the rest of this chapter we will prove various resulting
+    by induction on the structure of some traversal and by case
+    analysis on the last rule used to form it. For the sake of
+    these proofs, we will use the above-defined reformulation of
+    \rulenamet{Value} in place of its original definition.
+
+    \item The rule \rulenamet{InputValue} is just the counterpart of \rulenamet{InputVar}
+    for value-leaves. The two rules are defined similarly but
+    \rulenamet{InputValue} is more constrained: the visited node
+    is necessarily justified by the pending node. This
+    restriction ensures that the value-leaf visited by the rule
+    respects the well-bracketing condition.
+
+    \item For the rules \rulenamet{InputValue} and \rulenamet{InputVar}, since $x$ is the pending node, the traversal
+    must be of the form
+    \begin{quote}
+    [\rulenamet{InputValue}] If $t_1 \cdot x \cdot t_2$ is a
+traversal where $x \in N_{\sf var}^{\theroot\vdash}$ and either
+$t_2 = \epsilon$ or $t_2 = \Pstr{(l){\lambda \overline{\eta}}
+\ldots (v-l){v_{\lambda \overline{\eta}}} }$ then so is
+\Pstr[0.5cm]{t_1 \cdot (x){x} \cdot t_2 \cdot (xv-x,38:v){v'_x}
+} for all $v' \in \mathcal{D}$.
+
+    \end{quote}
+\end{enumerate}
+\end{remark}
+\bigskip
 
 A traversal always starts with the root node and mainly follows the
 structure of the tree. The exception is the \rulenamet{Var} rule
@@ -671,9 +712,10 @@ traversal. We do a case analysis on the node preceding $\lambda
     \begin{itemize}
     \item If it is an @-node then $\lambda \overline{x}$ is necessarily the first child node of that node
     and it has has exactly $|\overline{x}|$ siblings:
-    $$\pstree[levelsep=7ex]{\TR{\stackrel{\vdots}{@}}}
+    $$\pssetcomptree\tree[levelsep=8ex]{\stackrel{\vdots}{@}}
     {   \pstree[linestyle=dotted,levelsep=4ex]{\TR{\lambda \overline{x}}\treelabel{0}}
             {\TR{x }}
+            \tspace{0.2cm}
         \tree{\lambda \overline{\eta_1}}{\vdots}\treelabel{1}
         \TR[edge=\dotedge]{}
         \tree{\lambda \overline{\eta_i}}{\vdots}\treelabel{i}
@@ -727,13 +769,13 @@ Our notions of computation tree and traversal differ slightly from \cite{OngLics
 
 \begin{example}
 Consider the following computation tree:
-$$\tree{\lambda}
+$$\pssetcomptree\tree{\lambda}
 {
     \tree[nodesep=4pt]{@}
     {
         \pstree[levelsep=8ex,linestyle=dotted]{\TR{\lambda y}\treelabel{0} }
         {
-            \pstree[levelsep=8ex]{\TR{y}}
+            \tree[levelsep=8ex]{y}
             {
                 \tree{\lambda \overline{\eta_1}}{\vdots} \treelabel{1}
                 \TR[edge=\dotedge]{}
@@ -773,7 +815,7 @@ $$ \Pstr[0.5cm]{ (app){@}\cdot
 (lk-xkm1){\lambda \overline{\xi}_k}
  } $$
 Suppose that the initial node $@$ occurs in the computation as follows:
- $$ \tree{ \ldots}
+ $$ \pssetcomptree\tree{ \ldots}
         {   \tree[levelsep=6ex]{@}
             {   \TR{\lambda \overline{\eta}_1}
                 \TR{\ldots} \TR{\lambda \overline{\eta}_q}
@@ -1150,9 +1192,9 @@ These transformations are well-defined because in a traversal, an
 @-node always occurs in-between two nodes $n_1$ and $n_2$ such that
 $n_1$ is the parent node of @ and $n_2$ is the first child node of @
 in the computation tree:
-$$      \pstree[levelsep=4ex]{\TR{n_1}\treelabel{0} }
+$$      \pssetcomptree\pstree[levelsep=4ex]{\TR{n_1}\treelabel{0} }
         {
-            \pstree[levelsep=3ex]{\TR{@}}
+            \tree[levelsep=3ex]{@}
             {
                 \tree{n_2}{\vdots}
                 \TR[edge=\dedge]{}
@@ -2531,32 +2573,34 @@ The diagrams below represent an interaction type tree $T$ (left),
 the corresponding interaction game $\intersem{T}$ (middle) and a
 revealed strategy $\Sigma$ (right):
 $$
-\pstree[levelsep=6ex]{\TR{;}}
-        {
-            \pstree[levelsep=6ex]{\TR{;}}
-            { \TR{A\multimap B}
-              \TR{B\multimap C}
-            }
-            \TR{C\multimap D}
+\pssetarena
+\psset{levelsep=6ex}
+\tree{;}
+    {
+        \tree{;}
+        { \TR{A\multimap B}
+          \TR{B\multimap C}
         }
+        \TR{C\multimap D}
+    }
 \hspace{1cm}
-\pstree[levelsep=6ex]{\TR{;}}
-        {
-            \pstree[levelsep=6ex]{\TR{;}}
-            { \TR{\sem{A\multimap B}}
-              \TR{\sem{B\multimap C}}
-            }
-            \TR{\sem{C\multimap D}}
+\tree{;}
+    {
+        \tree[levelsep=6ex]{;}
+        { \TR{\sem{A\multimap B}}
+          \TR{\sem{B\multimap C}}
         }
+        \TR{\sem{C\multimap D}}
+    }
 \hspace{1cm}
-\pstree[levelsep=6ex]{\TR{;^{\{0\}}}}
-        {
-            \pstree[levelsep=6ex]{\TR{;^{\{0\}}}}
-            { \TR{A\multimap B^{\sigma_1}}
-              \TR{B\multimap C^{\sigma_2}}
-            }
-            \TR{C\multimap D^{\sigma_3}}
+\tree{;^{\{0\}}}
+    {
+        \tree{;^{\{0\}}}
+        { \TR{A\multimap B^{\sigma_1}}
+          \TR{B\multimap C^{\sigma_2}}
         }
+        \TR{C\multimap D^{\sigma_3}}
+    }
 $$
 \end{example}
 A revealed strategy can also be written as an expression, for
@@ -2873,14 +2917,15 @@ thus plays of $ev$ do not contain any uncovered move.
 
     \begin{figure}[htbp]
         $$
+        \pssetarena
         \tree[levelsep=8ex,thistreesep=3cm]{\TR{\intersem{N_0 N_1 \ldots N_p :o}:T [!A\multimap o]}}
-                {   \tree[levelsep=8ex]{\TR{\Sigma^\dagger:T^0[!A^0\multimap !B_0^0\otimes \ldots \otimes !B_p^0 ]}}
+                {   \tree{\TR{\Sigma^\dagger:T^0[!A^0\multimap !B_0^0\otimes \ldots \otimes !B_p^0 ]}}
                         {
-                            \tree[levelsep=8ex,thistreesep=3cm]{\TR{\Sigma:T^{00}[!A^{00}\multimap B_0^{00}\times \ldots \times B_p^{00}]}}
+                            \tree[thistreesep=3cm]{\TR{\Sigma:T^{00}[!A^{00}\multimap B_0^{00}\times \ldots \times B_p^{00}]}}
                             {
-                                \tree[levelsep=8ex]{\TR{\intersem{N_0}:T^{000}[!A^{000}\multimap B_0]}}{\Tfan[fansize=10ex]}
+                                \tree{\TR{\intersem{N_0}:T^{000}[!A^{000}\multimap B_0]}}{\Tfan[fansize=10ex]}
                                 \TR{\ldots}
-                                \tree[levelsep=8ex]{\TR{\intersem{N_p}:T^{00p}[!A^{00p}\multimap B_p]}}{\Tfan[fansize=10ex]}
+                                \tree{\TR{\intersem{N_p}:T^{00p}[!A^{00p}\multimap B_p]}}{\Tfan[fansize=10ex]}
                             }
                         }
                     \TR{ ev:T^1[!B_0^1 \otimes \ldots \otimes !B_p^1 \multimap o] }
@@ -2891,15 +2936,16 @@ thus plays of $ev$ do not contain any uncovered move.
        \end{center}
 
         $$
-        \tree[levelsep=6ex,thistreesep=3cm]{\TR{\intersem{x_i N_1 \ldots N_p :o}:T [!A\multimap o]}}
-                {   \tree[levelsep=8ex]{\TR{\Sigma^\dagger:T^0[!A^0\multimap !B_0^0\otimes \ldots \otimes !B_p^0 ]}}
+        \pssetarena
+        \tree[levelsep=8ex,thistreesep=3cm]{\TR{\intersem{x_i N_1 \ldots N_p :o}:T [!A\multimap o]}}
+                {   \tree{\TR{\Sigma^\dagger:T^0[!A^0\multimap !B_0^0\otimes \ldots \otimes !B_p^0 ]}}
                         {
-                            \tree[levelsep=8ex,thistreesep=3cm]{\TR{\Sigma:T^{00}[!A^{00}\multimap B_0^{00}\times \ldots \times B_p^{00}]}}
+                            \tree[thistreesep=3cm]{\TR{\Sigma:T^{00}[!A^{00}\multimap B_0^{00}\times \ldots \times B_p^{00}]}}
                             {
                                 \TR{\pi_i:T^{000}[!A^{000}\multimap B_0]}
-                                \tree[levelsep=8ex]{\TR{\intersem{N_1}:T^{001}[!A^{001}\multimap B_1]}}{\Tfan[fansize=10ex]}
+                                \tree{\TR{\intersem{N_1}:T^{001}[!A^{001}\multimap B_1]}}{\Tfan[fansize=10ex]}
                                 \TR{\ldots}
-                                \tree[levelsep=8ex]{\TR{\intersem{N_p}:T^{00p}[!A^{00p}\multimap B_p]}}{\Tfan[fansize=10ex]}
+                                \tree{\TR{\intersem{N_p}:T^{00p}[!A^{00p}\multimap B_p]}}{\Tfan[fansize=10ex]}
                             }
                         }
                     \TR{ ev:T^1[!B_0^1 \otimes \ldots \otimes !B_p^1 \multimap o] }
@@ -2934,11 +2980,11 @@ $y_i$.
 Take the term $\lambda x . (\lambda f . f x) (\lambda y . y)$.
 %Its computation tree is:
 %$$
-%\tree{\lambda x} {
-%    \pstree[levelsep=4ex]{\TR{@}}
-%    {       \pstree[levelsep=4ex]{\TR{\lambda f}}
+%\pssetcomptree\tree{\lambda x} {
+%    \tree[levelsep=4ex]{@}
+%    {       \tree{\lambda f}
 %                { \tree{f}{  \tree{\lambda}{ \TR{x}  } } }
-%            \pstree[levelsep=4ex]{\TR{\lambda y}}
+%            \tree{\lambda y}
 %                    {\TR{y}}
 %    } }
 %$$
@@ -2978,6 +3024,7 @@ Its $\eta$-long normal form is $\lambda f z . (\lambda g x . f (f x)) (\lambda y
 The computation tree is:
 
 $$
+\pssetcomptree
 \tree{\lambda f z}
 { \tree{@}
     {
@@ -2991,8 +3038,9 @@ $$
 $$
 
 The arena for the type $(o \typear o) \typear o \typear o$ is:
-$$\tree{q^1}
-{
+$$
+\pssetarena
+\tree{q^1} {
     \tree{q^3}
         {  \tree{q^4}
                 {\TR{a^4_1} \TR{\ldots}}
@@ -3011,20 +3059,22 @@ arena (right). The dashed line defines a partial function $\psi$
 from the set of nodes in the computation tree to the set of moves.
 For simplicity, we now omit answers moves when representing arenas.
 $$
-\tree{ \Rnode{root} {\lambda f z}^{[1]} }
+\pssetcomptree
+\pstree{ \TR[name=root]{\lambda f z^{[1]}} }
      {  \tree{@^{[2]}}
         {   \tree{\lambda g x ^{[3]}}
-                { \tree{\Rnode{f}{f^{[6]}}}{  \tree{\Rnode{lmd}\lambda^{[7]}}{ \tree{\Rnode{f2}{f^{[8]}}} {\tree{\Rnode{lmd2}\lambda^{[9]}}{\TR{x^{[10]}}}}}  }
+                { \pstree{\TR[name=f]{f^{[6]}}}{
+                    \pstree{\TR[name=lmd]{\lambda^{[7]}}}{ \pstree{\TR[name=f2]{f^{[8]}}} {\pstree{\TR[name=lmd2]{\lambda^{[9]}}}{\TR{x^{[10]}}}}}  }
                 }
             \tree{\lambda y ^{[4]}}{\TR{y}}
-            \tree{\lambda ^{[5]}}{\TR{\Rnode{z}z}}
+            \tree{\lambda ^{[5]}}{\TR[name=x]{z}}
         }
     }
 \hspace{3cm}
-  \tree[levelsep=12ex]{ \Rnode{q1}q^1 }
-    {   \pstree[levelsep=4ex]{\TR{\Rnode{q3}q^3}}{\TR{\Rnode{q4}q^4}}
-        \TR{\Rnode{q2}q^2}
-        \TR{\Rnode{q5}q^5}
+  \pstree[levelsep=12ex]{ \TR[name=q1]{q^1} }
+    {   \pstree[levelsep=4ex]{\TR[name=q3]{q^3}}{\TR[name=q4]{q^4}}
+        \TR[name=q2]{q^2}
+        \TR[name=q5]{q^5}
     }
 \psset{nodesep=1pt,arrows=->,arcangle=-20,arrowsize=2pt 1,linestyle=dashed,linewidth=0.3pt}
 \ncline{->}{root}{q1} \aput*{:U}{\psi}
@@ -3136,14 +3186,15 @@ Let us detail a little the definition of $\psi^{n,q}_A$.
 \item  If $p\geq 1$ and $n \in N_{\lambda}$ with $n$ labelled $\lambda \overline{\xi} = \lambda \xi_1 \ldots \xi_p$ then the sub-computation tree rooted at $n$ and the
  arena $A$ have the following forms (value-leaves and answer
  moves are not represented for simplicity):
-    $$ \tree{ \Rnode{r}\lambda \overline{\xi}  ^{[n]}}
+    $$ \pssetcomptree
+        \pstree{ \TR[name=r]{\lambda \overline{\xi}^{[n]}}}
         {
             \tree[levelsep=6ex]{\alpha}
             {   \TR{\ldots} \TR{\ldots} \TR{\ldots}
             }
         }
     \hspace{3cm}
-    \tree{ \Rnode{q0}q }
+    \pssetarena\pstree{ \TR[name=q0]q }
         {
             \tree[linestyle=dotted]{q^1}{\TR{} \TR{} }
             \tree[linestyle=dotted]{q^2}{\TR{} \TR{} }
@@ -3168,17 +3219,17 @@ Let us detail a little the definition of $\psi^{n,q}_A$.
 with children nodes $\lambda \overline{\eta}_1$, \ldots,
 $\lambda \overline{\eta}_p$. The computation tree $\tau(M)$
 rooted at $n$ and the arena $A$ have the following forms:
-    $$\tree{\Rnode{r}{x^{[n]}}}
+    $$\pssetcomptree\tree{\TR[name=r]{x^{[n]}}}
         {   \tree{\TR{\lambda \overline{\eta}_1}}{\vdots} \TR{\ldots}
         \tree{\TR{\lambda \overline{\eta}_p }}{\vdots}
         }
     \hspace{3cm}
-    \tree{ \Rnode{q0}q }
+    \pssetarena\tree{ \TR[name=q0]q }
         {
-\tree[linestyle=dotted]{\Rnode{q1}{q^1}}{\TR{} \TR{} }
-            \tree[linestyle=dotted]{\Rnode{q2}{q^2}}{\TR{} \TR{} }
+\tree[linestyle=dotted]{\TR[name=q1]{q^1}}{\TR{} \TR{} }
+            \pstree[linestyle=dotted]{\TR[name=q2]{q^2}}{\TR{} \TR{} }
             \TR{\ldots}
-            \tree[linestyle=dotted]{\Rnode{qp}{q^p}}{\TR{} \TR{} }
+            \pstree[linestyle=dotted]{\TR[name=qp]{q^p}}{\TR{} \TR{} }
         }
     \psset{nodesep=1pt,arrows=->,arcangle=-20,arrowsize=2pt 1,linestyle=dashed,linewidth=0.3pt}
     \ncline{->}{r}{q0}
@@ -3738,7 +3789,7 @@ are necessarily consecutive in $t$.
     The nodes $p$, $\lambda \overline{x}$, $x_i$ and $\lambda \overline{\eta_i}$
 all appear in $t$. In general, two consecutive nodes $p$ and $\lambda \overline{x}$ in $t_j$ are not necessarily consecutive in $t$. (For in $M$, $t$ can ``jump'' from $p$ to a node outside $M^{(\theroot_j)}$, in which case this node will be absent of $t\filterplus r_j$.)
 In the present case, however, $p$ and $\lambda \overline{x}$ must be consecutive in $t$.
-Indeed, in the thread of $\lambda \overline{\eta_i}$, all the variable nodes are her.\ just.\ by the same initial @-node $\alpha$. Hence 
+Indeed, in the thread of $\lambda \overline{\eta_i}$, all the variable nodes are her.\ just.\ by the same initial @-node $\alpha$. Hence
 $p$ must be in $N^{@\vdash}$ and therefore $\lambda \overline{x}$ is visited using the rule \rulenamet{Var} in $M^{(\theroot_j)}$.
 Since $\alpha$ is in $M^{(\theroot_j)}$ we must have
 
@@ -3795,7 +3846,7 @@ $\travset(M)^\star$ to $\intersem{\Gamma \vdash M : T}$:
     It proceeds by induction on the structure of the computation tree.
     The only non-trivial case is the application: the computation tree
     $\tau(M)$ has the following form:
-        $$ \tree[levelsep=4ex]{\lambda \overline{\xi}}
+        $$ \pssetcomptree\tree[levelsep=4ex]{\lambda \overline{\xi}}
             { \tree[levelsep=4ex]{@}
                 {   \TR{\tau(N_0)} \TR{\ldots} \TR{\tau(N_p)}}}
         $$
@@ -3838,7 +3889,7 @@ Hence we can conclude using the induction hypothesis.
   \item (variable) $M \equiv x_i$. Since $M$ is in $\eta$-long normal form, $x$ must be of ground
       type. The computation tree $\tau(M)$ and the arena $\intersem{\Gamma \rightarrow o}$ are represented below
       (value leaves and answer moves are not represented):
-        $$ \tree[levelsep=6ex]{ \lambda }{\TR{x_i}} \hspace{2cm}
+        $$ \pssetarena\tree[levelsep=6ex]{ \lambda }{\TR{x_i}} \hspace{2cm}
         \tree{ q_0 }
         {   \tree[linestyle=dotted]{q^1}{\TR{} \TR{} }
             \tree[linestyle=dotted]{q^2}{\TR{} \TR{} }
@@ -3870,8 +3921,8 @@ Hence we can conclude using the induction hypothesis.
     $B_0 = (B_1,\ldots,B_p,o)$ and $p\geq 1$.
 
     The tree $\tau(M)$ has the following form:
-    $$ \tree[levelsep=6ex]{\lambda^{[\theroot]}}
-        { \tree[levelsep=6ex]{@}
+    $$ \pssetcomptree\tree[levelsep=6ex]{\lambda^{[\theroot]}}
+        { \tree{@}
             {
             \tree[levelsep=3mm,edge=\noedge]{\TR{{\lambda y_1 \ldots y_p}^{[\theroot_0]}}}{\Tr[ref=t]{\pstribox{\tau(N_0)}}}
             \tree[levelsep=3mm,edge=\noedge]{\TR{[\theroot_1]}}{\Tr[ref=t]{\pstribox{\tau(N_1)}}}
@@ -3910,7 +3961,7 @@ Hence we can conclude using the induction hypothesis.
     \subseteq \varphi_{M}( \travset(M)^\star )$. Suppose $u
     \in \intersem{\Gamma \vdash M : T}$. We give a
     constructive proof that there is a traversal $t$ of $M$
-    such that $\varphi_M(t^\star) = u$ by induction on 
+    such that $\varphi_M(t^\star) = u$ by induction on
     $u$. Let $q_0$ and $q_0'$ be the initial
     question of $C$ and $B_0$ respectively.
 
@@ -4011,12 +4062,12 @@ where $m^3$ denotes $m$'s justifier in $u \filter A,B,C$. (Recall that an intera
 therefore a move may have several justifiers in $u$. In the interaction sequence $u\filter A,B,C$, however, moves have a single justifier at most.)
 \smallskip
 
-Since $t_j^\omega \neq @$ we have  $t^\star = t'^\star \cdot t_j^\omega$ where 
+Since $t_j^\omega \neq @$ we have  $t^\star = t'^\star \cdot t_j^\omega$ where
 $t_j^\omega$ justifiers are as follows (from the definition of the operation $\_^\star$):
 $t_j^\omega$'s main link points to the occurrence in $t'$ that justifies it in $t_j$ and if $t_j^\omega$ belongs to $N_{\sf var}$ then $t_j$ has auxiliary links pointing in $t^\star$ to all the lambda nodes that occur after its main justifier in $\pview{t'}$.
 
 We have $\varphi_{M}(t^\star) =  \varphi_{M}(t'^\star)  \cdot \varphi_{M}(t_j^\omega)$ which is equal to $u' \cdot m$
-by the innermost I.H.\ together with the previous equation. Hence the sequences $\varphi_{M}(t^\star)$ and $u$ 
+by the innermost I.H.\ together with the previous equation. Hence the sequences $\varphi_{M}(t^\star)$ and $u$
 without their associated pointers are identical sequences.
 To show that the equality remains with the pointers, it remains to prove that the pointers of $t_j^\omega$ in $t'^\star$ are the same as those of $m$ in $u$.
 
@@ -4169,13 +4220,14 @@ Hence:
 
 
     \item (application') $M = x_i N_1 \ldots N_p :o$ with $X_i = B_0 = (B_1' \times \ldots \times B_p') \rightarrow o'$. The tree $\tau(M)$ has the following form:
-    $$ \tree[levelsep=6ex]{\lambda^{[\theroot]}}
-        { \tree[levelsep=6ex]{x_i}
+    $$ \pssetcomptree\tree[levelsep=6ex]{\lambda^{[\theroot]}}
+        { \tree{x_i}
             {
-            \tree[levelsep=3mm,edge=\noedge]{\TR{[\theroot_1]}}{\Tr[ref=t]{\pstribox{\tau(N_1)}}}
-             \TR{\ldots}
-            \tree[levelsep=3mm,edge=\noedge]{\TR{[\theroot_p]}}{\Tr[ref=t]{\pstribox{\tau(N_p)}}}
-        }}
+                \tree[levelsep=3mm,edge=\noedge]{\TR{[\theroot_1]}}{\Tr[ref=t]{\pstribox{\tau(N_1)}}}
+                 \TR{\ldots}
+                \tree[levelsep=3mm,edge=\noedge]{\TR{[\theroot_p]}}{\Tr[ref=t]{\pstribox{\tau(N_p)}}}
+            }
+        }
     $$
     The interaction strategy
     $\intersem{\Gamma \vdash M : o}
@@ -4234,27 +4286,26 @@ The justified sequence of nodes $t$ defined hereunder is an example
 of traversal:
 
 \begin{tabular}{lp{6.3cm}}
-$\tree[levelsep=2.5ex,treesep=0.3cm]{ \Rnode{root}{\lambda f z} }
-     {  \tree{@}
+$\pssetcomptree\pstree[levelsep=2.5ex,treesep=0.3cm]{ \TR[name=root]{\lambda f z} }
+     {  \tree[levelsep=4ex]{@}
         {   \tree{\lambda g x}{
-                  \tree{\Rnode{f}{f^{[1]}}}{
-                            \tree{\Rnode{lmd}{\lambda^{[2]}}}
-                            {\TR{x}}
+                  \pstree{\TR[name=f]{f^{[1]}}}{
+                            \pstree{\TR[name=lmd]{\lambda^{[2]}}}
+                                {\TR{x}}
                   }
                 }
-            \tree{ \lambda y }{\TR{y}}
+            \tree{\lambda y }{\TR{y}}
             \tree{\lambda ^{[3]}}{
-                \tree{\Rnode{f2}{f^{[4]}}} {
-                \tree{\Rnode{lmd2}{\lambda^{[5]}}}{\TR{\Rnode{z}{z}}}
+                \pstree{\TR[name=f2]{f^{[4]}}} {
+                \pstree{\TR[name=lmd2]{\lambda^{[5]}}}{\TR[name=z]{z}}
                 }
             }
         }
      }
-\hspace{1cm}
-  \tree[levelsep=8ex,treesep=0.3cm]{ \Rnode{q0}q^0 }
-    {   \pstree[levelsep=4ex]{\TR{\Rnode{q1}{q^1}}}{\TR{\Rnode{q2}{q^2}}}
-        \TR{\Rnode{q3}q^3}
-        \TR{\Rnode{q4}q^4}
+\hspace{1.5cm}
+  \pstree[levelsep=8ex, treesep=0.3cm]{ \TR[name=q0]{q^0} }
+    {   \pstree[levelsep=4ex]{\TR[name=q1]{q^1}} {\TR[name=q2]{q^2}}
+        \TR[name=q3]{q^3}
     }
 \psset{nodesep=1pt,arrows=->,arrowsize=2pt 1,linestyle=dashed,linewidth=0.3pt}
 \ncline{->}{root}{q0} \mput*{\psi_M}

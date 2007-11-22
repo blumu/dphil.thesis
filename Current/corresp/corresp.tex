@@ -597,7 +597,10 @@ A traversal that cannot be extended by any rule is said to be \emph{maximal}.
 
 \emph{\bf Input-variable rules}
 \begin{description}
-\item \rulenamet{InputVar} If $t$ is a traversal with pending node  $x \in N_{\sf var}^{\theroot\vdash}$ then so is $t \cdot n$ for any $\lambda$-node $n$ whose parent occurs in  $\oview{t_{\prefixof x}}$, $n$ pointing to some occurrence of its  parent node in $\oview{t_{\prefixof x}}$.
+\item \rulenamet{InputVar} If $t$ is a traversal where $t^\omega \in N_{\sf var}^{\theroot\vdash} \union N_\lambda^{\theroot\vdash}$ 
+and $x$ is an occurrence of a variable node in $\oview{t}$ then so is $t \cdot n$ for any child $\lambda$-node $n$ of $x$, $n$ pointing to $x$.
+ 
+
 
 \item \rulenamet{InputValue} If $t_1
 \cdot x \cdot t_2$ is a traversal with pending node $x \in
@@ -630,6 +633,7 @@ $\lambda$-calculus.}
 \end{FramedTable}
 
 \begin{remark} \hfill
+\label{rem:traversal_rules}
 \begin{enumerate}
 \item
     The rule \rulenamet{Value} from Table \ref{tab:trav_rules}
@@ -673,24 +677,21 @@ $\lambda$-calculus.}
     these proofs, we will use the above-defined reformulation of
     \rulenamet{Value} in place of its original definition.
 
-    \item The rule \rulenamet{InputValue} is just the counterpart of \rulenamet{InputVar}
-    for value-leaves. The two rules are defined similarly but
-    \rulenamet{InputValue} is more constrained: the visited node
-    is necessarily justified by the pending node. This
-    restriction ensures that the value-leaf visited by the rule
-    respects the well-bracketing condition.
+    \item For the rule \rulenamet{InputValue}, the last node in the traversal before application of the rule must necessarily belong to $N_{\sf var} \union L_\lambda$. Indeed, since the pending node $x$ is a variable node, the traversal before application of the rule must necessarily be of the form
+$$\Pstr[0.5cm]{\ldots \cdot x \cdot  (l){\lambda \overline{\eta}_1}\ldots (v-l){v^1_{\lambda \overline{\eta}_1}}
+(l2){\lambda \overline{\eta}_2}\ldots (v2-l2){v^2_{\lambda \overline{\eta}_2}}
+\ldots (lk){\lambda \overline{\eta}_k}\ldots (vk-lk){v^k_{\lambda \overline{\eta}_k}}
+}$$ for some nodes $\lambda \overline{\eta}_k$ and values $v^k \in \mathcal{D}$ for $k\geq 0$.
+Thus the last occurrence is in $N_{\sf var}$ if $k=0$ and in $L_\lambda$ if $k\geq1$.
 
-    \item For the rules \rulenamet{InputValue} and \rulenamet{InputVar}, since $x$ is the pending node, the traversal
-    must be of the form
-    \begin{quote}
-    [\rulenamet{InputValue}] If $t_1 \cdot x \cdot t_2$ is a
-traversal where $x \in N_{\sf var}^{\theroot\vdash}$ and either
-$t_2 = \epsilon$ or $t_2 = \Pstr{(l){\lambda \overline{\eta}}
-\ldots (v-l){v_{\lambda \overline{\eta}}} }$ then so is
-\Pstr[0.5cm]{t_1 \cdot (x){x} \cdot t_2 \cdot (xv-x,38:v){v'_x}
-} for all $v' \in \mathcal{D}$.
+    Furthermore, the pending node appears necessarily in the O-view.
 
-    \end{quote}
+    These two observations indicate that the rule \rulenamet{InputValue} is just a version of \rulenamet{InputVar} 
+    specialized for value-leaves. Their definitions are almost identical, 
+except that \rulenamet{InputValue} constrains the visited node
+    to be justified by the pending node (which necessarily occurs in the O-view) whereas \rulenamet{InputVar} 
+    allows the node to be justified by \emph{any} variable node occurring in the O-view.
+    This further restriction ensures that the visited value-leaf does not violate the well-bracketing condition.
 \end{enumerate}
 \end{remark}
 \bigskip
@@ -735,7 +736,8 @@ traversal. We do a case analysis on the node preceding $\lambda
     $$
 
     \item If it is a variable node $y$, then
-    the node $\lambda \overline{x}$ was necessarily added to the traversal $t_{\leq y}$ using the \rulenamet{Var} rule (see proposition \ref{prop:pviewtrav_is_path}(i)).
+    the node $\lambda \overline{x}$ was necessarily added to the traversal $t_{\leq y}$ using the \rulenamet{Var} rule.
+    (Indeed, if it was visited using \rulenamet{InputVar} then $\lambda \overline{x}$ would be hereditarily justified by the root. But this is not possible since $x_i$, bound by $\lambda \overline{x}$, is not an input-variable.)
     Therefore $y$ is substituted by the term $\kappa(\lambda \overline{x})$ during the evaluation of the term.
 
     Consequently, during reduction, the variable $x$ will be substituted by the subterm represented by
@@ -758,12 +760,10 @@ Our notions of computation tree and traversal differ slightly from \cite{OngLics
     are used to model computation of tree structures. Here we don't need this restriction (as long as constants are uninterpreted - so we can regard them as free variables).
 
 
-    \item In our setting, we have to deal with \emph{free} variables.
-    To model free variables we need the traversal rules \rulenamet{InputValue}, \rulenamet{InputVar}
-    as well as the copy-cat answer rules. Whereas in \cite{OngLics2006}, the rule called \rulenamet{Sig} suffices to model the first-order constants necessary to construct tree structures.
+    \item In \cite{OngLics2006}, the rule ``\rulenamet{Sig}'' suffices to model the first-order constants used as constructors for tree structures. In our setting, however, we have to deal with \emph{free variables}.
+        In order to model them, we had to introduce the traversal rules \rulenamet{InputValue}, \rulenamet{InputVar}. 
 
-    \item In our setting, the introduction of value-leaves
-    is necessary in order to model free variables as well as interpreted constants. (We will use them to model the constants of \pcf\ and \ialgol).
+    \item In our setting, we need to introduce the notion of value-leaves in order to give a model of interpreted constants. (We will use them to model the constants of \pcf\ and \ialgol).
     \end{itemize}
 \end{remark}
 
@@ -862,12 +862,12 @@ parameters depending on the result of the evaluation of its first
 parameter.)
 
 Based on these observation, we can define a prototype for constant
-traversal rules based on the definition of the rules
+traversal rules inspired by the definition of the rules
 \rulenamet{InputValue} and \rulenamet{InputVar}:
 \begin{definition}[Constant traversal rule]
     \label{def:constant_traversal} A \defname{constant traversal} has
     one of the following two forms:
-        $$\rulename{\Sigma\mbox{-Value}}\ \rulef{t = t_1\cdot \alpha \cdot t_2 \in \travset(M) \quad ?(t)^\omega = \alpha \quad P(t)}
+        $$\rulename{\Sigma\mbox{-Value}}\ \rulef{t = t_1\cdot \alpha \cdot t_2 \in \travset(M) \quad \alpha \in N_\Sigma \union N^{N_\Sigma\vdash}_{\sf var} \quad ?(t)^\omega = \alpha \quad P(t)}
           {
             \stackrel{\rule{0pt}{3pt} }{
                 \Pstr[8pt]{ t' = t_1\cdot (alpha){\alpha} \cdot t_2 \cdot (v-alpha,35){v(t)} \in {\travset(M)}}
@@ -875,25 +875,23 @@ traversal rules based on the definition of the rules
            }
            $$
     or
-    $$\rulename{\Sigma}/\rulename{\Sigma\mbox{-Var}}\ \rulef{t \in \travset(M) \quad ?(t)^\omega = \alpha \quad P(t)}
+    $$\rulename{\Sigma}/\rulename{\Sigma\mbox{-Var}}\ \rulef{t \in \travset(M) \quad t^\omega\in N_\Sigma \union N^{N_\Sigma\vdash}\union L_\lambda \quad P(t)}
       { \stackrel{  \rule{0pt}{3pt} }{\Pstr[5pt]{ t \cdot {n(t)} \in {\travset(M)}}}
        }$$
         where:
         \begin{compactitem}
-          \item $\alpha$ is a constant node or a variable node her.\ just.\ by some constant node ($\alpha \in N_\Sigma \union N^{N_\Sigma\vdash}_{\sf var}$);
           \item $P(t)$ is a predicate expressing some condition on $t$;
-          \item $v(t)$ is a value-leaf of the constant node $c$ that is determined by the traversal $t$;
-          \item $n(t)$ is a lambda-node determined by $t$, and its link, also determined by $t$, points to some occurrence of its parent node in $\oview{t_{\prefixof \alpha}}$.
+          \item $v(t)$ is a value-leaf of the node $\alpha$ that is determined by the traversal $t$;
+          \item $n(t)$ is a lambda-node determined by $t$, and its link, also determined by $t$, points to some occurrence of its parent node in $\oview{t}$.
         \end{compactitem}
-    Clearly, such rules preserve well-bracketing, alternation and
-    visibility.
+    Clearly, such rules preserve well-bracketing, alternation and visibility.
 \end{definition}
 
 \begin{remark}
 The extra power of the constant rules over the input-variable rules
 \rulenamet{InputValue} and \rulenamet{InputVar} lies in their
-ability to restrict the set of possible nodes to visit depending on
-the shape of the traversal $t$ (predicate $P(t)$).
+ability to base their choice of the next node to visit on 
+the shape of the traversal $t$.
 \end{remark}
 
 From now on, to make our argument as general as possible, we
@@ -976,11 +974,8 @@ traversal rules. This proof can be easily adapted to take into
 account the constant rules and the presence of value-leaves in the
 traversal.
 \begin{proof}
-The proof of (i), (ii) and (iii) is done simultaneously by induction on the traversal rules. We consider the rules \rulenamet{Var} and \rulenamet{Lam} only.
-
-Rule \rulenamet{Var}: we just give a partial proof of (i). See proposition 6 from \cite{OngHoMchecking2006} for the details of (i), (ii) and (iii). We have to show that in the second case of the \rulenamet{Var} rule, where $p$ is a variable node $y$, the node $\lambda \overline{x}$ has necessarily been added to the traversal $t_{\leq y}$ using the \rulenamet{Var} rule. This is immediate since if the rule \rulenamet{InputVar} was used to produce $t_{<y} \cdot y \cdot \lambda \overline{x}$ this would imply that $\lambda \overline{x}$ is hereditarily justified by the root which in turn implies that $x_i$ is an input-variable which contradicts \rulenamet{Var}'s hypothesis.
-
-Rule \rulenamet{Lam}: we need to show that $n$'s binder occurs only once in the P-view at that point. By the induction hypothesis (iii) we have that $\pview{t \cdot \lambda \overline{\xi}}$ is a path in the computation tree from the root to $\lambda \overline{\xi}$. But $n$'s binder occurs only once in this path, therefore the traversal $t \cdot \lambda \overline{\xi} \cdot n$ is well-defined and satisfies P-visibility. Thus (i) and (ii) are verified. Furthermore $n$ is a child of $\lambda \overline{\xi}$ therefore (iii) also holds.
+The proof of (i), (ii) and (iii) is done simultaneously by induction on the traversal rules. We consider the rule \rulenamet{Lam} only:
+We need to show that $n$'s binder occurs only once in the P-view at that point. By the induction hypothesis (iii) we have that $\pview{t \cdot \lambda \overline{\xi}}$ is a path in the computation tree from the root to $\lambda \overline{\xi}$. But $n$'s binder occurs only once in this path, therefore the traversal $t \cdot \lambda \overline{\xi} \cdot n$ is well-defined and satisfies P-visibility. Thus (i) and (ii) are verified. Furthermore $n$ is a child of $\lambda \overline{\xi}$ therefore (iii) also holds.
 \end{proof}
 
 %In particular to prove that the copy-cat rules are well-defined, one needs to ensure that
@@ -1041,54 +1036,13 @@ Clearly (b) follows immediately from (a) due to the way the O-view is computed. 
  \rulenamet{Value$^{\Sigma\mapsto\lambda}$}and \rulenamet{Value$^{@\mapsto\lambda}$}: $t$'s last node is not in $N_\lambda\union L_{\sf var} \union L_\Sigma \union L_@$ therefore we do not need to show (a).
 For the remaining rules:
 \begin{compactitem}
+    \item[\rulenamet{InputVar}]  Take $t = t' \cdot n$ where $n$ points in $\oview{t'}$.
+            Since $n$ points in the $\oview{t'}$, by the I.H., it must belong to the same thread
+            as all the nodes in $\oview{t'}$ and in particular to the thread of $t'^\omega$. Therefore both (i) and (ii) hold.
+
     \item[\rulenamet{InputValue}] Take \Pstr[0.4cm]{t =
         t_1 \cdot (x){x} \cdot t_2 \cdot (xv-x,38:v){v_x} } for some
-        $v \in \mathcal{D}$.
-
-        \begin{compactitem}
-        \item  If $t_2$ is empty then \Pstr[0.4cm]{t = t_1 \cdot (x){x}
-        \cdot (xv-x,38:v){v_x} } so the last two nodes in $t$ are
-        $x$ and $v_x$.
-
-        Since $x$ justifies $v_x$, they are both in the same thread.
-
-        \item If $t_2$ is not empty then by well-bracketing it is
-        necessarily of the form \Pstr[0.4cm]{t_2 = (l){\lambda
-        \overline{\xi}}  \ldots (x-l,38:v){v_{\lambda
-        \overline{\xi}}}}.
-
-            By the induction hypothesis  $x$ and $\lambda \overline{\xi}$ are in the same thread. Thus since $v_x$
-                is justified by $x$ and $v_{\lambda \overline{\xi}}$ is
-                justified by $\lambda  \overline{\xi}$, the leaves $v_x$ and $v_{\lambda \overline{\xi}}$ must
-                be in the same thread.
-        \end{compactitem}
-
-    \item[\rulenamet{InputVar}]  Take $t =
-    t' \cdot n$ where $n$ points in $\oview{t_{\prefixof x}}$ where $x$ is the pending node
-    in $t'$.
-
-        \begin{compactitem}
-        \item  Suppose that $x$ is not the last occurrence in $t'$, then
-        \Pstr[0.4cm]{t = \ldots (y){y} \ldots x \cdot (l){\lambda
-        \overline{\xi}}  \ldots (vl-l,38:v){v_{\lambda
-        \overline{\xi}}} \cdot (n){n} } where $y$ is a variable node occurring in $\oview{t_{\prefixof x}}$
-        (and $x$ and $y$ are possibly the same occurrence).
-
-            $n$ is in the same thread as its justifier $y$ which
-            by the induction hypothesis, is in the same thread as all the nodes
-            in the O-view $\oview{t_{\prefixof \lambda
-            \overline{\xi}}}$, and in particular in the thread of $\lambda
-            \overline{\xi}$. Since $\lambda
-            \overline{\xi}$ justifies $v_{\lambda
-            \overline{\xi}}$, this is the same thread as the thread of $v_{\lambda
-            \overline{\xi}}$.
-
-        \item Suppose that $x$ is the last occurrence in $t'$, then
-        \Pstr[0.4cm]{t = \ldots (y){y} \ldots x \cdot (n){n} } where $y$ is a variable node occurring in $\oview{t_{\prefixof x}}$ (and $x$ and $y$ are possibly the same occurrence).
-
-            Again since $n$ points in the O-view $\oview{t_{\prefixof x}}$, it must belong to the same thread
-            as all the nodes in $\oview{t_{\prefixof x}}$ and in particular to the thread of $x$.
-        \end{compactitem}
+        $v \in \mathcal{D}$. By remark \ref{rem:traversal_rules}, $x$ must occur in the O-view $\oview{t}$ hence again both (i) and (ii) hold.
 
     \item[\rulenamet{Value$^{\lambda\mapsto@}$}]
       Take \Pstr[0.7cm]{t = t' \cdot (app){@} \cdot
@@ -1117,24 +1071,6 @@ For the remaining rules:
     \qed
 \end{compactitem}
 \bigskip
-
-\begin{remark}
-\label{rem:inputvar} In the rule \rulenamet{InputVar}, the visited node $n$ is necessarily in $N_\lambda^{\theroot\vdash}$. Indeed since $x$ is in $N^{\theroot\vdash}$, by
-the previous lemma all the nodes and leaves in
-$\oview{t_1 \cdot x}$ must be in the same thread as $x$ and thus are all hereditarily justified by $r$. Thus since $n$ points in $\oview{t_1 \cdot x}$ it must also be hereditarily justified by $r$.
-\end{remark}
-\begin{remark}
-\label{rem:inputvar_bis}
-It is easy to check from the definition of traversals that the pending node always occur in the O-view. Consequently, from the previous remark, we observe that the rule:
-\begin{quote}
-\rulenamet{InputVar} If $t$ is a traversal with pending node  $x \in N_{\sf var}^{\theroot\vdash}$ then so is $t \cdot n$ for any $\lambda$-node $n$ whose parent occurs in  $\oview{t_{\prefixof x}}$, $n$ pointing to some occurrence of its  parent node in $\oview{t_{\prefixof x}}$.
-\end{quote}
-\noindent can be reformulated equivalently as:
-\begin{quote}
-\rulenamet{InputVar} If $t$ is a traversal with
-$t^\omega \in N_{\sf var}\union L_\lambda$ and $t$ contains some unmatched node $y$ in $N_{\sf var}^{\theroot\vdash}$ appearing in $\oview{t}$ then so is $t \cdot n$ for any child node $n$ of $y$, $n$ pointing to $y$.
-\end{quote}
-\end{remark}
 
 
 \subsubsection{Traversal reduction}
@@ -1621,177 +1557,6 @@ by $r'$ in $\tau(M^{(r')})$. \qed
    appears in $t \filterplus r_0$ for some occurrence $r_0$ in $t$ of a lambda node $r'$ in $N_\lambda$.
    Then $ \oview{t}_M\filterplus r_0 \subseqof \oview{t\filterplus r_0}_{M^{(r')}}$.
 \end{proposition}
-%\proof
-%We show (c) and (d) simultaneously by induction on the last traversal rule used to form $t$. Suppose that $|t|>0$, $t^\omega\in V^{\theroot\vdash}$. The results trivially hold for the rule \rulenamet{Root}.
-%
-%(c) Consider the rules \rulenamet{App}, \rulenamet{Value$^{{\sf var}\mapsto\lambda}$}, \rulenamet{Value$^{\Sigma\mapsto\lambda}$} and
-%\rulenamet{Value$^{@\mapsto\lambda}$}: for these cases,
-%$t^\omega$ is not a variable node and therefore has only one justifier. By Lemma \ref{lem:ifin_tfilterplus_so_does_justifier}, $t^\omega$ appears in
-%$t \filterplus r_0$ if and only if its only justifier does. Thus we can conclude using the I.H.\ on $\jp(t)$.
-%\begin{itemize}
-%    \item[\rulenamet{Lam}] Take  $t = t' \cdot \lambda \overline{\xi} \cdot n$ where $n$ denotes $\lambda \overline{\xi}$'s child.
-%
-%%        Since $n$ is in $N^{\theroot\vdash}$, $n$ cannot be an application node nor a $\Sigma$-node.
-%        Suppose that $n\in N_@ \union N_\Sigma$ then $n$ has no justifier and $\oview{t} = n$ therefore the result holds trivially.
-%
-%        Suppose that $n\in N_{\sf var}$.
-%        If $n$ is a free variable node then its justifier is $r$ - the first node of $t$ - thus $\oview{t} = r \cdot n$ and (c) holds trivially. If $n$ is a bound variable node and $r_0$ occurs after $x$'s binder in $t$ then (c) holds trivially.
-%
-%        Suppose $n$ is a bound variable node and $r_0$ occurs before $x$'s binder.
-%        If $n$ does not appear in $t \filterplus r_0$ then necessarily its binder does not either.
-%        If $n$ appears in $t \filterplus r_0$ then by P-visibility, $x$'s main justifier (its binder) must occur in the P-view, and since it occurs after $r_0$, by Lemma \ref{lem:pview_trav_filtering} it must appear in $t \filterplus r_0$. Therefore we can conclude using the I.H.\ on $\jp(t)$.
-%\end{itemize}
-%\smallskip
-%
-%Let us consider the remaining rules: if $t^\omega = r_0$ then the result trivially holds. Otherwise, suppose that $t^\omega \in V^{\theroot\vdash}$. It suffices to show that $t^\omega$ appears in $t \filterplus r_0$ if and only if $t^{\omega^2}$ does, the I.H.\ then permits us to conclude.
-%\begin{itemize}
-%\item[\rulenamet{InputValue}] Take \Pstr[0.4cm]{t =
-%    t_1 \cdot (x){x} \cdot t_2 \cdot (xv-x,38:v){v_x} } for some
-%    $v \in \mathcal{D}$.
-%
-%    \begin{compactitem}
-%    \item  If $t_2$ is empty then \Pstr[0.4cm]{t = t_1 \cdot (x){x}
-%    \cdot (xv-x,38:v){v_x} } so the last two nodes in $t$ are
-%    $x$ and $v_x$.
-%
-%        Since $x$ justifies $v_x$ we clearly have
-%        $v_x \in t \filterplus r_0 \iff x \in t \filterplus r_0$.
-%
-%    \item If $t_2$ is not empty then by well-bracketing it is
-%    necessarily of the form \Pstr[0.4cm]{t_2 = (l){\lambda
-%    \overline{\xi}}  \ldots (x-l,38:v){v_{\lambda
-%    \overline{\xi}}}}.
-%
-%        Since $v_x$ is in $V^{\theroot\vdash}$, by Lemma \ref{lem:trav_oview_single_threaded} so is $v_{\lambda \overline{\xi}}$ and in turn so is its parent node $\lambda
-%        \overline{\xi}$. Thus by the induction hypothesis.
-%        $\lambda \overline{\xi} \in t \filterplus r_0 \iff x \in t \filterplus r_0$.
-%        Moreover since $x$ justifies $v_x$ and $\lambda
-%        \overline{\xi}$ justifies $v_{\lambda
-%        \overline{\xi}}$  we have   $x \in t \filterplus r_0 \iff v_x \in t \filterplus r_0$
-%        and $\lambda \overline{\xi} \in t \filterplus r_0 \iff v_{\lambda
-%        \overline{\xi}} \in t \filterplus r_0$.
-%    \end{compactitem}
-%
-%    \item[\rulenamet{InputVar}]  Take $t =
-%    t' \cdot n$ where $n$ points in $\oview{t_{\prefixof x}}$ where $x$ is the pending node
-%    in $t'$.
-%
-%    \begin{compactitem}
-%    \item  Suppose that $x$ is not the last occurrence in $t'$, then
-%    \Pstr[0.4cm]{t = \ldots (y){y} \ldots x \cdot (l){\lambda
-%    \overline{\xi}}  \ldots (vl-l,38:v){v_{\lambda
-%    \overline{\xi}}} \cdot (n){n} } where $y$ is a variable node occurring in $\oview{t_{\prefixof x}}$
-%    (and $x$ and $y$ are possibly the same occurrence).
-%
-%        Since $n$ is not the occurrence $r_0$, it appears in $t \filterplus r_0$ if and only if its only justifier $y$ does. But since $y$ occurs in $\oview{t_{\prefixof \lambda \overline{\xi}}}$ using the I.H.\ (d) on $t_{\prefixof \lambda \overline{\xi}}$ tells us that $y$ appears in $t \filterplus r_0$ if and only if $\lambda \overline{\xi}$ does, which in turn happens if and only if        $v_{\lambda \overline{\xi}}$ does.
-%
-%
-%    \item Suppose that $x$ is the last occurrence in $t'$, then
-%    \Pstr[0.4cm]{t = \ldots (y){y} \ldots x \cdot (n){n} } where $y$ is a variable node occurring in $\oview{t_{\prefixof x}}$ (and $x$ and $y$ are possibly the same occurrence).
-%
-%      Again $n$ appears in $t \filterplus r_0$ if and only if its justifier $y$ does. Moreover since $y$ occurs in $\oview{t_{\prefixof x}}$ by the induction hypothesis, $y$ appears in  $t \filterplus r_0$ if and only if $x$ does.
-%
-%    \end{compactitem}
-%
-%    \item[\rulenamet{Value$^{\lambda\mapsto@}$}]
-%      Take \Pstr[0.7cm]{t = t' \cdot (app){@} \cdot
-%    (lz-app,60){\lambda \overline{z}} \ldots
-%    (lzv-lz,60:v){v}_{\lambda \overline{z}} \cdot
-%    (appv-app,45:v){v}_@}.
-%    This case does not happen since $t$'s last node is in $V_@$
-%    which contradicts the hypothesis that $t^\omega$ is in $V^{\theroot\vdash}$.
-%
-%     \item[\rulenamet{Value$^{\lambda\mapsto{\sf var}}$}] Take \Pstr[0.7cm]{t = t' \cdot (y){y} \cdot
-%    (lmd){\lambda \overline{\xi}} \ldots
-%    (lmdv-lmd,30:v){v}_{\lambda \overline{\xi}}  \cdot
-%    (vy-y,50:v){v}_y } for some variable $y$ in $N_{\sf var}^{@\vdash}$.
-%
-%       By Lemma \ref{lem:trav_oview_single_threaded}, the last two nodes in $t$ do not belong to $N_{\sf var}^{\theroot\vdash}$.
-%           But by assumption $t$'s last node is in $V^{\theroot\vdash}$ therefore this case does not happen.
-%
-%    \item[\rulenamet{Var}]
-%    Take \Pstr[0.6cm]{ t = t' \cdot (p){p} \cdot (lx){\lambda
-%        \overline{x}} \ldots (x-lx,30:i){x_i}  \cdot
-%        (letai-p,40:i){\lambda \overline{\eta_i}} } for some
-%        variable $x_i$ in $N_{\sf var}^{@\vdash}$.
-%
-%        By Lemma \ref{lem:trav_oview_single_threaded}, the last two nodes in $t$ are both not in $N_{\sf var}^{\theroot\vdash}$.
-%            But by assumption $t$'s last node is in $V^{\theroot\vdash}$ therefore this rules cannot be used.
-%
-%    \item[\rulenamet{$\Sigma$}/\rulenamet{$\Sigma$-var}]
-%    The proof is similar to the case \rulenamet{Var}.
-%    \item[\rulenamet{$\Sigma$-Value}]
-%    The proof is similar to the case
-%    \rulenamet{Value$^{\lambda\mapsto@}$}.
-%    \end{itemize}
-%    \bigskip
-%
-%\noindent    (old d) We do a case analysis on the type of $t^\omega$:
-%    \begin{itemize}
-%    \item $t =  t' \cdot r_0$. We have $t \filterplus r_0 = r_0$ and  $\oview{t}_M \filterplus r_0 = r_0 = \oview{t \filterplus r_0}_{M^{(r')}}$.
-%
-%    \item $t = t' \cdot n$ with $n \in N_\lambda \union L_{\sf var} \union
-%    L_\Sigma \union L_@$ where $n$ is not the occurrence $r_0$.
-%
-%    Since $n$ appears in $t\filterplus r_0$, its only justifier (which is in $\oview{t'}$ by O-visibility) must also appear in $t\filterplus r_0$.  By Lemma \ref{lem:trav_oview_single_threaded}, $t'^\omega$ is in $V^{(r')}$ and by (c), it appears in $t \filterplus r_0$. Hence we can apply the I.H.\ on $t'$ which gives us  $\oview{t' \filterplus  r_0}_{M^{(r')}} = \alpha \cdot \oview{t'}_M \filterplus  r_0$
-%    where $\alpha = r_0$ if $r_0$ occurs in $\oview{t}_M$
-%    and $\alpha =\epsilon$ otherwise.
-%    Thus:
-%        \begin{align*}
-%        \alpha \cdot \oview{t}_M \filterplus r_0
-%    &= \alpha \cdot \oview{t' \cdot n}_M \filterplus r_0 & (\mbox{definition of } t)\\
-%            &= \alpha \cdot \oview{t'}_M \filterplus r_0 \cdot n  & \parbox[t]{7cm}{(\raggedleft O-view in $M$, $n$'s justifier appears in $\oview{t'}\filterplus r_0$ by the previous remark)} \\
-%            &= \oview{t' \filterplus  r_0 }_{M^{(r')}} \cdot n            & (\mbox{induction hypothesis}) \\
-%            &=  \oview{t' \filterplus  r_0 \cdot n}_{M^{(r')}} & \parbox[t]{7cm}{\raggedleft (O-view in $M^{(r')}$:
-%             $n$ is indeed a node of $\tau(M^{(r')})$ by Lemma \ref{lem:instarfilter_imp_insubtree})} \\
-%            &=  \oview{(t' \cdot n ) \filterplus  r_0  }_{M^{(r')}}           & (\mbox{$n$ occurs in $t\filterplus r_0$}) \\
-%            &= \oview{t \filterplus  r_0  }_{M^{(r')}}
-%     & (\mbox{definition of } t).
-%        \end{align*}
-%
-%    \item $\Pstr{ t =  t' \cdot (m){m} \cdot u \cdot (lmd-m,30){n} }$
-%    where $n \in N_{\sf var} \union N_\Sigma \union N_@ \union L_\lambda$. We necessarily have
-%    $m\in N_\lambda \union L_{\sf var} \union L_\Sigma \union L_@$.
-%
-%
-%
-%By Lemma \ref{lem:trav_oview_single_threaded} the nodes in the O-view are all in the same thread as $n$ therefore $m$ is in $V^{(r')}$.
-%
-%        \begin{itemize}
-%        \item Suppose that $r_0$ occurs before $m$ in $t$.
-%
-%            By (c) all the nodes and leaves occurring after $r_0$ in the O-view appear in
-%            $t \filterplus r_0$, in particular since $m$ is in the O-view $\oview{t}$ and $r_0$ occurs before $m$, $m$ must appear in $t \filterplus r_0$ and we can apply the I.H.\ on $t' \cdot m$ which gives us $\oview{(t'\cdot m) \filterplus  r_0}_{M^{(r')}} = \alpha \cdot \oview{t' \cdot m}_M \filterplus  r_0$   where $\alpha = r_0$ if $r_0$ occurs in $\oview{t}_M$ and $\alpha =\epsilon$ otherwise.
-%            Hence:
-%            \begin{align*}
-%            \alpha\cdot\oview{t}_M \filterplus r_0
-%            &= \alpha\cdot\oview{\Pstr{t' \cdot (m){m} \cdot u \cdot (n-m,40){n}}}_M \filterplus r_0
-%                    & (\mbox{definition of } t)\\
-%            &= \alpha\cdot(\pstr{\oview{t' \cdot \nd(m){m}}_M  \cdot \nd(lmd-m,60){n}}) \filterplus r_0
-%                    & (\mbox{O-view in $M$ }) \\
-%            &= \alpha\cdot\pstr[0.4cm]{ \oview{t' \cdot \nd(m){m}}_M \filterplus r_0  \cdot  \nd(lmd-m,30){n} }
-%                    & (\mbox{$n$ appears in $t \filterplus r_0$}) \\
-%            &= \pstr[0.4cm]{ \oview{(t' \cdot \nd(m){m} )\filterplus r_0}_{M^{(r')}} \cdot \nd(lmd-m,25){n} }
-%                    & \mbox{(induction hypothesis)} \\
-%            &= \pstr[0.4cm]{ \oview{t'\filterplus r_0 \cdot \nd(m){m}}_{M^{(r')} } \cdot \nd(lmd-m,25){n} }
-%                    & \mbox{($m$ appears in $t \filterplus r_0$)} \\
-%            &= \oview{ \Pstr[0.4cm]{t' \filterplus r_0 \cdot (m){m} \cdot {(u \filterplus r_0)} \cdot (lmd-m,30){n}}}_{M^{(r')}}
-%                    & \parbox[t]{5cm}{\raggedleft(O-view in $M^{(r')}$, nodes in $m\cdot (u \filterplus r_0) \cdot n$ are all in $V^{(r')}$)} \\
-%            &= \oview{ (\Pstr{t' \cdot (m){m} \cdot u \cdot (lmd-m,35){n}}) \filterplus r_0 }_{M^{(r')}}
-%                    & \mbox{($m$ and $n$ both appear in } t \filterplus r_0) \\
-%            &= \oview{ t \filterplus r_0 }_{M^{(r')}}
-%                    & \mbox{(definition of $t$).}
-%          \end{align*}
-%
-%        \item Suppose that $r_0$ occurs after $m$ in $t$.
-%        Let $j_1$, \ldots $j_k$ be the auxiliary justifiers of $m$. By Lemma \ref{lem:ifin_tfilterplus_so_does_justifier} and \ref{lem:pview_trav_filtering}, for some $i \in \{1..k\}$, $j_i = r_0$ and for all $i'\geq i$, $j_{i'}$ appears in $t\filterplus r_0$.
-%
-%        Thus $j_i = r_0$ is the main justifier of $n$ in $t\filterplus r_0$ and therefore $\oview{t\filterplus r_0} = j_i \cdot n = r_0  \cdot n$.
-%        We then have $r_0 \cdot (\oview{t}\filterplus r_0) = r_0 \cdot (\oview{t'} \cdot m \cdot n) \filterplus r_0 =  r_0 \cdot n = \oview{t\filterplus r_0}$.
-%        \end{itemize}
-%    \end{itemize}
-%
-%\qed
 
 This result is the counterpart of another known result in game semantics from the seminal paper \cite{hylandong_pcf}:
 \begin{proposition}[P-view projection in game semantics]{\cite[Prop.4.3]{hylandong_pcf}}
@@ -2238,7 +2003,6 @@ We have now proved all the Lemmas and Propositions that we need to show the foll
     \item \rulenamet{Value$^{{\sf var}\mapsto\lambda}$} Take \Pstr[0.5cm]{t = t' \cdot (lmd){\lambda
     \overline{\xi}} \cdot (x){x}  \ldots  (xv-x,50:v){v}_x  \cdot
     (lmdv-lmd,30:v){v}_{\lambda \overline{\xi}} }.
-
         Since $v_{\lambda \overline{\xi}}$ is in $t
         \filterplus r_0$, so must be $\lambda \overline{\xi}$, and
         therefore by applying Lemma \ref{lem:pview_trav_filtering}
@@ -2250,13 +2014,10 @@ We have now proved all the Lemmas and Propositions that we need to show the foll
    \item \rulenamet{InputValue} Take \Pstr[0.4cm]{t =
     t_1 \cdot (x){x} \cdot t_2 \cdot (xv-x,38:v){v_x} } for some
     $v \in \mathcal{D}$ where $x$ is the pending node in $t_1 \cdot x \cdot t_2$ and $x \in N_{\sf var}^{\theroot\vdash}$.
+    Since $v_x$ appears in $t\filterplus r_0$, so does $x$. Hence by Lemma \ref{lem:filterplus_pendingnode}, $x$ is also the pending node in $(t_1 \cdot x \cdot t_2)\filterplus r_0$. Furthermore since $M^{(r')}$ is a subterm of $M$, $x$ is necessarily an input-variable node in $\tau(M^{(r')})$. Hence we can conclude using the I.H.\ and the rule \rulenamet{InputValue}.
 
-    Since $v_x$ appears in $t\filterplus r_0$, so does $x$ hence by Lemma \ref{lem:filterplus_pendingnode}, $x$ is also the pending node in $(t_1 \cdot x \cdot t_2)\filterplus r_0$. Furthermore since $M^{(r')}$ is a subterm of $M$, $x$ is necessarily an input-variable node in $\tau(M^{(r')})$. Hence we can conclude using the I.H.\ and the rule \rulenamet{InputValue}.
 
-
-    \item \rulenamet{InputVar} We use the alternative definition of the rule from Remark \ref{rem:inputvar_bis}:
-    Take $t =  t' \cdot n$ where $n \in N_{\sf var}\union L_\lambda$ points to an occurrence of its parent node $y \in N_{\sf var}^{\theroot\vdash}$ in $\oview{t}$.
-
+    \item \rulenamet{InputVar}  Take $t =  t' \cdot n$ where $n \in N_{\sf var}\union L_\lambda$ points to an occurrence of its parent node $y \in N_{\sf var}^{\theroot\vdash}$ in $\oview{t}$.
     By Lemma \ref{lem:ifin_tfilterplus_so_does_justifier}, $y$ must also appear in $t\filterplus r_0$,
     therefore $y$ also occurs in $\oview{t\filterplus r_0} \subseqof \oview{t}\filterplus r_0$.
     Hence we can conclude using the rule \rulenamet{InputVar} in $M^{(r')}$.
@@ -2267,7 +2028,6 @@ We have now proved all the Lemmas and Propositions that we need to show the foll
         \overline{x}} \ldots (x-lx,30:i){x_i}  \cdot
         (letai-p,40:i){\lambda \overline{\eta_i}} } for some
         variable $x_i$ in $N_{\sf var}^{@\vdash}$.
-
     If $\lambda \overline{\eta_i}$ is the occurrence $r_0$ then
     the traversal $t\filterplus r_0 = r_0$ can be formed using
     the rule \rulenamet{Root}.

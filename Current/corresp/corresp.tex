@@ -32,8 +32,8 @@ Fortunately, the reduction operation preserves the good properties
 of traversals. This is guaranteed by the facts that the P-view of
 the reduction of a traversal is equal to the reduction of the P-view
 of the traversal, and the O-view of a traversal is the same as the
-O-view of its reduction (Proposition \ref{prop:oview_trav_filtering}).
-\vspace{8pt}
+O-view of its reduction (Proposition
+\ref{prop:oview_trav_projection}). \vspace{8pt}
 
 \emph{Related works}: Traversals of a computation tree provide a way
 to perform \emph{local computation} of $\beta$-reductions as opposed
@@ -73,7 +73,8 @@ higher-order uninterpreted constants \footnote{A constant $f$ is
   does not contain any rule of the form $f \dots \rightarrow e$. $f$
   can be regarded as a data constructor.}
 
-For the rest of the section we fix a simply-typed term $\Gamma \vdash M :T$.
+For the rest of the section we fix a simply-typed term-in-context
+$\Gamma \vdash M :T$.
 
 \subsection{$\eta$-long normal form}
 
@@ -414,13 +415,15 @@ one of the following forms:
 
 
 We say that an inner node $n$ in of a justified sequence of nodes is
-\defname{matched} by the value-leaf $v_n$ if there is an occurrence of $v_n$ for some value $v$ in the
+\defname{answered}\footnote{This terminology is deliberately suggestive of the correspondence with game-semantics.} by the value-leaf $v_n$ if there is an occurrence of $v_n$ for some value $v$ in the
 sequence that points to $n$, otherwise we say that $n$ is
-\defname{unmatched}. The last unmatched node is called the
+\defname{unanswered}. The last unanswered node is called the
 \defname{pending node}.  A justified sequence of nodes is
 \defname{well-bracketed} if each value-leaf occurring in it is justified by the pending node at that point.
 
-For any justified sequence of nodes and leaves $t$ we write $?(t)$ to denote the subsequence of $t$ consisting only of unmatched nodes. Formally:
+For any justified sequence of nodes and leaves $t$ we write $?(t)$
+to denote the subsequence of $t$ consisting only of unanswered
+nodes. Formally:
 \begin{align*}
   ?(\Pstr[0.4cm]{u_1 \cdot (n){n} \cdot u_2 \cdot (nv-n){v_n} }  ) &= ?(u_1 \cdot n \cdot u_2) \setminus \{ n \}
         & \mbox{for some value $v\in\mathcal{D}$} \\
@@ -449,23 +452,33 @@ We say that a node $n_0$ of a justified sequence is \defname{hereditarily justif
 We write $t^\omega$ to denote the last occurrence of $t$ and $\ip(t)$ for the immediate prefix of $t$ obtained by removing $t$'s last occurrence. We write $\jp(t)$ for the sequence $t_{\prefixof j}$ where $j$ is the justifier of $t^\omega$ in $t$.
 \smallskip
 
-\subsubsection{Filtering}
+\subsubsection{Projection}
 
-We define two different filtering operation on justified sequences of nodes.
+We define two different projection operation on justified sequences
+of nodes.
 
-Let $A$ be a subset of $V$, the set of nodes and leaves of $\tau(M)$, and $t$ be a justified sequence of nodes then we write $t\filter A$ for the subsequence of $t$ consisting of nodes in $A$.
-This operation can cause a node $n$ to lose its pointer. In that case we reassign the target of the pointer to be the last node
-in $t_{\prefixof n}\filter A$ that hereditarily justifies $n$ ({\it i.e.}\ this node can be found by following the pointers from $n$ until we reach a node that appear in $A$). If there is no such node then $n$ just loses its pointer.
+Let $A$ be a subset of $V$, the set of nodes and leaves of
+$\tau(M)$, and $t$ be  a justified sequence of nodes then we write
+$t\filter A$ for the subsequence of $t$ consisting of nodes in $A$.
+This operation can cause a node $n$ to lose its pointer. In that
+case we reassign the target of the pointer to be the last node in
+$t_{\prefixof n}\filter A$ that hereditarily justifies $n$ ({\it
+i.e.}\ this node can be found by following the pointers from $n$
+until we reach a node that appear in $A$). If there is no such node
+then $n$ just loses its pointer.
 
 
-\begin{definition}[Hereditary filtering]
-Let $t$ be a justified sequence of nodes of $\travset(M)$ and
-$n$ be some occurrence in $t$. We define the justified sequence $t \filter n$ as the subsequence of $t$ consisting of nodes hereditarily justified by $n$ in $t$.
+\begin{definition}[Hereditary projection]
+Let $t$ be a justified sequence of nodes of $\travset(M)$ and $n$ be
+some occurrence in $t$. We define the justified sequence $t \filter
+n$ as  the subsequence of $t$ consisting of nodes hereditarily
+justified by $n$ in $t$.
 \end{definition}
 
 \begin{lemma}
-\label{lem:filtercontinous}
-The filtering function $\_ \filter n$ defined on the cpo of justified sequences ordered by the prefix ordering is continuous.
+\label{lem:projection_continuous} The projection function $\_
+\filter n$ defined on the cpo of justified sequences ordered by the
+prefix ordering is continuous.
 \end{lemma}
 \begin{proof}
 Clearly $\_ \filter n$ is monotonous.
@@ -979,7 +992,7 @@ We need to show that $n$'s binder occurs only once in the P-view at that point. 
 \end{proof}
 
 %In particular to prove that the copy-cat rules are well-defined, one needs to ensure that
-%if the last two unmatched nodes are $y$ and $\lambda \overline{\xi}$ in that order, for some non input-variable node $y$ then necessary
+%if the last two unanswered nodes are $y$ and $\lambda \overline{\xi}$ in that order, for some non input-variable node $y$ then necessary
 %      $y$ and $\lambda \overline{\xi}$ are consecutive nodes in the traversal.
 %    This is because in a traversal, a non input-variable $y$ is always followed by a lambda node and whenever this lambda node is answered
 %    there is only one way to extend the traversal : by using the copy cat rule to answer the $y$ node.
@@ -1137,117 +1150,163 @@ For any traversal $t$ in $\travset(M)$:
 operation -@ and +@ (resp.\ $-\Sigma$ and $+\Sigma$ ). \qed
 
 \begin{remark}
-Sequences of the form $t-@$ (resp.\ $t-\Sigma$) are not, strictly speaking, proper justified sequences of nodes since after removing @-nodes, all the prime $\lambda$-nodes become justified by their parent's parent which are also $\lambda$-nodes! Also these sequences do not respect alternation since two $\lambda$-nodes may become adjacent after removing a @-node.
+Sequences of the form $t-@$ (resp.\ $t-\Sigma$) are not, strictly
+speaking, proper justified sequences of nodes since after removing
+@-nodes, all the prime $\lambda$-nodes become justified by their
+parent's parent which are also $\lambda$-nodes!  Moreover, these
+sequences do not respect alternation since two $\lambda$-nodes may
+become adjacent after removing a @-node.
 \end{remark}
-
-
-\subsubsection{Adding more pointers}
-\label{sec:tstar}
-
-For any traversal $t$ we write $t^+$ to denote the sequence-with-pointers obtained from $t$
-by adding pointers as follows: for every occurrence of a $@$
-or $\Sigma$ node $m$ in $t$ we add a pointer going from $m$ to its
-predecessor in $t$ (which is necessarily an occurrence of its parent
-node). Further, for every variable node $x$ we add auxiliary pointers going to each of the lambda nodes occurring in $\pview{t_{\prefixof x}}$
-after $x$'s binder. These additional justifiers are called the \defname{auxiliary justifiers} of $x$ while its original justifier is called its \defname{main justifier}.
-%The main link is represented by a solid line while auxiliary links are represented by dashed lines, for example:
-%$$\pstr[0.6cm]{ t^+ = \ldots
-%    \nd(l){\lambda \overline{x}}  \ldots
-%    \nd(l1){\lambda \overline{\xi}_1} \ldots
-%    \nd(l2){\lambda \overline{\xi}_2 } \ldots
-%    \nd(n-l,35){n}
-%    \arrow{n}{l1}{30}{}{blue}{dashed}
-%    \arrow{n}{l2}{30}{}{blue}{dashed}
-%} \ .$$
-We introduce the set
-$$\travset(M)^+ = \{ t^+ \ | \  t \in \travset(M) \} \ .$$
-
-For any sequence-with-pointers $u$ we define $u^-$ as the sequence obtained from $u$ by removing the links associated to $@$ and $\Sigma$-nodes
-and where for each occurrence of a variable node, only the ``longest'' link is preserved. (The length of a link being defined as the distance between the source and the target occurrence.)
-
-Clearly the operation $\_^-$ is the inverse of $\_^+$: for any traversal $t$ we have $t= (t^+)^-$. Hence the $\travset(M)$ is isomorphic
-to $\travset(M)^+$.
 \bigskip
 
-
-Since sequences in $\travset(M)^+$ are not, strictly speaking,
-proper justified sequences, the operations that we have defined for
-justified sequences are undefined on $\travset(M)^+$. The notions of P-view and O-view extend naturally to sequences of the form $t^+$. The definition of the P-view does not change. On the other hand, the original definition of the O-view becomes ambiguous since variable nodes can have multiple pointers in $t^+$. To resolve this ambiguity we specify that when reaching a node $n \in N_{\sf var} \union L_\lambda$ during the O-view calculation, it is the main link of $n$ that is followed.
-
-We can also extend the hereditary filtering operation to sequences of nodes with multiple pointers as follows:
-\begin{definition}[Hereditary filtering]
-Let $u$ be a sequence-with-pointers of nodes in $\tau(M)$ and $n$ be some occurrence in $u$. We define $u \filter n$ as the subsequence of $u$ consisting of nodes her.\ just.\ by the occurrence $n$ in $u$.
-This operation can cause variable nodes to lose some of their pointers. If a variable node loses its main pointer in $u\filter n$
-then it is replaced by a link pointing to the occurrence $n$.
-\end{definition}
-%Thus if $n \in N_\lambda$, $t^+ \filter n$ is a valid justified sequence of nodes of the tree $\tau(\kappa(n))$.
-
-Note that since the operation $\_^+$ changes the
-justification pointers, the hereditary justification relation
-in a traversal $t$ is different from the hereditary justification relation in $t^+$. To be more precise we have $(t\filter n)^+ \subseqof t^+ \filter n$ but $(t\filter n)^+ \neq t^+ \filter n$.
-
-
-For any traversal $t\in \travset(M)$ and node $n$ occurring in $t$,
-we write $t \filterplus n$ to denote the subsequence of $t$ constituted of nodes hereditarily justified by $n$
-\emph{with respect to the justification pointers of $t^+$}:
-$$t \filterplus n \defeq (t^+ \filter n)^- \ .$$
-We also extend this definition to any subsequence of $t$: if $s$ is a
-subsequence of $t$ then $s \filterplus n$ denotes the
-sequence of nodes in $s$ that are hereditarily justified by $n$
-\emph{in $t^+$}.
-\bigskip
-
-We write $t^\star$ to denote the sequence obtained from $t^+$ by
+We write $t^\star$ to denote the sequence obtained from $t$ by
 removing all the @-nodes as well as the constant nodes together with
 their associated value-leaves:
-$$ t^\star \defeq t^+ \filter V_\lambda \union V_{\sf var} \ .$$
-Equivalently, $t^\star$ can be defined as $t^+ -@ - \Sigma$.
+$$ t^\star \defeq t -@ - \Sigma \ .$$
 \begin{example} Suppose $f$ is a $\Sigma$-constant.
-If $t = \Pstr[0.4cm]{ (l){\lambda \overline{\xi}} \cdot (at)@ \cdot (lx-at){\lambda x}\cdot (f)f \cdot (l-f){\lambda} \cdot (x-lx,60)x}$ then
+If $t = \Pstr[0.4cm]{ (l){\lambda \overline{\xi}} \cdot (at)@ \cdot
+(lx-at){\lambda x}\cdot (f)f \cdot (l-f){\lambda} \cdot (x-lx,60)x}$
+then
 $$t^\star = \Pstr[0.5cm]{ (l){\lambda \overline{\xi}}
  \cdot (lx-l){\lambda x}\cdot (l-lx){\lambda} \cdot (x-lx)x} \ .$$
 \end{example}
 
- We introduce the set
+We introduce the set
 $$\travset(M)^\star = \{ t^\star \ | \  t \in \travset(M) \} \ .$$
 
 \begin{remark}
-If $M$ is $\beta$-normal and if there are no $\Sigma$-constant then $\tau(M)$ does not contain any @-node
-or $\Sigma$-node therefore all nodes are hereditarily justified by $r$ and we have
-$\travset(M) = \travset(M)^{\filter r} \cong \travset(M)^\star$. Note that the last two sets are isomorphic but not equal since
-sequences in $\travset(M)^\star$ can contain nodes with multiple pointers.
+If $M$ is a $\beta$-normal term and if there are no
+$\Sigma$-constant (as in the simply-typed lambda calculus) then
+$\tau(M)$ does not contain any @-node or $\Sigma$-node therefore all
+nodes are hereditarily justified by $r$ and we have $\travset(M) =
+\travset(M)^{\filter r} = \travset(M)^\star$.
 \end{remark}
 
 
+\subsubsection{Projection with respect to a reference node}
+\label{sec:tstar}
 
-
-
-\smallskip
-
-Clearly we have:
-\begin{equation}
-t \filterplus n = ((t^\star\filter n) +\Sigma+@)^- \quad \mbox{ if } t^\omega \not\in V_@ \union V_\Sigma \ .
-\end{equation}
-On sequences of the form $t^+$ the filtering operation $\_ \filter (V_@\union V_\Sigma)$ commutes with the hereditary filtering $\_ \filter n$ consequently one can show:
-\begin{equation}
-t^\star \filter n = (t\filterplus n)^\star \label{eqn:starfilter_filterplusstar} \ .
-\end{equation}
-
-
+We define a new projection operation:
+\begin{definition}
+ For any traversal $t\in \travset(M)$ and reference-node $n_0$ occurring in $t$, $t \filterplus n_0$
+is the subsequence of $t$ defined by induction on $t$ as follows:
+\begin{compactitem}
+\item If $n$ is the occurrence $n_0$ then
+$$(t' \cdot n_0) \filterplus n_0 = n_0$$
+\item If $n\in N_\lambda \union L_{\sf var} \union L_\Sigma \union L_@$ and $n\neq n_0$ then
+$$
+(t' \cdot n) \filterplus n_0 = \left\{
+                                  \begin{array}{ll}
+                                    (t'\filterplus n_0) \cdot n, & \hbox{If $n$'s justifier appears in $t'\filterplus n_0$;} \\
+                                    t'\filterplus n_0, & \hbox{otherwise.}
+                                  \end{array}
+                                \right.
+$$
+\item If $n \in N_{\sf var} \union N_\Sigma \union N_@ \union L_\lambda$ then
+$$
+(t' \cdot n) \filterplus n_0 = \left\{
+                                  \begin{array}{ll}
+                                    (t'\filterplus n_0) \cdot n, & \hbox{If $t'^\omega$'s appears in $t'\filterplus n_0$;} \\
+                                    t'\filterplus n_0, & \hbox{otherwise.}
+                                  \end{array}
+                                \right.
+$$
+\end{compactitem}
+\end{definition}
 
 If $n$ is an occurrence of a lambda node $r' \in N_\lambda$ then we
 will call $t \filterplus n$ a \defname{sub-traversal of the
-computation tree $\tau(M)$}. This appellation will be justified by
-Proposition \ref{prop:trav_filtering} stating that $t \filterplus n$
-is a traversal of the sub-computation tree of $\tau(M)$ rooted at
-$r'$.
+computation tree $\tau(M)$}. This appellation is suggestive of the
+forthcoming Proposition \ref{prop:trav_projection} stating that $t
+\filterplus n$ is a traversal of the sub-computation tree of
+$\tau(M)$ rooted at $r'$.
 \bigskip
 
 
+\begin{remark}
+\label{rem:tplus} There is an alternative way to define $t
+\filterplus r_0$: For any traversal $t$ we write $t^+$ to denote the
+sequence-with-pointers obtained from $t$ by adding pointers as
+follows: for every occurrence of a $@$ or $\Sigma$ node $m$ in $t$
+we add a pointer going from $m$ to its predecessor in $t$ (which is
+necessarily an occurrence of its parent node). Further, for every
+variable node $x$ we add auxiliary pointers going to each lambda
+nodes occurring in the P-view at that point after $x$'s binder. %We
+%introduce the set $$\travset(M)^+ = \{ t^+ \ | \  t \in \travset(M)
+%\} \ .$$
+Reciprocally, for any sequence-with-pointers $u$ we define $u^-$ as
+the sequence obtained from $u$ by removing the links associated to
+$@$ and $\Sigma$-nodes and where for each occurrence of a variable
+node, only the ``longest'' link is preserved. (The length of a link
+being defined as the distance between the source and the target
+occurrence.) Clearly the operation $\_^-$ is the inverse of $\_^+$:
+for any traversal $t$ we have $t= (t^+)^-$.
+ %Hence the $\travset(M)$ is
+%isomorphic to $\travset(M)^+$.
+
+%Since sequences of the form $t^+$ are not, strictly speaking, proper
+%justified sequences, the operations that we have defined for
+%justified sequences are undefined on them. The notions of P-view and
+%O-view extend naturally to sequences of the form $t^+$. The
+%definition of the P-view does not change. On the other hand, the
+%original definition of the O-view becomes ambiguous since variable
+%nodes can have multiple pointers in $t^+$. To resolve this ambiguity
+%we specify that when reaching a node $n \in N_{\sf var} \union
+%L_\lambda$ during the O-view calculation, it is the main link of $n$
+%that is followed.
+%
+%We can also extend hereditary projection to sequences of nodes with
+%multiple pointers as follows:
+%\begin{definition}[Hereditary projection]
+%Let $u$ be a sequence-with-pointers of nodes in $\tau(M)$ and $n$ be some occurrence in $u$. We define $u \filter n$ as the subsequence of $u$ consisting of nodes her.\ just.\ by the occurrence $n$ in $u$.
+%This operation can cause variable nodes to lose some of their pointers. If a variable node loses its main pointer in $u\filter n$
+%then it is replaced by a link pointing to the occurrence $n$.
+%\end{definition}
+
+Then the sequence $t \filterplus n$ is precisely the subsequence of
+$t$ constituted of nodes hereditarily justified by $n$ \emph{with
+respect to the justification pointers of $t^+$}:
+$$t \filterplus n = (t^+ \filter n)^- \ .$$
+(Note that since the operation $\_^+$ changes the justification
+pointers, the hereditary justification relation in a traversal $t$
+is different from the hereditary justification relation in $t^+$.
+More precisely we have $(t\filter n)^+ \subseqof t^+ \filter n$ but
+$(t\filter n)^+ \neq t^+ \filter n$.)
+%We also extend this definition to any subsequence of $t$: if $s$ is a
+%subsequence of $t$ then $s \filterplus n$ denotes the
+%sequence of nodes in $s$ that are hereditarily justified by $n$
+%\emph{in $t^+$}.
+End of remark.
+\end{remark}
+\bigskip
+
 \begin{lemma}
-\label{lem:he_filter_root_is_hj_filter_r}
-For any non-empty traversal $t$ we have  $(t^\star\filter V^{\theroot\vdash})^- = t \filter r$
-where $r$ denotes the only occurrence of the root in $t$.
+\label{lem:tstarproj_eq_tprojplusstar} We have
+\begin{equation*}
+t^\star \filter n = (t\filterplus n)^\star \ .
+\end{equation*}
+\end{lemma}
+\proof \notetoself{need to update this proof since the def of
+$t^\star$ has changed.}
+
+If we consider the sequence $t^+$ as defined in the previous remark,
+then one can easily check that $t^\star = (t^+ \filter V_\lambda
+\union V_{\sf var})^-$. Furthermore, on sequences of the form $t^+$
+the projection operation $\_ \filter (V_@\union V_\Sigma)$ commutes
+with the hereditary projection $\_ \filter n$. This gives the
+desired result \qed
+% end of proof
+
+The previous lemma together with Lemma \ref{lem:minus_at_plus_at}
+imply that $t \filterplus n = (t^\star\filter n) +\Sigma+@$ if
+$t^\omega \not\in V_@ \union V_\Sigma$.
+
+
+
+\begin{lemma}
+\label{lem:he_proj_root_is_hj_proj_r} For any non-empty traversal
+$t$ we have  $t^\star\filter V^{\theroot\vdash} = t \filter r$ where
+$r$ denotes the only occurrence of the root in $t$.
 \end{lemma}
 \begin{proof}
 The result follows from the following two observations:
@@ -1260,8 +1319,7 @@ hereditarily \emph{enabled} by the root and therefore appear in $t^\star \filter
 
 
 \begin{lemma}
-\label{lem:ifin_tfilterplus_so_does_justifier}
-Let $t$ be a traversal
+\label{lem:ifin_projplus_so_does_justifier} Let $t$ be a traversal
 and  $r_0$ be an occurrence of a lambda node $r'$ in $t$.
 \begin{compactitem}
   \item Suppose that \Pstr[0.5cm]{t = \ldots (j){j} \ldots (vj-j){v_j}} with $v_j \in L = L_@ \union L_\Sigma \union L_{\sf var} \union L_\lambda$.
@@ -1275,16 +1333,22 @@ and  $r_0$ be an occurrence of a lambda node $r'$ in $t$.
 \end{compactitem}
 \end{lemma}
 \begin{proof}
-By definition $t\filterplus r_0 = (t^+ \filter r_0)^-$, hence
-an occurrence appears in $t\filterplus r_0$ if and only if it
-appears in $t^+ \filter r_0$. We conclude by observing that provided that $t^\omega \neq r_0$, $t^\omega$ appears in $t\filterplus r_0$ if and only if one of its justifiers in $t^+$ appears in $t\filterplus r_0$. (For the third case, by definition of $t^+$, the $j_i$s are precisely the justifiers of $y$ in $t^+$.)
+By remark \ref{rem:tplus} we have $t\filterplus r_0 = (t^+ \filter
+r_0)^-$, hence an occurrence appears in $t\filterplus r_0$ if and
+only if it appears in $t^+ \filter r_0$. We conclude by observing
+that provided that $t^\omega \neq r_0$, $t^\omega$ appears in $t^+
+\filter r_0$ if and only if one of its justifiers in $t^+$ appears
+in $t^+ \filter r_0$. (For the third case, by definition of $t^+$,
+the $j_i$s are precisely the justifiers of $y$ in $t^+$.)
 \end{proof}
-For the third case, we will see later on (Lemma \ref{lem:pview_trav_filtering}) that in fact all the $j_{i'}$ for $i' \geq i$ also appear in $t\filterplus r_0$.
+For the third case, we will see later on (Lemma
+\ref{lem:pview_trav_projection}) that in fact all the $j_{i'}$ for
+$i' \geq i$ also appear in $t\filterplus r_0$.
 \bigskip
 
-Clearly, since traversals are well-bracketed (see Proposition \ref{prop:pviewtrav_is_path}), so are sequences in $\travset(M)^+$. Moreover:
+%Clearly, since traversals are well-bracketed (see Proposition \ref{prop:pviewtrav_is_path}), so are sequences in $\travset(M)^+$. Moreover:
 \begin{lemma}
-\label{lem:filterplus_pendingnode}
+\label{lem:projplus_pendingnode}
  Let $t \in \travset(M)$ and $r_0$ be the occurrence in $t$ of a $\lambda$-node $r'$.
  We have:
   $$?(t\filterplus r_0) =\ ?(t) \filterplus r_0 \ .$$
@@ -1293,18 +1357,21 @@ Clearly, since traversals are well-bracketed (see Proposition \ref{prop:pviewtra
  By definition, the operation $t \filterplus r_0$ removes an occurrence of a value-leaf in $t$
 if and only if it also removes its justifier. \qed
 % end of proof
+\notetoself{With the new definition of $t \filterplus r_0$, this
+proof needs to be reworked...}
 
 
-\subsubsection{Sub-traversal filtering}
+
+\subsubsection{Sub-traversal projection}
 
 For any lambda node $r'$ in $N_\lambda$ we write
 $M^{(r')}$ for the term $\kappa(r')$ and $V^{(r')}$ for the set of nodes and leaves of the sub computation tree $\tau(M^{(r')})$ (thus $V^{(r')} = E^*(\{r'\})$).
 
-\paragraph{P-view filtering}
+\paragraph{P-view projection}
 
 \begin{lemma}
-\label{lem:instarfilter_imp_insubtree} Let $r_0$ be an occurrence in
-$t$ of a lambda-node $r' \in N_\lambda$. If some node $n$ occurs in $t
+\label{lem:inproj_imp_insubtree} Let $r_0$ be an occurrence in $t$
+of a lambda-node $r' \in N_\lambda$. If some node $n$ occurs in $t
 \filterplus r_0$ then $n$ is in $V^{(r')}$.
 \end{lemma}
 \begin{proof}
@@ -1315,8 +1382,8 @@ Justification pointers attached to a node $n$ in $t^+$ can only point to
  at $r'$ and  therefore $n$ must belong to $V^{(r')}$.
 \end{proof}
 
-\begin{lemma}[Filtering of a traversal's P-view]
-\label{lem:pview_trav_filtering}
+\begin{lemma}[P-view Projection for traversals]
+\label{lem:pview_trav_projection}
    Let $t \in \travset(M)$ such that $t^\omega \not\in L_\lambda$.
    Let $r'$ be some lambda node in $N_\lambda$.
 %        \begin{compactitem}
@@ -1334,9 +1401,15 @@ Justification pointers attached to a node $n$ in $t^+$ can only point to
 %        any occurrence $r_0$ of $r'$ in $t$.
 %        \end{compactitem}
 \end{lemma}
-\proof
-Firstly we observe that the equality $\pview{t}^M \filterplus r_0 = r_0\cdot u$
-in (iii) is implied by (ii). Indeed by (ii) all the nodes in $u$ must appear in $t\filterplus r_0$ and furthermore, since $t$'s last move in not a lambda leaf, by Proposition \ref{prop:pviewtrav_is_path}, the P-view $\pview{t_{\prefixof r_0}}^M$ is the path from $r'$ to the root of the computation tree therefore all the nodes preceding $r_0$ are not in $V^{(r')}$ and thus by Lemma \ref{lem:instarfilter_imp_insubtree} they cannot possibly appear in $t \filterplus r_0$.
+\proof Firstly we observe that the equality $\pview{t}^M \filterplus
+r_0 = r_0\cdot u$ in (iii) is implied by (ii). Indeed by (ii) all
+the nodes in $u$ must appear in $t\filterplus r_0$ and furthermore,
+since $t$'s last move in not a lambda leaf, by Proposition
+\ref{prop:pviewtrav_is_path}, the P-view $\pview{t_{\prefixof
+r_0}}^M$ is the path from $r'$ to the root of the computation tree
+therefore all the nodes preceding $r_0$ are not in $V^{(r')}$ and
+thus by Lemma \ref{lem:inproj_imp_insubtree} they cannot possibly
+appear in $t \filterplus r_0$.
 
 We prove the result by induction on the traversal rules. The base cases \rulenamet{Empty} and
 \rulenamet{Root} are trivial. \emph{Step case:} Take a traversal $t
@@ -1359,7 +1432,7 @@ We prove the result by induction on the traversal rules. The base cases \rulenam
     Since $\pview{t} = \pview{t'} \cdot n$, (i) also holds for $t$.
 
     (ii) Let $m$ be $n$'s justifier. By P-visibility, $m$ is in $\pview{t'}$.
-    Suppose that $m$ occurs in $u$ then by the I.H.\ it must appear in $t\filterplus r_0$. Consequently by Lemma \ref{lem:ifin_tfilterplus_so_does_justifier}, so does $n$.
+    Suppose that $m$ occurs in $u$ then by the I.H.\ it must appear in $t\filterplus r_0$. Consequently by Lemma \ref{lem:ifin_projplus_so_does_justifier}, so does $n$.
     Suppose that $m$ occurs before $r_0$. Then $r_0$ is a lambda node occurring in the P-view between $n$ and its justifier, therefore
     by definition of $t^+$, $n$ points to $r_0$ in $t^+$ and therefore by definition of $t\filterplus  r_0$,
     $n$ must appear in $t\filterplus r_0$. Hence (ii) holds for $t$.
@@ -1413,7 +1486,7 @@ We prove the result by induction on the traversal rules. The base cases \rulenam
                 & \mbox{($m$ appears in $t\filterplus r_0$)} \\
             &= \pview{ \Pstr{t' \filterplus r_0 \cdot (m){m} \cdot {(u \filterplus r_0)} \cdot (lmd-m,35){n}}}^{M^{(r')}}
                 & \parbox[t]{6cm}{(P-view in $M^{(r')}$: nodes and leaves in $(u \filterplus r_0) \cdot n$ are all in $V^{(r')}$
-                    by Lemma \ref{lem:instarfilter_imp_insubtree})} \\
+                    by Lemma \ref{lem:inproj_imp_insubtree})} \\
             &= \pview{ (\Pstr{t' \cdot (m){m} \cdot u \cdot (lmd-m,35){n}}) \filterplus r_0 }^{M^{(r')}}
                 & (\mbox{$m$ and $n$ appear in $t\filterplus r_0$}) \\
             &= \pview{ t \filterplus r_0 }^{M^{(r')}}
@@ -1454,17 +1527,25 @@ Then:
 and $t\filterplus r_2$ for some occurrences $r_0$ and $r_1$ of $r'$ then $r_0 = r_1$.
 \end{itemize}
 \end{lemma}
-\proof By induction on $t$. The base case is trivial.
-Induction step:
-(i) The case $n\not\in  N_{\sf var}$ is handled by Lemma \ref{lem:ifin_tfilterplus_so_does_justifier}.
-Suppose that $n$ is a variable node $x$ and $m$ is its binder $\lambda \overline{x}$.
-If $\lambda \overline{x}$ appears in $t\filterplus r_0$ then since $x$ points to $\lambda \overline{x}$, $x$ also appears in $t\filterplus r_0$.
+\proof By induction on $t$. The base case is trivial. Induction
+step: (i) The case $n\not\in  N_{\sf var}$ is handled by Lemma
+\ref{lem:ifin_projplus_so_does_justifier}. Suppose that $n$ is a
+variable node $x$ and $m$ is its binder $\lambda \overline{x}$. If
+$\lambda \overline{x}$ appears in $t\filterplus r_0$ then since $x$
+points to $\lambda \overline{x}$, $x$ also appears in $t\filterplus
+r_0$.
 
-If $x$ appears in $t\filterplus r_0$ then
-$x$ must have at least one other justifier $j$ in $t^+$ appearing in $t\filterplus r_0$. By definition of $t^+$, $j\in \pview{t}$ and $j$ occurs after $m$. Hence we have $m \in \pview{t_{\prefixof j}}$.
-By the I.H.\ (ii.a) on $t_{\prefixof j}$, we have that $r_0$ appears in $\pview{t_{\prefixof j}}$. This P-view is a path to the root hence it can only contain one occurrence of $r'$. Thus by
-Lemma \ref{lem:pview_trav_filtering}, all the nodes in
-$\pview{t_{\prefixof j}}$ occurring after $r_0$ must appear in $t\filterplus r_0$. In particular, $m$ must appear in $t\filterplus r_0$.
+If $x$ appears in $t\filterplus r_0$ then $x$ must have at least one
+other justifier $j$ in $t^+$ appearing in $t\filterplus r_0$. By
+definition of $t^+$, $j\in \pview{t}$ and $j$ occurs after $m$.
+Hence we have $m \in \pview{t_{\prefixof j}}$. By the I.H.\ (ii.a)
+on $t_{\prefixof j}$, we have that $r_0$ appears in
+$\pview{t_{\prefixof j}}$. This P-view is a path to the root hence
+it can only contain one occurrence of $r'$. Thus by Lemma
+\ref{lem:pview_trav_projection}, all the nodes in
+$\pview{t_{\prefixof j}}$ occurring after $r_0$ must appear in
+$t\filterplus r_0$. In particular, $m$ must appear in $t\filterplus
+r_0$.
 
 \noindent (ii) Assume $t^\omega$ appears in $t\filterplus r_0$.
 Suppose $t^\omega$ has no justifier in $t$ then $t^\omega$ is either the root, an @-node or $\Sigma$-node. If it is the root then the result holds trivially. Otherwise, by definition of $t^+$, $t^\omega$
@@ -1482,9 +1563,10 @@ By (i), $r_0$ necessarily occurs after $m$ and $n$ must have at least one other 
 
 
 \begin{lemma}
-\label{lem:thread_filterplus}
-Take a traversal $t$.  Let $r'$ be a node in $N_\lambda$ and $r_0$ an occurrence of $r'$ in $t$.
-Suppose that $t^\omega$ appears in $t\filterplus r_0$ and that the thread of $t^\omega$ is initiated by $\alpha \in N_@ \union N_\Sigma$.
+\label{lem:thread_projplus} Take a traversal $t$.  Let $r'$ be a
+node in $N_\lambda$ and $r_0$ an occurrence of $r'$ in $t$. Suppose
+that $t^\omega$ appears in $t\filterplus r_0$ and that the thread of
+$t^\omega$ is initiated by $\alpha \in N_@ \union N_\Sigma$.
 
 (i) If $r_0$ precedes $\alpha$ in $t$ then all the nodes occurring in the thread appear in $t\filterplus r_0$.
 
@@ -1514,10 +1596,10 @@ $q$ is an free variable in $\tau(M^{(r')})$ and therefore
 it is enabled by $r'$ in $\tau(M^{(r')})$. Hence since $t^\omega$ is her.\ just.\ by $r_0$, it must be hereditarily enabled
 by $r'$ in $\tau(M^{(r')})$. \qed
 
-\paragraph{O-view filtering}
+\paragraph{O-view projection}
 
-\begin{proposition}[Filtering of a traversal's O-view]
-\label{prop:oview_trav_filtering}
+\begin{proposition}[O-view projection for traversals]
+\label{prop:oview_trav_projection}
    Let $t$ be a traversal of $\travset(M)$ such that its last node
    appears in $t \filterplus r_0$ for some occurrence $r_0$ in $t$ of a lambda node $r'$ in $N_\lambda$.
    Then $ \oview{t}_M\filterplus r_0 \subseqof \oview{t\filterplus r_0}_{M^{(r')}}$.
@@ -1530,10 +1612,11 @@ This result is the counterpart of another known result in game semantics from th
   If $s^\omega$ is in $B$ then $\pview{s}^{A\rightarrow B} \filter B \subseqof \pview{s\filter B}^B$.
 \end{proposition}
 The proof is non-trivial. It can be found in the appendix of
-\cite{hylandong_pcf}. In order to avoid redoing a similar proof for our setting,
-we will show the proof of this proposition can be
-reused to give us Proposition \ref{prop:oview_trav_filtering}. The argument used in
-\cite{hylandong_pcf} relies on several properties of a legal position $s$:
+\cite{hylandong_pcf}. In order to avoid redoing a similar proof for
+our setting, we will show the proof of this proposition can be
+reused to give us Proposition \ref{prop:oview_trav_projection}. The
+argument used in \cite{hylandong_pcf} relies on several properties
+of a legal position $s$:
 \begin{itemize}
   \item (w1) Initial question to start: there first move played in $s$ is an initial move and there is no other occurrence of initial moves in the rest of $s$;
   \item(w2) Alternation: P-moves and O-moves alternate in $s$;
@@ -1585,7 +1668,7 @@ Clearly for any justified sequences $t_1$ and $t_2$ we have:
 \end{equation}
 We also have:
 \begin{equation}
- \overline{t} \filterplus r_0 = \overline{t \filterplus r_0} \label{eqn:hatfilter_eq_filterhat}
+ \overline{t} \filterplus r_0 = \overline{t \filterplus r_0} \label{eqn:barprojplus_eq_projplusbar}
 \end{equation}
 
 
@@ -1595,7 +1678,7 @@ $\overline{t}$ is not a proper justified sequence of nodes as
 defined in Def. \ref{dfn:justseqnode}. Nevertheless, it can be
 treated as such since almost all the operations on justified
 sequences defined up to now can be trivially extended to such
-sequences. In particular, the notion of (hereditarily) filtering is
+sequences. In particular, the notion of (hereditary) projection is
 defined identically. We also define notions of O-view and P-view. To
 that end we make use of the ``long O-view'' introduced in
 \cite{Harmer2005}:
@@ -1670,15 +1753,14 @@ notion of P-view and O-view).
 
 Clearly, $n \in t\filterplus r_0 \iff \neg ( n \not\in t\filterplus
 r_0)$ thus property (w6) holds. So does the switching condition
-(w7): suppose that $t = \ldots \cdot m \cdot n$ where $n\in N_{\sf var}
-\union L_\lambda \union N_@ \union N_\Sigma$ and $m \in N_\lambda
-\union L_{\sf var} \union L_\Sigma \union L_@$ then $\pview{t} =
-\ldots \cdot m \cdot n$ therefore by Lemma
-\ref{lem:pview_trav_filtering}, $m$ appears in $t\filterplus r_0$ if
-and only if $n$ does.
-For (w8): using the analogy of the preceding table, since all nodes
-are considered ``non-initial'' in $\overline{t}$, this condition
-becomes:
+(w7): suppose that $t = \ldots \cdot m \cdot n$ where $n\in N_{\sf
+var} \union L_\lambda \union N_@ \union N_\Sigma$ and $m \in
+N_\lambda \union L_{\sf var} \union L_\Sigma \union L_@$ then
+$\pview{t} = \ldots \cdot m \cdot n$ therefore by Lemma
+\ref{lem:pview_trav_projection}, $m$ appears in $t\filterplus r_0$
+if and only if $n$ does. For (w8): using the analogy of the
+preceding table, since all nodes are considered ``non-initial'' in
+$\overline{t}$, this condition becomes:
 \begin{quote}
  (w8) Suppose $m$ justifies $n$ in $\overline{t}$. Then $n \in t\filterplus r_0$ if and only if $m\in t\filterplus r_0$.
 \end{quote}
@@ -1770,7 +1852,8 @@ we do a case analysis on the type of $t^\omega$:
             \pview{\overline{t}} \filterplus r_0
                 &=  \pview{\overline{t'}} \filterplus r_0 \cdot n  & \parbox[t]{8cm}{(\raggedleft P-view for extended justified\\sequences of nodes of $M$)} \\
                 &\subseqof  \pview{\overline{t'} \filterplus  r_0} \cdot n            & (\mbox{induction hypothesis}) \\
-                &=  \pview{\overline{t'} \filterplus  r_0 \cdot n} & \parbox[t]{8cm}{\raggedleft (P-view for extended justified sequences of nodes of $M^{(r')}$: $n$ belongs to $\tau(M^{(r')})$ by Lemma \ref{lem:instarfilter_imp_insubtree})} \\
+                &=  \pview{\overline{t'} \filterplus  r_0 \cdot n} & \parbox[t]{8cm}{\raggedleft (P-view for extended justified sequences of nodes of $M^{(r')}$: $n$ belongs to $\tau(M^{(r')})$
+                by Lemma \ref{lem:inproj_imp_insubtree})} \\
                 &=  \pview{\overline{t' \cdot n} \filterplus  r_0  }   & (\mbox{$n$ occurs in $t\filterplus r_0$}) \\
                 &= \pview{\overline{t} \filterplus  r_0  }     & (\mbox{definition of } t).
             \end{align*}
@@ -1848,31 +1931,33 @@ We are now in a position to prove Proposition
 We have:
 \begin{align*}
   \overline{\oview{t}_M\filterplus r_0}
-        &= \overline{\oview{t}} \filterplus r_0 & \mbox{By Eq.\ \ref{eqn:hatfilter_eq_filterhat}} \\
+        &= \overline{\oview{t}} \filterplus r_0 & \mbox{By Eq.\ \ref{eqn:barprojplus_eq_projplusbar}} \\
         &\subseqof \overline{\longoview{t}} \filterplus r_0 & \mbox{By Eq.\ \ref{eqn:oview_suffix_longoview}} \\
         &= \pview{\overline{t}} \filterplus r_0 & \mbox{By definition (Eq.\ \ref{eqn:def_pview_oview_hat})} \\
         &\subseqof \pview{\overline{t} \filterplus r_0}  & \mbox{By Proposition \ref{prop:analog_pviewprojection}} \\
-        &= \pview{\overline{t \filterplus r_0}}  & \mbox{By Eq.\ \ref{eqn:hatfilter_eq_filterhat}} \\
+        &= \pview{\overline{t \filterplus r_0}}  & \mbox{By Eq.\ \ref{eqn:barprojplus_eq_projplusbar}} \\
         &= \overline{\longoview{t \filterplus r_0}}  & \mbox{By Eq.\ \ref{eqn:def_pview_oview_hat}}
 \end{align*}
-These equations shows that $\overline{\oview{t}_M\filterplus r_0} \subseqof
-\overline{\longoview{t \filterplus r_0}}$ therefore by Lemma
-\ref{eqn:hat_subseq} we have $\oview{t}_M\filterplus r_0 \subseqof
-\longoview{t \filterplus r_0}$. Furthermore, by Eq.\
+These equations shows that $\overline{\oview{t}_M\filterplus r_0}
+\subseqof \overline{\longoview{t \filterplus r_0}}$ therefore by
+Lemma \ref{eqn:hat_subseq} we have $\oview{t}_M\filterplus r_0
+\subseqof \longoview{t \filterplus r_0}$. Furthermore, by Eq.\
 \ref{eqn:oview_suffix_longoview}, $\oview{t \filterplus
 r_0}_{M^{(r')}}$ is a suffix of $\longoview{t \filterplus r_0}$:
 $\longoview{t \filterplus r_0} = w \cdot \oview{t \filterplus
 r_0}_{M^{(r')}}$ for some $w$ so we have $\oview{t}_M\filterplus r_0
-\subseqof w \cdot \oview{t \filterplus r_0}_{M^{(r')}}$. By definition of the filtering operator $\_ \filterplus$, $r_0$ must
+\subseqof w \cdot \oview{t \filterplus r_0}_{M^{(r')}}$. By
+definition of the projection operator $\_ \filterplus$, $r_0$ must
 necessarily occur after the first node of $t \filterplus r_0$ thus
 none of the nodes in $w$ appear in $t\filterplus r_0$. Consequently,
 $\oview{t}_M\filterplus r_0 \subseqof \oview{t \filterplus
 r_0}_{M^{(r')}}$. \qed
 
-\paragraph{Traversal filtering}
-We have now proved all the Lemmas and Propositions that we need to show the following important result:
-\begin{proposition}[Traversal filtering]
-    \label{prop:trav_filtering}
+\paragraph{Traversal projection}
+We have now proved all the lemmas and propositions that we need to
+show the following important result:
+\begin{proposition}[Traversal projection]
+    \label{prop:trav_projection}
     Let $t \in \travset(M)$. For any occurrence $r_0$ in $t$ of some lambda node
     $r'\in N_\lambda$ we have $t\filterplus r_0 \in \travset(M^{(r')})$.
 \end{proposition}
@@ -1889,12 +1974,13 @@ We have now proved all the Lemmas and Propositions that we need to show the foll
         induction hypothesis, $t' \filterplus r_0 \in
         \travset(M^{(r')})$.
 
-        Since $\lambda \overline{\xi}$ is in the P-view $\pview{t}$,
-        by Lemma \ref{lem:pview_trav_filtering} it must occur in
-        $t\filterplus r_0$ and therefore it is the last occurrence
-        in $t'\filterplus r_0$. Thus we can use the rule
-        \rulenamet{Lam} in $\tau(M^{(r')})$ to produce the traversal
-        $u = (t'\filterplus r_0) \cdot n$ of $M^{(r')}$.
+        Since $\lambda \overline{\xi}$ is in the P-view
+        $\pview{t}$, by Lemma \ref{lem:pview_trav_projection} it
+        must occur in $t\filterplus r_0$ and therefore it is the
+        last occurrence in $t'\filterplus r_0$. Thus we can use
+        the rule \rulenamet{Lam} in $\tau(M^{(r')})$ to produce
+        the traversal $u = (t'\filterplus r_0) \cdot n$ of
+        $M^{(r')}$.
 
         We have $t \filterplus r_0 = (t'\filterplus r_0) \cdot n$,
          but in order to state that $u = t \filterplus r_0$
@@ -1911,11 +1997,16 @@ We have now proved all the Lemmas and Propositions that we need to show the foll
         $t \filterplus r_0$ and $m_3 = r_0$ otherwise.
         Let us show that $m_1 = m_3$.
 
-        If $r_0$ occurs before $m_2$ then by Lemma \ref{lem:if_binder_beforeafter_r0}(i), $m_2$ appears in $t \filterplus r_0$ thus
-        $m_2$ appears in $\pview{t'} \filterplus r_0 = \pview{t'\filterplus r_0}$ (by Lemma \ref{lem:pview_trav_filtering}). Hence $m_1 = m_2 = m_3$.
+        If $r_0$ occurs before $m_2$ then by Lemma
+        \ref{lem:if_binder_beforeafter_r0}(i), $m_2$ appears in
+        $t \filterplus r_0$ thus $m_2$ appears in $\pview{t'}
+        \filterplus r_0 = \pview{t'\filterplus r_0}$ (by Lemma
+        \ref{lem:pview_trav_projection}). Hence $m_1 = m_2 =
+        m_3$.
 
-        If $r_0$ occurs after $m_2$ then $m_2$ does not appear in $t\filterplus r_0$ thus $m_3 = r_0$.
-        Furthermore by Lemma \ref{lem:pview_trav_filtering}
+        If $r_0$ occurs after $m_2$ then $m_2$ does not appear
+        in $t\filterplus r_0$ thus $m_3 = r_0$. Furthermore by
+        Lemma \ref{lem:pview_trav_projection}
     $n$'s binder occurs in the path from $r'$ to the root $\theroot$. Thus
     $n$ is a free variable in $\tau(M^{(r')})$ and consequently
     $n$'s justifier in $t'\filterplus r_0$ is precisely $r_0$: $m_1 = r_0$.
@@ -1924,13 +2015,13 @@ We have now proved all the Lemmas and Propositions that we need to show the foll
 
     \item \rulenamet{App} $t = \ldots \cdot \lambda \overline{\xi} \cdot @ \cdot n$.
         Again, since $\lambda \overline{\xi}$ is in the P-view
-        $\pview{t}$, by Lemma \ref{lem:pview_trav_filtering} it must
-        be the last occurrence in $t'\filterplus r_0$. By the
-        induction hypothesis, $t' \filterplus r_0$ is a traversal of
-        $\tau(M^{(r')})$ therefore we can use the rule
-        \rulenamet{App} in $\tau(M^{(r')})$ to produce the traversal
-        $(t'\filterplus r_0) \cdot n = t \filterplus r_0$ of
-        $M^{(r')}$.
+        $\pview{t}$, by Lemma \ref{lem:pview_trav_projection} it
+        must be the last occurrence in $t'\filterplus r_0$. By
+        the induction hypothesis, $t' \filterplus r_0$ is a
+        traversal of $\tau(M^{(r')})$ therefore we can use the
+        rule \rulenamet{App} in $\tau(M^{(r')})$ to produce the
+        traversal $(t'\filterplus r_0) \cdot n = t \filterplus
+        r_0$ of $M^{(r')}$.
 
 
     \item \rulenamet{Value$^{@\mapsto\lambda}$} Take \Pstr[0.5cm]{t = t' \cdot (lmd){\lambda
@@ -1968,24 +2059,32 @@ We have now proved all the Lemmas and Propositions that we need to show the foll
     \item \rulenamet{Value$^{{\sf var}\mapsto\lambda}$} Take \Pstr[0.5cm]{t = t' \cdot (lmd){\lambda
     \overline{\xi}} \cdot (x){x}  \ldots  (xv-x,50:v){v}_x  \cdot
     (lmdv-lmd,30:v){v}_{\lambda \overline{\xi}} }.
-        Since $v_{\lambda \overline{\xi}}$ is in $t
-        \filterplus r_0$, so must be $\lambda \overline{\xi}$, and
-        therefore by applying Lemma \ref{lem:pview_trav_filtering}
-        on $t_{\prefixof x}$, so must be $x$ and $v_x$. Hence we can
-        use the I.H.\ to form the traversal $t
-        \filterplus r_0$ of $M^{(r')}$.
+        Since $v_{\lambda \overline{\xi}}$ is in $t \filterplus
+        r_0$, so must be $\lambda \overline{\xi}$, and therefore
+        by applying Lemma \ref{lem:pview_trav_projection} on
+        $t_{\prefixof x}$, so must be $x$ and $v_x$. Hence we
+        can use the I.H.\ to form the traversal $t \filterplus
+        r_0$ of $M^{(r')}$.
 
 
    \item \rulenamet{InputValue} Take \Pstr[0.4cm]{t =
     t_1 \cdot (x){x} \cdot t_2 \cdot (xv-x,38:v){v_x} } for some
     $v \in \mathcal{D}$ where $x$ is the pending node in $t_1 \cdot x \cdot t_2$ and $x \in N_{\sf var}^{\theroot\vdash}$.
-    Since $v_x$ appears in $t\filterplus r_0$, so does $x$. Hence by Lemma \ref{lem:filterplus_pendingnode}, $x$ is also the pending node in $(t_1 \cdot x \cdot t_2)\filterplus r_0$. Furthermore since $M^{(r')}$ is a subterm of $M$, $x$ is necessarily an input-variable node in $\tau(M^{(r')})$. Hence we can conclude using the I.H.\ and the rule \rulenamet{InputValue}.
 
+    Since $v_x$ appears in $t\filterplus r_0$, so does $x$ hence
+    by Lemma \ref{lem:projplus_pendingnode}, $x$ is also the
+    pending node in $(t_1 \cdot x \cdot t_2)\filterplus r_0$.
+    Furthermore since $M^{(r')}$ is a subterm of $M$, $x$ is
+    necessarily an input-variable node in $\tau(M^{(r')})$.
+    Hence we can conclude using the I.H.\ and the rule
+    \rulenamet{InputValue}.
 
     \item \rulenamet{InputVar}  Take $t =  t' \cdot n$ where $n \in N_{\sf var}\union L_\lambda$ points to an occurrence of its parent node $y \in N_{\sf var}^{\theroot\vdash}$ in $\oview{t}$.
-    By Lemma \ref{lem:ifin_tfilterplus_so_does_justifier}, $y$ must also appear in $t\filterplus r_0$,
-    therefore $y$ also occurs in $\oview{t\filterplus r_0} \subseqof \oview{t}\filterplus r_0$.
-    Hence we can conclude using the rule \rulenamet{InputVar} in $M^{(r')}$.
+    By Lemma \ref{lem:ifin_projplus_so_does_justifier}, $y$ must
+    also appear in $t\filterplus r_0$, therefore $y$ also occurs
+    in $\oview{t\filterplus r_0} \subseqof \oview{t}\filterplus
+    r_0$. Hence we can conclude using the rule
+    \rulenamet{InputVar} in $M^{(r')}$.
 
 
     \item \rulenamet{Var}
@@ -2004,17 +2103,29 @@ We have now proved all the Lemmas and Propositions that we need to show the foll
 
     \begin{compactitem}
     \item Suppose that $r_0$ precedes @ in $t$ then
-    by Lemma \ref{lem:thread_filterplus}(i), the nodes $\lambda \overline{\eta_i}$, $p$, $\lambda \overline{x}$ and $x_i$ as well as @ all appear in $t\filterplus r_0$. Moreover since @ appear in $t\filterplus r_0$, it must be an occurrence of an application node that appear in the subtree rooted at $r'$ thus $@ \in N_{\sf var}^{r'\vdash}$.  Hence we can use the use the rule \rulenamet{Var} in $M^{(r')}$ to form the traversal $t \filterplus r_0$ of $M^{(r')}$.
+    by Lemma \ref{lem:thread_projplus}(i), the nodes $\lambda
+    \overline{\eta_i}$, $p$, $\lambda \overline{x}$ and $x_i$ as
+    well as @ all appear in $t\filterplus r_0$. Moreover since @
+    appear in $t\filterplus r_0$, it must be an occurrence of an
+    application node that appear in the subtree rooted at $r'$
+    thus $@ \in N_{\sf var}^{r'\vdash}$.  Hence we can use the
+    use the rule \rulenamet{Var} in $M^{(r')}$ to form the
+    traversal $t \filterplus r_0$ of $M^{(r')}$.
 
     \item Suppose that @ precedes $r_0$ in $t$ then
-    by Lemma \ref{lem:thread_filterplus}(ii),
-    $p$ is necessarily an input variable node in $\tau(M^{(r')})$.
+    by Lemma \ref{lem:thread_projplus}(ii), $p$ is necessarily
+    an input variable node in $\tau(M^{(r')})$.
 
-    We have $p \in \oview{t} \filterplus r_0 \subseqof \oview{t\filterplus r_0}$ by Proposition
-    \ref{prop:oview_trav_filtering}.
-    Furthermore we can easily check that the last node in $t\filterplus r_0$ is necessarily in $N_{\sf var} \union L_\lambda$ (using alternation and the fact that
-    if an occurrence in $N_@ \union N_\Sigma$ appears in $t\filterplus r_0$ then so does its immediate successor). Hence we can make use of the rule
-    \rulenamet{InputVar} in $M^{(r')}$ (in its alternative form) to produce the traversal $t \filterplus r_0$ of $M^{(r')}$.
+    We have $p \in \oview{t} \filterplus r_0 \subseqof
+    \oview{t\filterplus r_0}$ by Proposition
+    \ref{prop:oview_trav_projection}. Furthermore we can easily
+    check that the last node in $t\filterplus r_0$ is
+    necessarily in $N_{\sf var} \union L_\lambda$ (using
+    alternation and the fact that if an occurrence in $N_@
+    \union N_\Sigma$ appears in $t\filterplus r_0$ then so does
+    its immediate successor). Hence we can make use of the rule
+    \rulenamet{InputVar} in $M^{(r')}$ (in its alternative form)
+    to produce the traversal $t \filterplus r_0$ of $M^{(r')}$.
     \end{compactitem}
 
     \item \rulenamet{Value$^{\lambda\mapsto{\sf var}}$} Take \Pstr[0.7cm]{t = t' \cdot (y){y} \cdot
@@ -2034,11 +2145,11 @@ We have now proved all the Lemmas and Propositions that we need to show the foll
   \end{itemize}
 % end of proof
 
-\subsubsection{O-view and P-view filtering with respect to the root}
+\subsubsection{O-view and P-view projection with respect to the root}
 \begin{lemma}
-\label{lem:trav_filtering}
-Let $t$ be a non-empty traversal of $M$ and $r$ denote the only occurrence of $\tau(M)$'s
-root in $t$. If $t^\omega$ appears in $t\filter r$ then:
+\label{lem:trav_projection} Let $t$ be a non-empty traversal of $M$
+and $r$ denote the only occurrence of $\tau(M)$'s root in $t$. If
+$t^\omega$ appears in $t\filter r$ then:
 $$\oview{t\filter r} = \oview{t}\filter r = \oview{t} \ .$$
 \end{lemma}
 \begin{proof}
@@ -2051,8 +2162,10 @@ Let $t$ be a non-empty traversal of $M$ and $r$ denote the only occurrence of $\
 root in $t$. If $t^\omega$ appears in $t\filter r$ then:
 $$ \pview{t} \filter r \subseqof \pview{t \filter r} \  .$$
 \end{lemma}
-\proof
-We just sketch the proof. We proceeds exactly in the same way as for the proof of Proposition \ref{prop:oview_trav_filtering}.  Again we establish an analogy between traversals and plays of game semantics:
+\proof We just sketch the proof. We proceeds exactly in the same way
+as for the proof of Proposition \ref{prop:oview_trav_projection}.
+Again we establish an analogy between traversals and plays of game
+semantics:
 \begin{center}
 \begin{tabular}{r|p{5cm}}
 {Traversal} & {Game semantics} \\
@@ -2072,9 +2185,9 @@ Clearly the conditions (w1) to (w8) hold. Hence we can reuse Proposition 4.3 for
 \bigskip
 
 The downside of the previous result is that it does not give us an
-equality. In the particular case where interpreted constants are well
-behaved, however, if we consider the subsequence consisting of
-unmatched nodes, then we obtain a nice equality:
+equality. In the particular case where interpreted constants are
+well behaved, however, if we consider the subsequence consisting of
+unanswered nodes, then we obtain a nice equality:
 \begin{lemma}
 \label{lem:betanf_wellbehavedconst_trav_pview_red} Suppose that $M$
 is in $\beta$-normal form and all the $\Sigma$-constants are
@@ -2099,10 +2212,10 @@ N^{\theroot \vdash}$. Let us do a case analysis on $t$'s last node:
     ?(\pview{t}) \filter  r
         &= ?(\pview{t' \cdot n}) \filter  r & (\mbox{definition of } t)\\
         &= ?(\pview{t'} \cdot n) \filter  r  & (\mbox{P-view computation}) \\
-        &= ?(\pview{t'}) \filter  r  \cdot (n \filter  r)            & (\mbox{def. of filtering $\filter$}) \\
+        &= ?(\pview{t'}) \filter  r  \cdot (n \filter  r)            & (\mbox{def. of projection $\filter$}) \\
         &= \pview{?(t') \filter r} \cdot (n \filter  r)           & (\mbox{induction hypothesis}) \\
         &= \pview{?(t') \filter  r \cdot (n \filter  r) } & (\mbox{P-view computation, $n \in N_{\sf var} \union N_{\Sigma}$}) \\
-        &= \pview{(?(t') \cdot n ) \filter  r }           & (\mbox{def. of filtering $\filter$}) \\
+        &= \pview{(?(t') \cdot n ) \filter  r }           & (\mbox{def. of projection $\filter$}) \\
         &= \pview{?(t) \filter  r  }
  & (\mbox{definition of } t).
     \end{align*}
@@ -2165,7 +2278,7 @@ Otherwise $t =  t' \cdot \rnode{m}{m} \cdot u \cdot
         &= \pview{ (?(t') \cdot \rnode{m}{m} \cdot\ ?(u) \cdot \rnode{lmd}{n}) \filter r }
 \link[nodesep=1pt,ncurv=0.7]{35}{lmd}{m}                                                          & (m, n \in N^{\theroot \vdash}) \\
         &= \pview{ ?(t' \cdot \rnode{m}{m} \cdot u \cdot \rnode{lmd}{n}) \filter r }
-\link[nodesep=1pt,ncurv=0.7]{35}{lmd}{m}                                                          & \mbox{($m$ and $n$ are unmatched)} \\
+\link[nodesep=1pt,ncurv=0.7]{35}{lmd}{m}                                                          & \mbox{($m$ and $n$ are unanswered)} \\
         &= \pview{ ?(t) \filter r }                & \mbox{(def. of $t$).} \qed
         \end{align*}
 \end{itemize}
@@ -2410,27 +2523,27 @@ several pointers. More precisely, if the equivalence class $m$ is
 $\{m_1, \ldots, m_l \}$ then $m$ has one pointer for each
 non-initial move $m_i$ in the equivalence class.
 
-\begin{definition}[Filtering] We define several filtering operations
+\begin{definition}[Projection] We define several projection operations
 over justified interaction sequences. Let $s$ be a justified
 sequence of moves on the interaction game $\intersem{T}$.
 \begin{itemize}
 \item  Let $T'$ be a subtree of $T$. We define the
-filtering operator $s\filter T'$ to be the subsequence
-of $s$ consisting of moves $\sim$-equivalent to some move in
-$M_{T'}$. This operation causes some move to ``lose'' some of
-their attached pointers: a given move $m$ with equivalence class
-$\{m_1, \ldots, m_l \}$ may have up to $l$ pointers, but in
-$s\filter T'$, only pointers associated to a $m_i$
-belonging to $\mathcal{M}_{T'}$ are preserved.
+projection $s\filter T'$ to be the subsequence of $s$ consisting
+of moves $\sim$-equivalent to some move in $M_{T'}$. This
+operation causes some move to ``lose'' some of their attached
+pointers: a given move $m$ with equivalence class $\{m_1,
+\ldots, m_l \}$ may have up to $l$ pointers, but in $s\filter
+T'$, only pointers associated to a $m_i$ belonging to
+$\mathcal{M}_{T'}$ are preserved.
 
 Note that since $M_T$ is a set of equivalence classes with
-respect to $\sim$, the filtering operator $\_ \filter T'$
+respect to $\sim$, the projection operator $\_ \filter T'$
 implicitly performs the ``retagging'' of the moves to the
 appropriate components of each game of the interaction game
 $\intersem{T'}$.
 
 \item  For any sub-game $A$ of the standard game $\sem{type(T')}$ we
-define the filtering operator $s\filter A$ to be the
+define the projection operator $s\filter A$ to be the
 subsequence of $s$ consisting of moves from $A$ where at most
 one pointer is kept for each move in the sequence: the one
 corresponding to the class citizen from $A$.
@@ -2449,17 +2562,17 @@ Allowing moves to have multiple pointers complicates slightly the
 presentation here, but this capability is necessary to model
 strategy composition. Indeed, in game semantics after composing
 strategies, the pointers from some moves may change! (See definition
-of $\filter A,C$ in \cite{abramsky:game-semantics-tutorial}.)
-For all the other operations on strategies that we will
-used, however, the pointers will just be preserved:
-Let $s$ be an  interaction sequence on a game
-$\intersem{T}$, $T'$ a subtree of $T$, $A$ be a sub-game of
-$\sem{type(T)}$ and $A'$ be a sub-game of $\sem{type(T')}$ such that $A$ and $A'$ are $\sim$-equivalent,
-we say that $s$'s \defname{justification is preserved from $A$ to $A'$}
-with respect to $\sim$ and we write $A\stackrel{s}\hookrightarrow A'$ if
-whenever an occurrence $m$ is justified by $n$ in $s\filter A$ then $m$ is justified by the same occurrence $n$ in $s \filter A'$. Formally:
+of $\filter A,C$ in \cite{abramsky:game-semantics-tutorial}.) For
+all the other operations on strategies that we will used, however,
+the pointers will just be preserved: Let $s$ be an  interaction
+sequence on a game $\intersem{T}$, $T'$ a subtree of $T$, $A$ be a
+sub-game of $\sem{type(T)}$ and $A'$ be a sub-game of
+$\sem{type(T')}$ such that $A$ and $A'$ are $\sim$-equivalent, we
+say that $s$'s \defname{justification is preserved from $A$ to $A'$}
+with respect to $\sim$ if an occurrence $m$ is justified by $n$ in
+$s\filter A$ if and only if it is justified by the same occurrence
+$n$ in $s \filter A'$. This is formally expressed by the equality:
 \begin{align*}
- A\stackrel{s}\hookrightarrow A' \qquad \mbox{ holds iff } \qquad  &
 s\filter A = s\filter A' \ .
 \end{align*}
 
@@ -2482,8 +2595,8 @@ follows:
     $\intersem{T}$.
 \end{definition}
 
-Revealed strategies can alternatively be represented as by means
-of sets of uncovered positions:
+Revealed strategies can alternatively be represented by means of
+sets of uncovered positions:
 \begin{definition}[Revealed strategies as set of uncovered positions]
 \label{dfn:revealedstrat}
 The set of uncovered positions of a revealed strategy is defined inductively on the
@@ -2498,8 +2611,9 @@ interaction strategy:
 
 \item Tensor product: $$\begin{array}{lcll}
 (\Sigma_1 : \intersem{T_1}) \otimes (\Sigma_2 : \intersem{T_2}) : \intersem{T} &=\{ s \in L_T \ | \  &s \filter T_1 \in \Sigma_1 \zand\ s \filter T_2 \in \Sigma_2 \\
-&& \zand\ A^1\stackrel{s}\hookrightarrow A  \zand\ B^1\stackrel{s}\hookrightarrow B \\
-&& \zand\ C^2\stackrel{s}\hookrightarrow C  \zand\ D^2\stackrel{s}\hookrightarrow D \}
+&& \zand\ s\filter A^1 = s\filter A\ \zand\ s\filter B^1 = s\filter B \\
+&& \zand\ s\filter C^2 = s\filter C\ \zand\ s\filter D^2 =
+s\filter D \}
 \end{array}$$
 where $type(T_1) = A^1\multimap B^1$,
 $type(T_2) = C^2\multimap D^2$
@@ -2509,8 +2623,9 @@ and $type(T) = A\otimes B \multimap C \otimes D$.
 \langle \Sigma_1 : \intersem{T_1}, \Sigma_2 : \intersem{T_2} \rangle : \intersem{T} &= \{ s \in L_T \ | &
    ( (s \filter T_1 \in \Sigma_1 \zand\ s \filter T_2 = \epsilon) \\
 &&  \   \zor ( s \filter T_1 = \epsilon \zand s \filter T_2 \in \Sigma_2)) \\
-&& \zand\ C^1\stackrel{s}\hookrightarrow C \zand\ A^1\stackrel{s}\hookrightarrow A  \\
-&& \zand\ C^2\stackrel{s}\hookrightarrow C \zand\ B^2\stackrel{s}\hookrightarrow B  \}
+&& \zand\ s\filter C^1 = s\filter C\ \zand\ s\filter A^1= s\filter A  \\
+&& \zand\ s\filter C^2 = s\filter C\ \zand\ s\filter B^2 =
+s\filter B  \}
 \end{array}$$
 where $type(T_1) = C^1\multimap A^1$,
 $type(T_2) = C^2\multimap B^2$
@@ -2520,10 +2635,10 @@ and $type(T) = C\multimap A \times B$.
 (\Sigma' : \intersem{T'})^\dagger : \intersem{T} &= \{ s \in L_T \ | \ &
 \mbox {for all occurrence $m$ in $s$ of an initial  }\\
 && \mbox{ $\sem{type(T)}$-move, $(s \filter m) \filter T' \in \Sigma'$} \\
-&& \zand\ type(T')\stackrel{s}\hookrightarrow type(T) \} \ .
+&& \zand\ s\filter type(T') = s\filter type(T) \} \ .
 \end{array}$$
 
-\item Currying: $\Lambda(\Sigma' : \intersem{T'}) : \intersem{T} = \{ s \in L_T \ |  s \filter T' \in \Sigma' \ \zand\ type(T')\stackrel{s}\hookrightarrow type(T) \}$.
+\item Currying: $\Lambda(\Sigma' : \intersem{T'}) : \intersem{T} = \{ s \in L_T \ |  s \filter T' \in \Sigma' \ \zand\ s\filter type(T') = s\filter type(T) \}$.
 
 \item Uncovered composition $(\Sigma_1 : \intersem{T_1})\ ;^U\ (\Sigma_2
 :\intersem{T_2})$ defined on the game $\intersem{T}$ where
@@ -2532,9 +2647,11 @@ $type(T) = A \multimap C$, $type(T_1) = A^1 \multimap B_0 \times
 \multimap C^2$. We first define
 \begin{eqnarray*}
 \Sigma_1 \| \Sigma_2 &= \{ u \in L_T  \ | \ & u \filter T_1 \in \Sigma_1 \mbox{ and } u \filter T_2 \in \Sigma_2 \\
-&& \zand\ C^2\stackrel{u}\hookrightarrow C\ \zand\ (A^1)^-\stackrel{u}\hookrightarrow A^-  \\
+&& \zand\ u\filter C^2 = u\filter C \\
+&& \zand\ \parbox[t]{8cm}{non-initial moves occurring in $u\filter A^1$
+have the same justifier as in $u\filter A$;} \\
 && \zand\ \parbox[t]{8cm}{for any initial $m$ in $A^1$, if $m$ is justified in $u \filter type(T_1)$ by $b\in B_j$,
-itself justified by $c \in C^2$ in $u \filter type(T_2)$ then $m$ justified by $c$ in $u \filter type(T)$ \} }
+itself justified by $c \in C^2$ in $u \filter type(T_2)$ then $m$ justified by $c$ in $u \filter type(T)$. \} }
 \end{eqnarray*}
 where $A^-$ denotes the set of non-initial moves of the game $A$. We can now define composition as:
 $$ \Sigma_1 ;^U \Sigma_2 = \{ cover(u,(0..l)\setminus U) \ | \ u \in \Sigma_1 \| \Sigma_2 \}$$
@@ -3097,7 +3214,7 @@ Thus the pointer-free version of this function is a monoid homomorphism.
 
 
 
-\subsection{Mapping filtered traversals to interaction plays}
+\subsection{Mapping traversals to interaction plays}
 
     Let $I$ be the interaction game of the interaction strategy $\intersem{\Gamma \vdash M : T}$ and
     $M_I$ be the set of equivalence class of moves from $\mathcal{M}_I$.
@@ -3194,18 +3311,19 @@ $q_{g_1}\sim q_y$ and $q_{\lambda g}\sim q_{\lambda x}$.
 \end{example}
 
 
-\begin{lemma}[Filtering lemma for @/$\Sigma$-free traversals]
-\label{lem:varphi_filter} Let $r'\in N_\lambda$, $\Delta \vdash M^{(r')} :
-A$ be the subterm of $\elnf{M}$ rooted at $r'$, $t\in\travset(M)$,
-$r'_0$ be an occurrence of $r'$ in $t$ and $m_0$ be the occurrence
-of the initial $A$-move $\varphi_M(r'_0)$ in $\varphi_M(t^\star)$ then:
+\begin{lemma}[Projection lemma for @/$\Sigma$-free traversals]
+\label{lem:varphi_proj} Let $r'\in N_\lambda$, $\Delta \vdash
+M^{(r')} : A$ be the subterm of $\elnf{M}$ rooted at $r'$,
+$t\in\travset(M)$, $r'_0$ be an occurrence of $r'$ in $t$ and $m_0$
+be the occurrence of the initial $A$-move $\varphi_M(r'_0)$ in
+$\varphi_M(t^\star)$ then:
 $$\begin{array}{rrcl}
 (i)& \varphi_{M^{(r')}}(t^\star \filter r'_0) &=& \varphi_M(t^\star) \filter m_0 \\ \\
 (ii) & \varphi_M(\travset(M)^\star)^- \filter \sem{\Gamma \rightarrow T} &=& \psi_M(\travset(M)^{\filter r})\ .
 \end{array}
 $$
 \end{lemma}
-\proof ($i$) Firstly, by Proposition \ref{prop:trav_filtering},
+\proof ($i$) Firstly, by Proposition \ref{prop:trav_projection},
 $t\filterplus r'_0$ is a traversal of $\travset(M^{(r')})$ therefore
 the sequence $(t\filterplus r'_0)^\star = t^\star \filter r'_0$
 belongs to $\travset(M^{(r')})^\star$ which guarantees that the
@@ -3254,7 +3372,7 @@ T} = \varphi_M(t^\star\filter V^{\theroot\vdash})$. Thus
 $\varphi_M(t^\star)^- \filter \sem{\Gamma \rightarrow T} =
 \varphi_M((t^\star\filter V^{\theroot\vdash})^-)$ which is equal to
 $ \varphi_M(t\filter r)$ by Lemma
-\ref{lem:he_filter_root_is_hj_filter_r}. \qed
+\ref{lem:he_proj_root_is_hj_proj_r}. \qed
 
 
 \subsection{The correspondence theorem for the simply-typed $\lambda$-calculus without interpreted constants}
@@ -3454,9 +3572,9 @@ If $t \filter^+ r_j$ is a traversal of $\tau(M^{(\theroot_j)})$
 and its last node is visited using a rule different from \rulenamet{InputVar} and $\rulename{InputVar^{val}}$
 then $t$ is a traversal of $\tau(M)$.
 \end{lemma}
-\proof
-Let $t_j = t \filter^+ r_j$. Since $\ip(t)$ is a traversal of $M$, by Prop.\ \ref{prop:trav_filtering}
-$\ip(t_j) = \ip(t) \filter^+ r_j$ is a traversal of $\tau(M^{(\theroot_j)})$.
+\proof Let $t_j = t \filter^+ r_j$. Since $\ip(t)$ is a traversal of
+$M$, by Prop.\ \ref{prop:trav_projection} $\ip(t_j) = \ip(t)
+\filter^+ r_j$ is a traversal of $\tau(M^{(\theroot_j)})$.
   We proceed by case analysis on the last rule used to produce the traversal $t_j$ and we show that $t$ is a traversal of $M$:
   \begin{itemize}
     \item \rulenamet{Empty}, \rulenamet{Root}. These cases do not occur since $|t_j| \geq 2$. Indeed, $t_j$ contains at least $t^\omega$ and $r_j$ which are two different occurrences.
@@ -3555,7 +3673,7 @@ $\travset(M)^\star$ to $\intersem{\Gamma \vdash M : T}$:
     \begin{align*}
     \sem{\Gamma \vdash M : T} &= \intersem{\Gamma \vdash M : T} \filter \sem{\Gamma \rightarrow T} & \mbox{(Eq.\ \ref{eqn:int_std_gamsem})} \\
             &= \varphi_M(\travset(M)^\star) \filter \sem{\Gamma \rightarrow T} & \mbox{(by (i))}\\
-            &= \psi_M(\travset(M)^{\filter r}) & \mbox{(lemma \ref{lem:varphi_filter})}
+            &= \psi_M(\travset(M)^{\filter r}) & \mbox{(lemma \ref{lem:varphi_proj})}
     \end{align*}
     therefore we just need to prove $\varphi_M(\travset(M)^\star) = \intersem{\Gamma \vdash M : T}$.
 \end{remark}
@@ -3627,9 +3745,9 @@ Hence we can conclude using the induction hypothesis.
         the prefixes of $ \Pstr{ (lmd)\lambda \cdot (xi){x_i}
         \cdot (vxi-xi){v_{x_i}} \cdot (vlmd-lmd){v_{\lambda}}}$.
         $M$ is in $\beta$-normal therefore $\travset(M)^\star =
-        \travset(M)^+$ and since $\varphi_M(\lambda) =
-        q_0$ and $\varphi_M(x_i) = q^i$, we have:
-        $$ \varphi_M(\travset(M)^\star) = \varphi_M(\travset(M)^+) = \varphi_M(\prefset( \lambda \cdot x_i \cdot v_{x_i} \cdot v_{\lambda}))
+        \travset(M)$ and since $\varphi_M(\lambda) = q_0$ and
+        $\varphi_M(x_i) = q^i$, we have:
+        $$ \varphi_M(\travset(M)^\star) = \varphi_M(\travset(M)) = \varphi_M(\prefset( \lambda \cdot x_i \cdot v_{x_i} \cdot v_{\lambda}))
          = \intersem{M} \ .
         $$
 
@@ -3823,14 +3941,16 @@ Hence:
          &= \varphi_{M}(t^\star) \filter b \filter T^{00j}
             & \mbox{(By Eq.\ \ref{eqn:corresp_phi_t_minu_at_eq_u})} \\
          &= \varphi_{N_j}(t^\star \filter r_j )
-            & \mbox{(By Lemma \ref{lem:varphi_filter}(i)).}
+            & \mbox{(By Lemma \ref{lem:varphi_proj}(i)).}
         \end{align*}
         Since $\varphi_{N_j}$ is a bijection from
         $\travset(N_j)^\star$ to $\varphi_{N_j}(
         \travset(N_j)^\star )$ (Corollary
         \ref{cor:varphi_bij}) this implies
-        $t_j^\star = t^\star \filter r_j$ which is in turn equal to
-         $(t\filterplus r_j)^\star$ by Eq.\ \ref{eqn:starfilter_filterplusstar} from Section
+        $t_j^\star = t^\star \filter r_j$ which is in
+         turn equal to $(t\filterplus r_j)^\star$ by
+         Lemma \ref{lem:tstarproj_eq_tprojplusstar} from
+         Section
         \ref{sec:tstar}. Since $t_j^\omega$ and $t^\omega$ are not in $N_@$ this gives us
         the claim of Equation \ref{equ:claim_tj}.
     \smallskip

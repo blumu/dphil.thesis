@@ -1183,6 +1183,34 @@ nodes are hereditarily justified by $r$ and we have $\travset(M) =
 \end{remark}
 
 
+We extend the notion of P-view to sequences of the form $t^\star$
+(the definition is the same as for traversals). It is easy to check
+that if $t^\omega$ is not in $L_@ \union L_\Sigma$ then the P-view
+of $t^\star$ is obtained from $\pview{t}$ by keeping only the non
+@/$\Sigma$-nodes:
+\begin{equation}
+ \pview{t^\star} = \pview{t} \setminus (V_@ \union V_\Sigma) \label{eqn:pview_tstar}
+\end{equation}
+
+We define a projection operation for sequences of the form $t^\star$
+as follows:
+\begin{definition}
+  Let $t$ be a traversal such that $t^\omega\not\in L_@ \union L_\Sigma$ and $r_0$ be an occurrence of some
+lambda-node $r'$. Then the projection $t^\star \filter V^{(r')}$ is
+defined as the subsequence of $t^\star$ constituted of nodes of
+$V^{(r')}$ only. If a variable node loses its pointer in $t^\star
+\filter V^{(r')}$ then its justifier is reassigned to the only
+occurrence of $r'$ in $\pview{t^\star}$.
+\end{definition}
+Note that this operation is well-defined. Indeed if a variable $x$
+loses its pointer in $t^\star \filter V^{(r')}$ then it means that
+$x$ is free in $M^{(r')}$. But then $r'$ must occur in the path to
+the root $\theroot$ which is precisely $\pview{t_{\prefixof x}}$.
+Thus by Eq. \ref{eqn:pview_tstar}, $r'$ must occur in
+$\pview{{t_{\prefixof x}}^\star}$.
+
+
+
 \subsubsection{Projection with respect to a reference node}
 \label{sec:tstar}
 
@@ -1211,6 +1239,8 @@ $$
                                   \end{array}
                                 \right.
 $$
+where in the first subcase whenever $n$ loses its justifier in
+$t'\filterplus r_0$ it is reassigned to be $r_0$.
 \end{compactitem}
 \end{definition}
 
@@ -1231,9 +1261,7 @@ follows: for every occurrence of a $@$ or $\Sigma$ node $m$ in $t$
 we add a pointer going from $m$ to its predecessor in $t$ (which is
 necessarily an occurrence of its parent node). Further, for every
 variable node $x$ we add auxiliary pointers going to each lambda
-nodes occurring in the P-view at that point after $x$'s binder. %We
-%introduce the set $$\travset(M)^+ = \{ t^+ \ | \  t \in \travset(M)
-%\} \ .$$
+nodes occurring in the P-view at that point after $x$'s binder.
 Reciprocally, for any sequence-with-pointers $u$ we define $u^-$ as
 the sequence obtained from $u$ by removing the links associated to
 $@$ and $\Sigma$-nodes and where for each occurrence of a variable
@@ -1241,27 +1269,6 @@ node, only the ``longest'' link is preserved. (The length of a link
 being defined as the distance between the source and the target
 occurrence.) Clearly the operation $\_^-$ is the inverse of $\_^+$:
 for any traversal $t$ we have $t= (t^+)^-$.
- %Hence the $\travset(M)$ is
-%isomorphic to $\travset(M)^+$.
-
-%Since sequences of the form $t^+$ are not, strictly speaking, proper
-%justified sequences, the operations that we have defined for
-%justified sequences are undefined on them. The notions of P-view and
-%O-view extend naturally to sequences of the form $t^+$. The
-%definition of the P-view does not change. On the other hand, the
-%original definition of the O-view becomes ambiguous since variable
-%nodes can have multiple pointers in $t^+$. To resolve this ambiguity
-%we specify that when reaching a node $n \in N_{\sf var} \union
-%L_\lambda$ during the O-view calculation, it is the main link of $n$
-%that is followed.
-%
-%We can also extend hereditary projection to sequences of nodes with
-%multiple pointers as follows:
-%\begin{definition}[Hereditary projection]
-%Let $u$ be a sequence-with-pointers of nodes in $\tau(M)$ and $n$ be some occurrence in $u$. We define $u \filter n$ as the subsequence of $u$ consisting of nodes her.\ just.\ by the occurrence $n$ in $u$.
-%This operation can cause variable nodes to lose some of their pointers. If a variable node loses its main pointer in $u\filter n$
-%then it is replaced by a link pointing to the occurrence $n$.
-%\end{definition}
 
 Then the sequence $t \filterplus n$ is precisely the subsequence of
 $t$ constituted of nodes hereditarily justified by $n$ \emph{with
@@ -1272,36 +1279,9 @@ pointers, the hereditary justification relation in a traversal $t$
 is different from the hereditary justification relation in $t^+$.
 More precisely we have $(t\filter n)^+ \subseqof t^+ \filter n$ but
 $(t\filter n)^+ \neq t^+ \filter n$.)
-%We also extend this definition to any subsequence of $t$: if $s$ is a
-%subsequence of $t$ then $s \filterplus n$ denotes the
-%sequence of nodes in $s$ that are hereditarily justified by $n$
-%\emph{in $t^+$}.
 End of remark.
 \end{remark}
 \bigskip
-
-\begin{lemma}
-\label{lem:tstarproj_eq_tprojplusstar} We have
-\begin{equation*}
-t^\star \filter n = (t\filterplus n)^\star \ .
-\end{equation*}
-\end{lemma}
-\proof \notetoself{need to update this proof since the def of
-$t^\star$ has changed.}
-
-If we consider the sequence $t^+$ as defined in the previous remark,
-then one can easily check that $t^\star = (t^+ \filter V_\lambda
-\union V_{\sf var})^-$. Furthermore, on sequences of the form $t^+$
-the projection operation $\_ \filter (V_@\union V_\Sigma)$ commutes
-with the hereditary projection $\_ \filter n$. This gives the
-desired result \qed
-% end of proof
-
-The previous lemma together with Lemma \ref{lem:minus_at_plus_at}
-imply that $t \filterplus n = (t^\star\filter n) +\Sigma+@$ if
-$t^\omega \not\in V_@ \union V_\Sigma$.
-
-
 
 \begin{lemma}
 \label{lem:he_proj_root_is_hj_proj_r} For any non-empty traversal
@@ -1329,24 +1309,23 @@ and  $r_0$ be an occurrence of a lambda node $r'$ in $t$.
           and $\lambda \overline{\xi} \neq r_0$.
           Then $\lambda \overline{\xi}$ appears in $t\filterplus r_0$ if and only if $j$ appears in $t\filterplus r_0$.
 
-  \item Suppose that \pstr[0.6cm]{t = \ldots \nd(j0){j_0} \ldots \nd(j1){j_1} \ldots \nd(jk){j_k} \ldots \nd(n-j0,30){y}} where $y\in N_{\sf var}$ and $j_0$, \ldots $j_k$ are the lambda nodes occurring in the $\pview{t}$ (in particular $j_0$ is $y$'s justifier). Then $y$ appears in $t\filterplus r_0$ if and only if for some $i \in \{0..k\}$, $j_i$ appears in $t\filterplus r_0$.
+  \item Suppose that \pstr[0.5cm]{t = \ldots \nd(j0){j_0} \ldots \nd(j1){j_1} \ldots \nd(jk){j_k} \ldots \nd(n-j0,20){y}} where $y\in N_{\sf var}$ and $j_0$, \ldots $j_k$ are the lambda nodes occurring in the $\pview{t}$ (in particular $j_0$ is $y$'s justifier). Then $y$ appears in $t\filterplus r_0$ if and only if for some $i \in \{0..k\}$, $j_i$ appears in $t\filterplus r_0$.
 \end{compactitem}
 \end{lemma}
 \begin{proof}
 By remark \ref{rem:tplus} we have $t\filterplus r_0 = (t^+ \filter
 r_0)^-$, hence an occurrence appears in $t\filterplus r_0$ if and
-only if it appears in $t^+ \filter r_0$. We conclude by observing
-that provided that $t^\omega \neq r_0$, $t^\omega$ appears in $t^+
-\filter r_0$ if and only if one of its justifiers in $t^+$ appears
-in $t^+ \filter r_0$. (For the third case, by definition of $t^+$,
-the $j_i$s are precisely the justifiers of $y$ in $t^+$.)
+only if it is her.\ just.\ by $r_0$ \emph{in $t^+$}. But, provided
+that $t^\omega \neq r_0$, $t^\omega$ is her.\ just.\ by $r_0$
+\emph{in $t^+$} if and only if one of its justifiers in $t^+$ is. In
+particular for the third case, the $j_i$s are precisely (by
+definition) the justifiers of $y$ in $t^+$.
 \end{proof}
 For the third case, we will see later on (Lemma
 \ref{lem:pview_trav_projection}) that in fact all the $j_{i'}$ for
 $i' \geq i$ also appear in $t\filterplus r_0$.
 \bigskip
 
-%Clearly, since traversals are well-bracketed (see Proposition \ref{prop:pviewtrav_is_path}), so are sequences in $\travset(M)^+$. Moreover:
 \begin{lemma}
 \label{lem:projplus_pendingnode}
  Let $t \in \travset(M)$ and $r_0$ be the occurrence in $t$ of a $\lambda$-node $r'$.
@@ -1354,13 +1333,10 @@ $i' \geq i$ also appear in $t\filterplus r_0$.
   $$?(t\filterplus r_0) =\ ?(t) \filterplus r_0 \ .$$
 \end{lemma}
 \proof
- By definition, the operation $t \filterplus r_0$ removes an occurrence of a value-leaf in $t$
-if and only if it also removes its justifier. \qed
+Take a prefix $u$ of $t$ ending with a value-leaf $v_n$ of an occurrence $n$.
+By Lemma \ref{lem:ifin_projplus_so_does_justifier}, the operation $\_ \filterplus r_0$ removes $v_n$ from $t$ if and only if also removes $n$.
+This implies the desired result. \qed
 % end of proof
-\notetoself{With the new definition of $t \filterplus r_0$, this
-proof needs to be reworked...}
-
-
 
 \subsubsection{Sub-traversal projection}
 
@@ -1369,143 +1345,36 @@ $M^{(r')}$ for the term $\kappa(r')$ and $V^{(r')}$ for the set of nodes and lea
 
 \paragraph{P-view projection}
 
-\begin{lemma}
-\label{lem:inproj_imp_insubtree} Let $r_0$ be an occurrence in $t$
-of a lambda-node $r' \in N_\lambda$. If some node $n$ occurs in $t
-\filterplus r_0$ then $n$ is in $V^{(r')}$.
-\end{lemma}
-\begin{proof}
-Justification pointers attached to a node $n$ in $t^+$ can only point to
- occurrences of nodes that lies in the path from $n$ to the root
- in the computation tree. Therefore if $n$ is her.\
- just.\ by $r_0$ in $t^+$ then it must be in the subtree of $\tau(M)$ rooted
- at $r'$ and  therefore $n$ must belong to $V^{(r')}$.
-\end{proof}
-
 \begin{lemma}[P-view Projection for traversals]
 \label{lem:pview_trav_projection}
    Let $t \in \travset(M)$ such that $t^\omega \not\in L_\lambda$.
    Let $r'$ be some lambda node in $N_\lambda$.
-%        \begin{compactitem}
-%        \item[(a)]
         If $t^\omega$ belongs to the subtree of $\tau(M)$ rooted at $r'$ ({\it i.e.}\ $t^\omega \in V^{(r')}$) then there is an occurrence $r_0$ of $r'$ in $t$ such that
         \begin{enumerate}[(i)]
         \item $\pview{t} = \ldots r_0 \cdot u$;
         \item all the nodes in $u$ appear in $t\filterplus r_0$;
-        \item $\pview{t}^M \filterplus r_0 = r_0\cdot u =  \pview{t\filterplus r_0}^{M^{(r')}}$.
+        \item $\pview{t\filterplus r_0}^{M^{(r')}} = r_0\cdot u = \pview{t}^M \filterplus r_0$.
         \end{enumerate}
-
-%        \item[(b)] If $t$'s last occurrence is not in $V^{(r')}$ then
-%        all the occurrences in $\pview{t}$ are not in
-%        $V^{(r')}$ and do not appear in $t\filterplus r_0$ for
-%        any occurrence $r_0$ of $r'$ in $t$.
-%        \end{compactitem}
 \end{lemma}
-\proof Firstly we observe that the equality $\pview{t}^M \filterplus
-r_0 = r_0\cdot u$ in (iii) is implied by (ii). Indeed by (ii) all
-the nodes in $u$ must appear in $t\filterplus r_0$ and furthermore,
-since $t$'s last move in not a lambda leaf, by Proposition
-\ref{prop:pviewtrav_is_path}, the P-view $\pview{t_{\prefixof
-r_0}}^M$ is the path from $r'$ to the root of the computation tree
-therefore all the nodes preceding $r_0$ are not in $V^{(r')}$ and
-thus by Lemma \ref{lem:inproj_imp_insubtree} they cannot possibly
-appear in $t \filterplus r_0$.
 
-We prove the result by induction on the traversal rules. The base cases \rulenamet{Empty} and
-\rulenamet{Root} are trivial. \emph{Step case:} Take a traversal $t
-\in \travset(M)$ such that $|t|>1$. We do a case analysis on the type of the last occurrence in $t$:
-    \begin{compactitem}
-    \item The cases $t = t' \cdot n$ with $n\in L_\lambda$ does not happen since by assumption $n$ is not a
-    lambda leaf.
+\proof (i) Since $t$'s last move in not a lambda leaf, by
+Proposition \ref{prop:pviewtrav_is_path}, the P-view $\pview{t}$
+gives the path to the root $\theroot$ hence since $t^\omega$ belongs
+to the subtree of $\tau(M)$ rooted at $r'$, $\pview{t}$ must contain
+(exactly) one occurrence $r_0$ of $r'$.
 
-    \item If $t = t' \cdot n$ with $n \in N_{\sf var} \union
-    N_\Sigma \union N_@$ then by lemma
-    \ref{lem:trav_last_not_leaf}, $t'^\omega$ is $n$'s
-    parent in $\tau(M)$.
+(iii) and (ii): The projection operation $\_ \filterplus r_0$ is
+defined by an induction whose inductive steps correspond precisely
+to those used in the P-view computation. Thus a trivial induction
+shows that $\pview{t\filterplus r_0}^{M^{(r')}} =
+\pview{t}^M_{\suffixof r_0}$.
 
-    Suppose $n$ is in $V^{(r')}$. Since $n$ is not a lambda
-    node, its parent node $t'^\omega$ necessarily belong to
-    $V^{(r')}$. Thus by the I.H.\ (i) we have
-    $\pview{t'^\omega} = \ldots r_0 \cdot u$ where $r_0$ is
-    an occurrence of $r'$ in $t$ and all the nodes in
-    $u$ appear in $t\filterplus r_0$.
-    Since $\pview{t} = \pview{t'} \cdot n$, (i) also holds for $t$.
-
-    (ii) Let $m$ be $n$'s justifier. By P-visibility, $m$ is in $\pview{t'}$.
-    Suppose that $m$ occurs in $u$ then by the I.H.\ it must appear in $t\filterplus r_0$. Consequently by Lemma \ref{lem:ifin_projplus_so_does_justifier}, so does $n$.
-    Suppose that $m$ occurs before $r_0$. Then $r_0$ is a lambda node occurring in the P-view between $n$ and its justifier, therefore
-    by definition of $t^+$, $n$ points to $r_0$ in $t^+$ and therefore by definition of $t\filterplus  r_0$,
-    $n$ must appear in $t\filterplus r_0$. Hence (ii) holds for $t$.
-
-    For (iii) we have:
-        \begin{align*}
-        \pview{t}^M \filterplus r_0
-    &= \pview{t' \cdot n}^M \filterplus r_0 & (\mbox{definition of } t)\\
-            &= (\pview{t'}^M \cdot n) \filterplus r_0  & (\mbox{P-view computation}) \\
-            &= \pview{t'}^M \filterplus r_0  \cdot n             & \parbox[t]{6cm}{(\raggedleft since $n$ appears in $t\filterplus r_0$ and where,
-             by def.\ of $\_ \filterplus$,  $n$ points to its binder if it is present in $t\filterplus r_0$ and to
-             $r_0$ otherwise)} \\
-            &= \pview{t' \filterplus  r_0 }^{M^{(r')}} \cdot n            & (\mbox{induction hypothesis}) \\
-            &= \pview{t' \filterplus  r_0 \cdot n }^{M^{(r')}} & (\mbox{P-view in $M^{(r')}$}) \\
-            &= \pview{(t' \cdot n ) \filterplus  r_0  }^{M^{(r')}}           & (\mbox{$n$ appears in $t\filterplus r_0$}) \\
-            &= \pview{t \filterplus  r_0  }^{M^{(r')}}
-     & (\mbox{definition of } t).
-        \end{align*}
-
-%    (b) Suppose $n$ is not in $V^{(r')}$ then necessarily its parent node $t'^\omega$ does not belong to $V^{(r')}$ either.
-%    Therefore by the induction hypothesis, all the nodes in $\pview{t'}$ do not belong to
-%    $t\filterplus r_0$ for any occurrence $r_0$ of $r'$. By P-visibility, $n$'s justifiers all appear in $\pview{t'}$ therefore, $n$ does not belong to $t\filterplus r_0$ for any occurrence $r_0$ of $r'$.
-
-
-    \item If $\Pstr[0.6cm]{ t =  t' \cdot (m){m} \cdot u \cdot (lmd-m,30){n} }$
-    where $n \in N_\lambda \union L_{\sf var} \union L_@ \union
-    L_\Sigma$ and $n$ is not an occurrence of $r'$ then necessarily $m\in N_{\sf var} \union
-    N_\Sigma \union N_@$ and $m$ is $n$'s parent in $\tau(M)$.
-
-    (i) Suppose that $n\in V^{(r')}$. Since $m$ is the parent of
-    $n$ in $V^{(r')}$ and $n$ is not the the root of
-    $\tau(M^{(r')})$, $m$ also belongs to
-    $V^{(r')}$. Thus we can use the induction hypothesis on $t' \cdot m$: for some occurrence $r_0$
-     of $r'$ in $t$ we have
-    $\pview{r' \cdot m} = \ldots r_0 \cdot w$; all the
-    nodes in $w$ belong to $V^{(r')}$; and all the
-    occurrences in $w$ appear in $(t'\cdot m)\filterplus r_0$.
-%    and not in any $(t'\cdot m)\filterplus r_1$ for any occurrence $r_1\neq r_0$ of $r'$.
-    Since $\pview{t}= \pview{t' \cdot m} \cdot n$, properties (i) and (ii) also hold for $t$.
-    For (iii):
-            \begin{align*}
-            \pview{t}^M \filterplus r_0 &= \pview{\Pstr{t' \cdot (m){m} \cdot u \cdot (n-m,40){n}}}^M \filterplus r_0
-                & (\mbox{definition of } t)\\
-            &= (\pstr{\pview{t' \cdot \nd(m){m} }^M \cdot \nd(lmd-m,60){n}}) \filterplus r_0
-                & (\mbox{P-view in $M$}) \\
-            &= \pstr[0.4cm]{ \pview{t' \cdot \nd(m){m} }^M \filterplus r_0  \cdot \nd(lmd-m,30){n} }
-                & (\mbox{$n$ appears in $t\filterplus r_0$}) \\
-            &= \pstr[0.4cm]{ \pview{(t' \cdot \nd(m){m})\filterplus r_0}^{M^{(r')}}  \cdot  \nd(lmd-m,30){n} }
-                & \mbox{(induction hypothesis)} \\
-            &= \pstr[0.4cm]{ \pview{t' \cdot \filterplus r_0 \cdot \nd(m){m}}^{M^{(r')}}  \cdot  \nd(lmd-m,35){n} }
-                & \mbox{($m$ appears in $t\filterplus r_0$)} \\
-            &= \pview{ \Pstr{t' \filterplus r_0 \cdot (m){m} \cdot {(u \filterplus r_0)} \cdot (lmd-m,35){n}}}^{M^{(r')}}
-                & \parbox[t]{6cm}{(P-view in $M^{(r')}$: nodes and leaves in $(u \filterplus r_0) \cdot n$ are all in $V^{(r')}$
-                    by Lemma \ref{lem:inproj_imp_insubtree})} \\
-            &= \pview{ (\Pstr{t' \cdot (m){m} \cdot u \cdot (lmd-m,35){n}}) \filterplus r_0 }^{M^{(r')}}
-                & (\mbox{$m$ and $n$ appear in $t\filterplus r_0$}) \\
-            &= \pview{ t \filterplus r_0 }^{M^{(r')}}
-                & \mbox{(definition of $t$).}
-            \end{align*}
-
-%    (b) Suppose $n$ is not in $V^{(r')}$ then necessarily its parent node $m$ does not belong to $V^{(r')}$ either. Therefore by the induction hypothesis, all the nodes in $\pview{t' \cdot m}$ do not belong to
-%    $t\filterplus r_0$ for any occurrence $r_0$ of $r'$. Hence since the only justifier of $n$ is $m$, $n$ must also not appear in $t\filterplus r_0$ for any occurrence $r_0$ of $r'$
-
-
-    \item If $t =  t' \cdot r_0$ where $r_0$ is an occurrence of $r'$ then $\pview{t}^M = \pview{t'}^M \cdot r_0$. Clearly since justification pointers only go backwards, all the nodes occurring before $r_0$ do not appear in $t \filterplus r_0$. Hence:
-        \begin{align*}
-        \pview{t}^M \filterplus  r_0
-            &=  \pview{t'}^M \filterplus  r_0 \cdot r_0 & (\mbox{P-view in $M$})\\
-            &=  r_0                                     & (\mbox{nodes in $\pview{t'}_{< r_0}$ do not appear in $t \filterplus  r_0$}) \\
-            &=  \pview{r_0 }^{M^{(r')}}                 & (\mbox{P-view in $M^{(r')}$})\\
-            &= \pview{t \filterplus  r_0 }^{M^{(r')}} & \mbox{($t \filterplus  r_0 = r_0$)}. \qed
-        \end{align*}
-    \end{compactitem}
+Consequently, the nodes occurring after $r_0$ in $\pview{t}$
+necessarily appear in $t\filterplus r_0$. This shows (ii).
+Furthermore, by definition of $t\filterplus r_0$, all the nodes
+preceding $r_0$ in $t$ do not appear in $t\filterplus r_0$. This
+together with (ii) give us the second equality of (iii). \qed
+\smallskip
 %end of proof
 
 
@@ -1535,32 +1404,106 @@ $\lambda \overline{x}$ appears in $t\filterplus r_0$ then since $x$
 points to $\lambda \overline{x}$, $x$ also appears in $t\filterplus
 r_0$.
 
-If $x$ appears in $t\filterplus r_0$ then $x$ must have at least one
-other justifier $j$ in $t^+$ appearing in $t\filterplus r_0$. By
-definition of $t^+$, $j\in \pview{t}$ and $j$ occurs after $m$.
-Hence we have $m \in \pview{t_{\prefixof j}}$. By the I.H.\ (ii.a)
-on $t_{\prefixof j}$, we have that $r_0$ appears in
-$\pview{t_{\prefixof j}}$. This P-view is a path to the root hence
-it can only contain one occurrence of $r'$. Thus by Lemma
+If $x$ appears in $t\filterplus r_0$ then by Lemma
+\ref{lem:ifin_projplus_so_does_justifier} there must be some lambda
+node $j$ occurring (after $m$) in $\pview{t}$ that appears in
+$t\filterplus r_0$. Hence we have $m \in \pview{t_{\prefixof j}}$.
+By the I.H.\ (ii.a) on $t_{\prefixof j}$, we have that $r_0$ appears
+in $\pview{t_{\prefixof j}}$. This P-view is a path to the root
+hence it can only contain one occurrence of $r'$. Thus by Lemma
 \ref{lem:pview_trav_projection}, all the nodes in
 $\pview{t_{\prefixof j}}$ occurring after $r_0$ must appear in
 $t\filterplus r_0$. In particular, $m$ must appear in $t\filterplus
 r_0$.
 
 \noindent (ii) Assume $t^\omega$ appears in $t\filterplus r_0$.
-Suppose $t^\omega$ has no justifier in $t$ then $t^\omega$ is either the root, an @-node or $\Sigma$-node. If it is the root then the result holds trivially. Otherwise, by definition of $t^+$, $t^\omega$
-appears in $t\filterplus r_0$ if and only if its immediate predecessor does. Hence we can conclude using the I.H.\ on $\ip(t)$.
+Suppose $t^\omega$ has no justifier in $t$ then $t^\omega$ is either the root, an @-node or $\Sigma$-node. If it is the root then the result holds trivially. Otherwise,
+by definition of $t\filterplus r_0$, $t^\omega$
+appears in $t\filterplus r_0$ if and only if its immediate predecessor does.
+Hence we can conclude using the I.H.\ on $\ip(t)$.
 
-Suppose $t^\omega$ is justified by some occurrence $m$.
-If $m$ is in $t\filterplus r_0$ then a.\ follows from
-visibility as well as the I.H.\ on $t_{\prefixof m}$ whereas b.\ holds trivially.
+Suppose $t^\omega$ is justified by some occurrence $m$. If $m$ is in
+$t\filterplus r_0$ then a.\ follows from visibility as well as the
+I.H.\ on $t_{\prefixof m}$ whereas b.\ holds trivially. Suppose $m$
+is not in $t\filterplus r_0$. Then by Lemma
+\ref{lem:ifin_projplus_so_does_justifier} this can only happen if
+$n$ is a variable node and some lambda node $j$ occurring in
+$\pview{t}$ appears in $t\filterplus r_0$. Hence (a) follows from
+the I.H.\ on $t_{\prefixof j}$.
 
-Suppose $m$ is not in $t\filterplus r_0$.
-By (i), $r_0$ necessarily occurs after $m$ and $n$ must have at least one other justifier $j$ in $t^+$ appearing in $t\filterplus r_0$. Thus $n$ is necessarily a variable node since they are the only nodes with several justifiers in $t^+$. By definition of $t^+$, $j$ appears in $\pview{t}$. Hence we can conclude (a) using the I.H.\ on $t_{\prefixof j}$. Since $m$ occurs before $r_0$ in the P-view $\pview{t}$, $r_0$ must lie in the path from $n$ to its binder $m$. Consequently, $n$ is a free variable node in $\tau(M^{(r')})$.
+Since $m$ does not appear in $t\filterplus r_0$, by lemma
+\ref{lem:pview_trav_projection}, it necessarily precedes $r_0$ in
+$t$. Thus $m$ occurs before $r_0$ in the P-view $\pview{t}$. In
+other words, $r_0$ lies in the path from $n$ to its binder $m$.
+Consequently, $n$ is a free variable node in $\tau(M^{(r')})$.
+
 
 \noindent (iii) The P-view is the path from $t^\omega$ to the root, hence it cannot contain two different occurrences of the same node $r'$.\qed
 
+\begin{lemma}
+\label{lem:inproj_imp_insubtree} Let $r_0$ be an occurrence in $t$
+of a lambda-node $r' \in N_\lambda$. If some node $n$ occurs in $t
+\filterplus r_0$ then $n$ is in $V^{(r')}$.
+\end{lemma}
+\proof
+By Lemma \ref{lem:if_binder_beforeafter_r0}(ii), $r_0$ must occur in $\pview{t}$
+and therefore $r_0$ lies in the path from $t^\omega$ to the root $\theroot$ of the computation
+tree $\tau(M)$. Consequently, $t^\omega$ necessarily belongs to the subtree of $\tau(M)$ rooted at $r'$.
+\qed
+\smallskip
 
+
+\begin{lemma}
+\label{lem:intfilterstar_iff_hjintstarfiltersubtree}
+ Let $t$ be a traversal such that $t^\omega \not\in V_@ \union V_\Sigma$
+and $r_0$ be an occurrence of a lambda node $r'$ in $t$. Then an
+occurrence $n$ is her.\ just.\ by $n_0$ in $t^\star\filter V^{(r')}$
+if and only if $n$ appears in $t\filterplus r_0$.
+\end{lemma}
+\proof We suppose that $n$ is the last node in $t$ and we proceed by
+induction on $t$. If $n=r_0$ or if $r_0$ does not occur in $t$ then
+the result holds trivially. Suppose that $r_0$ occurs in $\ip(t)$.
+Let $m$ be $n$'s justifier in $t$. The case $n\in L_@ \union
+L_\Sigma \union N_@ \union N_\Sigma$ is excluded by the hypothesis.
+
+Suppose $n \in L_\lambda \union L_{\sf var} \union N_\lambda$ then
+\begin{align*}
+\mbox{$n$ appears in $t\filterplus r_0$} &\iff \mbox{$m$ appears in $t\filterplus r_0$} & \mbox{by Lemma
+\ref{lem:ifin_projplus_so_does_justifier}} \\
+&\iff \mbox{$m$ her.\ just.\ by $n_0$ in $t^\star\filter V^{(r')}$} & \mbox{by I.H.\ on $t_{\prefixof m}$} \\
+&\iff \mbox{$n$ her.\ just.\ by $n_0$ in $t^\star\filter V^{(r')}$} & \mbox{since $m$ is $n$'s parent in $\tau(M^{(r')})$.}
+\end{align*}
+
+Suppose that $n \in N_{\sf var}$.
+\begin{align*}
+\mbox{$n$ appears in $t\filterplus r_0$} &\iff \mbox{$r_0$ appears in $\pview{t}$} \qquad
+\mbox{(by Lemma \ref{lem:pview_trav_projection}(i) and \ref{lem:if_binder_beforeafter_r0}(ii))} \\
+&\iff \left\{
+        \begin{array}{l}
+          \hbox{$r_0$ precedes $m$ in $\pview{t}$, and thus $n$ is a bound variable in $M^{(r')}$} \\
+          \hbox{or $r_0$ appears strictly after $m$ in $\pview{t}$ and $n$ is free in $M^{(r')}$}
+        \end{array}
+      \right. \\
+&\iff \left\{
+        \begin{array}{l}
+          \hbox{$m$ appears in $t\filterplus r_0$} \qquad\qquad  \mbox{(by Lemma \ref{lem:if_binder_beforeafter_r0}(i))} \\
+          \hbox{or $n$ points to $r_0$ in $t^\star\filter V^{(r')}$} \qquad \mbox{(by def.\ of $\_ \filter V^{(r')}$)}
+        \end{array}
+      \right. \\
+&\iff \left\{
+        \begin{array}{l}
+          \hbox{$m$ her.\ just.\ by $n_0$ in $t^\star\filter V^{(r')}$} \qquad \mbox{(by I.H.\ on $t_{\prefixof m}$)} \\
+          \hbox{or $n$ points to $r_0$ in $t^\star\filter V^{(r')}$.}
+        \end{array}
+      \right. \\
+&\iff \left\{
+        \begin{array}{l}
+          \hbox{$n$ her.\ just.\ by $n_0$ in $t^\star\filter V^{(r')}$} \quad \mbox{($n$ is in $V^{(r')}$ iff its binder $m$ is)} \\
+          \hbox{or $n$ points to $r_0$ in $t^\star\filter V^{(r')}$}
+        \end{array}
+      \right.\\
+&\iff \hbox{n is her.\ just.\ by $n_0$ in $t^\star\filter V^{(r')}$}  \qed
+\end{align*}
 
 \begin{lemma}
 \label{lem:thread_projplus} Take a traversal $t$.  Let $r'$ be a
@@ -1764,11 +1707,16 @@ $\overline{t}$, this condition becomes:
 \begin{quote}
  (w8) Suppose $m$ justifies $n$ in $\overline{t}$. Then $n \in t\filterplus r_0$ if and only if $m\in t\filterplus r_0$.
 \end{quote}
-Unfortunately, as we have seen previously, the direct implication does not hold in general! (Indeed, a variable node can have several
-justifiers in $t^+$ thus it can very well appear in $t\filterplus r_0$ even though its main justifier in $t^+$ does not.) Consequently, the proof of Proposition \ref{prop:hylandong_pviewprojection} cannot be
-directly reused in our setting. A weaker version of condition (w8) holds however: we know by Lemma \ref{lem:if_binder_beforeafter_r0}(i) that if $r_0$ occurs before $n$'s justifier then $n$ appears in
-$t\filterplus r_0$ if and only if its justifier does.
-This condition turns out to be sufficient to reuse most of the proof from \cite{hylandong_pcf}.
+Unfortunately, as we have seen previously, the direct implication
+does not hold in general! (Indeed, a variable node can very well
+appear in $t\filterplus r_0$ even though its justifier does not.)
+Consequently, the proof of Proposition
+\ref{prop:hylandong_pviewprojection} cannot be directly reused in
+our setting. A weaker version of condition (w8) holds however: we
+know by Lemma \ref{lem:if_binder_beforeafter_r0}(i) that if $r_0$
+occurs before $n$'s justifier then $n$ appears in $t\filterplus r_0$
+if and only if its justifier does. This condition turns out to be
+sufficient to reuse most of the proof from \cite{hylandong_pcf}.
 
 We reproduce here some definition used in \cite{hylandong_pcf}. Let
 $s$ be a position of the game $A\rightarrow B$. A bounded segment is
@@ -2119,9 +2067,10 @@ show the following important result:
     We have $p \in \oview{t} \filterplus r_0 \subseqof
     \oview{t\filterplus r_0}$ by Proposition
     \ref{prop:oview_trav_projection}. Furthermore we can easily
-    check that the last node in $t\filterplus r_0$ is
+    check that the last node in $\ip(t\filterplus r_0)$ is
     necessarily in $N_{\sf var} \union L_\lambda$ (using
-    alternation and the fact that if an occurrence in $N_@
+    alternation and the fact that if an occurrence in $N_\lambda
+    \union L_{\sf var} \union L_@ \union L_\Sigma \union N_@
     \union N_\Sigma$ appears in $t\filterplus r_0$ then so does
     its immediate successor). Hence we can make use of the rule
     \rulenamet{InputVar} in $M^{(r')}$ (in its alternative form)
@@ -2144,6 +2093,60 @@ show the following important result:
     \rulenamet{Value$^{\lambda\mapsto{\sf var}}$}. \qed
   \end{itemize}
 % end of proof
+
+
+
+\begin{lemma} \label{lem:tstarproj_eq_tprojplusstar} Let $t$ be a traversal and $r_0$ be an occurrence of a
+lambda node $r'$. We have
+\begin{equation*}
+(t\filterplus r_0)^\star = t^\star \filter V^{(r')} \filter r_0\ .
+\end{equation*}
+\end{lemma}
+\proof By the previous Lemma, $t\filterplus r_0$ is indeed a
+traversal (of $\tau(M^{(r')})$) thus the expression ``$(t\filterplus
+r_0)^\star$'' is well-defined. We show the result by induction on
+$t$: It is true for the empty traversal. Take $t=t'\cdot n$.
+
+If $n$ belongs to $V_@ \union V_\Sigma$ then
+\begin{align*}
+((t' \cdot n) \filterplus n_0)^\star &= (t' \filterplus n_0)^\star \cdot
+                \left\{
+                  \begin{array}{ll}
+                    n, & \hbox{if $n$ appears in $t\filterplus n_0$;} \\
+                    \epsilon, & \hbox{otherwise.}
+                  \end{array}
+                \right.
+ \\
+\mbox{and } ((t' \cdot n)^\star \filter V^{(r')}) \filter n_0 &=
+(t'^\star \filter V^{(r')}) \filter n_0
+\cdot
+                \left\{
+                  \begin{array}{ll}
+                    n, & \hbox{if $n$ is her.\ just.\ by $n_0$ in $t^\star\filter V^{(r')}$;} \\
+                    \epsilon, & \hbox{otherwise.}
+                  \end{array}
+                \right.
+\end{align*}
+Since $t^\omega \not\in V_@ \union V_\Sigma$, by Lemma
+\ref{lem:intfilterstar_iff_hjintstarfiltersubtree} we have that $n$
+is her.\ just.\ by $n_0$ in $t^\star\filter V^{(r')}$ if and only if
+$n$ appears in $t\filterplus n_0$. Hence we can conclude using the
+I.H.\ on $t'$.
+
+
+If $n$ does not belong to $V_@ \union V_\Sigma$ then
+\begin{align*}
+((t' \cdot n) \filterplus n_0)^\star &= (t' \filterplus n_0)^\star \\
+&= (t'^\star \filter V^{(r')}) \filter n_0 & \mbox{(by the I.H.\ on $t'$)} \\
+&= ((t' \cdot n)^\star \filter V^{(r')}) \filter n_0 \ \qed
+\end{align*}
+% end of proof
+
+Consequently, by Lemma \ref{lem:minus_at_plus_at}, if $t^\omega
+\not\in V_@ \union V_\Sigma$ then $t \filterplus r_0 =
+(t^\star\filter r_0) +\Sigma+@$.
+
+
 
 \subsubsection{O-view and P-view projection with respect to the root}
 \begin{lemma}
@@ -3319,15 +3322,15 @@ be the occurrence of the initial $A$-move $\varphi_M(r'_0)$ in
 $\varphi_M(t^\star)$ then:
 $$\begin{array}{rrcl}
 (i)& \varphi_{M^{(r')}}(t^\star \filter r'_0) &=& \varphi_M(t^\star) \filter m_0 \\ \\
-(ii) & \varphi_M(\travset(M)^\star)^- \filter \sem{\Gamma \rightarrow T} &=& \psi_M(\travset(M)^{\filter r})\ .
+(ii) & \varphi_M(\travset(M)^\star) \filter \sem{\Gamma \rightarrow T} &=& \psi_M(\travset(M)^{\filter r})\ .
 \end{array}
 $$
 \end{lemma}
 \proof ($i$) Firstly, by Proposition \ref{prop:trav_projection},
 $t\filterplus r'_0$ is a traversal of $\travset(M^{(r')})$ therefore
 the sequence $(t\filterplus r'_0)^\star = t^\star \filter r'_0$
-belongs to $\travset(M^{(r')})^\star$ which guarantees that the
-expression $\varphi_{M^{(r')}}(t^\star \filter r'_0)$ is
+belongs to $\travset(M^{(r')})^\star$ which ensures that the
+expression ``$\varphi_{M^{(r')}}(t^\star \filter r'_0)$'' is
 well-defined. By Definition \ref{dfn:phi_for_justsequ}, the
 sequences $\varphi_M(t^\star)$ and $t^\star$ have the same
 justification pointers therefore
@@ -3368,9 +3371,7 @@ the one which is closest to the root $r$. Let $\Gamma(r') \vdash
     \end{compactitem}
 Hence $H = V^{\theroot\vdash}$. Consequently, for any traversal $t$
 of $M$ we have $\varphi_M(t^\star) \filter \sem{\Gamma \rightarrow
-T} = \varphi_M(t^\star\filter V^{\theroot\vdash})$. Thus
-$\varphi_M(t^\star)^- \filter \sem{\Gamma \rightarrow T} =
-\varphi_M((t^\star\filter V^{\theroot\vdash})^-)$ which is equal to
+T} = \varphi_M(t^\star\filter V^{\theroot\vdash})$ which is equal to
 $ \varphi_M(t\filter r)$ by Lemma
 \ref{lem:he_proj_root_is_hj_proj_r}. \qed
 
@@ -3564,9 +3565,9 @@ with some other nodes interleaved in between. However these
 interleaved nodes are inserted in a preservative way which allows us
 to apply on $t$ the rule that was used to extend sub-traversal $t'$:
 \begin{lemma}[Sub-traversal progression]
-\label{lem:subtraversal_progression} Let $\theroot_j$ be a level-$2$ lambda node in $\tau(M)$ ({\it i.e.}\ a child of the child of the root $\theroot$),
+\label{lem:subtraversal_progression} Let $\theroot_j$ be a lambda node in $\tau(M)$,
 $t$ be a justified sequence of nodes of $\tau(M)$, and $r_j$ be an occurrence of $\theroot_j$ in $t$ different from $t^\omega$.
-Suppose that $\ip(t)$ is a traversal of $\tau(M)$ and $t^\omega$ is her.\ just.\ by $r_j$ in $t^+$.
+Suppose that $\ip(t)$ is a traversal of $\tau(M)$ and $t^\omega$ appears in $t\filterplus r_j$.
 
 If $t \filter^+ r_j$ is a traversal of $\tau(M^{(\theroot_j)})$
 and its last node is visited using a rule different from \rulenamet{InputVar} and $\rulename{InputVar^{val}}$
@@ -3587,7 +3588,7 @@ $M$, by Prop.\ \ref{prop:trav_projection} $\ip(t_j) = \ip(t)
         $t_{\prefixof \lambda \overline{\xi}} \cdot n$. But then we have $(t_{\prefixof \lambda \overline{\xi}} \cdot n) \filterplus r_j =
         t_{\prefixof \lambda \overline{\xi}} \filterplus r_j \cdot n
         = {t_j}_{\prefixof \lambda \overline{\xi}} \cdot n = t_j = t \filterplus r_j$.
-        Thus, since $t$'s last node and $n$ are her.\ just.\ by $r_j$ in $t^+$, this implies that
+        Thus, since $t$'s last node and $n$ both appear in $t\filterplus r_j$, this implies that
          $t_{\prefixof \lambda \overline{\xi}} \cdot n = t$.
         Hence $t$ is a traversal of $M$.
 
@@ -3830,8 +3831,8 @@ Hence we can conclude using the induction hypothesis.
         u \in L_T \\
         \hbox{for any initial $b$ in $!B_0^0 \otimes \ldots \otimes !B_p^0$ there is $j \in \{0..p\}$ such that } \\
         \left\{\begin{array}{ll}
-            u \filter b \filter T^{00j} \in \intersem{N_j} \label{eq:def_z} \\
-            u \filter b \filter T^{00k} = \epsilon \quad \mbox{ for every } k\in \{1..p\}\setminus\{j\} \label{eq:b}
+            u \filter T^{00j} \filter b  \in \intersem{N_j} \label{eq:def_z} \\
+            u \filter T^{00k} \filter b  = \epsilon \quad \mbox{ for every } k\in \{1..p\}\setminus\{j\} \label{eq:b}
         \end{array}
         \right. \\
         u \filter B^1_0 = u \filter B^1_1, \ldots, B^1_p, C
@@ -3888,15 +3889,19 @@ $\varphi_M(t^\star) = \varphi_M(t'^\star) \cdot m = u$.
 
 
     \item Suppose $m\in T^0$ and $m$ is not initial in $B$. Then $m$ is hereditarily justified by some initial move $b$ in $B_j$ for some $j\in \{0..p\}$.
-        Since $u \filter b \filter T^{00j} \in \intersem{N_j}$, the outermost induction hypothesis gives us:
+        Since $u \filter T^{00j} \filter b \in
+        \intersem{N_j}$, the outermost induction
+        hypothesis gives us:
         \begin{equation}
-        u \filter b \filter T^{00j} = \varphi_{N_j}(t_j^\star)  \label{eqn:corresp_outmost_ih}
+        u \filter T^{00j} \filter b = \varphi_{N_j}(t_j^\star)  \label{eqn:corresp_outmost_ih}
         \end{equation}
-          for some traversal $t_j \in \travset(N_j)$ where w.l.o.g.\ we can assume that $t_j^\omega \neq @$. We have:
+          for some traversal $t_j \in \travset(N_j)$
+          where w.l.o.g.\ we can assume that $t_j^\omega
+          \not\in V_@$. We have:
         \begin{align*}
-            \varphi_M (t_j^\omega) &= (\varphi_M (t_j^\star))^\omega & \mbox{($t_j^\omega \neq @$)}\\
-                                   &= ((u' \cdot m) \filter b\filter T^{00j})^\omega & \mbox{(by Eq.\ \ref{eqn:corresp_outmost_ih})}\\
-                                   &= ((u' \filter b\filter T^{00j}) \cdot m))^\omega & \mbox{($m$ is h.j. by $b$ and belongs to $T^{00j}$)}\\
+            \varphi_M (t_j^\omega) &= (\varphi_M (t_j^\star))^\omega & \mbox{($t_j^\omega \not\in V_@$)}\\
+                                   &= ((u' \cdot m) \filter T^{00j}\filter b)^\omega & \mbox{(by Eq.\ \ref{eqn:corresp_outmost_ih})}\\
+                                   &= ((u' \filter T^{00j}\filter b) \cdot m))^\omega & \mbox{($m$ is h.j. by $b$ and belongs to $T^{00j}$)}\\
                                    &= m \ .
         \end{align*}
 
@@ -3944,9 +3949,9 @@ Hence:
 
         Indeed we have:
         \begin{align*}
-        \varphi_{N_j}(t_j^\star) &= u \filter b \filter T^{00j}
+        \varphi_{N_j}(t_j^\star) &= u \filter T^{00j}\filter b
             & \mbox{(By Eq.\ \ref{eqn:corresp_outmost_ih})} \\
-         &= \varphi_{M}(t^\star) \filter b \filter T^{00j}
+         &= \varphi_{M}(t^\star) \filter T^{00j}\filter b
             & \mbox{(By Eq.\ \ref{eqn:corresp_phi_t_minu_at_eq_u})} \\
          &= \varphi_{N_j}(t^\star \filter r_j )
             & \mbox{(By Lemma \ref{lem:varphi_proj}(i)).}
@@ -3958,9 +3963,9 @@ Hence:
         $t_j^\star = t^\star \filter r_j$ which in turn
          is equal to $(t\filterplus r_j)^\star$ by Lemma
          \ref{lem:tstarproj_eq_tprojplusstar} from
-         Section
-        \ref{sec:tstar}. Since $t_j^\omega$ and $t^\omega$ are not in $N_@$ this gives us
-        the claim of Equation \ref{equ:claim_tj}.
+         Section \ref{sec:tstar}. Since $t_j^\omega$ and
+        $t^\omega$ are not in $V_@$ this gives us the
+        claim of Equation \ref{equ:claim_tj}.
     \smallskip
 
     We now show that $t$ is indeed a traversal by case analysis on the rule used to visit the last occurrence of $t_j$:
@@ -4117,8 +4122,8 @@ monotonicity of $\varphi^-1$.
 this section:
 $$
 \xymatrix @C=6pc{
-                                           & \travset(M)^\star \ar@/_/[dl]_{(\_\ +@+\Sigma)^-}  \ar[r]^{\varphi_M}_\cong & \intersem{M} \ar@/_/[dd]_{\_ \filter \sem{\Gamma\rightarrow T}} \\
-\travset(M) \ar@/_/[ur]_{\_^\star}^{} \ar[dr]^{\_ \filter r}  \\
+                                           & \travset(M)^\star \ar@/_/[dl]_{\_\ +@+\Sigma}  \ar[r]^{\varphi_M}_\cong & \intersem{M} \ar@/_/[dd]_{\_ \filter \sem{\Gamma\rightarrow T}} \\
+\travset(M) \ar@/_/[ur]_{\_^\star = \_\ -@-\Sigma}^{} \ar[dr]^{\_ \filter r}  \\
                                            & \travset(M)^{\filter r} \ar[r]^{\varphi_M}_\cong & \sem{M} \ar@/_/[uu]^{\cong}_{\mbox{full uncovering}}
 }
 $$

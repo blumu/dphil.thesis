@@ -1152,6 +1152,7 @@ of $t^\star$ is obtained from $\pview{t}$ by keeping only the non
 We define a projection operation for sequences of the form $t^\star$
 as follows:
 \begin{definition}
+\label{def:subterm_trav_projection}
   Let $t$ be a traversal such that $t^\omega\not\in L_@ \union L_\Sigma$ and $r_0$ be an occurrence of some
 lambda-node $r'$. Then the projection $t^\star \filter V^{(r')}$ is
 defined as the subsequence of $t^\star$ constituted of nodes of
@@ -1211,33 +1212,13 @@ $\tau(M)$ rooted at $r'$.
 
 
 \begin{remark}
-\label{rem:tplus} There is an alternative way to define $t
-\filterplus r_0$: For any traversal $t$ we write $t^+$ to denote the
-sequence-with-pointers obtained from $t$ by adding pointers as
-follows: for every occurrence of a $@$ or $\Sigma$ node $m$ in $t$
-we add a pointer going from $m$ to its predecessor in $t$ (which is
-necessarily an occurrence of its parent node). Further, for every
-variable node $x$ we add auxiliary pointers going to each lambda
-nodes occurring in the P-view at that point after $x$'s binder.
-Reciprocally, for any sequence-with-pointers $u$ we define $u^-$ as
-the sequence obtained from $u$ by removing the links associated to
-$@$ and $\Sigma$-nodes and where for each occurrence of a variable
-node, only the ``longest'' link is preserved. (The length of a link
-being defined as the distance between the source and the target
-occurrence.) Clearly the operation $\_^-$ is the inverse of $\_^+$:
-for any traversal $t$ we have $t= (t^+)^-$.
-
+\label{rem:tplus} There is an alternative way to define $t \filterplus r_0$: For any traversal $t$ we write $t^+$ to denote the sequence-with-pointers obtained from $t$ by adding pointers as follows: for every occurrence of a $@$ or $\Sigma$ node $m$ in $t$ we add a pointer going from $m$ to its predecessor in $t$ (which is necessarily an occurrence of its parent node). Further, for every variable node $x$ we add auxiliary pointers going to each lambda nodes occurring in the P-view at that point after $x$'s binder. Reciprocally, for any sequence-with-pointers $u$ we define $u^-$ as the sequence obtained from $u$ by removing the links associated to $@$ and $\Sigma$-nodes and where for each occurrence of a variable node, only the ``longest'' link is preserved. (The length of a link being defined as the distance between the source and the target occurrence.) Clearly the operation $\_^-$ is the inverse of $\_^+$: for any traversal $t$ we have $t= (t^+)^-$. 
 Then it can be easily shown that the sequence $t \filterplus n$ is
 precisely the subsequence of $t$ constituted of nodes hereditarily
 justified by $n$ \emph{with respect to the justification pointers of
 $t^+$}:
 $$t \filterplus n = (t^+ \filter n)^- \ .$$
-(Note that since the operation $\_^+$ changes the justification
-pointers, the hereditary justification relation in a traversal $t$
-is different from the hereditary justification relation in $t^+$.
-More precisely we have $(t\filter n)^+ \subseqof t^+ \filter n$ but
-$(t\filter n)^+ \neq t^+ \filter n$.)
-End of remark.
+(Note that since the operation $\_^+$ changes the justification pointers, the hereditary justification relation in a traversal $t$ is different from the hereditary justification relation in $t^+$ and therefore we have $(t\filter n)^+ \subseqof t^+ \filter n$ but $(t\filter n)^+ \neq t^+ \filter n$.) End of remark.
 \end{remark}
 \bigskip
 
@@ -2370,31 +2351,35 @@ $\mathcal{M}_T = M_A$ and $\sim_T = id_{M_A}$. For other cases:
 We call \defname{internal move} of the game $\intersem{T}$, any move from $M_T$ which is not $\sim$-equivalent to any move in $M_{type(T)}$.
 \smallskip
 
+A \defname{justified interaction sequence} of moves on the interaction game $\intersem{T}$ is a sequence of moves from $M_T$ together with pointers where each move in the sequence except the first one has a link attached to it pointing to some preceding move in the sequence.
 
 
-
-A \defname{justified interaction sequence} of moves on the interaction game $\intersem{T}$ is a sequence of moves from $M_T$ together with pointers. In contrast to the standard notion of justified sequence, to each move in the sequence can be attached several pointers. More precisely, if the equivalence class $m$ is $\{m_1, \ldots, m_l \}$ then $m$ has one pointer for each non-initial move $m_i$ in the equivalence class.
-
-\begin{definition}[Projection] We define several projection operations
+\begin{definition}[Projection] 
+\label{def:sub_interstrat_projection}
+We define several projection operations
 over justified interaction sequences. Let $s$ be a justified
 sequence of moves on the interaction game $\intersem{T}$.
-\begin{itemize}
-\item  Let $T'$ be a subtree of $T$. We define the projection $s\filter T'$ to be the subsequence of $s$ consisting of moves $\sim$-equivalent to some move in $M_{T'}$. This operation causes some move to ``lose'' some of their attached pointers: a given move $m$ with equivalence class $\{m_1, \ldots, m_l \}$ may have up to $l$ pointers, but in $s\filter T'$, only pointers associated to a $m_i$ belonging to $\mathcal{M}_{T'}$ are preserved.
-
+\begin{enumerate}[i.]
+\item  Let $T'$ be a subtree of $T$. We define the projection $s\filter T'$ to be the subsequence of $s$ consisting of moves $\sim$-equivalent to some move in $M_{T'}$. This operation may cause a move to ``lose'' its pointer. This situation corresponds to
+    $(s \cdot m) \filter T' = (s \filter T') \cdot m$ where $m$'s justifier does not appear in $s \filter T'$.
+    In that case, a new link is reassigned to $m$ that points to the only occurrence of an initial 
+    $\sem{type(T')}$-move in $\pview{s \filter \sem{type(T')}}$ (where $s \filter \sem{type(T')}$ is defined in iii.).
+    
     Note that since $M_T$ is a set of equivalence classes with respect to $\sim$, the projection operator $\_ \filter T'$ implicitly performs the ``retagging'' of the moves to the appropriate components of each game of the interaction game $\intersem{T'}$.
 
-\item For any sub-game $A$ of the standard game $\sem{type(T')}$ we define the projection operator $s\filter A$ to be the subsequence of $s$ consisting of moves from $A$ where at most one pointer is kept for each move in the sequence: the one corresponding to the class citizen from $A$.
+\item  Let $T'$ be a (non necessarily direct) subtree of $T$. 
+    We define the projection $s\filter T'$ as  $(\ldots (s\filter T^0) \filter \ldots \filter T^{k-1}) \filter T^k$ 
+    where $T=T^0$ and $T'=T^k$ and for every $1\leq l \leq k$, $T^l$ is a direct subtree of $T^{l-1}$.
+
+\item For any sub-game $A$ of the standard game $\sem{type(T')}$ we define the projection operator $s\filter A$ to be the subsequence of $s\filter T'$ consisting of moves that are in $A$.
 
 \item For any initial move $m$ of the game $\sem{type(T)}$ occurring in $s$, $s \filter m$ is the subsequence of $s$ consisting of moves that are \emph{hereditarily justified} by that particular occurrence of $m$ in $s \filter type(T)$.
 % NOTE: it is important to precise ``in $s \filter type(T)$'' because $s$'justification
 % pointers differs depending on the sub-interaction game considered.
-\end{itemize}
+\end{enumerate}
 By extension, we also define these operations on sets of justified interaction sequences.
 \end{definition}
 
-Allowing moves to have multiple pointers complicates slightly the presentation here, but this capability is necessary to model strategy composition. Indeed, in game semantics after composing strategies, the pointers from some moves may change! (See definition of $\filter A,C$ in \cite{abramsky:game-semantics-tutorial}.) For all the other operations on strategies that we will used, however, the pointers will just be preserved: Let $s$ be an  interaction sequence on a game $\intersem{T}$, $T'$ a subtree of $T$, $A$ be a sub-game of $\sem{type(T)}$ and $A'$ be a sub-game of $\sem{type(T')}$ such that $A$ and $A'$ are $\sim$-equivalent, we say that $s$'s \defname{justification is preserved from $A$ to $A'$} with respect to $\sim$ if an occurrence $m$ is justified by $n$ in $s\filter A$ if and only if it is justified by the same occurrence $n$ in $s \filter A'$. This is formally expressed by the equality: \begin{align*}
-s\filter A = s\filter A' \ .
-\end{align*}
 
 \begin{definition}[Legal uncovered positions] We recall
 that in the standard game semantics, the set of legal positions
@@ -2415,8 +2400,27 @@ follows:
     $\intersem{T}$.
 \end{definition}
 
-Revealed strategies can alternatively be represented by means of
-sets of uncovered positions:
+
+We will now define a revealed strategy by means of a set of uncovered positions the interaction game.
+The set of positions of an interaction strategy is computed from its constituent standard strategies by a bottom-up computation starting from the leaves of the tree representing the strategy. In particular, at each ;-node the composition operation of game semantics will be applied. In contrast with the standard game semantics, however, internal nodes will not be all hidden. But in accordance with standard game semantics (see projection $\_ \filter A,C$ in \cite{abramsky:game-semantics-tutorial}), when composing $\Sigma_l:T_l^{A\gamear B}$ with $\Sigma_r:T_r{B\gamear C}$, the justification pointers are readjusted as follows: if an initial A-move $a$ has link pointing to an initial B-move itself pointing to an initial C-move $c$ then it is replaced by a link pointing directly to $c$. Thus if we take any interaction position $u$ of $\Sigma_l ; \Sigma_r$, by taking the subsequence of $u$ consisting of nodes in $A$ and $C$ only (ignoring the moves in $B$ as well as the internal moves coming from compositions that took place at deeper level in the interaction semantics) then we obtain a valid \emph{standard} position of the standard strategy that underlies the interaction strategy $\Sigma_l ; \Sigma_r$.
+
+Additionally, given a position of an interaction strategy $\Sigma$ and a sub-interaction strategy $\Sigma':T'$ of $\Sigma:T$,
+we would like to be be able to obtain a valid position of $\Sigma'$.
+At first this may seem problematic since during composition we have lost all the links going from initial A-moves to initial B-moves!
+Fortunately, these can be retrieved easily. Indeed, take an interaction sequence $u \cdot a \in Int(A,B,C)$ where $a$ is an initial A-move,
+then by P-visibility in the game $A\gamear B$, $a$ points to an initial B-move in $\pview{u\filter A,B}$. But by definition the P-view may contain only one initial B-move! Hence the original pointer associated to $a$ may be recalculated from the P-view $\pview{u\filter A,B}$.
+We now observe that this pointer-recovery procedure corresponds precisely to the way the projection operation was defined in Def.\ \ref{def:sub_interstrat_projection}. Consequently, for any position $u$ of $\Sigma_l ; \Sigma_r$ where $\Sigma_l:T_l$ and $\Sigma_r:T_r$,
+the sequence $u\filter T_l$ is a valid position of $\Sigma_l$ (and $u\filter T_r$ is a valid position of $\Sigma_r$).
+More generally, this implies that for any subtree $\Sigma':T'$ of $\Sigma:T$, and any position $u$ of the interaction strategy $\Sigma$,
+$u\filter T'$ is a valid position of $\Sigma'$.
+
+
+All the operations on strategies except composition are pointer-preserving: Let $u$ be a position of the game $\intersem{T}$, $T'$ a subtree of $T$, $A$ be a sub-game of $\sem{type(T)}$ and $A'$ be a sub-game of $\sem{type(T')}$ such that $A$ and $A'$ are $\sim$-equivalent, we say that  \defname{$u$'s justification is preserved from $A$ to $A'$} with respect to $\sim$ just if an occurrence $m$ is justified by $n$ in $u\filter A$ if and only if it is justified by the same occurrence $n$ in $u \filter A'$. This is formally expressed by the equality:
+\begin{equation*}
+u\filter A = u\filter A' \ .
+\end{equation*}
+
+
 \begin{definition}
 \label{dfn:revealedstrat}
 The set of \defname{uncovered positions} of a revealed strategy is defined inductively on the
@@ -2425,15 +2429,15 @@ interaction strategy:
 \begin{itemize}[-]
 \item Leaf labelled with type $A$ and annotated by the strategy $\sigma$: The set of positions of the revealed strategy is precisely the set of positions of the standard strategy $\sigma$.
 
-\item Currying: $\Lambda(\Sigma' : \intersem{T'}) : \intersem{T} = \{ s \in L_T \ |  s \filter T' \in \Sigma' \ \zand\ s\filter type(T') = s\filter type(T) \}$.
+\item Currying: $\Lambda(\Sigma' : \intersem{T'}) : \intersem{T} = \{ u \in L_T \ |  u \filter T' \in \Sigma' \ \zand\ u\filter type(T') = u\filter type(T) \}$.
 
 \item Pairing: $$\begin{array}{lcll}
-\langle \Sigma_1 : \intersem{T_1}, \Sigma_2 : \intersem{T_2} \rangle : \intersem{T} &= \{ s \in L_T \ | &
-   ( (s \filter T_1 \in \Sigma_1 \zand\ s \filter T_2 = \epsilon) \\
-&&  \   \zor ( s \filter T_1 = \epsilon \zand s \filter T_2 \in \Sigma_2)) \\
-&& \zand\ s\filter C^1 = s\filter C\ \zand\ s\filter A^1= s\filter A  \\
-&& \zand\ s\filter C^2 = s\filter C\ \zand\ s\filter B^2 =
-s\filter B  \}
+\langle \Sigma_1 : \intersem{T_1}, \Sigma_2 : \intersem{T_2} \rangle : \intersem{T} &= \{ u \in L_T \ | &
+   ( (u \filter T_1 \in \Sigma_1 \zand\ u \filter T_2 = \epsilon) \\
+&&  \   \zor ( u \filter T_1 = \epsilon \zand u \filter T_2 \in \Sigma_2)) \\
+&& \zand\ u\filter C^1 = u\filter C\ \zand\ u\filter A^1= u\filter A  \\
+&& \zand\ u\filter C^2 = u\filter C\ \zand\ u\filter B^2 =
+u\filter B  \}
 \end{array}$$
 where $type(T_1) = C^1\gamear A^1$, $type(T_2) = C^2\gamear B^2$
 and $type(T) = C\gamear A \gameprod B$.
@@ -2471,16 +2475,7 @@ move produced by the composition in some component $B_k$ for $k
 \end{itemize}
 \end{definition}
 
-\begin{remark} \hfill
-\label{rem:interstrat}
-\begin{enumerate}[i.]
-\item We observe that for all strategy operator
-except composition, pointers associated to moves are preserved.
-For strategy composition, however, some additional pointers are
-``created'', but only for initial $A$-moves.
-\item It is straightforward to generalize the pairing operator $\langle \Sigma_1, \Sigma_2 \rangle$ to more than two parameters: an interaction strategy $\langle \Sigma_1, \ldots, \Sigma_p \rangle$ for $p\geq2$
-is defined on an interaction game whose root node has $p$ children.
-\end{enumerate}
+\begin{remark} It is straightforward to generalize the pairing operator $\langle \Sigma_1, \Sigma_2 \rangle$ to a $p$-tuple operator $\langle \Sigma_1, \ldots, \Sigma_p \rangle$ for $p\geq2$ (where the root of the interaction game has $p$ children).
 \end{remark}
 
 We write $\mathcal{I}$ for the set of all revealed strategies. Note
@@ -3114,21 +3109,38 @@ $t\in\travset(M)$, $r'_0$ be an occurrence of $r'$ in $t$ and $m_0$
 be the occurrence of the initial $A$-move $\varphi_M(r'_0)$ in
 $\varphi_M(t^\star)$ then:
 $$\begin{array}{rrcl}
-(i)& \varphi_{M^{(r')}}(t^\star \filter r'_0) &=& \varphi_M(t^\star) \filter m_0 \\ \\
-(ii) & \varphi_M(\travset(M)^\star) \filter \sem{\Gamma \gamear T} &=& \psi_M(\travset(M)^{\filter r})\ .
+(i)& \varphi_{M^{(r')}}(t^\star \filter V^{(r')} \filter r'_0) &=& \varphi_M(t^\star) \filter \intersem{\Delta \vdash A} \filter m_0 \\ \\
+(ii) & \varphi_M(\travset(M)^\star) \filter \sem{\Gamma \gamear T} &=& \psi_M(\travset(M)^{\filter r})
 \end{array}
 $$
+where $\intersem{\Delta \vdash A }$ is the interaction game of the interaction strategy denoting the subterm $M^{(r')}$.
 \end{lemma}
-\proof ($i$) Firstly, by Proposition \ref{prop:trav_projection},
-$t\filterplus r'_0$ is a traversal of $\travset(M^{(r')})$ therefore
-the sequence $(t\filterplus r'_0)^\star = t^\star \filter r'_0$
-belongs to $\travset(M^{(r')})^\star$ which ensures that the
-expression ``$\varphi_{M^{(r')}}(t^\star \filter r'_0)$'' is
-well-defined. By Definition \ref{dfn:phi_for_justsequ}, the
-sequences $\varphi_M(t^\star)$ and $t^\star$ have the same
-justification pointers therefore
- we must have $\varphi_{M}(t^\star \filter r'_0) = \varphi_M(t^\star) \filter m_0$. Finally, because of the inductive definition of $\varphi_{M}$, $\varphi_{M^{(r')}}$ coincides with
-the restriction of $\varphi_{M}$ to $M^{(r')}$.
+\proof ($i$) Firstly we observe that the expression ``$\varphi_{M^{(r')}}(t^\star \filter V^{(r')} \filter r'_0)$'' is well-defined. Indeed, by Proposition \ref{prop:trav_projection} $t\filterplus r'_0$ is a traversal of $\travset(M^{(r')})$ therefore
+the sequence $t^\star \filter V^{(r')} \filter r'_0$, which is equal to $(t\filterplus r'_0)^\star$ by Lemma \ref{lem:tstarproj_eq_tprojplusstar},
+does belong to $\travset(M^{(r')})^\star$.
+
+We now make the assumption that $r'$ is a level-$2$ lambda nodes ({\it i.e.}\ a grand-child of the root $\theroot$). The proof can easily
+be generalized to any lambda node by iterating the argument at every lambda nodes occurring in the path from $r'$ to the root $\theroot$.
+
+
+\emph{Claim:} The justification pointers in the sequences of nodes $t^\star \filter V^{(r')}$ are the same as those
+of the sequence of moves $\varphi_M(t^\star) \filter \intersem{\Delta \vdash A }$.
+ 
+By Definition \ref{dfn:phi_for_justsequ}, the sequences $\varphi_M(t^\star)$ and $t^\star$ have the same justification pointers,
+The projection operations $\_ \filter V^{(r')}$ (Definition \ref{def:subterm_trav_projection})
+and $\_ \filter \intersem{\Delta \vdash A}$ (Definition \ref{def:sub_interstrat_projection}) may alter the
+pointers in the sequences $\varphi_M(t^\star)$ and $t^\star$, but fortunately they do so identically!
+Indeed, the operation $\_ \filter V^{(r')}$ changes pointers only for variable nodes that are free in $V^{(r')}$: it makes them point to 
+the only occurrence of $r'$ in the P-view at that point (which is also the only occurrence of a level-2 lambda node in the P-view).
+Similarly, the operation $\_ \filter \intersem{\Delta \vdash A}$ changes pointers only for initial A-moves: it makes them point to
+the only occurrence of an initial B-move in  the P-view at that point.
+But free variables in $V^{(r')}$ are precisely mapped by $\varphi_M$ to initial A-moves and level-2 lambda nodes are mapped to
+initial B-moves. Hence the claim holds.
+
+Since the sequences $t^\star \filter V^{(r')}$ and  $\varphi_M(t^\star) \filter \intersem{\Delta \vdash A }$ have the same justification pointers,
+the hereditary projections $\_ \filter r'_0$ and $\_ \filter  m_0$ will preserve exactly the same set of occurrences, thus we have
+$\varphi_{M}(t^\star \filter V^{(r')} \filter r'_0) = \varphi_M(t^\star) \filter \intersem{\Delta \vdash A} \filter m_0$.
+Finally, because of the function $\varphi$ is defined inductively on the structure of the computation tree we have that $\varphi_{M^{(r')}}$ coincides with the restriction of $\varphi_{M}$ to $M^{(r')}$.
 
 
 ($ii$) Let $H$ be the set of nodes of $\tau(M)$ which are mapped by
@@ -3361,13 +3373,13 @@ to apply on $t$ the rule that was used to extend sub-traversal $t'$:
 $t$ be a justified sequence of nodes of $\tau(M)$, and $r_j$ be an occurrence of $\theroot_j$ in $t$ different from $t^\omega$.
 Suppose that $\ip(t)$ is a traversal of $\tau(M)$ and $t^\omega$ appears in $t\filterplus r_j$.
 
-If $t \filter^+ r_j$ is a traversal of $\tau(M^{(\theroot_j)})$
+If $t \filterplus r_j$ is a traversal of $\tau(M^{(\theroot_j)})$
 and its last node is visited using a rule different from \rulenamet{InputVar} and $\rulename{InputVar^{val}}$
 then $t$ is a traversal of $\tau(M)$.
 \end{lemma}
-\proof Let $t_j = t \filter^+ r_j$. Since $\ip(t)$ is a traversal of
+\proof Let $t_j = t \filterplus r_j$. Since $\ip(t)$ is a traversal of
 $M$, by Prop.\ \ref{prop:trav_projection} $\ip(t_j) = \ip(t)
-\filter^+ r_j$ is a traversal of $\tau(M^{(\theroot_j)})$.
+\filterplus r_j$ is a traversal of $\tau(M^{(\theroot_j)})$.
   We proceed by case analysis on the last rule used to produce the traversal $t_j$ and we show that $t$ is a traversal of $M$:
   \begin{itemize}
     \item \rulenamet{Empty}, \rulenamet{Root}. These cases do not occur since $|t_j| \geq 2$. Indeed, $t_j$ contains at least $t^\omega$ and $r_j$ which are two different occurrences.
@@ -3472,9 +3484,9 @@ $\travset(M)^\star$ to $\intersem{\Gamma \vdash M : T}$:
     and $\psi_M(\travset(M)^{\filter r}) = \sem{\Gamma \vdash M : T}$.
     Moreover the former implies the latter, indeed:
     \begin{align*}
-    \sem{\Gamma \vdash M : T} &= \intersem{\Gamma \vdash M : T} \filter \sem{\Gamma \gamear T} & \mbox{(Eq.\ \ref{eqn:int_std_gamsem})} \\
-            &= \varphi_M(\travset(M)^\star) \filter \sem{\Gamma \gamear T} & \mbox{(by (i))}\\
-            &= \psi_M(\travset(M)^{\filter r}) & \mbox{(lemma \ref{lem:varphi_proj})}
+    \sem{\Gamma \vdash M : T} &= \intersem{\Gamma \vdash M : T} \filter \sem{\Gamma \gamear T} & \mbox{by Eq.\ \ref{eqn:int_std_gamsem}} \\
+            &= \varphi_M(\travset(M)^\star) \filter \sem{\Gamma \gamear T} & \mbox{by (i)}\\
+            &= \psi_M(\travset(M)^{\filter r}) & \mbox{by lemma \ref{lem:varphi_proj}(ii)}
     \end{align*}
     therefore we just need to prove $\varphi_M(\travset(M)^\star) = \intersem{\Gamma \vdash M : T}$.
 \end{remark}
@@ -3616,8 +3628,8 @@ Hence we can conclude using the induction hypothesis.
         u \in L_T \\
         \hbox{for any initial $b$ in $B_0^0 \gameprod \ldots \gameprod B_p^0$ there is $j \in \{0..p\}$ such that } \\
         \left\{\begin{array}{ll}
-            u \filter T^{0j} \filter b  \in \intersem{N_j} \label{eq:def_z} \\
-            u \filter T^{0k} \filter b  = \epsilon \quad \mbox{ for every } k\in \{1..p\}\setminus\{j\} \label{eq:b}
+            u \filter T^{0j} \filter b  \in \intersem{N_j} \\
+            u \filter T^{0k} \filter b  = \epsilon \quad \mbox{ for every } k\in \{1..p\}\setminus\{j\}
         \end{array}
         \right. \\
         u \filter B^1_0 = u \filter B^1_1, \ldots, B^1_p, C
@@ -3673,7 +3685,7 @@ $\lambda \overline{y}$. Hence using the rule \rulenamet{Var} we can form the tra
 $\varphi_M(t^\star) = \varphi_M(t'^\star) \cdot m = u$.
 
 
-    \item Suppose $m\in T^0$ and $m$ is not initial in $B$. Then $m$ is hereditarily justified by some initial move $b$ in $B_j$ for some $j\in \{0..p\}$. Since $u \filter T^{0j} \filter b \in \intersem{N_j}$, the outermost induction hypothesis gives us:
+    \item Suppose $m\in T^0$ and $m$ is not initial in $B$. In $u \filter T^0$, $m$ must be hereditarily justified by some initial move $b$ in $B_j$ for some $j\in \{0..p\}$. Since $u \filter T^{0j} \filter b \in \intersem{N_j}$, the outermost induction hypothesis gives us:
         \begin{equation}
         u \filter T^{0j} \filter b = \varphi_{N_j}(t_j^\star)  \label{eqn:corresp_outmost_ih}
         \end{equation}
@@ -3685,29 +3697,10 @@ $\varphi_M(t^\star) = \varphi_M(t'^\star) \cdot m = u$.
                                    &= m \ .
         \end{align*}
 
-        Take $t = t'\cdot t_j^\omega$ where $t_j^\omega$'s pointer is defined as follows: If $m$ is an initial A-move then $t_j^\omega$ points to the first node in $t$. Otherwise, $t_j^\omega$ points to the occurrence $\varphi_M(m^3)$ of $t'$ where $m^3$ denotes $m$'s justifier in $u \filter A,B,C$. (Recall that an interaction sequence $u \in \intersem{M}$ contains moves in $A$, $B$ and $C$ as well as internal moves resulting from composition at deeper level in the interaction semantics, therefore a move may have several justifiers in $u$. In the interaction sequence $u\filter A,B,C$, however, moves have a single justifier at most.) \smallskip
+        Take $t = t'\cdot t_j^\omega$ where $t_j^\omega$ points in $t'$ to the image by $\varphi_M$ of the occurrence justifying $m$ in $u$. Since $t_j^\omega \neq @$ we have  $t^\star = t'^\star \cdot t_j^\omega$ where $t_j^\omega$ justifier in $t'^\star$ is the same as its justifier in $t$.
+ 
 
-Since $t_j^\omega \neq @$ we have  $t^\star = t'^\star \cdot t_j^\omega$ where
-$t_j^\omega$ justifiers are as follows (from the definition of the operation $\_^\star$):
-$t_j^\omega$'s main link points to the occurrence in $t'$ that justifies it in $t_j$ and if $t_j^\omega$ belongs to $N_{\sf var}$ then $t_j$ has auxiliary links pointing in $t^\star$ to all the lambda nodes that occur after its main justifier in $\pview{t'}$.
-
-We have $\varphi_{M}(t^\star) =  \varphi_{M}(t'^\star)  \cdot \varphi_{M}(t_j^\omega)$ which is equal to $u' \cdot m$
-by the innermost I.H.\ together with the previous equation. Hence the sequences $\varphi_{M}(t^\star)$ and $u$
-without their associated pointers are identical sequences.
-To show that the equality remains with the pointers, it remains to prove that the pointers of $t_j^\omega$ in $t'^\star$ are the same as those of $m$ in $u$.
-
-Firstly, the main justifiers clearly coincide. Indeed:
-If $m$ is an initial A-move then it points to the first move in $u$, and $t_j^\omega$ is a free variable in $\Gamma$ pointing to the first node in $t$. Otherwise, by definition, $t_j^\omega$'s justifier coincide with $m$'s justifier in $u$.
-
-For the auxiliary justifiers: suppose that $t_j^\omega$ is a variable node.
-In $u$, all $m$'s auxiliary justifiers must appear in the thread $u\filter b$.
-(Note that $m$ can have its main justifier lying outside $u\filter b$ if it is an initial $A$-move, in which case its justifier is $q_0 \in C$.)
-By the I.H.\ we have $u\filter b = \varphi_M(t_j^\star)$. Hence, by definition of $t_j^\star$, $m$ points to
-all the occurrences of the form $\varphi_M(n)$ for some occurrence $n$ following $t_j^\omega$'s main justifier in $\pview{t_j}$.
-The P-view gives the path to the root hence $\pview{t'} = \lambda^{[\theroot]} \cdot @ \cdot \pview{\ip(t_j)}$.
-Thus the auxiliary justifiers of $m$ in $u$ coincide with those of $t_j^\omega$ in $t$.
-
-Hence:
+        Hence we have $\varphi_{M}(t^\star) =  \varphi_{M}(t'^\star)  \cdot \varphi_{M}(t_j^\omega)$ which, by the innermost I.H.\ together with the previous equation, is equal to $u' \cdot m$ where $m$'s justifier in $u'$ corresponds to $\varphi_{M}(t_j^\omega)$'s justifier in $\varphi_{M}(t'^\star)$. Consequently:
         \begin{equation}
                 \varphi_M(t^\star) =  u  \label{eqn:corresp_phi_t_minu_at_eq_u}
         \end{equation}
@@ -3728,19 +3721,10 @@ Hence:
             & \mbox{(By Eq.\ \ref{eqn:corresp_outmost_ih})} \\
          &= \varphi_{M}(t^\star) \filter T^{0j}\filter b
             & \mbox{(By Eq.\ \ref{eqn:corresp_phi_t_minu_at_eq_u})} \\
-         &= \varphi_{N_j}(t^\star \filter r_j )
+         &= \varphi_{N_j}(t^\star \filter V^{(r')} \filter r_j )
             & \mbox{(By Lemma \ref{lem:varphi_proj}(i)).}
         \end{align*}
-        Since $\varphi_{N_j}$ is a bijection from
-        $\travset(N_j)^\star$ to $\varphi_{N_j}(
-        \travset(N_j)^\star )$ (by Corollary
-        \ref{cor:varphi_bij}) this implies that
-        $t_j^\star = t^\star \filter r_j$ which in turn
-         is equal to $(t\filterplus r_j)^\star$ by Lemma
-         \ref{lem:tstarproj_eq_tprojplusstar} from
-         Section \ref{sec:tstar}. Since $t_j^\omega$ and
-        $t^\omega$ are not in $V_@$ this gives us the
-        claim of Equation \ref{equ:claim_tj}.
+        Since $\varphi_{N_j}$ is a bijection from  $\travset(N_j)^\star$ to $\varphi_{N_j}(\travset(N_j)^\star )$ (by Corollary \ref{cor:varphi_bij}) this implies that  $t_j^\star = t^\star \filter V^{(r')} \filter r_j$ which in turn is equal to $(t\filterplus r_j)^\star$ by Lemma \ref{lem:tstarproj_eq_tprojplusstar} from Section \ref{sec:tstar}. But since $t_j$ and $t$ do not end with an @-node, this implies Equation \ref{equ:claim_tj}.
     \smallskip
 
     We now show that $t$ is indeed a traversal by case analysis on the rule used to visit the last occurrence of $t_j$:
@@ -3772,7 +3756,7 @@ Hence:
 
         Now let us consider the top-most composition in the interaction strategy $\intersem{M}$: the interaction strategy $\Sigma: A \gamear B$ get composed with the evaluation copy-cat strategy $ev:B \gamear o$. Consider $ u \filter A,B,C$ - the sub-sequence of $u$ containing only moves involved in this top-most composition ({\it i.e.}\ where the internal moves coming from other compositions at deeper level in the interaction semantics are removed). Since $z$ is a variable node, the move $m^3 = \psi_{N_j}(z) \in B_j$ is a P-move with \emph{respect to the game} $\sem{A \gamear B_j}$, and therefore it is an O-move in the game $\sem{B \gamear o}$. Consequently the strategy $ev$ is responsible to play at $u_{\prefixof m^3} \filter A, B, C$. Let us call $m^2$ the move played by $ev$ which immediately follows $m^1$ in $u\filter A,B,C$.
 
-        We claim that $m^3$ and $m^2$ are also consecutive in $u$. That is to say that no internal moves generated from the        other compositions at deeper levels in the interaction strategy can ever be played between $m^3$ and $m^2$. Indeed, the strategy $ev$ is a pure standard strategy thus it does not play any internal move; furthermore, suppose that $\Sigma  = \Sigma_l \| \Sigma_r$ where $\Sigma_l: A \gamear D$ and $\Sigma_r: D\gamear B$ for some game $D$, then  by the Switching Condition for function-space game (\cite{hylandong_pcf}) the Opponent cannot switch of component, thus the move following $m^3$ in the interaction sequence $u \filter A,D,B$ must belong to $B$. Hence internal moves from $D$ cannot be played immediately after $m^3$.
+        We claim that $m^3$ and $m^2$ are also consecutive in $u$. That is to say that no internal moves generated from the        other compositions at deeper levels in the interaction strategy can ever be played between $m^3$ and $m^2$. Indeed, firstly the strategy $ev$ is a pure standard strategy thus it does not play any internal move. Furthermore, suppose that the strategy $\Sigma$ comes from the composition $\Sigma_l \| \Sigma_r$ of two interaction strategies $\Sigma_l: A \gamear D$ and $\Sigma_r: D\gamear B$ for some game $D$, then by the Switching Condition for function-space game (\cite{hylandong_pcf}) the Opponent cannot switch of component, and thus the move following $m^3$ in the interaction sequence $u \filter A,D,B$ must belong to $B$. Hence internal moves from $D$ cannot be played immediately after $m^3$.
 
         Similarly, we can show that the move $m$ is played by the strategy $ev$ and is the copy of the move $m^1$ immediately preceding it in $u\filter A,B,C$ as well as in $u$.
 
@@ -3825,10 +3809,46 @@ Hence:
     \end{itemize}
 
 \item[$\supseteq$]
-  The converse, $\varphi_{M}( \travset(M)^\star ) \subseteq \intersem{M}$, is the easy part of the proof. It boils down to an easy induction
-  on the traversal rules showing that every step of the traversal correspond to some move played by one of the two players in one of the game
-  of the interaction semantics. We omit the details here.
-
+  The converse, $\varphi_{M}( \travset(M)^\star) \subseteq \intersem{M}$, is the easy part of the proof.
+  
+  Let $u$ be as sequence of $\varphi_{M}( \travset(M)^\star)$. Then 
+  $u = \varphi_{M}(t^\star)$ for some traversal $t$ of $\tau(M)$. We need to show that
+  $u$ is a position of $\intersem{\Gamma \vdash M : T}$ that is to say:
+    \begin{eqnarray*}
+    && \left\{
+    \begin{array}{ll}
+        u \in L_T \\
+        \hbox{for any initial $b_j$ in $B_0^0 \gameprod \ldots \gameprod B_p^0$ there is $j \in \{0..p\}$ such that } \\
+        \left\{\begin{array}{ll}
+            u \filter T^{0j} \filter b_j  \in \intersem{N_j} \\
+            u \filter T^{0k} \filter b_j  = \epsilon \quad \mbox{ for every } k\in \{1..p\}\setminus\{j\}
+        \end{array}
+        \right. \\
+        u \filter B^1_0 = u \filter B^1_1, \ldots, B^1_p, C
+    \end{array}
+    \right.
+    \end{eqnarray*}
+    
+    To show that $\varphi_{M}(t^\star) \in L_T$, it suffices to show that $\varphi_{M}(t^\star) \filter \sem{type(T)}$ is a legal 
+    standard position for any subtree $T'$ of $T$. This reduces to showing that for any lambda node $r'$ in the $\tau(M)$,
+    $t^\star \filter V^{(r')}$ is well-bracketed, satisfy visibility and alternation. But this follows immediately from the fact that $t$ verifies these properties (since $t$ is a traversal).
+    
+    Now for any initial $B$-move $b_j$ occurring in $\varphi_{M}(t^\star)$, there is a corresponding occurrence $r_j$ 
+    of a level-$2$ lambda node $\theroot_j$ of $\tau(M)$.
+    
+    By definition, for any $k\in \{1..p\}$, the function $\varphi_{M}$ maps nodes from the subtree of $\tau(M)$ rooted at $\theroot_k$ to moves of the game $\intersem{\Gamma \vdash B_k}$ that are hereditarily justified by some occurrence of $\varphi_M(\theroot_k)$.
+    Hence for any $k\in \{1..p\}\setminus\{j\}$ we clearly have $\varphi_{M}(t^\star) \filter T^{0k} \filter b_j = \epsilon$.
+    Moreover:
+    \begin{align*}
+        u \filter T^{0j}\filter b &= \varphi_{M}(t^\star) \filter T^{0j}\filter b \\
+         &= \varphi_{M}(t^\star \filter V^{(r')} \filter r_j ) & \mbox{by Lemma \ref{lem:varphi_proj}(i)} \\
+         &= \varphi_{M}((t\filterplus r_j)^\star) & \mbox{by Lemma \ref{lem:tstarproj_eq_tprojplusstar}} \\
+         &= \varphi_{N_j}((t\filterplus r_j)^\star) & \mbox{since $t\filterplus r_j$ is a traversal of $N_j$ by Prop.\ \ref{prop:trav_projection}} \\
+         &\in \varphi_{N_j}(\travset(N_j)^\star) \\
+         &\quad = \intersem{N_j} & \mbox{by the induction hypothesis.}
+    \end{align*}    
+    Finally, $\varphi_{M}(t^\star) \filter B^1_0 = \varphi_{M}(t^\star) \filter B^1_1, \ldots, B^1_p, C$
+    can be shown by a trivial induction on the traversal $t$. (This property follows form the way we have defined the copycat traversal rules).
 
 \end{enumerate}
 

@@ -48,12 +48,11 @@ term $M : (A_1,\ldots,A_n,o)$ can be expanded in several steps into
 $\lambda \varphi_1 \ldots \varphi_l . M \varphi_1 \ldots \varphi_l$
 where the $\varphi_i:A_i$ are fresh variables. The $\eta$-normal
 form of a term is obtained by hereditarily $\eta$-expanding every
-subterm occurring at an operand position.
-
+subterm occurring at an operand position:
 \begin{definition}[$\eta$-long normal form]
 A simply-typed term is either an abstraction or it can be written uniquely as
 $s_0 s_1 \ldots s_m$ where $m\geq0$ and $s_0$ is a variable, a $\Sigma$-constant or an abstraction.
-The $\eta$-long normal form of a term $t$, written $\elnf{t}$ or sometimes $\etanf{t}$,
+The $\eta$-long normal form of a term $t$, written $\elnf{t}$ or sometimes $\etalnf{t}$,
 is defined as follows:
 \begin{align*}
 \elnf{\lambda x . s } &= \lambda x . \elnf{s} \\
@@ -68,9 +67,7 @@ either a variable or a constant.
 
 For $n=0$, we have:
 $$\elnf{x s_1 \ldots s_m : o} = \lambda . x \elnf{s_1} \elnf{s_2} \ldots \elnf{s_m},$$
-and we deliberately keep the \textsl{dummy} lambda in the right-hand
-side of the equation as it will play an important role in the
-correspondence with game semantics.
+where the \textsl{dummy} lambda in the right-hand side of the equation is deliberately kept as it will play an important role in the correspondence with game semantics.
 
 
 
@@ -97,41 +94,6 @@ the $\elnf{s_j}$ are in $\beta$-nf. Hence $\elnf{M}$ is also in
 $\beta$-nf.
 \end{proof}
 
-\begin{lemma}[$\eta$-long normalisation preserves safety]
-If $\Gamma \vdash s$ then $\Gamma \vdash \elnf{s}$.
-\end{lemma}
-\begin{proof}
-
-First we observe that for any variable or constant $x$ we have $x \vdash \elnf{x}$. The proof is by induction on $\ord{x}$. Base case: $x$ is of ground type and we have $x \vdash x = \elnf{x}$. Step case:
-$x:(A_1, \ldots, A_n,o)$ with $n>0$. Let $\varphi_i:A_i$ be fresh variables for $1\leq i\leq n$. The (var) rules gives $\varphi_i  \vdash \varphi_i$ and since $\ord{A_i} < \ord{x}$ the induction hypothesis gives $\varphi_i \vdash \elnf{\varphi_i}$. Using (wk) we obtain $x, \overline{\varphi} \vdash \elnf{\varphi_i}$.
-The application rule gives $x, \overline{\varphi} \vdash x \elnf{\varphi_1} \ldots \elnf{\varphi_n} : o$ and the abstraction rule gives $ x \vdash \lambda \overline{\varphi} . x \elnf{\varphi_1} \ldots \elnf{\varphi_n} = \elnf{x}$.
-
-
-We now prove the lemma by induction on the structure of $s$.
-The base case (where $s$ is some variable $x$) is covered by the previous observation.
-\emph{Step case:}
-\begin{itemize}
-\item $s = x s_1 \ldots s_m$ with $x: (B_1, \ldots, B_m, A_1, \ldots, A_n, o)$ with $m\geq 0$, $n>0$ and $s_i : B_i$ for $1 \leq i \leq m$.
-
-Let $\varphi_i: A_i$ be fresh variables for $1\leq i \leq n$. By the previous observation we have $\varphi_i \vdash \elnf{\varphi_i}$ which in turn gives $\Gamma , \overline{\varphi} \vdash \elnf{\varphi_i}$ using the weakening rule.
-
-The judgement $\Gamma \vdash x s_1 \ldots s_m$ is formed using the (app) rule therefore each $s_j$ is safe for $1\leq j \leq m$. By the induction hypothesis we have $\Gamma \vdash \elnf{s_j}$ and by weakening we get $\Gamma, \overline{\varphi} \vdash \elnf{s_j}$.
-
-The application rule gives $\Gamma, \overline{\varphi} \vdash
-x \elnf{s_1} \ldots \elnf{s_m} \elnf{\varphi_1} \ldots \elnf{\varphi_n} : o$. Finally the (abs) rule gives $\Gamma \vdash \lambda \overline{\varphi} . x \elnf{s_1} \ldots \elnf{s_m}  \elnf{\varphi_1} \ldots \elnf{\varphi_n} = \elnf{s}$, the side-condition of (abs) being met since $\ord{\elnf{s}} = \ord{s}$.
-
-
-\item $s = t s_0 \ldots s_m$ where $t$ is an abstraction. Again, using the induction hypothesis it is easy to show that $\Gamma \vdash \elnf{s} = \elnf{t} \elnf{s_0} \ldots \elnf{s_m} \elnf{\varphi_1} \ldots \elnf{\varphi_n}$ holds for some fresh variables $\varphi_1$, \ldots, $\varphi_n$.
-
-\item $s = \lambda \overline{\eta} . t$ where $t$ is not an abstraction. By the induction hypothesis we have $\Gamma, \overline{\eta} \vdash \elnf{t}$ and by the abstraction rule we have $\Gamma \vdash \lambda \overline{\eta} . \elnf{t} = \elnf{s}$.
-\end{itemize}
-\end{proof}
-
-Note that in general the converse does not hold, for instance $\lambda x^o . f^{o,(o,o),o} x^o$ is unsafe although $\elnf{\lambda x . f x} = \lambda x^o \varphi^{o,o} . f x \varphi$ is safe (and not homogeneous). For terms with homogeneous types however, the converse does hold:
-\begin{lemma}
-If $\Gamma \vdash \elnf{s}$ is homogeneously safe (i.e. it is a safe judgement of the safe $\lambda$-calculus and each sequent occurring at the nodes of the proof tree is homogeneously typed) then
-$\Gamma \vdash s$ is homogeneously safe.
-\end{lemma}
 
 
 \subsection{Computation tree}
@@ -175,8 +137,8 @@ $$\pssetcomptree\tree{\lambda\overline{x}} { \tree[levelsep=3ex]{
 Let $M$ be a simply-typed term not necessarily in $\eta$-normal
 form. Let $\mathcal{D}$ denote the set of values of base type $o$.
 The \defname{computation tree} of $M$, written $\tau(M)$ is the tree
-obtained from $\tau^*(\etanf{M})$ by adding leaves to the nodes of
-$\tau^*(\etanf{M})$ as follows: every node $n \in \tau(M)$ has a
+obtained from $\tau^*(\etalnf{M})$ by adding leaves to the nodes of
+$\tau^*(\etalnf{M})$ as follows: every node $n \in \tau(M)$ has a
 child leaf labelled $v_n$, called \defname{value-leaf}, for every
 possible value $v \in \mathcal{D}$.
 \end{definition}
@@ -1169,10 +1131,12 @@ $\pview{{t_{\prefixof x}}^\star}$.
 
 
 
-\subsubsection{Projection with respect to a reference node}
+\subsubsection{Projection with respect to a reference node occurrence}
 \label{sec:tstar}
 
-We define a new projection operation:
+Let us fix a reference node-occurrence $n_0$ in a traversal $t$.
+We define the projection operation $t \filterplus n_0$ to be the subsequence of $t$ consisting of the occurrences
+whose P-view at that point contain the node $n_0$. Formally:
 \begin{definition}
  For any traversal $t\in \travset(M)$ and reference-node $n_0$ occurring in $t$, $t \filterplus n_0$
 is the subsequence of $t$ defined by induction on $t$ as follows:
@@ -1813,7 +1777,7 @@ r_0}_{M^{(r')}}$. \qed
 
 
 \begin{example}
-  
+
 \end{example}
 
 \paragraph{Traversal projection}
@@ -2155,7 +2119,8 @@ Otherwise $t =  t' \cdot \rnode{m}{m} \cdot u \cdot
 \section{Game semantics correspondence}
 \label{sec:gamesemcorresp}
 
- We are working in the general setting of an applied
+{\it Notations and assumptions:}
+We work in the general setting of an applied
 simply-typed $\lambda$-calculus with a given set of higher-order
 constants $\Sigma$. The operational semantics of these constants is
 given by certain reduction rules. We assume that a fully abstract
@@ -2164,14 +2129,11 @@ well-bracketed games. For instance, if $\Sigma$ consists
 of the \pcf\ constants then we consider the traditional
 category of games and innocent well-bracketed strategies
 \cite{hylandong_pcf,abramsky94full}.
-
-
-In the literature, a strategy is commonly defined as a set of plays closed by
-even-length prefixing. For our purpose, however, it is more convenient to represent strategies using \emph{prefix-closed} set of plays. This saves us from considerations on the parity of traversal length when
-showing the correspondence between traversals and game semantics.
+A strategy is commonly defined in the literature as a set of plays closed by
+even-length prefixing. For our purpose, however, it is more convenient to represent strategies using \emph{prefix-closed} set of plays. This will spare us some considerations on the parity of traversal length when showing the correspondence between traversals and game semantics.
  For the rest of the section we fix a simply-typed term $\Gamma \vdash M :T$. We write $\sem{\Gamma \vdash M : T}$ for its strategy denotation (in the standard cartesian closed category of games and innocent strategies \cite{abramsky94full, hylandong_pcf}). We use the notation $\prefset(S)$ to denote the prefix-closure of the set $S$.
 
-\subsection{Interaction games}
+\subsection{Interaction game semantics}
 \label{sec:interaction_semantics}
 
 In standard game semantics, terms are denoted by strategies that are computed
@@ -2180,25 +2142,19 @@ performing the composition of strategies denoting some of its subterms. Strategy
 CSP-like ``composition + hiding'' operation where all the internal moves are hidden.
 
 It is possible to use an alternative notion of composition where the internal moves are not hidden.
-The new ``model'' obtained by using such composition operation is named \emph{revealed
-semantics} in \cite{willgreenlandthesis} and \emph{interaction semantics} in \cite{DBLP:conf/sas/DimovskiGL05}.
-In addition to the moves of the standard semantics, an interaction
-semantics contains certain internal moves of the computation.
-Consequently, the denotation depends on the syntactical
-structure of the term and therefore cannot lead to a full
-abstraction result. However this semantics will prove to be useful
-to identify a correspondence between the game semantics of a term
+Game model based on such notion of composition have appeared in the literature under the name \emph{revealed
+semantics} (\cite{willgreenlandthesis})  and \emph{interaction semantics} (\cite{DBLP:conf/sas/DimovskiGL05}).
+In such game models, the denotation is computed inductively on the syntax of the term as in the standard game semantics, but certain internal
+moves may be uncovered after composition. There is not just one interaction semantics as one may desire to hide/uncover different internal moves.
+Moreover, since the denotation is computed inductively on the syntax of the term, the denotation is necessarily sensitive to the syntax and therefore such model cannot provide a full abstraction of the language considered.
+However this semantics will prove to be useful to identify a correspondence between the game semantics of a term
 and the traversals of its computation tree.
 
-We will fix our own interaction semantics where the denotation of a term is calculated from its $\eta$-normal
-form. We will introduce a notion of composition which preserves only certain internal moves
-during composition: those that are produced when
-composing two subterms of the computation tree joint by an @-node.
-When computing the strategy denoting $y N_1 \ldots
-N_p$ for some variable $y$, however, we will only preserve the internal moves of
-$N_1$, \ldots, $N_p$ while omitting the internal moves produced by
-the copy-cat projection strategy denoting $y$.
+This section presents a general setting in which interaction semantics can be defined.
+At the end of the section we will provide an example of such interaction semantics that is
+calculated inductively on the syntax of the $\eta$-long normal form of the term.
 
+\subsubsection{Revealed strategies}
 
 \begin{definition} \hfill
 \begin{itemize}
@@ -2232,6 +2188,7 @@ we use the notations $T_1 ; T_2$ and $\Lambda(T_1)$.
     \end{itemize}
 
 \end{itemize}
+Note that it is straightforward to generalize the pairing operator to a $p$-tuple operator $\langle \Sigma_1, \ldots, \Sigma_p \rangle$ for $p\geq2$ (in which case the root of the interaction game has $p$ children).
 
 For the interaction type tree to be well-defined, it is required
 that types of children nodes are consistent with the meaning of the
@@ -2255,22 +2212,10 @@ tree $T$ where
 \begin{itemize}
 \item each leaf $\sem{A}$ of $T$ is annotated with a (standard) strategy $\sigma$ on the game
 $\sem{A}$;
-\item each $;$-node is annotated with a set of indices $U \subseteq \nat$.
+\item each $;$-node is annotated with two sets of indices $U_{\sf sup}, U_{\sf prof} \subseteq \nat$ called respectively the
+\emph{superficial} and \emph{profound} uncovering indices.
 \end{itemize}
 \end{definition}
-
-The intuition behind this definition is that each $;$-node with
-children of type $A\gamear B$ and $B\gamear C$ is annotated with a
-set of indices $U$ indicating which components of $B$ should be
-uncovered when performing composition. More precisely, if $B = B_0
-\gameprod \ldots \gameprod B_l$ then the revealed strategy built by
-connecting two revealed strategies $\Sigma_1 : \intersem{A\gamear
-B}$ and $\Sigma_2 : \intersem{B\gamear C}$ using a $;$-node
-annotated with $U$, corresponds to the set of uncovered plays
-obtained by performing the usual composition while ignoring and
-copying the internal moves already in $\Sigma_1$ and $\Sigma_2$ and
-preserving any internal move produced by the composition in some
-component $B_k$ for $k \in U$.
 
 \begin{example}
 The diagrams below represent an interaction type tree $T$ (left),
@@ -2297,9 +2242,9 @@ $$
         \TR{\sem{C\gamear D}}
     }
 \hspace{1cm}
-\tree{;^{\{0\}}}
+\tree{;^{\{0\},\{0\}}}
     {
-        \tree{;^{\{0\}}}
+        \tree{;^{\emptyset,\{0\}}}
         { \TR{A\gamear B^{\sigma_1}}
           \TR{B\gamear C^{\sigma_2}}
         }
@@ -2309,8 +2254,16 @@ $$
 \end{example}
 A revealed strategy can also be written as an expression, for
 instance the strategy represented above is given by the expression
-$\Sigma = (\sigma_1 ;^{\{0\}} \sigma_2) ;^{\{0\}} \sigma_3$.
+$\Sigma = (\sigma_1 ;^{\emptyset,\{0\}} \sigma_2) ;^{\{0\},\{0\}} \sigma_3$.
 
+
+The intuition behind this definition is that if a $;$-node has
+children $\Sigma_1 : \intersem{A\gamear
+B}$ and $\Sigma_2 : \intersem{B\gamear C}$ then the two
+sets of indices $U_{\sf sup}, U_{\sf prof}$ indicate which components of $B$ should be
+uncovered when performing composition. The set $U_{\sf sup}$ permits one to uncover \emph{superficial} internal moves \ie those that are created by the top-level composition (of $\Sigma_1$ with $\Sigma_2$), while the set $U_{\sf prof}$ can be used to cover/uncover the \emph{profound} internal moves \ie those that are already present in the revealed strategies $\Sigma_1$ and $\Sigma_2$.
+The precise definition of this uncovering will be unveiled in the definition of the \emph{uncovered positions} of a revealed strategy in
+the next paragraph.
 
 \subsubsection{Uncovered play}
 
@@ -2355,7 +2308,10 @@ $\mathcal{M}_T = M_A$ and $\sim_T = id_{M_A}$. For other cases:
     where $A\leftrightarrow B$ denotes the canonical bijection between two isomorphic arenas $\sem{A}$ and $\sem{B}$; $R^\star$ denotes the smallest superset of the relation $R$ complete by transitivity, reflexivity and symmetry.
 \end{definition}
 
-We call \defname{internal move} of the game $\intersem{T}$, any move from $M_T$ which is not $\sim$-equivalent to any move in $M_{type(T)}$.
+We call \defname{internal move} of the game $\intersem{T}$, any $\sim$-class from $M_T$ that does not contain any move from $M_{type(T)}$. We denote the set of all internal moves by $M_T^{\sf int}$. The complement of $M_T^{\sf int}$ in $M_T$, called the set of \defname{external moves}, is denoted by
+$M_T^{\sf ext}$.
+
+For any subgame $A$ occurring in some node of the interaction game $T$, we write $M_{T,A}^{\sf int}$ (resp. $M_{T,A}^{\sf ext}$) for the subset of moves of $M_T^{\sf int}$ (resp. $M_T^{\sf ext}$) consisting of $\sim$-classes containing some move in $M_A$.
 \smallskip
 
 A \defname{justified interaction sequence} of moves on the interaction game $\intersem{T}$ is a sequence of moves from $M_T$ together with pointers where each move in the sequence except the first one has a link attached to it pointing to some preceding move in the sequence.
@@ -2367,18 +2323,18 @@ We define several projection operations
 over justified interaction sequences. Let $s$ be a justified
 sequence of moves on the interaction game $\intersem{T}$.
 \begin{enumerate}[i.]
-\item  Let $T'$ be a subtree of $T$. We define the projection $s\filter T'$ to be the subsequence of $s$ consisting of moves $\sim$-equivalent to some move in $M_{T'}$. This operation may cause a move to ``lose'' its pointer. This situation corresponds to
+\item  Let $T'$ be a direct subtree of $T$. We define the projection $s\filter T'$ to be the subsequence of $s$ consisting of moves $\sim$-equivalent to some move in $M_{T'}$. This operation may cause a move to ``lose'' its pointer. This situation corresponds to
     $(s \cdot m) \filter T' = (s \filter T') \cdot m$ where $m$'s justifier does not appear in $s \filter T'$.
     In that case, a new link is reassigned to $m$ that points to the only occurrence of an initial
     $\sem{type(T')}$-move in $\pview{s \filter \sem{type(T')}}$ (where $s \filter \sem{type(T')}$ is defined in iii.).
 
     Note that since $M_T$ is a set of equivalence classes with respect to $\sim$, the projection operator $\_ \filter T'$ implicitly performs the ``retagging'' of the moves to the appropriate components of each game of the interaction game $\intersem{T'}$.
 
-\item  Let $T'$ be a (non necessarily direct) subtree of $T$.
+\item  Let $T'$ be a non-direct subtree of $T$.
     We define the projection $s\filter T'$ as  $(\ldots (s\filter T^0) \filter \ldots \filter T^{k-1}) \filter T^k$
     where $T=T^0$ and $T'=T^k$ and for every $1\leq l \leq k$, $T^l$ is a direct subtree of $T^{l-1}$.
 
-\item For any sub-game $A$ of the standard game $\sem{type(T')}$ we define the projection operator $s\filter A$ to be the subsequence of $s\filter T'$ consisting of moves that are in $A$.
+\item Let $T'$ be some subtree of $T$ and $A$ be a sub-game of $\sem{type(T')}$. We define the projection operator $s\filter A$ to be the subsequence of $s\filter T'$ consisting of the $\sim$-classes that contain some move in $M_A$.
 
 \item For any initial move $m$ of the game $\sem{type(T)}$ occurring in $s$, $s \filter m$ is the subsequence of $s$ consisting of moves that are \emph{hereditarily justified} by that particular occurrence of $m$ in $s \filter type(T)$.
 % NOTE: it is important to precise ``in $s \filter type(T)$'' because $s$'justification
@@ -2409,7 +2365,7 @@ follows:
 
 
 We will now define a revealed strategy by means of a set of uncovered positions the interaction game.
-The set of positions of an interaction strategy is computed from its constituent standard strategies by a bottom-up computation starting from the leaves of the tree representing the strategy. In particular, at each ;-node the composition operation of game semantics will be applied. In contrast with the standard game semantics, however, internal nodes will not be all hidden. But in accordance with standard game semantics (see projection $\_ \filter A,C$ in \cite{abramsky:game-semantics-tutorial}), when composing $\Sigma_l:T_l^{A\gamear B}$ with $\Sigma_r:T_r{B\gamear C}$, the justification pointers are readjusted as follows: if an initial A-move $a$ has link pointing to an initial B-move itself pointing to an initial C-move $c$ then it is replaced by a link pointing directly to $c$. Thus if we take any interaction position $u$ of $\Sigma_l ; \Sigma_r$, by taking the subsequence of $u$ consisting of nodes in $A$ and $C$ only (ignoring the moves in $B$ as well as the internal moves coming from compositions that took place at deeper level in the interaction semantics) then we obtain a valid \emph{standard} position of the standard strategy that underlies the interaction strategy $\Sigma_l ; \Sigma_r$.
+The set of positions of an interaction strategy is computed from its constituent standard strategies by a bottom-up computation starting from the leaves of the tree representing the strategy. In particular, at each ;-node the composition operation of game semantics will be applied. In contrast with the standard game semantics, however, internal nodes will not be all hidden. But in accordance with standard game semantics (see projection $\_ \filter A,C$ in \cite{abramsky:game-semantics-tutorial}), when composing $\Sigma_l:T_l^{A\gamear B}$ with $\Sigma_r:T_r^{B\gamear C}$, the justification pointers are readjusted as follows: if an initial A-move $a$ has link pointing to an initial B-move itself pointing to an initial C-move $c$ then it is replaced by a link pointing directly to $c$. Thus if we take any interaction position $u$ of $\Sigma_l ; \Sigma_r$, by taking the subsequence of $u$ consisting of nodes in $A$ and $C$ only (ignoring the moves in $B$ as well as the internal moves coming from compositions that took place at deeper level in the interaction semantics) then we obtain a valid \emph{standard} position of the standard strategy that underlies the interaction strategy $\Sigma_l ; \Sigma_r$.
 
 Additionally, given a position of an interaction strategy $\Sigma$ and a sub-interaction strategy $\Sigma':T'$ of $\Sigma:T$,
 we would like to be be able to obtain a valid position of $\Sigma'$.
@@ -2417,15 +2373,8 @@ At first this may seem problematic since during composition we have lost all the
 Fortunately, these can be retrieved easily. Indeed, take an interaction sequence $u \cdot a \in Int(A,B,C)$ where $a$ is an initial A-move,
 then by P-visibility in the game $A\gamear B$, $a$ points to an initial B-move in $\pview{u\filter A,B}$. But by definition the P-view may contain only one initial B-move! Hence the original pointer associated to $a$ may be recalculated from the P-view $\pview{u\filter A,B}$.
 We now observe that this pointer-recovery procedure corresponds precisely to the way the projection operation was defined in Def.\ \ref{def:sub_interstrat_projection}. Consequently, for any position $u$ of $\Sigma_l ; \Sigma_r$ where $\Sigma_l:T_l$ and $\Sigma_r:T_r$,
-the sequence $u\filter T_l$ is a valid position of $\Sigma_l$ (and $u\filter T_r$ is a valid position of $\Sigma_r$).
-More generally, this implies that for any subtree $\Sigma':T'$ of $\Sigma:T$, and any position $u$ of the interaction strategy $\Sigma$,
-$u\filter T'$ is a valid position of $\Sigma'$.
-
-
-All the operations on strategies except composition are pointer-preserving: Let $u$ be a position of the game $\intersem{T}$, $T'$ a subtree of $T$, $A$ be a sub-game of $\sem{type(T)}$ and $A'$ be a sub-game of $\sem{type(T')}$ such that $A$ and $A'$ are $\sim$-equivalent, we say that  \defname{$u$'s justification is preserved from $A$ to $A'$} with respect to $\sim$ just if an occurrence $m$ is justified by $n$ in $u\filter A$ if and only if it is justified by the same occurrence $n$ in $u \filter A'$. This is formally expressed by the equality:
-\begin{equation*}
-u\filter A = u\filter A' \ .
-\end{equation*}
+the sequence $u\filter T_l$ is a valid position of $\Sigma_l$ and $u\filter T_r$ is a valid position of $\Sigma_r$.
+More generally, this implies that for any subtree $\Sigma':T'$ of $\Sigma:T$, and any position $u$ of the interaction strategy $\Sigma$, $u\filter T'$ is a valid position of $\Sigma'$.
 
 
 \begin{definition}
@@ -2436,54 +2385,52 @@ interaction strategy:
 \begin{itemize}[-]
 \item Leaf labelled with type $A$ and annotated by the strategy $\sigma$: The set of positions of the revealed strategy is precisely the set of positions of the standard strategy $\sigma$.
 
-\item Currying: $\Lambda(\Sigma' : \intersem{T'}) : \intersem{T} = \{ u \in L_T \ |  u \filter T' \in \Sigma' \ \zand\ u\filter type(T') = u\filter type(T) \}$.
+\item Currying: $\Lambda(\Sigma' : \intersem{T'}) : \intersem{T} = \{ u \in L_T \ |  u \filter T' \in \Sigma'  \}$.
 
 \item Pairing: $$\begin{array}{lcll}
 \langle \Sigma_1 : \intersem{T_1}, \Sigma_2 : \intersem{T_2} \rangle : \intersem{T} &= \{ u \in L_T \ | &
-   ( (u \filter T_1 \in \Sigma_1 \zand\ u \filter T_2 = \epsilon) \\
-&&  \   \zor ( u \filter T_1 = \epsilon \zand u \filter T_2 \in \Sigma_2)) \\
-&& \zand\ u\filter C^1 = u\filter C\ \zand\ u\filter A^1= u\filter A  \\
-&& \zand\ u\filter C^2 = u\filter C\ \zand\ u\filter B^2 =
-u\filter B  \}
+   (u \filter T_1 \in \Sigma_1 \zand\ u \filter T_2 = \epsilon) \\
+&&  \zor\  ( u \filter T_1 = \epsilon \zand u \filter T_2 \in \Sigma_2) \}
 \end{array}$$
-where $type(T_1) = C^1\gamear A^1$, $type(T_2) = C^2\gamear B^2$
+where $type(T_1) = C\gamear A$, $type(T_2) = C\gamear B$
 and $type(T) = C\gamear A \gameprod B$.
 
-
-\item Uncovered composition $(\Sigma_1 : \intersem{T_1})\ ;^U\ (\Sigma_2
-:\intersem{T_2})$ defined on the game $\intersem{T}$ where
-$type(T) = A \gamear C$, $type(T_1) = A^1 \gamear B_0 \gameprod
+\item Uncovered composition: Take $\Sigma_1 : \intersem{T_1}$ and $\Sigma_2 :\intersem{T_2}$ then $\Sigma_1\ \| \ \Sigma_2$ is defined on the game $\intersem{T}$ where
+$type(T) = A \gamear C$, $type(T_1) = A \gamear B_0 \gameprod
 \ldots \gameprod B_l$ and $type(T_2) = B_0 \gameprod \ldots
-\gameprod B_l \gamear C^2$. We first define
+\gameprod B_l \gamear C$ as
 \begin{align*}
 \Sigma_1 \| \Sigma_2 = \{ u \in L_T  \ | \
 & \ \ u \filter T_2 \in \Sigma_2 \\
 & \zand\ \parbox[t]{8.5cm}{for all occurrence $m$ in $u$ of an initial
                 $\sem{type(T_1)}$-move, $u \filter T_1 \filter m \in \Sigma_1$} \\
-& \zand\ u\filter C^2 = u\filter C \\
-& \zand\ \parbox[t]{8.5cm}{non-initial moves occurring in $u\filter A^1$
-have the same justifier as in $u\filter A$;} \\
-& \zand\ \parbox[t]{8.5cm}{for any initial $m$ in $A^1$, if $m$ is justified in $u \filter type(T_1)$ by $b\in B_j$,
-itself justified by $c \in C^2$ in $u \filter type(T_2)$ then $m$ is justified by $c$ in $u \filter type(T)$. \} }
+& \zand\ \parbox[t]{8.5cm}{for any initial $m$ in $A$, if $m$ is justified in $u \filter T_1$ by $b\in B_j$,
+itself justified by $c \in C^2$ in $u \filter T_2$ then $m$ is justified by $c$ in $u$. \} }
 \end{align*}
-We can now define composition as:
-$$ \Sigma_1 ;^U \Sigma_2 = \{ cover(u,(0..l)\setminus U) \ | \ u \in \Sigma_1 \| \Sigma_2 \}$$
-where $cover(u,C) = u \filter \left( M_T \setminus \Union_{j\in
-C} B_j \right)$ {\it i.e.}~the subsequence of $u$ obtained by
-removing moves in $\Union_{j\in C} B_j$. Hence
-$\Sigma_1;^{\{0..l\}} \Sigma_2 = \Sigma_1 \| \Sigma_2$.
 
-In other words $\Sigma_1 ;^U \Sigma_1$ is the set of uncovered
-plays obtained by performing the usual composition while
-ignoring and copying the internal moves from arenas in
-$\intersem{T_1}$ or $\intersem{T_2}$ and preserving any internal
-move produced by the composition in some component $B_k$ for $k
-\in U$.
+\item Partially covered composition:
+$$ \Sigma_1\ ;^{U_{\sf sup},U_{\sf prof}}\ \Sigma_2 = \{ cover(u,\{0..l\}\setminus U_{\sf sup}, \{0..l\}\setminus U_{\sf prof}) \ | \ u \in \Sigma_1 \| \Sigma_2 \}$$
+where
+$$cover(u,C_{\sf sup},C_{\sf prof}) = u \filter  M_T \setminus \left( \Union_{j\in
+C_{\sf sup}} \overbrace{M^{\sf ext}_{T_1,B_j} \union M^{\sf ext}_{T_2,B_j})}^{\hbox{superficial moves from $B_j$}} 
+\union 
+\Union_{j\in
+C_{\sf prof}} \overbrace{M^{\sf int}_{T_1,B_j} \union M^{\sf int}_{T_2,B_j})}^{\hbox{profound moves from $B_j$}} \right)$$
+Observe that $\Sigma_1 \| \Sigma_2 = \Sigma_1;^{\{0..l\},\{0..l\}} \Sigma_2$.
 \end{itemize}
 \end{definition}
 
-\begin{remark} It is straightforward to generalize the pairing operator $\langle \Sigma_1, \Sigma_2 \rangle$ to a $p$-tuple operator $\langle \Sigma_1, \ldots, \Sigma_p \rangle$ for $p\geq2$ (where the root of the interaction game has $p$ children).
-\end{remark}
+
+In words, the \emph{uncovered composition}
+$\Sigma_1 \|\ \Sigma_2$ is the set of uncovered plays obtained by performing the usual composition of the standard strategies underlying $\Sigma_1$ and $\Sigma_2$ while preserving the internal moves already in $\Sigma_1$ and $\Sigma_2$ as well as the internal move produced by the composition.
+
+Whereas if $B$ is the product game $B_0
+\gameprod \ldots \gameprod B_l$ then the \emph{partially covered composition}
+$\Sigma_1 ;^{U_{\sf sup}, U_{\sf prof}} \Sigma_2$
+only keeps the superficial internal moves from the component $B_k$ for some $k \in U_{\sf sup}$ and the profound internal moves from the component $B_k$ for some $k \in U_{\sf prof}$.
+
+
+\smallskip
 
 We write $\mathcal{I}$ for the set of all revealed strategies. Note
 that $\mathcal{I}$ is not a category since composition is not
@@ -2530,16 +2477,14 @@ The induction hypothesis permits to conclude.
 \end{proof}
 Consequently if $u\filter type(T)$ is complete then $u$ is maximal {\em i.e.~no move (and in particular no internal move) can be played after $u$}.
 
-\subsubsection{Modeling the $\lambda$-calculus in $\mathcal{I}$}
+\subsubsection{Modeling the $\lambda$-calculus in $\mathcal{I}$: the canonical revealed semantics}
 
-We would like to use revealed strategies from $\mathcal{I}$ to model terms of
-the simply-typed lambda calculus.
-Depending on the internal moves that we wish to hide, we obtain different possible interaction strategies for a given term.
-The following definition fixes a unique strategy denotation which is computed from the $\eta$-normal form of the term.
+As we have observed in the previous section, depending on the internal moves that we wish to hide, we obtain different possible revealed strategies for a given term. We now present an example of revealed semantics by mapping each term of the
+simply-typed lambda calculus to a unique revealed strategy from $\mathcal{I}$ computed from the $\eta$-normal form of the term:
 
 \begin{definition}[Revealed denotation of a term]
 \label{dfn:interactionstrategy_ofterms} Let $\pi_i$ denote the
-$i^{th}$ projection copycat strategy $\pi_i : \sem{X_1 \gameprod
+$i^{th}$ projection strategy $\pi_i : \sem{X_1 \gameprod
 \ldots \gameprod X_l} \gamear \sem{X_i}$.
 
 The \defname{revealed game denotation} or \emph{revealed strategy} of
@@ -2548,13 +2493,13 @@ $M$ written $\intersem{\Gamma \vdash M : A}$ is defined by structural induction 
 \intersem{\Gamma \vdash \alpha : o} &=&
 \sem{\Gamma \vdash \alpha : o} \quad \mbox{where } \alpha \in \Gamma \union \Sigma,\\
 \intersem{\Gamma \vdash \lambda \overline{\xi} . M  : A} &=& \Lambda^{|\overline{\xi}|}(\intersem{\Gamma, \overline{\xi} \vdash M : o })  \\
-\intersem{\Gamma  \vdash x_i N_1 \ldots N_p :o} &=& \langle \pi_i, \intersem{\Gamma \vdash N_1 : A_1}, \ldots, \intersem{\Gamma \vdash N_p : A_p}  \rangle \fatsemi ^{\{1..p\}} ev^p \\
-\intersem{\Gamma \vdash f N_1 \ldots N_p : o} &=& \langle \intersem{\Gamma \vdash N_1 : A_1}, \ldots, \intersem{\Gamma \vdash N_p : A_p} \rangle\ \|\ \sem{f} \\
+\intersem{\Gamma  \vdash x_i N_1 \ldots N_p :o} &=& \langle \pi_i, \intersem{\Gamma \vdash N_1 : A_1}, \ldots, \intersem{\Gamma \vdash N_p : A_p}  \rangle ; ^{\emptyset,\{1..p\}} ev^p, \quad X_i = A_0 \\
+\intersem{\Gamma \vdash f N_1 \ldots N_p : o} &=& \langle \intersem{\Gamma \vdash N_1 : A_1}, \ldots, \intersem{\Gamma \vdash N_p : A_p} \rangle\ \|\ \sem{f}, \quad f : A_0 \in \Sigma \\
 \intersem{\Gamma \vdash N_0 \ldots N_p : o} &=& \langle \intersem{\Gamma \vdash N_0 : A_0}, \ldots, \intersem{\Gamma \vdash N_p : A_p}  \rangle\ \|\ ev^p
 \end{eqnarray*}
-where $\Gamma = x_1 : X_1 \ldots x_l : X_l$, $f : A_0$ is a $\Sigma$-constants, $p\geq 1$, $A_0 =
-(A_1,\ldots,A_p,o)$, $ev^p$ denotes the evaluation strategy with
-$p$ parameters and $X_i = A_0$ in the second equation.
+where $\Gamma = x_1 : X_1 \ldots x_l : X_l$, $A_0 =
+(A_1,\ldots,A_p,o)$ and $ev^p$ denotes the evaluation strategy with
+$p$ parameters where $p\geq 1$.
 \end{definition}
 
 Figure \ref{fig:interaction_strategy_denotations} contains tree representations of the interaction games involved in the revealed strategy $\intersem{\Gamma \vdash M : A}$ for the application cases. These trees tell us all the information that we need about the strategy involved in $\intersem{M}$. For instance the revealed strategy $\intersem{N_0}$ is defined on the interaction game $\intersem{T^{00}}$ whose root is $A^{00} \gamear B_0$; the strategy $ev$ is defined on the interaction game $\intersem{T^1}$ whose underlying tree is constituted of a single game-node $B_0^1 \gameprod \ldots \gameprod B_p^1 \gamear o$ (thus plays of $ev$ do not contain any uncovered move).
@@ -2611,10 +2556,11 @@ Figure \ref{fig:interaction_strategy_denotations} contains tree representations 
 
 
 \begin{remark}
-The interaction strategy $\intersem{y_i N_1 \ldots N_p}$ for some variable $y_i$ preseves the
-internal moves of $N_1$, \ldots, $N_p$ but omits the
-internal moves produced by the copycat projection strategy denoting
-$y_i$.
+In our revealed semantics only certain internal moves are preserved during composition:
+when computing the denotation of an application joint by an @-node in the computation tree, all the internal moves are preserved.
+When computing the denotation of
+$\intersem{y_i N_1 \ldots N_p}$ for some variable $y_i$, however, we only preserve the internal moves of
+$N_1$, \ldots, $N_p$ while omitting the internal moves produced by the copy-cat projection strategy denoting $y_i$.
 \end{remark}
 
 \begin{example}
@@ -2639,7 +2585,7 @@ x : (o\typear o) \typear o} , \sem{ x:X \vdash \lambda y . y
 
 In the standard semantics, given two strategies $\sigma : A
 \gamear B$, $\tau : B \gamear C$ and a sequence $s \in
-\sigma \fatsemi \tau$, it is possible to (uniquely) recover the
+\sigma ; \tau$, it is possible to (uniquely) recover the
 internal moves. The uncovered sequence is written ${\bf u}(s,
 \sigma, \tau)$. The algorithm to obtain this unique uncovering is
 given in part II of \cite{hylandong_pcf}. Therefore given a term

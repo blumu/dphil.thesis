@@ -2383,7 +2383,7 @@ The set of \defname{uncovered positions} of a revealed strategy is defined induc
 structure of the annotated interaction type tree underlying the
 interaction strategy:
 \begin{itemize}[-]
-\item Leaf labelled with type $A$ and annotated by the strategy $\sigma$: The set of positions of the revealed strategy is precisely the set of positions of the standard strategy $\sigma$.
+\item Leaf labelled with type $A$ and annotated by the strategy $\sigma$: The set of positions of the revealed strategy is precisely the set of positions of the standard strategy $\sigma$ (which we have taken to be prefix-closed).
 
 \item Currying: $\Lambda(\Sigma' : \intersem{T'}) : \intersem{T} = \{ u \in L_T \ |  u \filter T' \in \Sigma'  \}$.
 
@@ -2412,8 +2412,8 @@ itself justified by $c \in C^2$ in $u \filter T_2$ then $m$ is justified by $c$ 
 $$ \Sigma_1\ ;^{U_{\sf sup},U_{\sf prof}}\ \Sigma_2 = \{ cover(u,\{0..l\}\setminus U_{\sf sup}, \{0..l\}\setminus U_{\sf prof}) \ | \ u \in \Sigma_1 \| \Sigma_2 \}$$
 where
 $$cover(u,C_{\sf sup},C_{\sf prof}) = u \filter  M_T \setminus \left( \Union_{j\in
-C_{\sf sup}} \overbrace{M^{\sf ext}_{T_1,B_j} \union M^{\sf ext}_{T_2,B_j})}^{\hbox{superficial moves from $B_j$}} 
-\union 
+C_{\sf sup}} \overbrace{M^{\sf ext}_{T_1,B_j} \union M^{\sf ext}_{T_2,B_j})}^{\hbox{superficial moves from $B_j$}}
+\union
 \Union_{j\in
 C_{\sf prof}} \overbrace{M^{\sf int}_{T_1,B_j} \union M^{\sf int}_{T_2,B_j})}^{\hbox{profound moves from $B_j$}} \right)$$
 Observe that $\Sigma_1 \| \Sigma_2 = \Sigma_1;^{\{0..l\},\{0..l\}} \Sigma_2$.
@@ -2586,21 +2586,18 @@ x : (o\typear o) \typear o} , \sem{ x:X \vdash \lambda y . y
 In the standard semantics, given two strategies $\sigma : A
 \gamear B$, $\tau : B \gamear C$ and a sequence $s \in
 \sigma ; \tau$, it is possible to (uniquely) recover the
-internal moves. The uncovered sequence is written ${\bf u}(s,
-\sigma, \tau)$. The algorithm to obtain this unique uncovering is
-given in part II of \cite{hylandong_pcf}. Therefore given a term
-$M$, we can completely uncover the internal moves of a sequence
-$s\in\sem{M}$ by performing the uncovering operation recursively at
-every @-node of the computation tree.
+internal moves from the sequence $s$ that have been hidden during composition. The algorithm to obtain this unique uncovering, written ${\bf u}(s, \sigma, \tau)$, is given in \cite[part II]{hylandong_pcf}. By performing recursively this uncovering for every application occurring in a given term, one can completely uncover the internal moves from a play of the term's denotation.
+Hence the revealed denotation can be recovered from the standard game denotation.
 
-Conversely, the standard semantics can be recovered from the
-interaction semantics by filtering the moves, keeping only those
-played in the root arena:
+Conversely, the standard semantics can be obtained from the interaction semantics by filtering out all the internal moves:
 \begin{eqnarray}
  \sem{\Gamma \vdash M : T} = \intersem{\Gamma \vdash M : T} \filter \sem{\Gamma \gamear T} \label{eqn:int_std_gamsem}
 \end{eqnarray}
 
 
+Observe that the two set of plays $\intersem{\Gamma \vdash M : T}$ and $\sem{\Gamma \vdash M : T}$ are not in bijection.  Indeed, by definition the revealed denotation is prefix-closed therefore it also contains plays ending with an internal move. Thus the revealed denotation contains more plays than the standard denotation.
+
+In fact, the set of plays $\sem{\Gamma \vdash M : T}$ is in bijection with the subset of $\intersem{\Gamma \vdash M : T}$ consisting of plays ending with an external move. Additionally, the set of complete plays of $\sem{\Gamma \vdash M : T}$ is in bijection with the set of complete interaction plays of $\intersem{\Gamma \vdash M : T}$.
 
 
 \subsection{Relating computation trees and games}
@@ -3438,7 +3435,7 @@ $\travset(M)^\star$ to $\intersem{\Gamma \vdash M : T}$:
     Moreover the former implies the latter, indeed:
     \begin{align*}
     \sem{\Gamma \vdash M : T} &= \intersem{\Gamma \vdash M : T} \filter \sem{\Gamma \gamear T} & \mbox{by Eq.\ \ref{eqn:int_std_gamsem}} \\
-            &= \varphi_M(\travset(M)^\star) \filter \sem{\Gamma \gamear T} & \mbox{by (i)}\\
+            &= \varphi_M(\travset(M)^\star) \filter \sem{\Gamma \gamear T} & \mbox{by assumption}\\
             &= \psi_M(\travset(M)^{\filter r}) & \mbox{by lemma \ref{lem:varphi_proj}(ii)}
     \end{align*}
     therefore we just need to prove $\varphi_M(\travset(M)^\star) = \intersem{\Gamma \vdash M : T}$.
@@ -3550,7 +3547,10 @@ Hence we can conclude using the induction hypothesis.
     \end{eqnarray*}
 
     Figure \ref{fig:interaction_strategy_denotations} shows
-    a tree-representation of $\intersem{M}$ which fixes the names of the different games involved in the interaction strategy.
+    a tree-representation of $\intersem{M}$ which fixes the names of the different games involved in the interaction strategy. 
+
+    Let $q_0$ and $q_0'$ be the initial
+    question of $C$ and $B_0$ respectively.
 
 %    Since $\varphi_M = \psi_M \union \varphi_{N_0} \union
 %    \varphi_{N_1}$ the induction hypothesis gives us:
@@ -3563,12 +3563,11 @@ Hence we can conclude using the induction hypothesis.
     We first prove that $\intersem{\Gamma \vdash M : T}
     \subseteq \varphi_{M}( \travset(M)^\star )$. Suppose $u
     \in \intersem{\Gamma \vdash M : T}$. We give a
-    constructive proof that there is a traversal $t$ of $M$
+    constructive proof that there is a traversal $t$
     such that $\varphi_M(t^\star) = u$ by induction on
-    $u$. Let $q_0$ and $q_0'$ be the initial
-    question of $C$ and $B_0$ respectively.
+    $u$. 
 
-    The base case $u=\epsilon$ is trivial: take $t$ to be the empty traversal formed with \rulenamet{Empty}.
+    For the base case $u=\epsilon$, take $t$ to be the empty traversal formed with \rulenamet{Empty}.
     \emph{Step case:} Suppose that $u = u' \cdot m \in
     \intersem{\Gamma \vdash M : T}$ for some move $m \in
     M_T$ where $u' = \varphi_M(t'^\star)$ for some traversal
@@ -3582,7 +3581,7 @@ Hence we can conclude using the induction hypothesis.
         \hbox{for any initial $b$ in $B_0^0 \gameprod \ldots \gameprod B_p^0$ there is $j \in \{0..p\}$ such that } \\
         \left\{\begin{array}{ll}
             u \filter T^{0j} \filter b  \in \intersem{N_j} \\
-            u \filter T^{0k} \filter b  = \epsilon \quad \mbox{ for every } k\in \{1..p\}\setminus\{j\}
+            u \filter T^{0k} \filter b  = \epsilon \quad \mbox{ for every } k\in \{0..p\}\setminus\{j\}
         \end{array}
         \right. \\
         u \filter B^1_0 = u \filter B^1_1, \ldots, B^1_p, C
@@ -3680,14 +3679,12 @@ $\varphi_M(t^\star) = \varphi_M(t'^\star) \cdot m = u$.
         Since $\varphi_{N_j}$ is a bijection from  $\travset(N_j)^\star$ to $\varphi_{N_j}(\travset(N_j)^\star )$ (by Corollary \ref{cor:varphi_bij}) this implies that  $t_j^\star = t^\star \filter V^{(r')} \filter r_j$ which in turn is equal to $(t\filterplus r_j)^\star$ by Lemma \ref{lem:tstarproj_eq_tprojplusstar} from Section \ref{sec:tstar}. But since $t_j$ and $t$ do not end with an @-node, this implies Equation \ref{equ:claim_tj}.
     \smallskip
 
-    We now show that $t$ is indeed a traversal by case analysis on the rule used to visit the last occurrence of $t_j$:
+    We now show that $t$ is indeed a traversal by case analysis on the rule used to visit the last occurrence of $t_j$ in the tree $\tau(N_j)$:
     \begin{enumerate}[(a)]
     \item  Suppose the rule used to visit $t_j^\omega$ is \emph{not} \rulenamet{InputVar} nor $\rulename{InputVar^{val}}$.
         Then by Lemma \ref{lem:subtraversal_progression}, $t$ is a traversal of $M$.
 
-    \item Suppose $t_j^\omega$ is visited with \rulenamet{InputVar}.
-
-        Then $t_j$ is of the form
+    \item Suppose $t_j^\omega$ is visited with \rulenamet{InputVar}. Then $t_j$ is of the form
         $$\Pstr[18pt]{ t_j = \ldots \cdot (z)z \cdot \ldots \cdot (n-z){t_j^\omega}}$$
         for some input-variable $z \in
         N^{\theroot_j\vdash}_{\sf var}$ occurring in
@@ -3754,9 +3751,7 @@ $\varphi_M(t^\star) = \varphi_M(t'^\star) \cdot m = u$.
     \end{figure}
 
 
-    \item Suppose $t_j$'s last move is visited with the rule $\rulename{InputVar^{val}}$.
-    The proof is obtained from the previous case by substituting $\rulename{InputVar^{val}}$
-    for $\rulename{InputVar}$.
+    \item Suppose $t_j$'s last move is visited with the rule $\rulename{InputVar^{val}}$ then the proof is the same as in the previous case but with $\rulename{InputVar^{val}}$ substituted for $\rulename{InputVar}$.
     \end{enumerate}
 
     \end{itemize}
@@ -3774,7 +3769,7 @@ $\varphi_M(t^\star) = \varphi_M(t'^\star) \cdot m = u$.
         \hbox{for any initial $b_j$ in $B_0^0 \gameprod \ldots \gameprod B_p^0$ there is $j \in \{0..p\}$ such that } \\
         \left\{\begin{array}{ll}
             u \filter T^{0j} \filter b_j  \in \intersem{N_j} \\
-            u \filter T^{0k} \filter b_j  = \epsilon \quad \mbox{ for every } k\in \{1..p\}\setminus\{j\}
+            u \filter T^{0k} \filter b_j  = \epsilon \quad \mbox{ for every } k\in \{0..p\}\setminus\{j\}
         \end{array}
         \right. \\
         u \filter B^1_0 = u \filter B^1_1, \ldots, B^1_p, C
@@ -3786,11 +3781,11 @@ $\varphi_M(t^\star) = \varphi_M(t'^\star) \cdot m = u$.
     standard position for any subtree $T'$ of $T$. This reduces to showing that for any lambda node $r'$ in the $\tau(M)$,
     $t^\star \filter V^{(r')}$ is well-bracketed, satisfy visibility and alternation. But this follows immediately from the fact that $t$ verifies these properties (since $t$ is a traversal).
 
-    Now for any initial $B$-move $b_j$ occurring in $\varphi_{M}(t^\star)$, there is a corresponding occurrence $r_j$
+    Now for any initial $B$-move $b_j \in B_j$, for some $j\in\{0..p\}$, occurring in $\varphi_{M}(t^\star)$, there is a corresponding occurrence $r_j$
     of a level-$2$ lambda node $\theroot_j$ of $\tau(M)$.
 
-    By definition, for any $k\in \{1..p\}$, the function $\varphi_{M}$ maps nodes from the subtree of $\tau(M)$ rooted at $\theroot_k$ to moves of the game $\intersem{\Gamma \vdash B_k}$ that are hereditarily justified by some occurrence of $\varphi_M(\theroot_k)$.
-    Hence for any $k\in \{1..p\}\setminus\{j\}$ we clearly have $\varphi_{M}(t^\star) \filter T^{0k} \filter b_j = \epsilon$.
+    By definition, for any $k\in \{0..p\}$, the function $\varphi_{M}$ maps nodes from the subtree of $\tau(M)$ rooted at $\theroot_k$ to moves of the game $\intersem{\Gamma \vdash B_k}$ that are hereditarily justified by some occurrence of $\varphi_M(\theroot_k)$.
+    Hence for any $k\in \{0..p\}\setminus\{j\}$ we clearly have $\varphi_{M}(t^\star) \filter T^{0k} \filter b_j = \epsilon$.
     Moreover:
     \begin{align*}
         u \filter T^{0j}\filter b &= \varphi_{M}(t^\star) \filter T^{0j}\filter b \\
@@ -3800,8 +3795,7 @@ $\varphi_M(t^\star) = \varphi_M(t'^\star) \cdot m = u$.
          &\in \varphi_{N_j}(\travset(N_j)^\star) \\
          &\quad = \intersem{N_j} & \mbox{by the induction hypothesis.}
     \end{align*}
-    Finally, $\varphi_{M}(t^\star) \filter B^1_0 = \varphi_{M}(t^\star) \filter B^1_1, \ldots, B^1_p, C$
-    can be shown by a trivial induction on the traversal $t$. (This property follows form the way we have defined the copycat traversal rules).
+    Finally we can show that $\varphi_{M}(t^\star) \filter B^1_0 = \varphi_{M}(t^\star) \filter B^1_1, \ldots, B^1_p, C$ by a trivial induction on the traversal $t$. (This property holds thanks to the copycat traversal rules which mimic the behaviour of the evaluation strategy).
 
 \end{enumerate}
 
@@ -3823,15 +3817,12 @@ $\varphi_M(t^\star) = \varphi_M(t'^\star) \cdot m = u$.
             ;^{\{1..p\}} \ ev$
     is represented on Figure \ref{fig:interaction_strategy_denotations}.
 
-    The proof is identical to the previous case except that in
-    the ``$\subseteq$'' part of the proof:
+    The proof is similar to the previous case with the following differences in the step case of the induction in the ``$\subseteq$'' part of the proof:
     \begin{itemize}
-        \item In the base case of the induction where $|u|=2$,
-        the rule \rulenamet{InputVar} is used instead of \rulenamet{App} to visit the node $x$ instead of $@$;
-        \item in the step case of the induction, for the subcase $m\in C$, the rules \rulenamet{Value$^{\lambda\mapsto{\sf var}}$} and \rulenamet{Value$^{{\sf var}\mapsto\lambda}$} are used instead of \rulenamet{Value$^{\lambda\mapsto@}$} and \rulenamet{Value$^{@\mapsto\lambda}$} respectively;
-        \item in the step case $m\in T^0$, when $m$ is hereditarily justified by a move $b \in B_j$ for
-         $j\in \{1 .. p\}$ the proof remains unchanged. The case where $m$ is hereditarily justified by a move $b \in B_0$ is treated as follows: $m$ is played by the projection strategy $\pi$ denoting $x$.
-         Since $m$ is played in $B_0' = B_1' \gameprod \ldots \gameprod B_p'$ it must be also hereditarily justified by some initial move $b'$ of $B_k'$ for some $k \in \{1.. p\}$ or by an initial move in $o'$. But moves of $B_k'$ are $\sim$-equivalent to the corresponding move in $B_k$ and similarly $o'$ is $\sim$-equivalent to $o$, therefore we fall back to the previous case of the induction where $m$ is hereditarily justified by some initial move $b\in B_k$ for $k\in \{1..p\}$ or some initial move in $o$!
+        \item when $m$ is an initial $B_0$-move, the rule \rulenamet{InputVar} is used instead of \rulenamet{App} to visit the node $x$ instead of $@$;
+        \item when $m\in C$, the rules \rulenamet{Value$^{\lambda\mapsto{\sf var}}$} and \rulenamet{Value$^{{\sf var}\mapsto\lambda}$} are used instead of \rulenamet{Value$^{\lambda\mapsto@}$} and \rulenamet{Value$^{@\mapsto\lambda}$} respectively;
+        \item when $m$ is hereditarily justified by a move $b \in B_j$ for $j\in \{1 .. p\}$ the proof remains unchanged. The case where $m$ is hereditarily justified by a move $b \in B_0$ is treated as follows: $m$ is played by the projection strategy $\pi$ denoting $x$.
+         Since $m$ is played in $B_0' = B_1' \gameprod \ldots \gameprod B_p'$ it must be also hereditarily justified by some initial move $b'$ of $B_k'$ for some $k \in \{1.. p\}$ or by an occurrence of the initial move of $o'$. But moves of $B_k'$ are $\sim$-equivalent to the corresponding move in $B_k$ and similarly $o'$ is $\sim$-equivalent to $o$, therefore we fall back to the previous case of the induction where $m$ is hereditarily justified either by some initial move $b\in B_k$ for $k\in \{1..p\}$ or by some occurrence of the initial move of $o$.
 \qed
     \end{itemize}
 \end{itemize}
@@ -3853,17 +3844,23 @@ $\varphi$ we have $\varphi(t) \sqsubseteq \varphi(t')$ which
 implies $\varphi(t) = \varphi(t')$ by maximality of $\varphi(t)$
 which in turn implies $t'=t$ by injectivity of $\varphi$. The
 other direction is proved identically using injectivity and
-monotonicity of $\varphi^-1$.
+monotonicity of $\varphi^{-1}$.
 \end{proof}
 \smallskip The following diagram recapitulates the main results of
 this section:
 $$
 \xymatrix @C=6pc{
-                                           & \travset(M)^\star \ar@/_/[dl]_{\_\ +@+\Sigma}  \ar[r]^{\varphi_M}_\cong & \intersem{M} \ar@/_/[dd]_{\_ \filter \sem{\Gamma\gamear T}} \\
-\travset(M) \ar@/_/[ur]_{\_^\star = \_\ -@-\Sigma}^{} \ar[dr]^{\_ \filter r}  \\
-                                           & \travset(M)^{\filter r} \ar[r]^{\varphi_M}_\cong & \sem{M} \ar@/_/[uu]^{\cong}_{\mbox{full uncovering}}
+                                           & \travset(M)^\star \ar@/^/[dl]^{\_\ +@+\Sigma}  \ar@/^/[r]^{\varphi_M}
+                                           & \intersem{M} 
+                                           \ar@/^/[l]^{\varphi_M^{-1}} \ar@/^/[dd]^{\_ \filter \sem{\Gamma\gamear T}} \\
+\travset(M) \ar@/^/[ur]^{\_^\star = \_\ -@-\Sigma}^{} \ar[dr]^{\_ \filter r}  \\
+                                           & \travset(M)^{\filter r} \ar@/^/[r]^{\varphi_M} & \sem{M}
+                                           \ar@/^/[l]^{\varphi_M^{-1}}
+                                           \ar@/^/[uu]^{\mbox{full uncovering}}
 }
 $$
+where each arrow $A \stackrel{f}\rightarrow B$ in the diagram indicates that
+$f(A) = B$.
 
 
 \begin{example}

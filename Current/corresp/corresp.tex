@@ -2477,7 +2477,7 @@ The induction hypothesis permits to conclude.
 \end{proof}
 Consequently if $u\filter type(T)$ is complete then $u$ is maximal {\em i.e.~no move (and in particular no internal move) can be played after $u$}.
 
-\subsubsection{Modeling the $\lambda$-calculus in $\mathcal{I}$: examples of revealed semantics}
+\subsubsection{Modeling the $\lambda$-calculus in $\mathcal{I}$: two examples of revealed semantics}
 
 We call revealed semantics of a language any model that maps each term of the language to a unique revealed strategy from $\mathcal{I}$ as defined in the previous section.
 As we have already observed, depending on the internal moves that we wish to hide, we obtain different possible revealed strategies for a given term. Hence there is not a unique way to define a revealed semantics. In this section we give two examples of such semantics.
@@ -2485,9 +2485,9 @@ As we have already observed, depending on the internal moves that we wish to hid
 Let $\pi_i$ denote the $i^{th}$ projection strategy $\pi_i : \sem{X_1 \gameprod
 \ldots \gameprod X_l} \gamear \sem{X_i}$.
 
-\begin{definition}[The canonical revealed semantics]
-\label{dfn:canonical_revealed_semantics} 
-The \defname{canonical revealed game denotation} of $M$ written $\revsem{\Gamma \vdash M : A}$ is defined by structural induction on the \emph{$\eta$-long normal form of $M$}:
+\begin{definition}[The fully-revealed semantics]
+\label{dfn:fully_revealed_semantics}
+The \defname{fully-revealed game denotation} of $M$ written $\revsem{\Gamma \vdash M : A}$ is defined by structural induction on the \emph{$\eta$-long normal form of $M$}:
 \begin{eqnarray*}
 \revsem{\Gamma \vdash \alpha : o} &=&
 \sem{\Gamma \vdash \alpha : o} \quad \mbox{where } \alpha \in \Gamma \union \Sigma,\\
@@ -2541,16 +2541,15 @@ Figure \ref{fig:interaction_strategy_denotations} shows tree representations of 
     {\small
      Node labels are of the form $\Pi : T[G]$ where $\Pi$ is a strategy, $T$ is the corresponding interaction game and $G$
      is the standard game that lies at the root of $T$.
-     
+
      Each game is annotated with a string $s \in \{ 0..p \}^*$ in the exponent to indicate the path from the root to the corresponding node in the tree. (The digits in $s$ tell the direction to take at each branch of the tree).
-     
+
     The games $A$ and $B$ are given by:
     \begin{eqnarray*}
         A &=& X_1 \gameprod \ldots \gameprod X_n\\
         B &=& \underbrace{((B_1' \gameprod \ldots \gameprod B_p') \gamear o')}_{B_0} \gameprod B_1 \gameprod \ldots \gameprod B_p
     \end{eqnarray*}
    }
-        \smallskip
        \caption{Tree-representation of the revealed strategy in the application case.}
       \label{fig:interaction_strategy_denotations}
     \end{figure}
@@ -2567,34 +2566,94 @@ Take the term $\lambda x . (\lambda f . f x) (\lambda y . y)$.
 %                    {\TR{y}}
 %    } }
 %$$
-Its canonical revealed denotation is $$\Lambda ( \langle \sem{ x:X \vdash \lambda f . f
+Its fully-revealed denotation is $$\Lambda ( \langle \sem{ x:X \vdash \lambda f . f
 x : (o\typear o) \typear o} , \sem{ x:X \vdash \lambda y . y
 : o \typear o} \rangle \| ev_2 ) \ .$$
 \end{example}
 
 
-\begin{definition}[Syntactic revealed semantics]
-\label{dfn:syntactic_revealed_semantics} The \defname{syntactic revealed game denotation} of $M$ written $\syntrevsem{\Gamma \vdash M : A}$ is defined by structural induction on the \emph{$\eta$-long normal form of $M$}. The equations are the same as in definition \ref{dfn:canonical_revealed_semantics} except for the third case:
+\begin{definition}[Syntactically-revealed semantics]
+\label{dfn:syntactic_revealed_semantics} The \defname{syntactically-revealed game denotation} of $M$ written $\syntrevsem{\Gamma \vdash M : A}$ is defined by structural induction on the \emph{$\eta$-long normal form of $M$}. The equations are the same as in definition \ref{dfn:fully_revealed_semantics} except for the third case:
 \begin{eqnarray*}
 \syntrevsem{\Gamma  \vdash x_i N_1 \ldots N_p :o} &=& \langle \pi_i, \syntrevsem{\Gamma \vdash N_1 : A_1}, \ldots, \syntrevsem{\Gamma \vdash N_p : A_p}  \rangle ; ^{\emptyset,\{1..p\}} ev^p, \quad X_i = A_0 \ .
 \end{eqnarray*}
 \end{definition}
 
-The syntactic revealed semantics differs from the canonical revealed semantics in that only certain internal moves are preserved during composition: when computing the denotation of an application joint by an @-node in the computation tree, all the internal moves are preserved.
+The syntactically-revealed denotation differs from the fully-revealed one in that only certain internal moves are preserved during composition: when computing the denotation of an application joint by an @-node in the computation tree, all the internal moves are preserved.
 When computing the denotation of
 $\revsem{y_i N_1 \ldots N_p}$ for some variable $y_i$, however, we only preserve the internal moves of
 $N_1$, \ldots, $N_p$ while omitting the internal moves produced by the copy-cat projection strategy denoting $y_i$.
 
 
-\notetoself{ Relate the two denotations: the two semantics are isomorphic: there is a transformation that takes $\revsem{\Gamma \vdash M : A}$ into $\syntrevsem{\Gamma \vdash M : A}$ 
-and another one taking $\syntrevsem{\Gamma \vdash M : A}$ into
-$\revsem{\Gamma \vdash M : A}$.
+\subsubsection{Relating the two revealed denotations}
+    \label{subsub:defdelta}
 
-Let us denote $\delta$ for the first transformation: what it does is to duplicate certain external moves into internal moves according to the copy-cat strategies $\pi_i$ and $ev$ in the case $y_i N_1 \ldots N_p$ of the definition.}
+    As one would expect, the two revealed denotations that we have just introduced are in fact isomorphic: there is a transformation that maps $\revsem{\Gamma \vdash M : A}$ to $\syntrevsem{\Gamma \vdash M : A}$ and another one mapping $\syntrevsem{\Gamma \vdash M : A}$ to $\revsem{\Gamma \vdash M : A}$. That is what we are about to show in this section.
+    
+    \paragraph{The two revealed denotations are isomorphic}
+
+    Take a term $M$ of the form $x_i N_1 \ldots N_p$ (This is the only case where the two revealed denotations differ). We use the notations introduced in Figure \ref{fig:interaction_strategy_denotations}.
+    We have $\revsem{\Gamma \vdash M : o} =  \Sigma \|  ev$ and $\syntrevsem{\Gamma \vdash M : o} =  \Sigma_s ;^{\emptyset,\{1..p\}} ev$ where $\Sigma = \langle \pi_i, \revsem{\Gamma \vdash N_1 : B_1}, \ldots, \revsem{\Gamma \vdash N_p : B_p} \rangle$ and $\Sigma_s = \langle \pi_i, \syntrevsem{\Gamma \vdash N_1 : B_1}, \ldots, \syntrevsem{\Gamma \vdash N_p : B_p} \rangle$. For both denotations, the compositions takes place on the game
+    $$ X_1 \times \ldots \overbrace{((B_1'' \times \ldots \times B_p'') \typear o'')}^{X_i} \ldots \times X_n \stackrel\Sigma\longrightarrow \psframebox[linestyle=dashed]{ \overbrace{((B_1' \times \ldots \times B_p') \typear o')}^{B_0} \times B_1 \times \ldots \times B_p }\stackrel{ev}\longrightarrow o$$
+    where the dashed-line frame contains the internal components of the game. We will represent the superficial internal moves using the symbols $\opmove$, $\pomove$, $\omove$, $\pmove$ for OP-move, PO-move, O-move and P-move respectively.
+
+    In $\revsem{\Gamma \vdash M : o}$, all the internal moves (including the profound ones) from $B_k$ for $k\in \{0..p\}$ are preserved, whereas in $\syntrevsem{\Gamma \vdash M : o}$, the internal moves from $B_0$ as well as the superficial internal moves in $B_k$ for $k\in \{1..p\}$ are hidden.
+    
+    
+    Clearly, $\syntrevsem{\Gamma \vdash M : o}$ can be obtained from $\Sigma_s \| ev$ and conversely. Every play $u$ of $\Sigma_s \| ev$ corresponds to the play of $\syntrevsem{\Gamma \vdash M : o}$ obtained by removing all the superficial $B_k$-moves from $u$; and for any $u \in \syntrevsem{\Gamma \vdash M : o}$, there is a unique play $v$ of $\Sigma_s \| ev$ ending with an external move such that we obtain $u$ back after removing the superficial internal moves from $v$.
+    Hence by repeating the same argument recursively at every sub-term of $M$ of the form $y_i N_1 \ldots N_p$, we obtain that
+    there exists a reversible transformation mapping $\syntrevsem{\Gamma \vdash M : o}$ to $\revsem{\Gamma \vdash M : o}$.
+
+    \paragraph{Recovering the fully-revealed semantics from the syntactically-revealed semantics}
+    
+  
+    We now define explicitly the transformation that permits one to retrieve $\revsem{\Gamma \vdash M : o}$ from $\syntrevsem{\Gamma \vdash M : o}$. To achieve this, it suffices to define constructively the function mentioned in the previous paragraph which given an interaction play $u$ of $\syntrevsem{\Gamma \vdash M : o}$ returns $v$, the unique play of $\syntrevsem{\Gamma \vdash M : o}$ ending with an external move such that removing the superficial internal moves from $v$ gives us back $u$. Let us call $\delta$ this transformation.
+
+    Let us analyse the structure of an interaction play of $\Sigma \|  ev$. The diagram in Figure \ref{fig:flowdiag_moves_interplay_varcase} gives us a precise description of the flow of an interaction play. The nodes of the diagram represent the moves. A node label is of the form $A,\alpha$ where $\alpha \in \{\omove,\pmove,\pomove,\opmove\}$: the first component is the game in which the move is played and the second indicates which player is making the move. The notation $X_i.B''_k$ is used to denote the sub-component $B''_k$ of $X_i$. The edges indicate the moves that are allowed in a given state of the game. The game starts at node $C,\omove$ which correspond to the initial move of the overall game. Each edge is labelled with the strategy that plays the corresponding move. For instance the edge $B_k,\pomove \stackrel{ev}\longrightarrow B_0,\opmove$ tells us that if $B_k,\pomove$ is the last move played then the evaluation strategy allows the other user to respond with the move $B_k,\pomove$. The copy-cat strategies are highlighted with dashed-edges.
+    
+    We observe that every (superficial) internal move played in some component $B_k$ for $k\in \{0..p\}$ is either a copy of a previous external move, or it is subsequently copied to a external component by the copy-cat strategy $ev$ or $\pi_i$.  For instance, the $\opmove$-moves from $B_0$ are copies by $ev$ of O-moves from $C$ and $\pomove$-moves from $B_k$ for $k \in \{1..p\}$; the $\pomove$-moves from $B_0$ are copies by $\pi_i$ of O-move from $X_i$; and $\opmove$-moves from $B_k$ for every $k \in \{1..p\}$ are copies by $ev$ of $\pomove$-moves from the components $B_k'$ of $B_0$.
+    
+    Moreover, each move on the diagram of Figure \ref{fig:flowdiag_moves_interplay_varcase} has either a single outgoing copy-cat edge in which case the following move is uniquely determined, or it has multiple out-going edges all labelled by $\Sigma$ in which case the strategy $\Sigma$ determines which moves will be played next.
+    Hence for any two consecutive move in a play of $\syntrevsem{\Gamma \vdash M : o}$ we can uniquely recover all the internal moves occurring between the two moves in the corresponding play of $\revsem{\Gamma \vdash M : o}$ by following the arrows of the flow diagram.
+    \begin{figure}
+    \begin{center}
+    $\begin{psmatrix}[rowsep=15pt,colsep=2cm]%
+          [name=B0_op]B_0, \opmove & & & [name=C_o] C, \omove \\
+                      & [name=Xi_p] X_i, \pmove \\
+                      & [name=XiBk_o] X_i.B_k'', \omove & [name=Xio_o] X_i.o'',\omove \\[0pt]
+          [name=B0Bk_po] B_0.B'_k, \pomove & & [name=B0o_po] B_0.o',\pomove & [name=C_p] C,\pmove \\[0pt]
+          [name=Bk_op]B_k,\opmove \\
+          & [name=Xj_p]{X_j}_{j\neq i},\pmove \\
+          & [name=Xj_o]{X_j}_{j\neq i},\omove \\[0pt]
+          [name=Bk_po]B_k,\pomove
+        \end{psmatrix}
+    \ncline[linestyle=dashed]{->}{C_o}{B0_op}\nbput{ev}
+    \ncline[linestyle=dashed]{->}{B0_op}{Xi_p}\naput{\pi_i}
+    \ncline[linestyle=dashed]{->}{XiBk_o}{B0Bk_po}\nbput{\pi_i}\ncline[linestyle=dashed]{->}{Xio_o}{B0o_po}\naput{\pi_i}
+    \ncline[linestyle=dashed]{->}{B0o_po}{C_p}\naput{ev}
+    \ncline[linestyle=dashed]{->}{B0Bk_po}{Bk_op}\naput{ev}
+    \ncarc[arcangle=45,linestyle=dashed]{->}{Bk_po}{B0_op}\naput{ev}
+    % non-copycat moves
+    \ncline{->}{Bk_op}{Bk_po}\naput{\Sigma}
+    \ncline{->}{Bk_op}{Xj_p}\naput{\Sigma}
+    \ncline[offset=4pt]{->}{Xj_p}{Xj_o}\naput{env}
+    \ncline[offset=4pt]{->}{Xj_o}{Xj_p}\naput{\Sigma}
+    \ncline{->}{Xj_o}{Bk_po}\naput{\Sigma}
+    \ncline{->}{Xj_p}{XiBk_o}\naput{env}
+    \ncline{->}{Xi_p}{XiBk_o}\nbput{env}
+    \ncline{->}{Xi_p}{Xio_o}\naput{env}
+    \nccurve[angleA=160,angleB=170]{->}{Bk_op}{Xi_p}\naput{\Sigma}
+    \nccurve[angleA=40,angleB=-30]{<->}{Xj_o}{Xi_p}\nbput{\Sigma}
+    $%
+    \end{center}
+    where $k\in\{1..p\}$.
+    \caption{Flow-diagram for interaction plays of $\revsem{\Gamma \vdash x_i N_1 \ldots N_p}$.}
+    \label{fig:flowdiag_moves_interplay_varcase}
+    \end{figure}
 
 
-
-\subsubsection{From interaction semantics to standard semantics and vice-versa}
+\subsubsection{Obtaining the revealed denotation from the standard one and vice-versa}
+\label{subsec:relating_revealed_and_standard_denotation}
 
 In the standard semantics, given two strategies $\sigma : A
 \gamear B$, $\tau : B \gamear C$ and a sequence $s \in
@@ -2602,10 +2661,11 @@ In the standard semantics, given two strategies $\sigma : A
 internal moves from the sequence $s$ that have been hidden during composition. The algorithm to obtain this unique uncovering, written ${\bf u}(s, \sigma, \tau)$, is given in \cite[part II]{hylandong_pcf}. By performing recursively this uncovering for every application occurring in a given term, one can completely uncover the internal moves from a play of the term's denotation.
 Hence the revealed denotation can be recovered from the standard game denotation.
 
-Conversely, the standard semantics can be obtained from the interaction semantics by filtering out all the internal moves:
+Conversely, the standard denotation can be obtained from the revealed denotation by filtering out all the internal moves:
 \begin{eqnarray}
  \sem{\Gamma \vdash M : T} = \revsem{\Gamma \vdash M : T} \filter \sem{\Gamma \gamear T} \label{eqn:int_std_gamsem}
 \end{eqnarray}
+Of course, this equality remains valid if we use the syntactically revealed semantics instead of the fully revealed semantics.
 
 
 Observe that the two set of plays $\revsem{\Gamma \vdash M : T}$ and $\sem{\Gamma \vdash M : T}$ are not in bijection.  Indeed, by definition the revealed denotation is prefix-closed therefore it also contains plays ending with an internal move. Thus the revealed denotation contains more plays than the standard denotation.
@@ -3429,29 +3489,27 @@ computation tree:
 \begin{theorem}[The Correspondence Theorem]
 \label{thm:correspondence}
  For any simply-typed term $\Gamma \vdash M :T$,
-the function $\varphi_M$ defines a bijection from $\travset(M)^{\filter
-r}$ to $\sem{\Gamma \vdash M : T}$ and a bijection from
-$\travset(M)^\star$ to $\revsem{\Gamma \vdash M : T}$:
+the $\varphi_M$ defines a bijection from $\travset(M)^\star$ to $\syntrevsem{\Gamma \vdash M : T}$ and $\psi_M$ defines a bijection from $\travset(M)^{\filter
+r}$ to $\sem{\Gamma \vdash M : T}$:
 \begin{eqnarray*}
- \varphi_M  &:& \travset(\Gamma \vdash M : T)^\star \stackrel{\cong}{\longrightarrow} \revsem{\Gamma \vdash M :T} \\
+ \varphi_M  &:& \travset(\Gamma \vdash M : T)^\star \stackrel{\cong}{\longrightarrow} \syntrevsem{\Gamma \vdash M :T} \\
  \psi_M  &:& \travset(\Gamma \vdash M : T)^{\filter r} \stackrel{\cong}{\longrightarrow} \sem{\Gamma \vdash M :T} \ .
 \end{eqnarray*}
-
 \end{theorem}
 
 \begin{remark}
 \label{rem:corresp_proofreduction}
     By corollary \ref{cor:varphi_bij}, we just need to show that
-    $\varphi_M$ defines \emph{surjections}, that is to
-    say: $\varphi_M(\travset(M)^\star) = \revsem{\Gamma \vdash M : T}$
+    $\varphi_M$ and $\psi_M$ are \emph{surjective}, that is to
+    say: $\varphi_M(\travset(M)^\star) = \syntrevsem{\Gamma \vdash M : T}$
     and $\psi_M(\travset(M)^{\filter r}) = \sem{\Gamma \vdash M : T}$.
     Moreover the former implies the latter, indeed:
     \begin{align*}
-    \sem{\Gamma \vdash M : T} &= \revsem{\Gamma \vdash M : T} \filter \sem{\Gamma \gamear T} & \mbox{by Eq.\ \ref{eqn:int_std_gamsem}} \\
+    \sem{\Gamma \vdash M : T} &= \syntrevsem{\Gamma \vdash M : T} \filter \sem{\Gamma \gamear T} & \mbox{by Eq.\ \ref{eqn:int_std_gamsem} from Sec. \ref{subsec:relating_revealed_and_standard_denotation}} \\
             &= \varphi_M(\travset(M)^\star) \filter \sem{\Gamma \gamear T} & \mbox{by assumption}\\
             &= \psi_M(\travset(M)^{\filter r}) & \mbox{by lemma \ref{lem:varphi_proj}(ii)}
     \end{align*}
-    therefore we just need to prove $\varphi_M(\travset(M)^\star) = \revsem{\Gamma \vdash M : T}$.
+    therefore we just need to prove $\varphi_M(\travset(M)^\star) = \syntrevsem{\Gamma \vdash M : T}$.
 \end{remark}
 \smallskip
 
@@ -3485,13 +3543,13 @@ $\travset(M)^\star$ to $\revsem{\Gamma \vdash M : T}$:
 Let $\Gamma \vdash M : T$ be a simply-typed term where $\Gamma =
 x_1:X_1,\ldots x_n:X_n$. We assume that $M$ is already in
 $\eta$-long normal form. By remark \ref{rem:corresp_proofreduction} we just need to
-show that $\varphi_M(\travset(M)^\star) = \revsem{\Gamma \vdash M : T}$.
+show that $\varphi_M(\travset(M)^\star) = \syntrevsem{\Gamma \vdash M : T}$.
 We proceed by induction on the structure of $M$:
 \begin{itemize}[$\bullet$]
     \item (abstraction) $M \equiv \lambda \overline{\xi}. N : \overline{Y} \typear B$ where $\overline{\xi} = \xi_1:Y_1,\ldots \xi_n:Y_n$. On the first hand we have:
 \begin{eqnarray*}
-\revsem{\Gamma \vdash \lambda \overline{\xi}. N:T} &=& \Lambda^n( \revsem{\overline{\xi}, \Gamma \vdash N: B } ) \\
-        &\simeq& \revsem{\overline{\xi}, \Gamma \vdash N: B } \ .
+\syntrevsem{\Gamma \vdash \lambda \overline{\xi}. N:T} &=& \Lambda^n( \syntrevsem{\overline{\xi}, \Gamma \vdash N: B } ) \\
+        &\simeq& \syntrevsem{\overline{\xi}, \Gamma \vdash N: B } \ .
 \end{eqnarray*}
 On the other hand, the computation tree $\tau(N)$ is isomorphic to
 $\tau(\lambda \xi_1\ldots \xi_n . N)$ (up to a renaming of the root
@@ -3500,7 +3558,7 @@ $\travset(\lambda \xi_1\ldots \xi_n . N)$.
 Hence we can conclude using the induction hypothesis.
 
   \item (variable) $M \equiv x_i$. Since $M$ is in $\eta$-long normal form, $x$ must be of ground
-      type. The computation tree $\tau(M)$ and the arena $\revsem{\Gamma \gamear o}$ are represented below
+      type. The computation tree $\tau(M)$ and the arena $\syntrevsem{\Gamma \gamear o}$ are represented below
       (value leaves and answer moves are not represented):
         $$ \pssetarena\tree[levelsep=6ex]{ \lambda }{\TR{x_i}} \hspace{2cm}
         \tree{ q_0 }
@@ -3514,7 +3572,7 @@ Hence we can conclude using the induction hypothesis.
         Let $\pi_i$ denote the $i$th projection of the interaction game
         semantics. We have:
         \begin{align*}
-        \revsem{M} &= \pi_i = \prefset(\{ \Pstr{(q0){q_0} \cdot (qi){q^i} \cdot (vqi-qi){v_{q^i}} \cdot (vq0-q0){v_{q_0}} } \ | \ v\in \mathcal{D} \})\ .
+        \syntrevsem{M} &= \pi_i = \prefset(\{ \Pstr{(q0){q_0} \cdot (qi){q^i} \cdot (vqi-qi){v_{q^i}} \cdot (vq0-q0){v_{q_0}} } \ | \ v\in \mathcal{D} \})\ .
         \end{align*}
 
         It is easy to see that traversals of $M$ are precisely
@@ -3524,7 +3582,7 @@ Hence we can conclude using the induction hypothesis.
         \travset(M)$ and since $\varphi_M(\lambda) = q_0$ and
         $\varphi_M(x_i) = q^i$, we have:
         $$ \varphi_M(\travset(M)^\star) = \varphi_M(\travset(M)) = \varphi_M(\prefset( \lambda \cdot x_i \cdot v_{x_i} \cdot v_{\lambda}))
-         = \revsem{M} \ .
+         = \syntrevsem{M} \ .
         $$
 
 
@@ -3548,19 +3606,18 @@ Hence we can conclude using the induction hypothesis.
 
     We have:
     $$
-    \revsem{\Gamma \vdash M : o}
-            =  \underbrace{\langle \revsem{\Gamma \vdash N_0 : B_0}, \ldots, \revsem{\Gamma \vdash N_p : B_p} \rangle}_{\Sigma}\ \| \ ev
+    \syntrevsem{\Gamma \vdash M : o}
+            =  \underbrace{\langle \syntrevsem{\Gamma \vdash N_0 : B_0}, \ldots, \syntrevsem{\Gamma \vdash N_p : B_p} \rangle}_{\Sigma}\ \| \ ev
     $$
 
     We define the games $A$, $B$ and $C$ are defined as follows:
     \begin{eqnarray*}
-        A &=& \Gamma = X_1 \gameprod \ldots \gameprod X_n\\
+        A &=& X_1 \gameprod \ldots \gameprod X_n\\
         B &=& \underbrace{((B_1' \gameprod \ldots \gameprod B_p') \gamear o')}_{B_0} \gameprod B_1 \gameprod \ldots \gameprod B_p\\
         C &=& o \ .
     \end{eqnarray*}
 
-    Figure \ref{fig:interaction_strategy_denotations} shows
-    a tree-representation of $\revsem{M}$ which fixes the names of the different games involved in the interaction strategy.
+    We refer the reader to Figure \ref{fig:interaction_strategy_denotations} from the previous section for a tree-representation of $\syntrevsem{M}$ which fixes the names of the different games involved in the interaction strategy.
 
     Let $q_0$ and $q_0'$ be the initial
     question of $C$ and $B_0$ respectively.
@@ -3568,32 +3625,32 @@ Hence we can conclude using the induction hypothesis.
 %    Since $\varphi_M = \psi_M \union \varphi_{N_0} \union
 %    \varphi_{N_1}$ the induction hypothesis gives us:
 %    \begin{align}
-%    \varphi_{M} (\travset(N_0)^\star) &= \revsem{\Gamma \vdash N_0 : B_0} \label{eqn:ih_1} \\
-%    \varphi_{M}(\travset(N_1)^\star) &= \revsem{\Gamma \vdash N_1 : B_1} \label{eqn:ih_2}
+%    \varphi_{M} (\travset(N_0)^\star) &= \syntrevsem{\Gamma \vdash N_0 : B_0} \label{eqn:ih_1} \\
+%    \varphi_{M}(\travset(N_1)^\star) &= \syntrevsem{\Gamma \vdash N_1 : B_1} \label{eqn:ih_2}
 %    \end{align}
 \begin{enumerate}
 \item[$\subseteq$]
-    We first prove that $\revsem{\Gamma \vdash M : T}
+    We first prove that $\syntrevsem{\Gamma \vdash M : T}
     \subseteq \varphi_{M}( \travset(M)^\star )$. Suppose $u
-    \in \revsem{\Gamma \vdash M : T}$. We give a
+    \in \syntrevsem{\Gamma \vdash M : T}$. We give a
     constructive proof that there is a traversal $t$
     such that $\varphi_M(t^\star) = u$ by induction on
     $u$.
 
     For the base case $u=\epsilon$, take $t$ to be the empty traversal formed with \rulenamet{Empty}.
     \emph{Step case:} Suppose that $u = u' \cdot m \in
-    \revsem{\Gamma \vdash M : T}$ for some move $m \in
+    \syntrevsem{\Gamma \vdash M : T}$ for some move $m \in
     M_T$ where $u' = \varphi_M(t'^\star)$ for some traversal
     $t'$ of $\tau(M)$.
 
-    By unraveling the definition of $u \in \revsem{\Gamma \vdash M : T}$ we have:
+    By unraveling the definition of $u \in \syntrevsem{\Gamma \vdash M : T}$ we have:
     \begin{eqnarray*}
     && \left\{
     \begin{array}{ll}
         u \in L_T \\
         \hbox{for any initial $b$ in $B_0^0 \gameprod \ldots \gameprod B_p^0$ there is $k \in \{0..p\}$ such that } \\
         \left\{\begin{array}{ll}
-            u \filter T^{0k} \filter b  \in \revsem{N_k} \\
+            u \filter T^{0k} \filter b  \in \syntrevsem{N_k} \\
             u \filter T^{0k'} \filter b  = \epsilon \quad \mbox{ for every } k'\in \{0..p\}\setminus\{k\}
         \end{array}
         \right. \\
@@ -3647,7 +3704,7 @@ $\varphi_M(t^\star) = u$.
     Thus since $\varphi_M(t'^\omega) = m^1$, $t'^\omega$ must be an occurrence of the node $y_k$, the $k^{th}$ variable bound by $\lambda \overline{y}$. Hence using the rule \rulenamet{Var} we can form the traversal $t= t' \cdot \theroot_k$ verifying $\varphi_M(t^\star) = \varphi_M(t'^\star) \cdot m = u$.
 
 
-    \item Suppose $m\in T^0$ and $m$ is not initial in $B$. In $u \filter T^0$, $m$ must be hereditarily justified by some initial move $b$ in $B_k$ for some $k\in \{0..p\}$. Since $u \filter T^{0k} \filter b \in \revsem{N_k}$, the outermost induction hypothesis gives us:
+    \item Suppose $m\in T^0$ and $m$ is not initial in $B$. In $u \filter T^0$, $m$ must be hereditarily justified by some initial move $b$ in $B_k$ for some $k\in \{0..p\}$. Since $u \filter T^{0k} \filter b \in \syntrevsem{N_k}$, the outermost induction hypothesis gives us:
         \begin{equation}
         u \filter T^{0k} \filter b = \varphi_{N_k}(t_k^\star)  \label{eqn:corresp_outmost_ih}
         \end{equation}
@@ -3714,7 +3771,7 @@ $\varphi_M(t^\star) = u$.
 
         Since $t_k^\omega$ is her.\ enabled by the the root $\theroot_k$ which itself is enabled by an application node, it cannot be her.\ enabled by the root $\theroot$ in $M$. Therefore the move $\psi_{N_k}(t_k^\omega)$ is not played in $A$ (since only node that are her.\ enabled by the root are mapped to move in $A$). Hence $\psi_{N_k}(t_k^\omega) \in B_k$. Similarly, $\psi_{N_k}(z) \in B_k$.
 
-        Now let us consider the top-most composition in the interaction strategy $\revsem{M}$: the interaction strategy $\Sigma: A \gamear B$ get composed with the evaluation copy-cat strategy $ev:B \gamear o$. Consider $ u \filter A,B,C$ - the sub-sequence of $u$ containing only moves involved in this top-most composition ({\it i.e.}\ where the internal moves coming from other compositions at deeper level in the interaction semantics are removed). Since $z$ is a variable node, the move $m^3 = \psi_{N_k}(z) \in B_k$ is a P-move with \emph{respect to the game} $\sem{A \gamear B_k}$, and therefore it is an O-move in the game $\sem{B \gamear o}$. Consequently the strategy $ev$ is responsible to play at $u_{\prefixof m^3} \filter A, B, C$. Let us call $m^2$ the move played by $ev$ which immediately follows $m^1$ in $u\filter A,B,C$.
+        Now let us consider the top-most composition in the interaction strategy $\syntrevsem{M}$: the interaction strategy $\Sigma: A \gamear B$ get composed with the evaluation copy-cat strategy $ev:B \gamear o$. Consider $ u \filter A,B,C$ - the sub-sequence of $u$ containing only moves involved in this top-most composition ({\it i.e.}\ where the internal moves coming from other compositions at deeper level in the interaction semantics are removed). Since $z$ is a variable node, the move $m^3 = \psi_{N_k}(z) \in B_k$ is a P-move with \emph{respect to the game} $\sem{A \gamear B_k}$, and therefore it is an O-move in the game $\sem{B \gamear o}$. Consequently the strategy $ev$ is responsible to play at $u_{\prefixof m^3} \filter A, B, C$. Let us call $m^2$ the move played by $ev$ which immediately follows $m^1$ in $u\filter A,B,C$.
 
         We claim that $m^3$ and $m^2$ are also consecutive in $u$. That is to say that no internal moves generated from the        other compositions at deeper levels in the interaction strategy can ever be played between $m^3$ and $m^2$. Indeed, firstly the strategy $ev$ is a pure standard strategy thus it does not play any internal move. Furthermore, suppose that the strategy $\Sigma$ comes from the composition $\Sigma_l \| \Sigma_r$ of two interaction strategies $\Sigma_l: A \gamear D$ and $\Sigma_r: D\gamear B$ for some game $D$, then by the Switching Condition for function-space game (\cite{hylandong_pcf}) the Opponent cannot switch of component, and thus the move following $m^3$ in the interaction sequence $u \filter A,D,B$ must belong to $B$. Hence internal moves from $D$ cannot be played immediately after $m^3$.
 
@@ -3756,7 +3813,7 @@ $\varphi_M(t^\star) = u$.
     \ncarc[nodesep=3pt,ncurv=1,angleA=90,angleB=180]{->}{m}{m3}
     \ncline[nodesep=3pt]{->}{m2}{q0}
     $$
-    \caption{Example of a sequence $u\filter A,B,C$ for $u\in\revsem{M}$ and $l=1$.}
+    \caption{Example of a sequence $u\filter A,B,C$ for $u\in\syntrevsem{M}$ and $l=1$.}
     \label{fig:example_seq_u}
     \end{figure}
 
@@ -3767,18 +3824,18 @@ $\varphi_M(t^\star) = u$.
     \end{itemize}
 
 \item[$\supseteq$]
-  The converse, $\varphi_{M}( \travset(M)^\star) \subseteq \revsem{M}$, is the easy part of the proof.
+  The converse, $\varphi_{M}( \travset(M)^\star) \subseteq \syntrevsem{M}$, is the easy part of the proof.
 
   Let $u$ be as sequence of $\varphi_{M}( \travset(M)^\star)$. Then
   $u = \varphi_{M}(t^\star)$ for some traversal $t$ of $\tau(M)$. We need to show that
-  $u$ is a position of $\revsem{\Gamma \vdash M : T}$ that is to say:
+  $u$ is a position of $\syntrevsem{\Gamma \vdash M : T}$ that is to say:
     \begin{eqnarray*}
     && \left\{
     \begin{array}{ll}
         u \in L_T \\
         \hbox{for any initial $b$ in $B_0^0 \gameprod \ldots \gameprod B_p^0$ there is $k \in \{0..p\}$ such that } \\
         \left\{\begin{array}{ll}
-            u \filter T^{0k} \filter b  \in \revsem{N_k} \\
+            u \filter T^{0k} \filter b  \in \syntrevsem{N_k} \\
             u \filter T^{0k'} \filter b  = \epsilon \quad \mbox{ for every } k'\in \{0..p\}\setminus\{k\}
         \end{array}
         \right. \\
@@ -3788,22 +3845,22 @@ $\varphi_M(t^\star) = u$.
     \end{eqnarray*}
 
     To show that $\varphi_{M}(t^\star) \in L_T$, it suffices to show that $\varphi_{M}(t^\star) \filter \sem{type(T)}$ is a legal
-    standard position for any subtree $T'$ of $T$. This reduces to showing that for any lambda node $r'$ in the $\tau(M)$, 
+    standard position for any subtree $T'$ of $T$. This reduces to showing that for any lambda node $r'$ in the $\tau(M)$,
     $t^\star \filter V^{(r')}$ is well-bracketed, satisfy visibility and alternation. But this follows immediately from the fact that $t$ verifies these properties (since $t$ is a traversal).
 
     Now for any initial $B$-move $b \in B_k$, for some $k\in\{0..p\}$, occurring in $\varphi_{M}(t^\star)$, there is a corresponding occurrence $r_k$
     of a level-$2$ lambda node $\theroot_k$ of $\tau(M)$.
 
-    By definition, the function $\varphi_{M}$ maps nodes from the subtree of $\tau(M)$ rooted at $\theroot_{k'}$, for any $k'\in \{0..p\}$, to moves of the game $\revsem{\Gamma \vdash B_{k'}}$ that are hereditarily justified by some occurrence of $\varphi_M(\theroot_{k'})$.
+    By definition, the function $\varphi_{M}$ maps nodes from the subtree of $\tau(M)$ rooted at $\theroot_{k'}$, for any $k'\in \{0..p\}$, to moves of the game $\syntrevsem{\Gamma \vdash B_{k'}}$ that are hereditarily justified by some occurrence of $\varphi_M(\theroot_{k'})$.
     Hence for any $k'\in \{0..p\}\setminus\{k\}$ we clearly have $\varphi_{M}(t^\star) \filter T^{0k'} \filter b = \epsilon$.
-    Moreover: 
+    Moreover:
     \begin{align*}
         u \filter T^{0k}\filter b &= \varphi_{M}(t^\star) \filter T^{0k}\filter b \\
          &= \varphi_{M}(t^\star \filter V^{(r')} \filter r_k ) & \mbox{by Lemma \ref{lem:varphi_proj}(i)} \\
          &= \varphi_{M}((t\filterplus r_k)^\star) & \mbox{by Lemma \ref{lem:tstarproj_eq_tprojplusstar}} \\
          &= \varphi_{N_k}((t\filterplus r_k)^\star) & \mbox{since $t\filterplus r_k$ is a traversal of $N_k$ by Prop.\ \ref{prop:trav_projection}} \\
          &\in \varphi_{N_k}(\travset(N_k)^\star) \\
-         &\quad = \revsem{N_k} & \mbox{by the induction hypothesis.}
+         &\quad = \syntrevsem{N_k} & \mbox{by the induction hypothesis.}
     \end{align*}
     Finally we can show that $\varphi_{M}(t^\star) \filter B^1_0 = \varphi_{M}(t^\star) \filter B^1_1, \ldots, B^1_p, C$ by a trivial induction on the traversal $t$. (This property holds thanks to the copycat traversal rules which mimic the behaviour of the evaluation strategy).
 
@@ -3820,50 +3877,34 @@ $\varphi_M(t^\star) = u$.
             }
         }
     $$
-    The revealed strategy
-    $\revsem{\Gamma \vdash M : o} =  \underbrace{\langle
-            \pi_i, \revsem{\Gamma \vdash N_1 : B_1}, \ldots,
-            \revsem{\Gamma \vdash N_p : B_p} \rangle}_{\Sigma}
-            ;^{\emptyset,\{1..p\}} \ ev$
-    is represented on Figure \ref{fig:interaction_strategy_denotations}.
+    and the revealed denotation is
+    $\syntrevsem{\Gamma \vdash M : o} =  \underbrace{\langle
+            \pi_i, \syntrevsem{\Gamma \vdash N_1 : B_1}, \ldots,
+            \syntrevsem{\Gamma \vdash N_p : B_p} \rangle}_{\Sigma}
+            ;^{\emptyset,\{1..p\}} \ ev$.
 
     \begin{description}
-    \item[$\subseteq$] 
+    \item[$\subseteq$]
     Take the revealed strategy $\Sigma \| ev$ where all the internal moves are uncovered:
     $$ X_1 \times \ldots \overbrace{((B_1'' \times \ldots \times B_p'') \typear o'')}^{X_i} \ldots \times X_n \stackrel\Sigma\longrightarrow \psframebox[linestyle=dashed]{ \overbrace{((B_1' \times \ldots \times B_p') \typear o')}^{B_0} \times B_1 \times \ldots \times B_p }\stackrel{ev}\longrightarrow o$$
-    
-    We will use the notation $X_i.B''_k$ to denote the sub-component $B''_k$ of $X_i$.
-    
-    
-    The revealed denotation $\revsem{\Gamma \vdash M : o}$ is obtained from $\Sigma \| ev$ by hiding all the moves from $B_0$ as well as all the superficial internal moves in $B_k$ for $k\in \{1..p\}$ (\ie the ones that take part in the composition of $\Sigma$ with $ev$).
-    
-    For every interaction play $u$ of $\revsem{\Gamma \vdash M : o}$ we will write $u^\diamond$ to denote its corresponding entirely-uncovered interaction play in $\Sigma \|\ ev$ ending with the same move. Observe that all the moves in $u^\diamond$ that are hidden in $u$ are in fact moves played by some copycat strategy. Indeed, the $\opmove$-moves from $B_0$ are precisely the copies by $ev$ of the O-moves from $C$ and the $\pomove$-moves from $B_k$ for $k \in \{1..p\}$; the $\pomove$-moves from $B_0$ are the copies by $\pi_i$ of the O-move from $X_i$; and for every $k \in \{1..p\}$, the $\opmove$-move from $B_k$ are the copies by $ev$ of the $\pomove$-move from the components $B_k'$ of $B_0$.
-    
-    \begin{psmatrix}
-      
-    \end{psmatrix}
-    
-    
-    The proof then follows the same pattern as in the @-application case. In the step case we have $u = u' \cdot m  \in \revsem{\Gamma \vdash M : o}$ for some move $m \in M_T$ with $u' = \varphi_M(t'^\star)$ for some traversal $t'$ of $\tau(M)$.
-    
-    We proceed by case analysis on $m$.
-    It is either played in $A$ or $C$ or it is a profound internal moves in some $B_k$ for $k\in \{0..p\}$:
+
+    The proof then follows the same pattern as in the @-application case. In the step case we have $u = u' \cdot m  \in \revsem{\Gamma \vdash M : o}$ for some move $m \in M_T$ with $u' = \varphi_M(t'^\star)$ for some traversal $t'$ of $\tau(M)$. We proceed by case analysis on $m$. It is either played in $A$ or $C$ or it is a profound internal moves in some $B_k$ for $k\in \{0..p\}$:
 
     \begin{itemize}
         \item $m\in C$. The proof is the same as in the @-application case except that the rules \rulenamet{Value$^{\lambda\mapsto{\sf var}}$} and \rulenamet{Value$^{{\sf var}\mapsto\lambda}$} are used instead of \rulenamet{Value$^{\lambda\mapsto@}$} and \rulenamet{Value$^{@\mapsto\lambda}$} respectively;
-            
+
 
         \item $m = q_0''$ is the first occurrence in $u$ of the initial $o''$-move. Then we have $u^\diamond = q_0 \cdot q_0' \cdot q_0''$ where $q_0'$ is the initial move of $B_0'$. Therefore we have $u = q_0 \cdot q_0''$ and we can form the traversal $t = \lambda^{[\theroot]} \cdot x_i$ using the rules \rulenamet{Root} and \rulenamet{Lam};
 
 
         \item Otherwise $m \in A$. Let $b$ be the occurrence in $u^\diamond$ of the initial $B_k$-move for some $k\in \{0..p\}$ that hereditarily justifies the corresponding occurrence of $m$ in $u^\diamond$.
-            
+
 
 
         \item $m \in A$ and the corresponding occurrence of $m$ in $u^\dagger$ is hereditarily justified by an initial $B_k$-move $b$ for some $k\in \{1..p\}$.
 
             %\rulenamet{InputVar};
-            
+
             the proof remains unchanged. The case where $m$ is hereditarily justified by a move $b \in B_0$ is treated as follows. Firstly, $m$ is played by the projection strategy $\pi$ denoting $x$.
          Since $m$ is played in $B_0' = B_1' \gameprod \ldots \gameprod B_p'$ it must be also hereditarily justified by some initial move $b'$ of $B_k'$ for some $k \in \{1.. p\}$ or by an occurrence of the initial move of $o'$. But moves of $B_k'$ are $\sim$-equivalent to the corresponding move in $B_k$ and similarly $o'$ is $\sim$-equivalent to $o$, therefore we fall back to the previous case of the induction where $m$ is hereditarily justified either by some initial move $b\in B_k$ for $k\in \{1..p\}$ or by some occurrence of the initial move of $o$.
 \qed
@@ -3898,7 +3939,7 @@ this section:
 $$
 \xymatrix @C=6pc{
                                            & \travset(M)^\star \ar@/^/[dl]^{\_\ +@+\Sigma}  \ar@/^/[r]^{\varphi_M}
-                                           & \revsem{M}
+                                           & \syntrevsem{M}
                                            \ar@/^/[l]^{\varphi_M^{-1}} \ar@/^/[dd]^{\_ \filter \sem{\Gamma\gamear T}} \\
 \travset(M) \ar@/^/[ur]^{\_^\star = \_\ -@-\Sigma}^{} \ar[dr]^{\_ \filter r}  \\
                                            & \travset(M)^{\filter r} \ar@/^/[r]^{\varphi_M} & \sem{M}

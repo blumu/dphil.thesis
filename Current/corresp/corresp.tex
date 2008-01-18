@@ -529,7 +529,7 @@ A traversal that cannot be extended by any rule is said to be \emph{maximal}.
 
 \emph{\bf Input-variable rules}
 \begin{description}
-\item \rulenamet{InputVar} If $t$ is a traversal where $t^\omega \in N_{\sf var}^{\theroot\vdash} \union N_\lambda^{\theroot\vdash}$
+\item \rulenamet{InputVar} If $t$ is a traversal where $t^\omega \in N_{\sf var}^{\theroot\vdash} \union L_\lambda^{\theroot\vdash}$
 and $x$ is an occurrence of a variable node in $\oview{t}$ then so is $t \cdot n$ for any child $\lambda$-node $n$ of $x$, $n$ pointing to $x$.
 
 
@@ -1470,73 +1470,82 @@ pointer. Fortunately we will see that this mismatch can be easily
 overcome.
 
 
-Take a justified sequence of node $t$. We define $\overline{t}$, the \defname{extension of $t$},
+Take a justified sequence of node $t$. We define $\extension{t}$, the \defname{extension of $t$},
 to be the sequence of nodes-with-pointers obtained from $\diamond \cdot t$ (where
 $\diamond$ is a dummy node) by adding justification pointers going
 from occurrences of the root $\theroot$, @-nodes and $\Sigma$-nodes
 to their immediate predecessor in $t$.
 \begin{example} Suppose $f$ is a $\Sigma$-constant.
-\begin{align*}
-\mbox{If }  t &= \pstr[0.4cm]{ \nd(l){\lambda \overline{\xi}} \cdot \nd(at)@ \cdot \nd(lx-at){\lambda x}\cdot   \nd(f)f \cdot \nd(l-f){\lambda} \cdot \nd(x-lx,60)x} \\
-\mbox{then }  \overline{t} &= \pstr[0.6cm]{ \nd(diam)\diamond \cdot \nd(l-diam){\lambda \overline{\xi}}
+\begin{equation*}
+\mbox{If }  t = \pstr[0.4cm]{ \nd(l){\lambda \overline{\xi}} \cdot \nd(at)@ \cdot \nd(lx-at){\lambda x}\cdot   \nd(f)f \cdot \nd(l-f){\lambda} \cdot \nd(x-lx,60)x} 
+\quad \mbox{then }  \quad  \extension{t} = \pstr[0.6cm]{ \nd(diam)\diamond \cdot \nd(l-diam){\lambda \overline{\xi}}
  \cdot  \nd(at-l)@\cdot  \nd(lx-at){\lambda x}\cdot
 \nd(f-lx)f\cdot \nd(l-f){\lambda}\cdot \nd(x-lx)x}\ .
-\end{align*}
+\end{equation*}
 \end{example}
 
 Clearly for any justified sequences $t_1$ and $t_2$ we have:
 \begin{equation}
- \overline{t}_1 \subseqof  \overline{t}_2 \quad \iff \quad t_1 \subseqof  t_2 \label{eqn:hat_subseq} \ .
+ \extension{t}_1 \subseqof  \extension{t}_2 \quad \iff \quad t_1 \subseqof  t_2 \label{eqn:hat_subseq} \ .
 \end{equation}
 We also have:
 \begin{equation}
- \overline{t} \filterplus r_0 = \overline{t \filterplus r_0} \label{eqn:barprojplus_eq_projplusbar}
+ \extension{t} \filterplus r_0 = \extension{t \filterplus r_0} \label{eqn:extfilterplus_eq_filterplusext}
 \end{equation}
 
 
 
-Observe that since in a traversal extension $\overline{t}$, @/$\Sigma$-nodes can have pointers,
-the traversal extensions are not proper justified sequences of nodes as
-defined in Def.\ \ref{dfn:justseqnode}, therefore in order to manipulate such sequences we need to redefine the basic
-transformations for them. Firstly, hereditary projection is defined identically as for justified sequences. 
-To define the notions of O-view and P-view we make use of the ``long O-view'' of a sequence (see \cite{Harmer2005}):
-\begin{definition}[Long O-view of a justified sequence]
-The \defname{long O-view} of a justified sequence of nodes $t$,
-written $\longoview{t}$ is defined as follows:
+Since a traversal extension $\extension{t}$ may contain @/$\Sigma$-nodes with pointers,
+they are not proper justified sequences of nodes as
+defined in Def.\ \ref{dfn:justseqnode}. Nevertheless, the basic transformations that we have defined for justified sequences, such as hereditary projection, P-view and O-view, apply naturally to traversal extensions (without any modification in their definition). The views of a traversal extension can be expressed in term of the traversal's views as follows:
+\begin{align}
+  \oview{\extension{t}} &=  \oview{t} \label{eqn:oview_exttrav_trav} \\
+  \pview{\extension{t}} &=  \left\{
+                            \begin{array}{ll}
+                              \epsilon, & \hbox{if $t=\epsilon$;} \\
+                              \diamond \cdot \extension{\pview{t}}, & \hbox{otherwise.}
+                            \end{array}
+                          \right. \label{eqn:pview_exttrav_trav}
+\end{align}
+
+The transformations $\pview{\_}$ and $\oview{\_}$, however, do not convey the appropriate notion
+of view for extended traversals. We define an alternative notion of
+view for traversal extension, called O-eview and P-eview, as follows:
+\begin{definition}
+\label{eqn:def_eview}
+
+The O-eview of a traversal extension $\extension{t}$, written, $\oeview{\extension{t}}$ is defined as
+\begin{equation*}
+\oeview{\extension{t}} \defeq \pview{\extension{t}} \ .
+\end{equation*}
+
+The P-eview of $\extension{t}$, written, $\oeview{\extension{t}}$ is defined by induction:
 $$\begin{array}{rcll}
- \longoview{\epsilon} &=&  \epsilon \\
- \longoview{s \cdot n }  &=&  \longoview{s} \cdot n
+ \peview{\epsilon} &=&  \epsilon \\
+ \peview{u \cdot n }  &=&  \peview{u} \cdot n
     & \mbox{for $n \in L_{\sf var} \union L_\Sigma \union L_@ \union N_\lambda$;}
     \\
- \longoview{\Pstr[15pt]{s \cdot (m){m} \cdot \ldots \cdot (x-m,30){n}}} &=&
-    \Pstr{ \longoview{s} \cdot (m2){m} \cdot (n2-m2,60){n} }
+ \peview{\Pstr[15pt]{u \cdot (m){m} \cdot \ldots \cdot (x-m,30){n}}} &=&
+    \Pstr{ \peview{u} \cdot (m2){m} \cdot (n2-m2,60){n} }
     & \mbox{for $n \in N_{\sf var} \union L_\lambda \union N_@ \union N_\Sigma$.}
 \end{array}$$
+
 \end{definition}
-Contrary to the O-view $\oview{t}$, $\longoview{t}$ may contain
-several threads of $t$.
 
- Clearly  $\oview{t}$ is a suffix of
-$\longoview{t}$:
-\begin{equation}
-  \longoview{t} = w \cdot \oview{t} \quad \mbox{for some sequence $w$.} \label{eqn:oview_suffix_longoview}
-\end{equation}
-
-In $\overline{t}$, the presence of the dummy node $\diamond$ changes
-the parity of the alternation between nodes in $N_{\sf
+By inserting a dummy node $\diamond$ at the beginning of the traversal, we
+change the parity of the alternation between nodes in $N_{\sf
 var} \union L_\lambda \union N_@ \union N_\Sigma$ and $N_\lambda
-\union L_{\sf var} \union L_\Sigma \union L_@$. For this reason, the 
-notions of O-view and P-view are interchanged for traversal extensions: we
-define the O-view of $\overline{t}$ to be the extension of $t$'s P-view 
-and the P-view of $\overline{t}$ to be the extension of $t$'s  \emph{long O-view}:
-\begin{equation}
-\oview{\overline{s}} = \overline{\pview{s}} \qquad
-\mbox{and}
-\qquad  \pview{\overline{s}} =
-\overline{\longoview{s}} \label{eqn:def_pview_oview_hat}
-\end{equation}
+\union L_{\sf var} \union L_\Sigma \union L_@$.
+Thus the role of O and P is interchanged for traversal extensions. This explains why the O-eview is calculated from the P-view.
 
-We now establish an analogy between the traversal extension setting and the game
+For the P-eview, the definition is almost the same as the O-view $\oview{\_}$ except that the computation does not stop when reaching a node
+in $N_@ \union N_\Sigma$. This makes sense for traversal extensions in which occurrences of such nodes have a pointer. In fact, this corresponds precisely to the notion of \emph{long O-view} introduced in \cite{Harmer2005}. Contrary to the O-view, the long-O-view may contain several threads, and the O-view is a suffix of the long O-view. Here this means that $\oview{t}$ is a suffix of $\peview{t}$:
+\begin{equation}
+  \peview{t} = w \cdot \oview{t} \quad \mbox{for some sequence $w$.} \label{eqn:oview_suffix_preview}
+\end{equation}
+\smallskip
+
+We are now fully equipped to establish an analogy between the traversal extension setting and the game
 semantic setting. The role of this analogy is purely to reuse the
 proof of \cite{hylandong_pcf}. The reader must not confuse this with
 a different correspondence, that we will establish in a forthcoming
@@ -1546,24 +1555,24 @@ term of P-move/O-move is the opposite of the one used in the
 Correspondence Theorem.) The following analogy is made:
 \begin{center}
 \begin{tabular}{r|p{6cm}}
-{\bf Traversal} & {\bf Game semantics} \\
+{\bf Traversal setting} & {\bf Game-semantic setting} \\
 \hline\hline
-Sequence $\overline{t}$ & Play $s$ \\
+Extended traversal $\extension{t}$ & Play $s$ \\
 Nodes in $n \in N_{\sf var} \union L_\lambda \union N_@ \union N_\Sigma \union \{\diamond\}$ & O-moves $\omove$ \\
 Nodes in $n \in N_\lambda \union L_{\sf var} \union L_\Sigma \union L_@$ & P-moves $\pmove$\\
-P-view $\pview{\overline{t}}$  & P-view $\pview{s}$\\
-O-view $\oview{\overline{t}}$  & O-view $\oview{s}$\\
+P-view $\peview{\extension{t}}$  & P-view $\pview{s}$\\
+O-view $\oeview{\extension{t}}$  & O-view $\oview{s}$\\
 Occurrence $n$ appearing in $t\filterplus r_0$ & Occurrence $n \in B$ \\
 Occurrence $n$ not appearing in $t\filterplus r_0$ & Occurrence $n \in A$ \\
 \parbox[t]{6cm}{\raggedleft No notion of initiality: all nodes are considered to be non-initial.} & Distinction between initial and non-initial move.
 \end{tabular}
 \end{center}
 
-Clearly sequences of the form $\overline{t}$ verify the requirements (w1) to (w5): For (w1), the initial node
+Clearly sequences of the form $\extension{t}$ verify the requirements (w1) to (w5): For (w1), the initial node
 becomes $\diamond$. Explicit justification (w4) holds since we have added pointers to @/$\Sigma$-nodes.
 Finally, alternation (w3), well-bracketing (w4) and visibility (w5) of the traversal $t$ (Prop.\
-\ref{prop:pviewtrav_is_path}) are preserved by the operation $\overline{\_}$
-(where visibility is defined with respect to the their respective
+\ref{prop:pviewtrav_is_path}) are preserved the extension operation
+(where visibility is defined with respect to the appropriate
 notion of P-view and O-view).
 
 Clearly, $n \in t\filterplus r_0 \iff \neg ( n \not\in t\filterplus
@@ -1571,9 +1580,9 @@ r_0)$ thus property (w6) holds. So does the switching condition
 (w7): Indeed if $t = \ldots \cdot m \cdot n$ where $n\in N_{\sf
 var} \union L_\lambda \union N_@ \union N_\Sigma$ and $m \in
 N_\lambda \union L_{\sf var} \union L_\Sigma \union L_@$ then, by definition of $t\filterplus r_0$, $m$ appears in $t\filterplus r_0$ if and only if $n$ does. For (w8): using the analogy of the preceding table, since all nodes are considered ``non-initial'' in
-$\overline{t}$, this condition can be stated as:
+$\extension{t}$, this condition can be stated as:
 \begin{quote}
- (w8) Suppose $m$ justifies $n$ in $\overline{t}$. Then $n \in t\filterplus r_0$ if and only if $m\in t\filterplus r_0$.
+ (w8) Suppose $m$ justifies $n$ in $\extension{t}$. Then $n \in t\filterplus r_0$ if and only if $m\in t\filterplus r_0$.
 \end{quote}
 Unfortunately, as we have seen previously, the direct implication
 does not hold in general! (Indeed, a variable node can very well
@@ -1628,15 +1637,15 @@ assumptions (w1) to (w8). As we have seen, (w8) does not always hold for extende
 The previous lemma thus translates into:
 \begin{lemma}
 \label{lem:pview_bounded_segment} Let $t$ be a traversal and
-$\theta$ be a segment of $\overline{t}$ bounded by nodes $x$ and $y$ appearing in $t\filterplus r_0$.
+$\theta$ be a segment of $\extension{t}$ bounded by nodes $x$ and $y$ appearing in $t\filterplus r_0$.
 \begin{enumerate}[(i)]
-  \item $ \pview{\theta \filterplus r_0} = \Pstr{ (p){p_r} \cdot (q-p){q_r} \ldots
+  \item $ \peview{\theta \filterplus r_0} = \Pstr{ (p){p_r} \cdot (q-p){q_r} \ldots
 (p1){p_1} \cdot (q1-p1){q_1} }$ for some $r\geq 0$ where
 $p_i \in N_\lambda \union L_{\sf var} \union L_\Sigma \union
 L_@$ and $q_i \in N_{\sf var} \union L_\lambda \union N_@
 \union N_\Sigma$, for $1\leq i \leq r$.
   \item For any node $m$ in $N_\lambda \union L_{\sf var} \union L_\Sigma \union L_@$ occurring in $\theta$ and appearing in
-$\oview{s_{<y}}$, $m$ does not belong to any of the
+$\oeview{\extension{t}_{<y}}$, $m$ does not belong to any of the
 segment $p_i \ldots q_i$ for $1\leq i \leq r$.
 \end{enumerate}
 \end{lemma}
@@ -1646,16 +1655,18 @@ We can now show the analog of Proposition \ref{prop:hylandong_pviewprojection} i
 \begin{proposition}
 \label{prop:analog_pviewprojection} Let $t$ be a traversal and $r_0$
 be an occurrence of some lambda node $r'$.
-If $\overline{t}$'s last node appears in $t\filterplus r_0$ then
- $\pview{ \overline{t}}  \filterplus r_0 \subseqof \pview{ \overline{t}\filterplus
- r_0}$.
+If $\extension{t}$'s last node appears in $t\filterplus r_0$ then
+ $\peview{ \extension{t}}  \filterplus r_0 \subseqof \peview{ \extension{t\filterplus
+ r_0}}$.
 \end{proposition}
 \proof
-By induction on the length of $t$. The base case is immediate. For the inductive case,
-we do a case analysis on the type of $t^\omega$:
+By Eq.\ \ref{eqn:extfilterplus_eq_filterplusext} we can equivalently show that:
+$\peview{ \extension{t}}  \filterplus r_0 \subseqof \peview{ \extension{t}\filterplus
+ r_0}$. By induction on the length of $t$. The base case is immediate. For the inductive case,
+we do a case analysis:
     \begin{itemize}
-    \item $t =  t' \cdot r_0$. We have $\overline{t} \filterplus r_0 = r_0$ and
-     $\pview{\overline{t}} \filterplus r_0 = r_0 = \pview{\overline{t} \filterplus r_0}$.
+    \item $t =  t' \cdot r_0$. We have $\extension{t} \filterplus r_0 = r_0$ and
+     $\peview{\extension{t}} \filterplus r_0 = r_0 = \peview{\extension{t} \filterplus r_0}$.
 
     \item $t = t' \cdot n$ with $n \in N_\lambda \union L_{\sf var} \union
     L_\Sigma \union L_@$ where $n$ is not the occurrence $r_0$.
@@ -1663,40 +1674,40 @@ we do a case analysis on the type of $t^\omega$:
     There are two cases.
     \begin{itemize}
         \item Suppose that the last node in $t'$ appears in $t\filterplus r_0$. Then
-        by the I.H.\ we have $\pview{\overline{t'}} \filterplus  r_0 \subseqof \pview{\overline{t'} \filterplus  r_0}$.
+        by the I.H.\ we have $\peview{\extension{t'}} \filterplus  r_0 \subseqof \peview{\extension{t'} \filterplus  r_0}$.
             \begin{align*}
-            \pview{\overline{t}} \filterplus r_0
-                &=  \pview{\overline{t'}} \filterplus r_0 \cdot n  & \parbox[t]{8cm}{(\raggedleft P-view for extended justified\\sequences of nodes of $M$)} \\
-                &\subseqof  \pview{\overline{t'} \filterplus  r_0} \cdot n            & (\mbox{induction hypothesis}) \\
-                &=  \pview{\overline{t'} \filterplus  r_0 \cdot n} & \parbox[t]{8cm}{\raggedleft (P-view for extended justified sequences of nodes of $M^{(r')}$: $n$ belongs to $\tau(M^{(r')})$
+            \peview{\extension{t}} \filterplus r_0
+                &=  \peview{\extension{t'}} \filterplus r_0 \cdot n  & \parbox[t]{7cm}{(\raggedleft P-view for extended justified\\sequences of nodes of $M$)} \\
+                &\subseqof  \peview{\extension{t'} \filterplus  r_0} \cdot n            & (\mbox{induction hypothesis}) \\
+                &=  \peview{\extension{t'} \filterplus  r_0 \cdot n} & \parbox[t]{7cm}{\raggedleft (P-view for extended justified sequences of nodes of $M^{(r')}$: $n$ belongs to $\tau(M^{(r')})$
                 by Lemma \ref{lem:insubterm_equ_inprojplus})} \\
-                &=  \pview{\overline{t' \cdot n} \filterplus  r_0  }   & (\mbox{$n$ occurs in $t\filterplus r_0$}) \\
-                &= \pview{\overline{t} \filterplus  r_0  }     & (\mbox{definition of } t).
+                &=  \peview{\extension{t' \cdot n} \filterplus  r_0  }   & (\mbox{$n$ occurs in $t\filterplus r_0$}) \\
+                &= \peview{\extension{t} \filterplus  r_0  }     & (\mbox{definition of } t).
             \end{align*}
 
         \item Suppose that the last node $y_1$ in $t'$ does not appear in $t\filterplus r_0$.
-        Let $\underline{m}$ be the last node preceding $m$ in $\pview{\overline{t}}$ that appears in $t\filterplus r_0$. Then for some $q\geq 0$ we have
+        Let $\underline{m}$ be the last node preceding $m$ in $\peview{\extension{t}}$ that appears in $t\filterplus r_0$. Then for some $q\geq 0$ we have
         \begin{equation*}
-        \pview{\overline{t}} = \pview{\overline{t}_{\prefixof \underline{m}}} \cdot \pstr[0.2cm]{ \underbrace{\nd(xq){x_q} \cdot \nd(yq-xq){y_q}\ \ldots\ \nd(x1){x_1} \cdot \nd(y1-x1){y_1}}_{\mbox{all appear in } t\filterplus r_0}} \cdot m
+        \peview{\extension{t}} = \peview{\extension{t}_{\prefixof \underline{m}}} \cdot \pstr[0.2cm]{ \underbrace{\nd(xq){x_q} \cdot \nd(yq-xq){y_q}\ \ldots\ \nd(x1){x_1} \cdot \nd(y1-x1){y_1}}_{\mbox{all appear in } t\filterplus r_0}} \cdot m
         \end{equation*}
         where the $x_i$s are in $ N_\lambda \union L_{\sf var} \union  L_\Sigma \union L_@$ and the $y_i$s are in $N_{\sf var} \union N_\Sigma \union N_@ \union L_\lambda$.
 
-        Therefore the sequence $\overline{t}$ must be of the following form:
-        $$\overline{t}_{\prefixof \underline{m}} \cdot \underbrace{x_q \ldots y_q}_{\theta_q} \ \cdots \ \underbrace{x_1 \cdots y_1}_{\theta_1} \cdot\ m $$
+        Therefore the sequence $\extension{t}$ must be of the following form:
+        $$\extension{t}_{\prefixof \underline{m}} \cdot \underbrace{x_q \ldots y_q}_{\theta_q} \ \cdots \ \underbrace{x_1 \cdots y_1}_{\theta_1} \cdot\ m $$
         where each segment $\theta_i$ is bounded by nodes appearing in $t\filterplus r_0$.
-        By Lemma \ref{lem:pview_bounded_segment}, when computing the P-view of $\overline{t}$, pointers going from a segment $\theta$ to a node outside the segment are never followed! In other words:
-        $$ \pview{\overline{t} \filterplus r_0} =
-        \pview{\overline{t}_{\prefixof \underline{m}} \filterplus r_0} \cdot \pview{\theta_q \filterplus r_0} \cdot\ \cdots\
-        \cdot \pview{\theta_1 \filterplus r_0} \cdot m \ .$$
+        By Lemma \ref{lem:pview_bounded_segment}, when computing the P-view of $\extension{t}$, pointers going from a segment $\theta$ to a node outside the segment are never followed! In other words:
+        $$ \peview{\extension{t} \filterplus r_0} =
+        \peview{\extension{t}_{\prefixof \underline{m}} \filterplus r_0} \cdot \peview{\theta_q \filterplus r_0} \cdot\ \cdots\
+        \cdot \peview{\theta_1 \filterplus r_0} \cdot m \ .$$
         Hence:
             \begin{align*}
-            \pview{\overline{t}} \filterplus r_0
-            &= \pview{\overline{t}_{\prefixof \underline{m}}} \filterplus r_0 \cdot n \\
-            &\subseqof \pview{\overline{t}_{\prefixof \underline{m}} \filterplus r_0}  \cdot n
-                    & \mbox{(induction hypothesis)} \\
-            &\subseqof \pview{\overline{t}_{\prefixof \underline{m}} \filterplus r_0} \cdot \pview{\theta_q \filterplus r_0} \cdot \cdots \cdot \pview{\theta_1 \filterplus r_0}  \cdot n \\
-            &= \pview{\overline{t} \filterplus r_0}
-                    & \mbox{(by the previous equation).}
+            \peview{\extension{t}} \filterplus r_0
+            &= \peview{\extension{t}_{\prefixof \underline{m}}} \filterplus r_0 \cdot n \\
+            &\subseqof \peview{\extension{t}_{\prefixof \underline{m}} \filterplus r_0}  \cdot n
+                    \hspace{5cm} \mbox{(I.H.)} \\
+            &\subseqof \peview{\extension{t}_{\prefixof \underline{m}} \filterplus r_0} \cdot \peview{\theta_q \filterplus r_0} \cdot \cdots \cdot \peview{\theta_1 \filterplus r_0}  \cdot n \\
+            &= \peview{\extension{t} \filterplus r_0} \hspace{5cm}
+                    \mbox{(by the previous equation).}
           \end{align*}
     \end{itemize}
 
@@ -1706,34 +1717,34 @@ we do a case analysis on the type of $t^\omega$:
 
      Suppose that $r_0$ appears in $t' \cdot m$, then since $n$ appears in $t\filterplus r_0$, by Lemma \ref{lem:pviewproj_traversal}(i) so does $m$. Thus we can apply the I.H.\ on $t' \cdot m$:
      \begin{align*}
-        \pview{\overline{t}} \filterplus r_0
-        &= \pview{\Pstr{\overline{t'} \cdot (m){m} \cdot \overline{u} \cdot (n-m,40){n}}}_M \filterplus r_0
+        \peview{\extension{t}} \filterplus r_0
+        &= \peview{\Pstr{\extension{t'} \cdot (m){m} \cdot \overline{u} \cdot (n-m,40){n}}}_M \filterplus r_0
                 & (\mbox{definition of } t)\\
-        &= (\pstr{\pview{\overline{t'} \cdot \nd(m){m}}  \cdot \nd(lmd-m,60){n}}) \filterplus r_0
-                & (\mbox{P-view for extended justified sequences in $M$ }) \\
-        &= \pstr[0.4cm]{ \pview{\overline{t' \cdot \nd(m){m}}} \filterplus r_0  \cdot  \nd(lmd-m,30){n} }
+        &= (\pstr{\peview{\extension{t'} \cdot \nd(m){m}}  \cdot \nd(lmd-m,60){n}}) \filterplus r_0
+                & (\mbox{P-eview computation in $M$ }) \\
+        &= \pstr[0.4cm]{ \peview{\extension{t' \cdot \nd(m){m}}} \filterplus r_0  \cdot  \nd(lmd-m,30){n} }
                 & (\mbox{$n$ appears in $t \filterplus r_0$}) \\
-        &\subseqof \pstr[0.4cm]{ \pview{(\overline{t' \cdot \nd(m){m}} )\filterplus r_0} \cdot \nd(lmd-m,25){n} }
+        &\subseqof \pstr[0.4cm]{ \peview{(\extension{t' \cdot \nd(m){m}} )\filterplus r_0} \cdot \nd(lmd-m,25){n} }
                 & \mbox{(induction hypothesis on $t' \cdot m$)} \\
-        &= \pstr[0.4cm]{ \pview{\overline{t'}\filterplus r_0 \cdot \nd(m){m}} \cdot \nd(lmd-m,45){n} }
+        &= \pstr[0.4cm]{ \peview{\extension{t'}\filterplus r_0 \cdot \nd(m){m}} \cdot \nd(lmd-m,45){n} }
                 & \mbox{($m$ appears in $t \filterplus r_0$)} \\
-        &= \pview{ \Pstr[0.4cm]{\overline{t'} \filterplus r_0 \cdot (m){m} \cdot {(\overline{u} \filterplus r_0)} \cdot (lmd-m,30){n}}}
-                & \parbox[t]{7.5cm}{\raggedleft(P-view for extended justified sequences in $M^{(r')}$, nodes in $m\cdot (\overline{u} \filterplus r_0) \cdot n$ are all in $V^{(r')}$)} \\
-        &= \pview{ (\Pstr{\overline{t'} \cdot (m){m} \cdot \overline{u} \cdot (lmd-m,35){n}}) \filterplus r_0 }
+        &= \peview{ \Pstr[0.4cm]{\extension{t'} \filterplus r_0 \cdot (m){m} \cdot {(\extension{u} \filterplus r_0)} \cdot (lmd-m,30){n}}}
+                & \parbox[t]{6cm}{\raggedleft(P-eview in $M^{(r')}$, nodes in $m\cdot (\extension{u} \filterplus r_0) \cdot n$ are all in $V^{(r')}$)} \\
+        &= \peview{ (\Pstr{\extension{t'} \cdot (m){m} \cdot \extension{u} \cdot (lmd-m,35){n}}) \filterplus r_0 }
                 & \mbox{($m$ and $n$ both appear in } t \filterplus r_0) \\
-        &= \pview{ \overline{t} \filterplus r_0 }
+        &= \peview{ \extension{t} \filterplus r_0 }
                 & \mbox{(definition of $t$).}
       \end{align*}
 
       Suppose that $r_0$ appears in $u$ then:
       \begin{align*}
-        \pview{\overline{t}} \filterplus r_0
-        &= \pstr[0.4cm]{ \pview{\overline{t' \cdot \nd(m){m}}}
+        \peview{\extension{t}} \filterplus r_0
+        &= \pstr[0.4cm]{ \peview{\extension{t' \cdot \nd(m){m}}}
            \filterplus r_0  \cdot  \nd(lmd-m,30){n} } \\
         &= n & (\mbox{$r_0$ occurs after $t'\cdot m$}) \\
-            &\subseqof \pstr[0.4cm]{ \pview{(\overline{t' \cdot \nd(m){m}} )\filterplus r_0} \cdot \nd(lmd-m,25){n} }
+            &\subseqof \pstr[0.4cm]{ \peview{(\extension{t' \cdot \nd(m){m}} )\filterplus r_0} \cdot \nd(lmd-m,25){n} }
                 \\
-        &= \pview{ \overline{t} \filterplus r_0 } \qed
+        &= \peview{ \extension{t} \filterplus r_0 } \qed
       \end{align*}
 \end{itemize}
 %% end of proof
@@ -1746,25 +1757,17 @@ We are now in a position to prove Proposition
 
 We have:
 \begin{align*}
-  \overline{\oview{t}_M\filterplus r_0}
-        &= \overline{\oview{t}} \filterplus r_0 & \mbox{By Eq.\ \ref{eqn:barprojplus_eq_projplusbar}} \\
-        &\subseqof \overline{\longoview{t}} \filterplus r_0 & \mbox{By Eq.\ \ref{eqn:oview_suffix_longoview}} \\
-        &= \pview{\overline{t}} \filterplus r_0 & \mbox{By definition (Eq.\ \ref{eqn:def_pview_oview_hat})} \\
-        &\subseqof \pview{\overline{t} \filterplus r_0}  & \mbox{By Proposition \ref{prop:analog_pviewprojection}} \\
-        &= \pview{\overline{t \filterplus r_0}}  & \mbox{By Eq.\ \ref{eqn:barprojplus_eq_projplusbar}} \\
-        &= \overline{\longoview{t \filterplus r_0}}  & \mbox{By Eq.\ \ref{eqn:def_pview_oview_hat}}
+  \oview{t}\filterplus r_0
+        &= \oview{\extension{t}} \filterplus r_0 & \mbox{by Eq.\ \ref{eqn:oview_exttrav_trav}} \\
+        &\subseqof \peview{\extension{t}} \filterplus r_0 & \mbox{by Eq.\ \ref{eqn:oview_suffix_preview}} \\
+        &\subseqof \peview{\extension{t \filterplus r_0}}  & \mbox{by Propositon \ref{prop:analog_pviewprojection}} \\
+        &= w \cdot \oview{\extension{t \filterplus r_0}} & \mbox{for some $w$, by Eq.\ \ref{eqn:oview_suffix_preview}} \\
+        &= w \cdot \oview{t \filterplus r_0} & \mbox{by Eq.\ \ref{eqn:oview_exttrav_trav}}
 \end{align*}
-By Lemma \ref{eqn:hat_subseq} the inclusion $\overline{\oview{t}_M\filterplus r_0}
-\subseqof \overline{\longoview{t \filterplus r_0}}$ implies 
-$\oview{t}_M\filterplus r_0
-\subseqof \longoview{t \filterplus r_0}$. Furthermore, by Eq.\
-\ref{eqn:oview_suffix_longoview}, $\oview{t \filterplus
-r_0}_{M^{(r')}}$ is a suffix of $\longoview{t \filterplus r_0}$, thus 
-$\oview{t}_M\filterplus r_0 \subseqof w \cdot \oview{t \filterplus r_0}_{M^{(r')}}$ for some $w$ consisting of nodes preceding $r_0$ in $t$.
-If $\oview{t}_M\filterplus r_0$ is empty then the relation $\oview{t}_M\filterplus r_0 \subseqof \oview{t \filterplus r_0}_{M^{(r')}}$ holds trivially. Otherwise, by definition of the operator $\_ \filterplus$, $\oview{t}_M\filterplus r_0$ necessarily starts with the occurrence
-$r_0$, and since the nodes in $w$ occur before $r_0$ in $t$ this implies that
-$\oview{t}_M\filterplus r_0 \subseqof \oview{t \filterplus
-r_0}_{M^{(r')}}$. \qed
+Thus $\oview{t}\filterplus r_0 \subseqof w \cdot \oview{t \filterplus r_0}$.
+By definition of the operator $\_ \filterplus$, both 
+$\oview{t}\filterplus r_0$ and $\oview{t \filterplus r_0}$ start with the occurrence $r_0$, thus this implies
+$\oview{t}\filterplus r_0 \subseqof \oview{t \filterplus r_0}$. \qed
 
 
 \begin{example}
@@ -1772,27 +1775,18 @@ r_0}_{M^{(r')}}$. \qed
 \psset{nodesep=1pt,arcangle=-20,arrowsize=2pt 1}
 \setlength\fboxsep{2pt}
 
-\begin{tabular}{lp{6cm}}
-$\rput[t](0,0){\pstree{\TR{\lambda }}{\pstree{\TR{\varphi}}{\pstree{\TR{\lambda x}}{\pstree{\TR{@}}{\pstree{\TR{\lambda \psi}}{\pstree{\TR{\varphi}}{\pstree{\TR{\lambda x'}}{\pstree{\TR{@}}{\pstree{\TR{\lambda y}}{\pstree{\TR{\psi}}{\pstree{\TR{\lambda z}}{\TR{z}}}}\pstree{\TR{\lambda }}{\pstree{\TR{\varphi}}{\pstree{\TR{\lambda x''}}{\TR{x'}}}}}}}}\pstree{\TR{\lambda u}}{\pstree{\TR{u}}{\pstree{\TR{\lambda }}{\TR{e}}}}}}}}
-}$ & 
+\begin{tabular}{lp{8cm}}
+$\pstree{\TR{\lambda }}{\pstree{\TR{\varphi}}{\pstree{\TR{\lambda x}}{\pstree{\TR{@}}{\pstree{\TR{\lambda \psi}}{\pstree{\TR{\varphi}}{\pstree{\TR{\lambda x'}}{\pstree{\TR{@}}{\pstree{\TR{\lambda y}}{\pstree{\TR{\psi}}{\pstree{\TR{\lambda z}}{\TR{z}}}}\pstree{\TR{\lambda }}{\pstree{\TR{\varphi}}{\pstree{\TR{\lambda x''}}{\TR{x'}}}}}}}}\pstree{\TR{\lambda u}}{\pstree{\TR{u}}{\pstree{\TR{\lambda }}{\TR{e}}}}}}}}
+$ \hspace{1cm} &
 \begin{asparablank}
-\item 
-$t = \Pstr[1.7cm]{(n0){\lambda }\ (n1-n0){\varphi}\ (n2-n1){\lambda x}\ (n3){@}\ (n4-n3){\lambda \psi}\ (n5-n0){\varphi}\ (n6-n5){\lambda x'}\ (n7){@}\ (n8-n7){\lambda y}\ (n9-n3){\psi}\ (n10-n3){\lambda u}\ (n11-n10){u}\ (n12-n9){\lambda z}\ (n13-n12){z}\ (n14-n10){\lambda }\ (n15-n0){e}\ }$
+\item $t = \Pstr[0.7cm]{(n0){\lambda }\ (n1-n0){\varphi}\ (n2-n1){\lambda x}\ (n3){@}\ (n4-n3){\lambda \psi}\ (n5-n4){\varphi}\ (n6-n5){\lambda x'}\ (n7){@}\ (n8-n7){\lambda y}\ (n9-n4){\psi}\ (n10-n3){\lambda u}\ (n11-n10){u}\ (n12-n9){\lambda z}\ (n13-n12){z}\ (n14-n11){\lambda }\ }$
+\item $\oview{t} = \Pstr[0.7cm]{(n0){@}\ (n1-n0){\lambda \psi}\ (n2-n1){\psi}\ (n3-n0){\lambda u}\ (n4-n3){u}\ (n5-n2){\lambda z}\ (n6-n5){z}\ (n7-n4){\lambda }\ }$
+\item $\oview{t}\filterplus r_0 = \Pstr[0.7cm]{(n0){\lambda \psi}\ (n1-n0){\psi}\ (n2-n1){\lambda z}\ (n3-n2){z}\ }$
 
-\item 
- $\overline{t} = \Pstr[1.7cm]{(d)\diamond (n0-d){\lambda }\ (n1-n0){\varphi}\ (n2-n1){\lambda x}\ (n3-n2){@}\ (n4-n3){\lambda \psi}\ (n5-n0){\varphi}\ (n6-n5){\lambda x'}\ (n7-n6){@}\ (n8-n7){\lambda y}\ (n9-n3){\psi}\ (n10-n3){\lambda u}\ (n11-n10){u}\ (n12-n9){\lambda z}\ (n13-n12){z}\ (n14-n10){\lambda }\ (n15-n0){e}\ }$
-
-\item
-
-$ \pview{\overline{t}} = $
- 
- 
-$ \pview{ \overline{t}}  \filterplus r_0 \subseqof \pview{ \overline{t}\filterplus
- r_0}$.
-$ $
+\item $t\filterplus r_0 = \Pstr[0.7cm]{(n0){\lambda \psi}\ (n1-n0){\varphi}\ (n2-n1){\lambda x'}\ (n3){@}\ (n4-n3){\lambda y}\ (n5-n0){\psi}\ (n6-n5){\lambda z}\ (n7-n6){z}\ }$
+\item $\oview{ t \filterplus r_0 } = \Pstr[0.7cm]{(n0){\lambda \psi}\ (n1-n0){\psi}\ (n2-n1){\lambda z}\ (n3-n2){z}\ }$
 \end{asparablank}
 \end{tabular}
-
 \end{example}
 
 \paragraph{Traversal projection}
@@ -2622,7 +2616,7 @@ $N_1$, \ldots, $N_p$ while omitting the internal moves produced by the copy-cat 
     \paragraph{Recovering the fully-revealed semantics from the syntactically-revealed semantics}
 
 
-    We now define explicitly the transformation that permits one to retrieve $\revsem{\Gamma \vdash M : o}$ from $\syntrevsem{\Gamma \vdash M : o}$. To achieve this, it suffices to define constructively the function mentioned in the previous paragraph which given an interaction play $u$ of $\syntrevsem{\Gamma \vdash M : o}$ returns $v$, the unique play of $\syntrevsem{\Gamma \vdash M : o}$ ending with an external move such that removing the superficial internal moves from $v$ gives us back $u$. Let us call $\delta$ this transformation.
+    We now explicitly define the transformation that turns $\syntrevsem{\Gamma \vdash M : o}$ into $\revsem{\Gamma \vdash M : o}$. To achieve this, it suffices to define constructively the function mentioned in the previous paragraph which given an interaction play $u$ of $\syntrevsem{\Gamma \vdash M : o}$ returns $v$, the unique play of $\syntrevsem{\Gamma \vdash M : o}$ ending with an external move such that removing the superficial internal moves from $v$ gives us back $u$. Let us call $\delta$ this transformation.
 
     Let us analyse the structure of an interaction play of $\Sigma \|  ev$. The diagram in Figure \ref{fig:flowdiag_moves_interplay_varcase} gives us a precise description of the flow of an interaction play. The nodes of the diagram represent the moves. A node label is of the form $A,\alpha$ where $\alpha \in \{\omove,\pmove,\pomove,\opmove\}$: the first component is the game in which the move is played and the second indicates which player is making the move. The notation $X_i.B''_k$ is used to denote the sub-component $B''_k$ of $X_i$. The edges indicate the moves that are allowed in a given state of the game. The game starts at node $C,\omove$ which correspond to the initial move of the overall game. Each edge is labelled with the strategy that plays the corresponding move. For instance the edge $B_k,\pomove \stackrel{ev}\longrightarrow B_0,\opmove$ tells us that if $B_k,\pomove$ is the last move played then the evaluation strategy allows the other user to respond with the move $B_k,\pomove$. The copy-cat strategies are highlighted with dashed-edges.
 
@@ -2690,12 +2684,13 @@ In fact, the set of plays $\sem{\Gamma \vdash M : T}$ is in bijection with the s
 
 
 \subsection{Relating computation trees and games}
-Let us first study an example:
+In this paragraph we are interested in showing a relation between nodes of the computation tree and moves of the game arena.
+Let us first get the insight from an example before giving the formal definition.
 \subsubsection{Example}
 Consider the following term $M \equiv \lambda f z . (\lambda g x . f (f x)) (\lambda y. y) z$ of type $(o \typear o) \typear o \typear o$.
 Its $\eta$-long normal form is $\lambda f z . (\lambda g x . f (f x)) (\lambda y. y) (\lambda .z)$.
-The computation tree is:
-
+The following figure represents the computation tree of $M$ on the left and the
+arena of the game $\sem{(o \typear o) \typear o \typear o}$ on the right:
 $$
 \pssetcomptree
 \tree{\lambda f z}
@@ -2708,10 +2703,7 @@ $$
         \tree{\lambda}{\TR{z}}
     }
 }
-$$
-
-The arena for the type $(o \typear o) \typear o \typear o$ is:
-$$
+\hspace{2cm}
 \pssetarena
 \tree{q^1} {
     \tree{q^3}
@@ -3892,7 +3884,7 @@ $\varphi_M(t^\star) = u$.
 
     Figure \ref{fig:interaction_strategy_denotations} from the previous section fixes the names of the different games involved in the interaction strategy.
     The composition of $\Sigma$ with $ev$ takes place on the game
-    $$ \overbrace{X_1 \times \ldots \overbrace{((B_1'' \times \ldots \times B_p'') \typear o'')}^{X_i} \ldots \times X_n}^A \stackrel\Sigma\longrightarrow \overbrace{\psframebox[linestyle=dashed]{ \overbrace{((B_1' \times \ldots \times B_p') \typear o')}^{B_0} \times B_1 \times \ldots \times B_p }}^B \stackrel{ev}\longrightarrow \overbrace{o}^C$$
+    $$ \overbrace{X_1 \times \ldots \overbrace{((B_1'' \times \ldots \times B_p'') \typear o'')}^{X_i} \ldots \times X_n}^A \stackrel\Sigma\longrightarrow \overbrace{\psframebox[linestyle=dashed]{ \overbrace{((B_1' \times \ldots \times B_p') \typear o')}^{B_0} \times B_1 \times \ldots B_p }}^B \stackrel{ev}\longrightarrow \overbrace{o}^C$$
 
     Let $q_0$, $q_0'$ and $q_0''$ be the initial
     question of $C$, $B_0$ and $X_i$ respectively.
@@ -3958,7 +3950,7 @@ $\varphi_M(t^\star) = u$.
 
                    Let $\pview{v}$ denote the \emph{core} of the interaction sequence $v$ as defined in \cite{McCusker-GamesandFullAbstrac}.
 
-                   By P-visibility in $v\filter A,C$, $m$ occurs in $\pview{v' \filter A,C}$. But a property of the core (\cite{McCusker-GamesandFullAbstrac}) is that $\pview{v' \filter A,C} = \pview{v'} \filter A,C$ which in turn equals $\pview{\cover(v', \{0..p\}, \{0\})}\filter A,C$.
+                   By P-visibility in $v\filter A,C$, $m$ occurs in $\pview{v' \filter A,C}$. We have the equality $\pview{v' \filter A,C} = \pview{v'} \filter A,C$ (see \cite{McCusker-GamesandFullAbstrac}), and clearly $\pview{v'} \filter A,C$ is equal to $\pview{\cover(v', \{0..p\}, \{0\})}\filter A,C$.
                    Hence
                     \begin{align*}
                        m' \in \pview{\varphi_M (t'^\star)} \filter A,C &\subseqof  \pview{\varphi_M (t'^\star)}

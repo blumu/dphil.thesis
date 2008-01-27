@@ -1,5 +1,7 @@
-% chapter on Game-semantic characterisation of safety
+
 \chapter{Game-semantic characterisation of safety}
+
+\notetoself{This chapter is taken from my transfer report. I need to rework it to integrate it correctly within the present thesis.}
 
 Safety has been defined as a syntactical constraint. Since Game
 Semantics is by essence syntax-independent, it seems difficult at
@@ -1256,3 +1258,427 @@ the set of complete plays, this pointer economy suggests that the
 game denotation of a safe \ialgol\ can be represented in a compact
 way. This raises the question of the decidability of observational
 equivalence for safe \ialgol.
+
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\notetoselft{the following section needs to be integrate into the previous chapter.}
+
+
+\section{Game-semantic of the Safe Lambda Calculus}
+
+\section{Game-semantic of Safe PCF}
+In this section will give a game-semantic characterization of Safe
+PCF based on syntactical arguments.
+
+\begin{definition}
+We say that a PCF term is \defname{semi-safe} if it is of the form
+$N_0 N_1 \ldots N_k$ for $k\geq 1$ where each of the $N_i$ is a Safe
+PCF term or if it can be written $\lambda \overline{x} . N$ for some
+safe PCF term $N$.
+\end{definition}
+Semi-safe terms are either safe or ``almost safe'' in the sense that
+they can be turned into an equivalent (i.e.~with isomorphic game
+semantics) safe term  by performing $\eta$-expansions. Indeed, let
+$M$ be an semi-safe term that is unsafe. If $M$ is of the first form
+$N_0 N_1 \ldots N_k : (A_1,\ldots,A_n)$ with $k\geq 1$ then let
+$\varphi_i:A_i$ for $i\in\{1..n\}$ be fresh variables, using the
+(app) and (abs) rules we can build the safe term $\lambda \varphi_1
+\ldots \varphi_n . N_0 N_1 \ldots N_k \varphi_1 \ldots \varphi_n$.
+If $M$ is of the second form $\lambda \overline{x} . N$ then using
+the abstraction rule we can build the equivalent safe term $\lambda
+\overline{y} \overline{x}. N$  where $\overline{y} = fv(\lambda
+\overline{x}. N)$.
+
+The $\beta$-normal form of a \pcf\ term is the possibly infinite
+term obtained by reducing all the redexes in $M$.
+
+\subsubsection{Safe terms vs P-i.j.\ strategies}
+
+In the context of the simply typed lambda calculus, the
+correspondence between safety and P-incremental justification was
+first shown in \cite[Theorem 3(ii)]{blumong:safelambdacalculus}
+using a syntactic argument:
+\begin{theorem}[\cite{blumong:safelambdacalculus},Theorem 3(ii)]
+\label{thm:safeincrejust}
+ In the simply typed lambda calculus:
+\begin{enumerate}[(i)]
+\item If $M$ is safe then $\sem{M}$ is P-incrementally justified.
+\item If $M$ is a closed term and $\sem{M}$ is
+  P-incrementally justified then the $\eta$-long form of the
+  $\beta$-normal form of $M$ is safe.
+\end{enumerate}
+\end{theorem}
+In fact the following more precise result holds (the proof of the
+previous theorem can be easily adapted to this one):
+\begin{theorem}[Semi-safety and P-incremental justification]
+\label{thm:semisafeincrejust} Let $\Gamma \vdash M : A$ be a simply typed term. Then:
+\begin{enumerate}[(i)]
+\item If $\Gamma \vdash M : A$ is semi-safe then $\sem{\Gamma \vdash M : A}$ is P-incrementally justified.
+\item If $\sem{\Gamma \vdash M : A}$ is
+  P-incrementally justified then $\etalnf{\betanf{M}}$ is
+semi-safe if $M$ is open and safe if $M$ is closed.
+\end{enumerate}
+\end{theorem}
+
+
+
+In the context of \pcf\ however, only the first part of the theorem
+holds (see \cite{blumtransfer} for the proof). However (ii) does not
+hold. Indeed, take the closed \pcf\ term $M = \lambda f x y. f
+(\lambda z. \pcfcond (\pcfsucc\ x) y z )$ where $x,y,z:o$ and
+$f:((o,o),o)$. $M$ is in normal form (conditional cannot be reduced
+since the value of $x$ is undetermined). The $\eta$-long form of the
+$\beta$-normal form of $M$ is therefore $M$ itself which is unsafe.
+But clearly we have $\sem{M} = \sem{\lambda f x y. f (\lambda z.
+z)}$, and since $\lambda f x y. f (\lambda z. z)$ is safe, by (i),
+$\sem{M}$ is P-incrementally justified.
+
+Such counter-example arises because the conditional operator of
+\pcf\ permits us to construct terms in normal form that contain
+``dead code'' {\it i.e.}~some subterm that will never be evaluated
+for any value of M's parameters. In the example above, the dead code
+consists of the subterm $y$. In general, if the dead code part of
+the computation tree contains a variable that is not incrementally
+bound then the resulting term will be unsafe even if the rest of the
+tree is incrementally bound. In the example above, it was possible
+to turn $M$ into the equivalent safe term $\lambda f x y. f (\lambda
+z. z)$ by eliminating the dead code from $M$. In fact we can
+generalise this method to any \pcf\ term with a P-incrementally
+justified denotation.
+\smallskip
+
+Dead code elimination can be difficult to achieve in practice but it
+is easy to define it formally: We say that a subterm $N$ occurring
+in a context $C[-]$ in $M : (A_1, \ldots, A_n,o)$ is part of the
+\defname{dead code} of $M$ if for any term $T_0$ of the form $M M_1
+\ldots M_n$, any reduction sequence starting from $T_0$ does not
+involve a reduction of the subterm $N$ {\it i.e.}~for any reduction
+sequence $T_0 \redar T_1 \redar \ldots \redar T_k$, there is no
+$j\in \{0.. k-1\}$ such that $T_j = C[N]$ and $T_{j+1} = C[N']$ for
+some term $N'$.
+
+
+Let $M$  be a \pcf\ term in $\eta$-nf. An occurrence of a variable
+$x$ in $M$ is said to be a \defname{dead occurrence} if it occurs in
+the dead code of $M$. In other words, it is a dead occurrence of $x$
+if the corresponding node in the computation tree does not appear in
+any traversal of $\travset(M)$. Equivalently, thanks to the
+Correspondence Theorem, an occurrence of $x:B$ is dead if and only
+if the initial move of the arena $\sem{B}$ does not appear in any
+play of $\sem{M}$.
+
+
+We define $M^*$ as the term obtained from $M$ after substituting all
+subterms of the form  $x N_1 \dots N_k$ for some dead variable
+occurrence $x:(B_1,\ldots, B_k, o)$ by the constant $0$. This
+process is called \defname{dead variable elimination}. Note that if
+$M$ is in $\eta\beta$-nf then so is $M^*$. We also write $\tau(M)^*$
+to denote the equivalent transformation on the computation tree.
+Since the computation tree is constructed from the $\eta$-nf of $M$,
+we will use this notation even when $M$ is not in $\eta$-nf.
+
+
+
+\begin{proposition}[Incremental-binding and P-incremental justification coincide] \
+\label{prop:incrbound_imp_incrjustified_pcf} Let $\Gamma \vdash M : A$ be a PCF term in $\beta$-normal form.
+\begin{enumerate}[(i)]
+\item  If $\tau(\Gamma \vdash M : A)$ is incrementally-bound then $\sem{\Gamma \vdash M : A}$ is P-incrementally justified,
+\item  if $\sem{\Gamma \vdash M : A}$ is P-incrementally justified
+then $\tau(\Gamma \vdash M : A)^*$ is incrementally-bound.
+\end{enumerate}
+\end{proposition}
+\begin{proof}
+(i) The proof is exactly the same as in the simply typed lambda calculus case,
+see \cite[Proposition 4.1.5(i)]{blumtransfer}.
+
+\noindent (ii)
+Take $\Gamma \vdash M : A$ a \pcf\ term in $\beta$-normal form denoted by $\sem{\Gamma \vdash M : A}$ P-incrementally justified. Let $r$ denote the root of $\tau(M)^*$.
+Let $n$ be a node of $\tau(M)^*$ labelled by the variable $x$.
+$\tau(M)^*$ is free from dead code therefore $n$ is not a dead occurrence of $x$ and there exists a traversal of $\tau(M)^*$ of the form $t \cdot x$.
+
+\pcf\ constants are of order $1$ at most therefore they cannot
+hereditarily justify a variable node, thus $x$ is necessarily
+hereditarily justified by the only occurrence $r$ of the root of the
+computation tree.
+
+By considering $t\cdot x$ as a traversal of $\tau(M)$,  the
+correspondence theorem gives $\varphi((t \cdot x) \filter r) =
+\varphi((t \filter r) \cdot x) \in \sem{M}$. Since $\sem{M}$ is
+P-incrementally justified, $\varphi(x)$ must point to the last
+O-move in $\pview{\varphi(t \filter r)}$ with order strictly greater
+than $\ord{\varphi(x)}$. Consequently $x$ points to the last node in
+$\pview{t \filter r} \filter N^{\lambda}$ with order strictly
+greater than $\ord{x}$. We have:
+\begin{align*}
+\pview{t \filter r} &= \pview{t} \filter N^{r \vdash} & (\mbox{by Lemma \ref{lem:betanf_wellbehavedconst_trav_pview_red}}) \\
+& = [r,x[ \ \filter N^{r \vdash} & (\mbox{by Prop.\ \ref{prop:pviewtrav_is_path}})
+\end{align*}
+\notetoself{review use of Lemma
+\ref{lem:betanf_wellbehavedconst_trav_pview_red}}
+
+Since $M$ is in $\beta$-nf, the set of nodes not hereditarily
+enabled by $r$ is exactly the set of nodes hereditarily enabled by
+$N_{\Sigma}$ thus $[r,x[ \ \filter N^{r \vdash} = [r,x[\ \setminus\
+N^{\filter \Sigma}$. Moreover \pcf\ constants are of order $1$ at
+most therefore $N^{\filter \Sigma} = N_{\Sigma} \union N^c_{\Sigma}$
+where $N^c_{\Sigma}$ is the set of children nodes of $N_{\Sigma}$.
+Thus $\pview{t \filter r} \filter N^{\lambda} = ([r,x[\ \setminus\
+N_{\Sigma} \setminus N^c_{\Sigma} ) \filter N^{\lambda} = ([r,x[\
+\setminus\  N^c_{\Sigma} )  \filter N^{\lambda}$, and since
+$N^c_{\Sigma}$ is constituted of order $0$ lambda-nodes only, $x$
+must point to the last node in $[r,x[ \filter N^{\lambda}$ with
+order strictly greater than $\ord{x}$.
+
+Hence if $x$ is a bound variable node then it is bound by the
+last $\lambda$-node in $[r,x[$ with order strictly greater than
+$\ord{x}$ and if $x$ is a free variable then it points to $r$ and
+therefore all the $\lambda$-node in $]r,x[$ have order smaller than
+$\ord{x}$. Thus $\tau(M)^*$ is incrementally-bound.
+\end{proof}
+
+The counterpart of Lemma 4.1.6 from
+\cite{blumtransfer} can be stated as follows in the context of PCF:
+\begin{lemma}[Semi-safety and incrementally-binding]
+\label{lem:safe_imp_incrbound_pcf} Let $\Gamma \vdash M : A$ be a PCF term.
+\begin{itemize}
+\item[(i)] If $\Gamma \vdash M : A$ is a semi-safe term then $\tau(\Gamma \vdash M : A)$ is incrementally-bound ;
+\item[(ii)] conversely, if $\tau(\Gamma \vdash M : A)$ is incrementally-bound then the $\eta$-normal form of $\Gamma \vdash M : A$ is semi-safe if $M$ is open and safe if $M$ is closed.
+\end{itemize}
+\end{lemma}
+The proof can be obtained by adapting the proof
+of Lemma 4.1.6 from \cite{blumtransfer}.
+
+\begin{theorem}[Semi-safety and P-incremental justification]
+\label{thm:semisafeincrejust_pcf} Let $\Gamma \vdash M : A$ be a PCF term. Then:
+\begin{enumerate}[(i)]
+\item If $\Gamma \vdash M : A$ is semi-safe then $\sem{\Gamma \vdash M : A}$ is P-incrementally justified.
+\item If $\sem{\Gamma \vdash M : A}$ is
+  P-incrementally justified then $\etalnf{\betanf{M}}^*$ is
+  semi-safe  if $M$ is open, and safe if $M$ is closed.
+\end{enumerate}
+\end{theorem}
+
+\begin{proof}
+\noindent(i)
+A proof of this is given in the proof of Theorem 4.2.10 in \cite{blumtransfer}.
+
+\noindent(ii) Suppose $M$ is a \pcf\ term with a P-incrementally
+justified strategy denotation. By Proposition
+\ref{prop:incrbound_imp_incrjustified_pcf}(ii), $\tau(\betanf{M})^*
+= \tau(\etalnf{\betanf{M}}^*)$ is incrementally-bound. If $M$ is
+closed then so is $\etalnf{\betanf{M}}^*$ therefore by Lemma
+\ref{lem:safe_imp_incrbound_pcf}, $\etalnf{\etalnf{\betanf{M}}^*} =
+\etalnf{\betanf{M}}^*$ is safe. If $M$ is open then so is
+$\etalnf{\betanf{M}}^*$ and by Lemma
+\ref{lem:safe_imp_incrbound_pcf}, $\etalnf{\etalnf{\betanf{M}}^*} =
+\etalnf{\betanf{M}}^*$ is semi-safe.
+\end{proof}
+
+
+We write \pcf' to denote the language obtained by extending \pcf\
+with the $\pcfcase_k$ construct (see \cite{Abr02}).
+The $\pcfcase_k$ construct is the obvious generalisation of the
+conditional operator \pcfcond\ to $k$ branches instead of $2$. All the results obtained so far concerning Safe \pcf\ (including those
+cited from \cite{blumtransfer}) can clearly be transposed to \pcf'.
+
+\subsubsection{Definability result}
+
+The previous theorem leads to the following definability result for safe \pcf':
+\begin{proposition}[Definability for safe \pcf' terms]
+\label{prop:safetydefinability} Let $\overline{A}=(A_1,\ldots, A_i)$
+and $B =(B_1, \ldots, B_l,o)$ be two PCF types for some $i,l\geq 0$
+and $\sigma$ be a well-bracketed innocent P-i.j.\ strategy with
+finite view function defined on the game $!A_1 \otimes \ldots
+\otimes !A_i \lingamear (!B_1 \lingamear \ldots \lingamear !B_l
+\lingamear o) $. There exists a \emph{semi-safe} PCF' term
+$\overline{x} : \overline{A} \vdash M : B$ in $\eta$-long normal
+form such that:
+$$ \sem{\overline{x} : \overline{A} \vdash M_\sigma : B} = \sigma $$
+and a safe closed PCF' term $\vdash_s M'_\sigma : (\overline{A},B)$ in $\eta$-long normal form such that:
+$$ \sem{\vdash M'_\sigma : (\overline{A},B)} \cong \sigma \ .$$
+\end{proposition}
+\begin{proof}
+By the standard definability result for PCF', there is a term
+$\overline{x} : \overline{A} \vdash N : B$ such that
+$\sem{\overline{x} :\overline{A} \vdash N : B} = \sigma$. Take
+$M_\sigma$ to be $\etalnf{\betanf{N}}^* $. We have
+$\sem{\overline{x} : \overline{A} \vdash M_\sigma : B} =
+\sem{\overline{x} :\overline{A} \vdash N : B} = \sigma$ and by
+Theorem  \ref{thm:semisafeincrejust_pcf}(ii), $M_\sigma$ is
+semi-safe. For the second part we just need to take $M'_\sigma =
+\lambda \overline{x}. M_\sigma$.
+\end{proof}
+
+
+
+\subsubsection{Application of the definability result: a syntactic
+argument showing compositionality of P-i.j.\ strategies}
+
+
+We have already shown in Sec. \ref{sec:closedpij} that under certain
+conditions, P-i.j.\ strategies compose. Here we will obtain a
+slightly weaker version of this result using a much simpler argument
+which exploits the definability result from the previous section.
+
+
+ Let $\overline{A} = (A_1, \ldots, A_i)$, $B = (B_1, \ldots,
+B_l,o)$ and $C=(C_1,\ldots,C_k,o)$ be three PCF types for some
+$i\geq 1,l,k\geq 0$. Let $f:\ !A_1 \otimes \ldots \otimes !A_i
+\lingamear B$ and $g:\ !B\lingamear C$ be two innocent
+well-bracketed and P-incrementally justified strategies with finite
+view function. We would like to find under which conditions the
+composition $f\fatcompos g$ is also P-incrementally justified.
+
+By the definability result, there are two closed safe terms (in $\eta$-nf) $\vdash M_f :(\overline{A},B)$  and $\vdash M_g :B \typear C$ such that $\sem{M_f} = f$
+and $\sem{M_f} = g$.
+We define the term $M_{f\fatcompos g} = \lambda \overline{x} . M_g (M_f \overline{x})$ for some fresh variables $\overline{x} : \overline{A}$. Clearly we have $\sem{M_{f\fatcompos g}} = \sem{M_f} \fatcompos \sem{M_g} = f\fatcompos g$.
+
+\paragraph{Sufficient conditions}
+
+By Theorem \ref{thm:semisafeincrejust_pcf}, we know that
+$f\fatcompos g$ is P-incrementally justified just when
+$\etalnf{\betanf{M_{f\fatcompos g}}}^*$ is safe. We will now exploit
+this fact to extract a sufficient condition on the types $A$ and $B$
+for the composition of $f$ and $g$ to be P-incrementally justified.
+
+The term $M_f$ and $M_g$, being in $\eta$-nf, are of the following forms:
+\begin{eqnarray*}
+\vdash M_f &=& \lambda x_1^{A_1} \ldots x_i^{A_i} \varphi_1^{B_1} \ldots \varphi_l^{B_l} . N_f^o\\
+\vdash  M_g &=& \lambda y^{ (B_1, \ldots, B_l,o)} \phi_1^{C_1} \ldots \phi_k^{C_k} . N_g^o
+\end{eqnarray*}
+for some distinct variables $x_1, \ldots, x_i$, $y$, $\varphi_1, \dots \varphi_l$, $\phi_1, \dots \phi_k$  and $\eta$-normal terms $N_f$ and $N_g$:
+\begin{eqnarray*}
+x_1:A, \ldots, x_i:A_i, \varphi_1:B_1, \dots, \varphi_l:B_l &\vdash& N_f :o \\
+y: (B_1, \ldots, B_l,o), \phi_1:C_1, \dots, \phi_l:C_l &\vdash& N_g :o
+\end{eqnarray*}
+
+
+
+The fact that $M_f$ and $M_g$ are safe does not imply that $M_{f\fatcompos g}$ is: take $M_f = \lambda x^o z^o.x$ and $M_g = \lambda y^{(o,o)} . y a$ for some constant $a\in \Sigma$, then $\lambda x:A . M_g (M_f x) = \lambda x . (\lambda y . y a) ( \underline{(\lambda x z.x) x} )$ is unsafe because of the underlined subterm. However we have:
+\begin{align*}
+f\fatcompos g &= \sem{\lambda \overline{x} . M_g (M_f  \overline{x})} \\
+ &= \sem{\lambda \overline{x} . (\lambda \phi_1\ldots \phi_k . N_g) [(M_f \overline{x}) / y]} \\
+&= \sem{\lambda \overline{x} \phi_1 \dots \phi_k. N_g [(M_f  \overline{x}) / y]}
+& \mbox{(the $x_j$'s and $\phi_j$'s are disjoint)}.
+\end{align*}
+
+We now concentrate on the term  $\lambda \overline{x} \phi_1 \dots
+\phi_k. N_g [(M_f  \overline{x}) / y]$ and try to find a sufficient
+condition guaranteeing its safety.
+
+\subparagraph{A sufficient condition}
+\begin{lemma}
+Suppose that $\Gamma,y:B \vdash M$ is a safe term in $\eta$-nf and $\Gamma \vdash R : B$ is an almost safe application. Let $N$ denote the set of nodes of the computation tree $\tau(M)$. We have:
+\begin{align*}
+\Gamma \vdash M[R/y] :A \mbox{ safe }
+\iff&  \forall x \in fv(R) . \\
+    & \forall n_y \in N_{\sf fv} \mbox{ labelled $y$}.
+      \forall m \in N_{\lambda} \inter ]r,n_y] : \ord{m} \leq \ord{x}
+\end{align*}
+\end{lemma}
+\begin{proof}
+Since $M$ is in $\eta$-nf, all the application to the variable $y$ are total (i.e.~of the form $y P_1 \ldots P_l :o$). Hence after substituting the safe term $N$ for $y$ in $M$, the only possible cause of unsafety is when
+some variable free in $N$ becomes not safely bound in $\tau(M)$.
+\end{proof}
+
+Applying this lemma with $R= M_f \overline{x}$ gives us a sufficient
+condition -- the right-hand side of the equivalence -- for $\lambda
+x \phi_1 \dots \phi_k. N_g [(M_f \overline{x}) / y]$ to be safe, and
+hence for $f\fatcompos g$ to be P-incrementally justified. Of course
+it is not a necessary condition since $N_g[(M_f \overline{x}) /y]$
+can be unsafe while its eta-beta normal form is safe.
+
+\subparagraph{A simpler sufficient condition}
+\begin{lemma}
+If $y:B, \Sigma \vdash N : T$ and $\vdash M : (\overline{A}, B)$
+are safe terms with $\ord{A_i} \geq \ord{B}$ for all $i\in 1..n$
+then $\overline{x}:\overline{A}, \Sigma \vdash N[(M \overline{x})/y] :T$ is also safe.
+\end{lemma}
+\begin{proof}
+Since $\ord{x_i} = \ord{A_i} \geq \ord{B} = \ord{M \overline{x}}$, we can use the application
+rule of the safe lambda calculus to form the safe term $\overline{x}:\overline{A} \vdash M \overline{x}$.
+Using the substitution lemma we have that $N[(M \overline{x})/y]$ is safe.
+\end{proof}
+
+Hence we obtain the following sufficient condition for $f\fatcompos
+g$ to be P-incrementally justified:
+$$\ord{A_i}\geq\ord{B} \mbox{ for all } 1 \leq i \leq n$$
+
+
+Indeed the lemma gives that $\vdash \lambda \overline{x} \phi_1
+\dots \phi_k. N_g [(M_f \overline{x}) / y]$ is safe and therefore
+its denotation $\sem{\vdash \lambda \overline{x} \phi_1 \dots
+\phi_k. N_g [(M_f \overline{x}) / y]} = f\fatcompos g$ is
+P-incrementally justified.
+
+Note that this condition is not necessary: Take $A=o$, $B=(o,o)$,
+$C=(o,o)$ and consider the two safe terms $M_f = \lambda x^A u^o.u$
+and $M_g = \lambda y^B . y a$ for  some constant $a:o$. Then we have
+$M_{f\fatcompos g} = \lambda x . a$ which is safe hence $f\fatcompos
+g$ is P-incrementally justified although $\ord{A} < \ord{B}$.
+
+\begin{remark}
+This result corroborates what we already know about compositionality
+of P-i.j.\ strategies (see Sec. \ref{sec:closedpij}). Indeed, the
+condition given hereinbefore implies that the strategy $f$ is
+\emph{closed} P-i.j.\ (the $A_i$s are prime because we are working
+with PCF types) and therefore by Prop.\ \ref{prop:closedpijcompose},
+$f \fatcompos g$ must also be P-i.j.
+\end{remark}
+
+
+
+
+\paragraph{Counter-example: two P-i.j.\ strategies whose composition is not
+P-i.j.}
+
+We now give counter-example to show that P-i.j.\ strategies do not
+compose in general.
+
+\subparagraph{First attempt}
+
+Take the types $A=o$, $B=(o,o)$, $C=o$, the variables
+$x,u,v:o$, $y:B$ and $\varphi:((o,o),o)$ and $\Sigma$-constant $a:o$.
+Consider the two safe terms $\vdash_s  M_f = \lambda xv.x : A\typear B$ and $\vdash_s M_g = \lambda y . \varphi (\lambda u . y a) : B\typear C$.
+The $\eta\beta$-nf of $M_{f\fatcompos g}$ is $\vdash \lambda x . \varphi (\underline{\lambda u . x})$ which is unsafe because of the underlined term. It is then tempting to use
+Theorem \ref{thm:safeincrejust}(ii) to conclude that
+$\sem{M_{f\fatcompos g}}$ is not P-incrementally justified. However this theorem cannot be used here because $M_g$ contains an order $2$ constants ($\varphi$) therefore
+$M_{f\fatcompos g}$ is not a valid simply typed $\lambda$-term (nor a \pcf-term).
+
+\subparagraph{Second attempt} The previous example can be easily
+changed into a working counter-example: we just need to elevate
+$\varphi$ from the status of constant to variable.
+
+Take $A=o$, $B=(o,o)$, $C=(((o,o),o),o)$, the variables
+$x,u,v:o$, $y:B$ and $\varphi:((o,o),o)$ and the $\Sigma$-constant $a:o$. Consider the two safe terms $\vdash_s  M_f = \lambda xv.x : A\typear B$ and  $\vdash_s M_g = \lambda y \varphi. \varphi (\lambda u . y a) : B\typear C$.
+The $\eta\beta$-nf of $M_{f\fatcompos g}$ is $\vdash \lambda x \varphi. \varphi (\underline{\lambda u . x})$ which is unsafe because of the underlined term, thus by Theorem \ref{thm:safeincrejust}(ii), $\sem{M_{f\fatcompos g}}=\sem{M_f} \fatcompos
+\sem{M_g}$ is not P-incrementally justified. The following diagram illustrates a play that is not P-i.j.:
+\begingroup
+\def\sigcol#1{{\color{gray} #1}}
+\def\mucol#1{{\color{red} #1}}
+$$\begin{array}{ccccccccc}
+A &  & \multicolumn{2}{c}{B} && \multicolumn{4}{c}{C}\\
+\cline{1-1} \cline{3-4} \cline{6-9}
+o & \stackrel{\sigcol{\sem{M_f}}}\longrightarrow & o, & o & \stackrel{\mucol{\sem{M_g}}}\longrightarrow & ((o, &o),& o),& o \\ \\
+&&&&&&&&\rnode{n0}{\lambda x \varphi \omove  \mucol {\lambda y \varphi}}\\
+&&&&&&&\rnode{n1}{\varphi  \pmove \mucol \varphi}\\
+&&&&&&\rnode{n2}{\lambda u \omove  \mucol {\lambda u}} \\
+&&&  \rnode{n3}{\omove \sigcol {\lambda x v} \pmove \mucol y} \\
+\rnode{n4}{x \pmove \sigcol x}
+\end{array}
+\ncarc[arcangleA=20,arcangleB=20,linecolor=black]{->}{n4}{n0}
+\ncarc[arcangleA=30,arcangleB=20,linecolor=red]{->}{n2}{n1}
+\ncarc[arcangleA=30,arcangleB=20,linecolor=red]{->}{n1}{n0}
+\ncarc[arcangleA=20,arcangleB=20,linecolor=red]{->}{n3}{n0}
+\ncarc[arcangleA=20,arcangleB=20,linecolor=gray]{->}{n4}{n3}
+$$
+\endgroup
+
+\subparagraph{Another counter-example with $\ord{B} = \ord{C}$.}
+
+Let $A=o$, $B=C=(((o,o),o),o)$ and let $x:A$, $y:B$, $u:o$, $v,\varphi:((o,o),o)$
+and $g:(o,o)$ be variables and  $a:o$ be a $\Sigma$-constant. Take the two safe terms $\vdash  M_f = \lambda x v.x$ and $\vdash M_g = \lambda y \varphi. \varphi (\lambda u . y (\lambda g. a))$.
+The $\eta\beta$-nf of $M_{f\fatcompos g}$ is $\vdash \lambda x \varphi. \varphi (\underline{\lambda u . x})$ which is unsafe because of the underlined term, so
+$f\fatcompos g$ is not P-incrementally justified.

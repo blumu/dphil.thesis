@@ -685,16 +685,16 @@ traversal. We do a case analysis on the node preceding $\lambda
 \begin{remark}
 Our notions of computation tree and traversal differ slightly from \cite{OngLics2006}:
 \begin{itemize}[-]
-    \item In \cite{OngLics2006} computation trees can have uninterpreted first-order constants. But as we have already observed, uninterpreted constants can be just regarded as free variables thus we do not lose any expressivity here.
+    \item In \cite{OngLics2006} computation trees can have (uninterpreted first-order) constants. At the moment we do not have taken constants into account but as we have already observed, uninterpreted constants can be just regarded as free variables, thus we do not lose any expressivity here.
 
     \item In \cite{OngLics2006}, constants are restricted to order one at most since computation tree
-    are used to model computation of tree structures. Here we don't need this restriction (as long as constants are uninterpreted - so we can regard them as free variables).
+    are used to model computation of tree structures. Here we do not need this restriction (as long as constants are uninterpreted we can regard them as free variables for any higher order).
 
 
-    \item In \cite{OngLics2006}, the rule ``\rulenamet{Sig}'' suffices to model the first-order constants used as constructors for tree structures. In our setting, however, we have to deal with \emph{free variables}.
-        In order to model them, we had to introduce the traversal rules \rulenamet{InputValue}, \rulenamet{InputVar}.
+    \item In \cite{OngLics2006}, the rule \rulenamet{Sig} suffices to model the first-order constants used as constructors for tree structures. In our setting, however, we have to deal with the full power of \emph{free variables}.
+        In order to model them, it was necessary to introduce the more subtle rules \rulenamet{InputValue}, \rulenamet{InputVar}.
 
-    \item In our setting, we need to introduce the notion of value-leaves in order to give a model of interpreted constants. (We will use them to model the constants of \pcf\ and \ialgol).
+    \item In our setting, we have introduced the notion of value-leaves. This extra machinery will be necessary when we extend traversal rules to model interpreted constants. (We will show how to do so for the constants of \pcf\ and \ialgol.)
     \end{itemize}
 \end{remark}
 
@@ -1131,14 +1131,13 @@ $\pview{{t_{\prefixof x}}^\star}$.
 
 
 
-\subsubsection{Projection with respect to a reference node occurrence}
+\subsubsection{Sub-term projection (with respect to a reference node occurrence)}
 \label{sec:tstar}
-
 Let us fix a reference node-occurrence $n_0$ in a traversal $t$.
-We define the projection operation $t \filterplus n_0$ to be the subsequence of $t$ consisting of the occurrences
+The \defname{sub-term projection} $t \filterplus n_0$ is defined to be the subsequence of $t$ consisting of the occurrences
 whose P-view at that point contain the node $n_0$. Formally:
 \begin{definition}
- For any traversal $t\in \travset(M)$ and reference-node $n_0$ occurring in $t$, $t \filterplus n_0$
+For any traversal $t\in \travset(M)$ and reference-node $n_0$ occurring in $t$, $t \filterplus n_0$
 is the subsequence of $t$ defined by induction on $t$ as follows:
 \begin{compactitem}
 \item If $n\in N_\lambda \union L_{\sf var} \union L_\Sigma \union L_@$ then
@@ -1166,7 +1165,8 @@ $t'\filterplus r_0$ it is reassigned to be $r_0$.
 \end{compactitem}
 \end{definition}
 
-If $n$ is an occurrence of a lambda node $r' \in N_\lambda$ then we
+We call this transformation a sub-term projection with respect to a reference node occurrence because it keeps only nodes
+that appear in the sub-tree rooted at this node. If $n$ is an occurrence of a lambda node $r' \in N_\lambda$ then we
 will call $t \filterplus n$ a \defname{sub-traversal of the
 computation tree $\tau(M)$}. This appellation is suggestive of the
 forthcoming Proposition \ref{prop:trav_projection} stating that $t
@@ -1251,10 +1251,10 @@ $r$ in $t$ are necessarily hereditarily \emph{enabled} by the root
 and therefore appear in $t^\star \filter V^{\theroot\vdash}$. \qed
 
 
-\subsubsection{Sub-traversal projection}
+\subsubsection{O-view and P-view of the sub-term projection}
 
 For any lambda node $r'$ in $N_\lambda$ we write
-$M^{(r')}$ for the term $\kappa(r')$ and $V^{(r')}$ for the set of nodes and leaves of the sub computation tree $\tau(M^{(r')})$ (thus $V^{(r')} = E^*(\{r'\})$).
+$M^{(r')}$ for the sub-term rooted at $r'$ and $V^{(r')}$ for the set of nodes and leaves of the sub-computation tree $\tau(M^{(r')})$ (thus $V^{(r')} = E^*(\{r'\})$).
 
 \paragraph{P-view projection}
 
@@ -1425,19 +1425,16 @@ In this paragraph we will spend some time proving the following Proposition:
    appears in $t \filterplus r_0$ for some occurrence $r_0$ in $t$ of a lambda node $r'$ in $N_\lambda$.
    Then $ \oview{t}_M\filterplus r_0 \subseqof \oview{t\filterplus r_0}_{M^{(r')}}$.
 \end{proposition}
-
-This result is the counterpart of another known result in game semantics from the seminal paper \cite{hylandong_pcf}:
+Unfortunately, this result is relatively hard to prove. Note, however, that it bears resemblance with another 
+non trivial result of game semantics which can be found in the seminal paper \cite{hylandong_pcf}:
 \begin{proposition}[P-view projection in game semantics]{\cite[Prop.4.3]{hylandong_pcf}}
 \label{prop:hylandong_pviewprojection}
   Let $s$ be a legal position of a game $A\gamear B$.
   If $s^\omega$ is in $B$ then $\pview{s}^{A\gamear B} \filter B \subseqof \pview{s\filter B}^B$.
 \end{proposition}
-The proof is non-trivial. It can be found in the appendix of
-\cite{hylandong_pcf}. In order to avoid redoing a similar proof for
-our setting, we will show the proof of this proposition can be
-reused to give us Proposition \ref{prop:oview_trav_projection}. The
-argument used in \cite{hylandong_pcf} relies on several properties
-of a legal position $s$:
+Its proof is given in the appendix of \cite{hylandong_pcf}. Instead of purely redoing the same proof in our slightly different setting, 
+we just need to show how to recast this result in it! Firstly we observe that the
+argument used in \cite{hylandong_pcf} relies on several properties of a legal position $s$:
 \begin{itemize}
   \item (w1) Initial question to start: there first move played in $s$ is an initial move and there is no other occurrence of initial moves in the rest of $s$;
   \item(w2) Alternation: P-moves and O-moves alternate in $s$;
@@ -1446,7 +1443,7 @@ of a legal position $s$:
   \item(w5)  Visibility: $s$ satisfies P-visibility and
 O-visibility.
 \end{itemize}
-Further assumption are also made on the legal positions of the game
+Also, further assumptions are made on the legal positions of the game
 $A\gamear B$:
 \begin{itemize}
   \item(w6) For any occurrence $n$ in the position, $n \in A \iff n \not\in
@@ -1461,13 +1458,10 @@ B$;
     \end{itemize}
 \end{itemize}
 Most of these requirements coincide with properties that we have
-already shown for our notion of traversals. However traversals do
-not strictly satisfy explicit justification: some nodes in the
-traversal do not have justification pointers (@-nodes and
-$\Sigma$-nodes). Also, variable nodes can have more than one
-pointer. Fortunately we will see that this mismatch can be easily
-overcome.
-
+already shown for our traversals. However traversals do
+not strictly satisfy explicit justification since there are some nodes in the
+traversal that do not have justification pointers: the @-nodes and
+$\Sigma$-nodes. To overcome this problem, well, we just add justification pointers to those nodes!
 
 Take a justified sequence of node $t$. We define $\extension{t}$, the \defname{extension of $t$},
 to be the sequence of nodes-with-pointers obtained from $\diamond \cdot t$ (where
@@ -1509,16 +1503,16 @@ defined in Def.\ \ref{dfn:justseqnode}. Nevertheless, the basic transformations 
 
 The transformations $\pview{\_}$ and $\oview{\_}$, however, do not convey the appropriate notion
 of view for extended traversals. We define an alternative notion of
-view for traversal extension, called O-eview and P-eview, as follows:
+view more appropriate to traversal extensions, called O-e-view and P-e-view, as follows:
 \begin{definition}
 \label{eqn:def_eview}
 
-The O-eview of a traversal extension $\extension{t}$, written, $\oeview{\extension{t}}$ is defined as
+The O-e-view of a traversal extension $\extension{t}$, written, $\oeview{\extension{t}}$ is defined as
 \begin{equation*}
 \oeview{\extension{t}} \defeq \pview{\extension{t}} \ .
 \end{equation*}
 
-The P-eview of $\extension{t}$, written, $\oeview{\extension{t}}$ is defined by induction:
+The P-e-view of $\extension{t}$, written, $\oeview{\extension{t}}$ is defined by induction:
 $$\begin{array}{rcll}
  \peview{\epsilon} &=&  \epsilon \\
  \peview{u \cdot n }  &=&  \peview{u} \cdot n
@@ -1535,9 +1529,9 @@ By inserting a dummy node $\diamond$ at the beginning of the traversal, we
 change the parity of the alternation between nodes in $N_{\sf
 var} \union L_\lambda \union N_@ \union N_\Sigma$ and $N_\lambda
 \union L_{\sf var} \union L_\Sigma \union L_@$.
-Thus the role of O and P is interchanged for traversal extensions. This explains why the O-eview is calculated from the P-view.
+Thus the role of O and P is interchanged for traversal extensions. This explains why the O-e-view is calculated from the P-view.
 
-For the P-eview, the definition is almost the same as the O-view $\oview{\_}$ except that the computation does not stop when reaching a node
+For the P-e-view, the definition is almost the same as the O-view $\oview{\_}$ except that the computation does not stop when reaching a node
 in $N_@ \union N_\Sigma$. This makes sense for traversal extensions in which occurrences of such nodes have a pointer. In fact, this corresponds precisely to the notion of \emph{long O-view} introduced in \cite{Harmer2005}. Contrary to the O-view, the long-O-view may contain several threads, and the O-view is a suffix of the long O-view. Here this means that $\oview{t}$ is a suffix of $\peview{t}$:
 \begin{equation}
   \peview{t} = w \cdot \oview{t} \quad \mbox{for some sequence $w$.} \label{eqn:oview_suffix_preview}
@@ -1773,26 +1767,59 @@ $\oview{t}\filterplus r_0 \subseqof \oview{t \filterplus r_0}$. \qed
 \pssetcomptree
 \psset{nodesep=1pt,arcangle=-20,arrowsize=2pt 1}
 \setlength\fboxsep{2pt}
+Take $\varphi:((o,o),o), e:o \vdash
+	\varphi (\lambda x .
+				(\lambda \psi .
+					\varphi (\lambda x' .
+								(\lambda y . \psi (\lambda z . z))
+								(\varphi (\lambda x'' . x'))
+							)
+				)
+			(\lambda u. u e))$. The computation tree is represented below together with an example of traversal $t$:
 
 \begin{tabular}{lp{8cm}}
 $\pstree{\TR{\lambda }}{\pstree{\TR{\varphi}}{\pstree{\TR{\lambda x}}{\pstree{\TR{@}}{\pstree{\TR{\lambda \psi}}{\pstree{\TR{\varphi}}{\pstree{\TR{\lambda x'}}{\pstree{\TR{@}}{\pstree{\TR{\lambda y}}{\pstree{\TR{\psi}}{\pstree{\TR{\lambda z}}{\TR{z}}}}\pstree{\TR{\lambda }}{\pstree{\TR{\varphi}}{\pstree{\TR{\lambda x''}}{\TR{x'}}}}}}}}\pstree{\TR{\lambda u}}{\pstree{\TR{u}}{\pstree{\TR{\lambda }}{\TR{e}}}}}}}}
-$ \hspace{1cm} &
+$ \hspace{2cm} &
+\vspace{1cm}
 \begin{asparablank}
 \item $t = \Pstr[0.7cm]{(n0){\lambda }\ (n1-n0){\varphi}\ (n2-n1){\lambda x}\ (n3){@}\ (n4-n3){\lambda \psi}\ (n5-n0){\varphi}\ (n6-n5){\lambda x'}\ (n7){@}\ (n8-n7){\lambda y}\ (n9-n4){\psi}\ (n10-n3){\lambda u}\ (n11-n10){u}\ (n12-n9){\lambda z}\ (n13-n12){z}\ (n14-n11){\lambda }\ }$
 \item $\oview{t} = \Pstr[0.7cm]{(n0){@}\ (n1-n0){\lambda \psi}\ (n2-n1){\psi}\ (n3-n0){\lambda u}\ (n4-n3){u}\ (n5-n2){\lambda z}\ (n6-n5){z}\ (n7-n4){\lambda }\ }$
 \item $\oview{t}\filterplus r_0 = \Pstr[0.7cm]{(n0){\lambda \psi}\ (n1-n0){\psi}\ (n2-n1){\lambda z}\ (n3-n2){z}\ }$
 
 \item $t\filterplus r_0 = \Pstr[0.7cm]{(n0){\lambda \psi}\ (n1-n0){\varphi}\ (n2-n1){\lambda x'}\ (n3){@}\ (n4-n3){\lambda y}\ (n5-n0){\psi}\ (n6-n5){\lambda z}\ (n7-n6){z}\ }$
-\item $\oview{ t \filterplus r_0 } = \Pstr[0.7cm]{(n0){\lambda \psi}\ (n1-n0){\psi}\ (n2-n1){\lambda z}\ (n3-n2){z}\ }$
+\item $\oview{ t \filterplus r_0 } = \Pstr[0.7cm]{(n0){\lambda \psi}\ (n1-n0){\psi}\ (n2-n1){\lambda z}\ (n3-n2){z}\ }$.
 \end{asparablank}
 \end{tabular}
 \end{example}
 
 
-\paragraph{Traversal projection}
-We have now proved all the lemmas and propositions that we need to
-show the following important result:
-\begin{proposition}[Traversal projection]
+\begin{example}
+Take the term $e:o \vdash 
+	(\lambda f g . f (\lambda b . f (\lambda b'. b) (\lambda a' . a' e))
+                        (\lambda a . a e))
+    (\lambda x y . y (\lambda h . x (h e)) e) e$. Take the traversal:
+$$t = \Pstr[1cm]{{\lambda }\ (n1){@}\ (n2-n1){\lambda f g}\ (n3-n2){f}\ (n4-n1){\lambda x y}\ (n5-n4){y}\ (n6-n3){\lambda a}\ (n7-n6){a}\ (n8-n5){\lambda h}\ (n9-n4){x}\ (n10-n3){\lambda b}\ (n11-n2){f}\ (n12-n1){\lambda x y}\ (n13-n12){y}\ (n14-n11){\lambda a'}\ (n15-n14){a'}\ (n16-n13){\lambda h}\ (n17-n12){x}\ (n18-n11){\lambda b'}\ (n19-n10){b}\ (n20-n9){\lambda }\ (n21-n8){h}\ }$$
+then we have the following relations:
+\pssetcomptree
+\psset{nodesep=1pt,arcangle=-20,arrowsize=2pt 1}
+\setlength\fboxsep{2pt}
+
+\begin{tabular}{lp{6cm}}
+$\pstree{\TR{\lambda }}{\pstree{\TR{@}}{\pstree{\TR{\lambda f g}}{\pstree{\TR{f}}{\pstree{\TR{\lambda b}}{\pstree{\TR{f}}{\pstree{\TR{\lambda b'}}{\TR{b}} \pstree{\TR{\lambda a'}}{\pstree{\TR{a'}}{\pstree{\TR{\lambda }}{\TR{e}}}}}} \pstree{\TR{\lambda a}}{\pstree{\TR{a}}{\pstree{\TR{\lambda }}{\TR{e}}}}}}\pstree{\TR{\lambda x y}}{\pstree{\TR{y}}{\pstree{\TR{\lambda h}}{\pstree{\TR{x}}{\pstree{\TR{\lambda }}{\pstree{\TR{h}}{\pstree{\TR{\lambda }}{\TR{e}}}}}} \pstree{\TR{\lambda }}{\TR{e}}}} \pstree{\TR{\lambda }}{\TR{e}}}}
+$ \hspace{0.5cm} &
+\begin{asparablank}
+\item $\oview{t} = \Pstr[0.7cm]{(n0){@}\ (n1-n0){\lambda f g}\ (n2-n1){f}\ (n3-n0){\lambda x y}\ (n4-n3){y}\ (n5-n2){\lambda a}\ (n6-n5){a}\ (n7-n4){\lambda h}\ (n8-n7){h}\ }$
+\item $\oview{t}\filterplus r_0 = \Pstr[0.7cm]{(n0){\lambda f g}\ (n1-n0){f}\ (n2-n1){\lambda a}\ (n3-n2){a}\ }$
+\item $t\filterplus r_0  = \Pstr[0.7cm]{(n0){\lambda f g}\ (n1-n0){f}\ (n2-n1){\lambda a}\ (n3-n2){a}\ (n4-n1){\lambda b}\ (n5-n0){f}\ (n6-n5){\lambda a'}\ (n7-n6){a'}\ (n8-n5){\lambda b'}\ (n9-n4){b}\ }$
+\item $\oview{ t \filterplus r_0 } = \Pstr[0.7cm]{(n0){\lambda f g}\ (n1-n0){f}\ (n2-n1){\lambda a}\ (n3-n2){a}\ (n4-n1){\lambda b}\ (n5-n4){b}\ }$.
+\end{asparablank}
+\end{tabular}
+\end{example}
+
+\subsubsection{Sub-term projections are sub-traversals}
+
+We are now in a position to prove an important result that will require us to use all the lemmas and propositions from the previous two sections:
+\begin{proposition}[Sub-term projections are sub-traversals]
     \label{prop:trav_projection}
     Let $t \in \travset(M)$. For any occurrence $r_0$ in $t$ of some lambda node
     $r'\in N_\lambda$ we have $t\filterplus r_0 \in \travset(M^{(r')})$.
@@ -1926,7 +1953,7 @@ show the following important result:
   \end{itemize}
 % end of proof
 
-
+The following Lemma will become useful in the proof of the Correspondence Theorem:
 
 \begin{lemma} \label{lem:tstarproj_eq_tprojplusstar} Let $t$ be a traversal and $r_0$ be an occurrence of a
 lambda node $r'$. We have
@@ -2005,8 +2032,8 @@ Again we establish an analogy between traversals and plays of game
 semantics:
 \begin{center}
 \begin{tabular}{r|p{5cm}}
-{Traversal} & {Game semantics} \\
-\hline
+{\bf Traversal setting} & {\bf Game-semantic setting} \\
+\hline\hline
 Traversal $t$ & Play $s$ \\
 Nodes in $n \in N_\lambda \union L_{\sf var} \union L_\Sigma \union L_@$ & O-moves $\omove$ \\
 Nodes in $n \in N_{\sf var} \union L_\lambda \union N_@ \union N_\Sigma \union \{\diamond\}$ & P-moves $\pmove$\\

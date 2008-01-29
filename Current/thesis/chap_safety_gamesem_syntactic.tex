@@ -25,6 +25,108 @@ denoted by P-incrementally-justified strategies and we give the key
 elements for a possible extension of the result to Safe Idealized
 Algol.
 
+\section{Preliminaries}
+\subsection{Incremental binding}
+
+In a computation tree, a binder node always occurs in the path from
+the bound node to the root. We now introduce a class of computation
+trees in which binder nodes can be uniquely recovered from the order
+of the nodes. We write $[n_1,n_2]$ to denote the path from node
+$n_1$ to node $n_2$ if it exists and $]n_1,n_2]$ for the sequence of
+nodes obtained by removing $n_1$ from $[n_1,n_2]$. We fix a term
+$\Gamma \vdash M : T$ and we write $\theroot$ to denote the root of
+the computation tree $\tau(M)$.
+
+
+\begin{definition}[Incrementally-bound computation tree]
+A variable node $x$ of a computation tree is said to be
+\defname{incrementally-bound} if either:
+\begin{enumerate}
+\item $x$ is \emph{bound} by the first $\lambda$-node in the path to the root that has
+order strictly greater than $\ord{x}$. Formally:
+$$ x \mbox{ bound by } n \quad \imp \quad n \in [\theroot,x] \wedge \ord{n} > \ord{x} \wedge \forall \lambda\mbox{-node } n' \in ]n,x] . \ord{n'} \leq \ord{x},$$
+
+\item $x$ is a \emph{free variable} and all the $\lambda$-nodes in the path to the root except the root have order
+smaller or equal to $\ord{x}$. Formally:
+$$ x \mbox{ free } \quad \imp \quad  \forall \lambda\mbox{-node } n' \in ]\theroot,x] . \ord{n'} \leq \ord{x} \ .$$
+\end{enumerate}
+
+A computation tree is said to be \defname{incrementally-bound}, also
+abbreviated i.b., if all the variable nodes are incrementally-bound.
+\end{definition}
+
+A node of the computation tree is said to be \defname{reachable} if
+there is some traversal of the computation tree that visits it.
+
+
+\begin{lemma}[Safe terms have incrementally-bound computation trees]
+\label{lem:safe_imp_incrbound} Suppose that  $\Gamma \vdash M :T$ is
+a simply-typed term.
+\begin{itemize}
+\item[(i)] If $M$ is a safe term then $\tau(M)$ is incrementally-bound ;
+\item[(ii)] conversely, if $M$ is \emph{closed} and $\tau(M)$ is i.b.\ then the $\eta$-normal form of $M$ is safe.
+\end{itemize}
+\end{lemma}
+\begin{proof}
+(i) Suppose that $M$ is safe. The safety property is preserved after
+taking the $\eta$-long normal form, therefore $\tau(M)$ is the tree
+representation of a safe term.
+
+In the safe $\lambda$-calculus, the variables in the context with
+the the lowest order must be all abstracted at once when using the
+abstraction rule. Since the computation tree merges consecutive
+abstractions into a single node, any variable $x$ occurring free in
+the subtree rooted at a $\lambda$-node $\lambda \overline{\xi}$
+different from the root must have order greater or equal to
+$\ord{\lambda \overline{\xi}}$. Reciprocally, if a lambda node
+$\lambda \overline{\xi}$ binds a variable node $x$ then
+$\ord{\lambda \overline{\xi}} = 1+\max_{z\in\overline{\xi}} \ord{z}
+> \ord{x}$.
+
+Let $x$ be a bound variable node. Its binder occurs in the path from
+$x$ to the root, therefore, according to the previous observation,
+$x$ must be bound by the first $\lambda$-node occurring in $[r,x]$
+with order strictly greater than $\ord{x}$. Let $x$ be a free
+variable node then $x$ is not bound by any of the $\lambda$-nodes
+occurring in $[\theroot,x]$. Once again, by the previous
+observation, all these $\lambda$-nodes except $\theroot$ have order
+smaller than $\ord{x}$. Hence $\tau$ is incrementally-bound.
+
+(ii) Let $M$ be a closed term such that $\tau(M)$ is
+incrementally-bound. We assume that $M$ is already in $\eta$-normal
+form. We prove that $M$ is safe by induction on its structure. The
+base case $M = \lambda \overline{\xi} . \alpha$ for some variable or
+constant $\alpha$ is trivial. \emph{Step case:} If $M = \lambda
+\overline{\xi} . N_1 \ldots N_p$. Let $i$ range over $1..p$. $N_i$
+can be written $\lambda \overline{\eta_i} . N'_i$ where $N'_i$ is
+not an abstraction. By the induction hypothesis, $\lambda
+\overline{\xi} . N_i = \lambda \overline{\xi} \overline{\eta_i} .
+N'_i$ is safe. Hence $\vdash \lambda \overline{\xi}
+\overline{\eta_i} . N'_i$ is a valid judgment of safe
+$\lambda$-calculus. But this judgment can only be derived using the
+\rulenamet{Abs} rule on the term $N'_i$. Hence $N'_i$ is necessarily
+safe. Let $z$ be a variable occurring free in $N'_i$. Since $M$ is
+closed, $z$ is either bound by $\lambda \overline{\eta_1}$ or
+$\lambda \overline{\xi}$; If its binder is $\lambda \overline{\xi}$
+then since $\tau(M)$ is i.b.\ we have $\ord{z} \geq \ord{\lambda
+\overline{\eta_1}} = \ord{N_i}$' thus in both case we are allowed to
+abstract the variables $\overline{\eta_1}$ using the rule
+\rulename{Abs}. This shows that $N_i$ is safe.
+
+Each of the $N_i$s is safe and $N_1 \ldots N_p$ is of type $o$
+therefore by the rule \rulenamet{App} rule we have $\overline{\xi}
+\vdash N_1 \ldots N_p$. Finally, \rulename{Abs} gives us the
+judgement $\vdash M = \lambda \overline{\xi} . N_1 \ldots N_p$.
+\end{proof}
+
+Note that the hypothesis that $M$ is closed in (ii) is necessary.
+For instance, the two terms $\lambda x y .x$ and $\lambda y . x$,
+where $x,y:o$, have (isomorphic) incrementally-bound computation
+trees. However $\lambda x y .x$ is safe whereas $\lambda y . x$ is
+not.
+
+
+
 \section{Safe $\lambda$-Calculus}
 Let us consider the safe $\lambda$-calculus without interpreted
 constants. Our aim is to prove that pointers in the game semantics
@@ -69,47 +171,29 @@ Hence $m$'s pointer is uniquely recoverable.
 %\end{example}
 
 
-In a computation tree, a binder node always occurs in the path from the bound node to the root. We now introduce a class of computation trees in which binder nodes can be uniquely recovered from the order
-of the nodes. We write $[n_1,n_2]$ to denote the path from node
-$n_1$ to node $n_2$ if it exists and $]n_1,n_2]$ for the sequence of
-nodes obtained by removing $n_1$ from $[n_1,n_2]$.
-
-\begin{definition}[Incrementally-bound computation tree]
-A variable node $x$ of a computation tree is said to be
-\emph{incrementally-bound} if either:
-\begin{enumerate}
-\item $x$ is \emph{bound} by the first $\lambda$-node in the path to the root that has
-order strictly greater than $\ord{x}$. Formally:
-$$ x \mbox{ bound by } n \quad \imp \quad n \in [r,x] \wedge \ord{n} > \ord{x} \wedge \forall \lambda\mbox{-node } n' \in ]n,x] . \ord{n'} \leq \ord{x},$$
-
-\item $x$ is a \emph{free variable} and all the $\lambda$-nodes in the path to the root except the root have order
-smaller or equal to $\ord{x}$. Formally:
-$$ x \mbox{ free } \quad \imp \quad  \forall \lambda\mbox{-node } n' \in ]r,x] . \ord{n'} \leq \ord{x}$$
-\end{enumerate}
-where $r$ denotes the root of the computation tree.
-
-A computation tree is said to be \emph{incrementally-bound} if all
-the variable nodes are incrementally-bound.
-\end{definition}
 
 \begin{proposition}[Incremental-binding coincides with P-incremental-justification] \
-\label{prop:incrbound_imp_incrjustified} Let $M$ be a $\beta$-normal
-term.
-\begin{enumerate}
-\item[(i)] If $\tau(M)$ is incrementally-bound then $\sem{M}$ is P-incrementally-justified.
-\item[(ii)] In the $\lambda$-calculus without interpreted constants, conversely, if $\sem{M}$ is P-incrementally-justified then
-$\tau(M)$ is incrementally-bound.
+\label{prop:incrbound_imp_incrjustified} The game denotation
+$\sem{\Gamma \vdash M : T}$ is P-incrementally-justified if and only
+if all the reachable input-variables in $\tau(\Gamma \vdash M : T)$
+are incrementally-bound.
 \end{enumerate}
 \end{proposition}
+\begin{corollary}
+  Let $M$ be a pure (\ie with no interpreted constants) simply-typed term
+  in $\beta$-normal form. Then $\sem{M}$ is P-incrementally-justified if and only if $\tau(M)$ is incrementally-bound.
+\end{corollary}
 
 \begin{proof}
-Let $\Gamma \vdash M : A$ be a simply-typed term in $\beta$-normal
-form and $r$ denotes the root of $\tau(M)$.
+Let $\Gamma \vdash M : A$ be a simply-typed $\beta$-normal term and
+$\theroot$ denotes the root of $\tau(M)$.
 
-\noindent (i) Suppose that $\tau(M)$ is incrementally-bound.
-Consider a justified sequence of move $s \in \sem{\Gamma \vdash M}$
-ending with a P-question move $q$. By proposition \ref{prop:rel_gamesem_trav},
-there is a traversal $t$ of $\tau(M)$ such that $\psi_M (t\filter r) = s$. We assume that the last node $n$ of $t$ is
+\noindent (If) Suppose that $\tau(M)$ is incrementally-bound. Take a
+play $s \in \sem{\Gamma \vdash M}$ ending with a question P-move
+$q$. By proposition \ref{prop:rel_gamesem_trav}, there is a
+traversal $t$ of $\tau(M)$ starting with an occurrence $r$ of the
+root $\theroot$ such that $\psi_M (t\filter r) = s$. Let $n$ be the
+last occurrence in $t$. W.l.o.g.\ we can assume that $n$ is
 hereditarily justified by $r$ (otherwise we replace $t$ by its
 longest prefix verifying this condition).
 \begin{itemize}
@@ -145,20 +229,22 @@ greater than $\ord{q}$.
 
 
 \item  Second case: $n$ is a free variable node $x$. Then $n$ is enabled by the root which is the first node in $t$.
-By definition of $\psi$, $\psi(n) = x$ must be a move enabled
-by the initial move $q_0 = \psi(r)$ in the arena $\sem{\Gamma
+By definition of $\psi$, $\psi(n) = x$ must be a move enabled by
+the initial move $q_0 = \psi(r)$ in the arena $\sem{\Gamma
 \rightarrow A}$. Therefore $\ord{q_0} > \ord{x}$. Since the
-computation tree is incrementally-bound, all the $\lambda$-nodes in
-$]r,n]$ have order smaller than $\ord{n}$. Therefore by the
-correspondence theorem, all the O-moves in $\pview{s}$ have order
-smaller than $\ord{x}$.
+computation tree is incrementally-bound, all the $\lambda$-nodes
+in $]\theroot,n]$ have order smaller than $\ord{n}$. Therefore
+by the correspondence theorem, all the O-moves in $\pview{s}$
+have order smaller than $\ord{x}$.
 \end{itemize}
 
-\noindent (ii) Suppose that $M$ is $\beta$-normal and the strategy
-$\sem{M}$ is P-incrementally-justified. Let $x$ be a variable node of
-$\tau(M)$. Since $M$ is $\beta$-normal, by lemma
-\ref{lem:betanorm_enabling}, $x$ is either her.\ just.\ by the root $r$ or by a constant in $N_\Sigma$. Since we are working in the simply-typed $\lambda$-calculus without constants we have $N_\Sigma = \emptyset$ therefore $x$ is
-hereditarily justified by $r$.
+\noindent (Only if) Suppose that $M$ is $\beta$-normal and the
+strategy $\sem{M}$ is P-incrementally-justified. Let $x$ be a
+variable node of $\tau(M)$. Since $M$ is $\beta$-normal, by lemma
+\ref{lem:betanorm_enabling}, $x$ is either her.\ just.\ by the root
+$r$ or by a constant in $N_\Sigma$. Since we are working in the
+simply-typed $\lambda$-calculus without constants we have $N_\Sigma
+= \emptyset$ therefore $x$ is hereditarily justified by $r$.
 
 
 We remark that for terms in $\beta$-normal form, every variable node
@@ -218,67 +304,6 @@ These examples suggest that P-incremental-justification is not a compositional p
 One interesting problem would be to find some condition under which  the composition of two P-incrementally-justified strategy remains
 P-incrementally-justified.
 Unfortunately we have not provided an answer to that question yet.
-
-
-\begin{lemma}[Safe terms have incrementally-bound computation trees]
-\label{lem:safe_imp_incrbound} Let $\Gamma \vdash M$ be a
-simply-typed term.
-\begin{itemize}
-\item[(i)] If $M$ is a safe term then $\tau(M)$ is incrementally-bound ;
-\item[(ii)] conversely, if $M$ is \emph{closed} and $\tau(M)$ is incrementally-bound then the $\eta$-normal form of $M$ is safe.
-\end{itemize}
-\end{lemma}
-\begin{proof}
-(i) Suppose that $M$ is safe. The safety property is preserved after
-taking the $\eta$-long normal form, therefore $\tau(M)$ is the tree representation of a safe term.
-
-In the safe $\lambda$-calculus, the variables in the context with the the lowest order must be all abstracted
-at once when using the abstraction rule. Since the computation
-tree merges consecutive abstractions into a single node,
-any variable $x$ occurring free in the subtree rooted at a $\lambda$-node $\lambda \overline{\xi}$ different from the root
-must have order greater or equal to $\ord{\lambda \overline{\xi}}$. Reciprocally, if a lambda node
-$\lambda \overline{\xi}$ binds a variable node $x$ then
-$\ord{\lambda \overline{\xi}} = 1+\max_{z\in\overline{\xi}} \ord{z} > \ord{x}$.
-
-Let $x$ be a bound variable node. Its binder occurs in the path from $x$
-to the root, therefore, according to the previous observation, $x$ must be bound
-by the first $\lambda$-node occurring in $[r,x]$ with order strictly
-greater than $\ord{x}$. Let $x$ be a free variable node then $x$ is not bound
-by any of the $\lambda$-nodes occurring in $[r,x]$. Once again, by the previous observation, all
-these $\lambda$-nodes except $r$ have order smaller than $\ord{x}$. Hence
-$\tau$ is incrementally-bound.
-
-(ii) Let $M$ be a closed term such that $\tau(M)$ is incrementally-bound.
-We assume that $M$ is already in $\eta$-normal form.
-We prove that $M$ is safe by induction on its structure. The base case $M =
-\lambda \overline{\xi} . \alpha$ for some variable or constant
-$\alpha$ is trivial.
-\emph{Step case:} If $M = \lambda \overline{\xi} . N_1 \ldots N_p$.
-Let $i$ range over $1..p$. $N_i$ can be written $\lambda
-\overline{\eta_i} . N'_i$ where $N'_i$ is not an abstraction. By the
-induction hypothesis, $\lambda \overline{\xi} . N_i = \lambda
-\overline{\xi} \overline{\eta_i} . N'_i$ is safe.
-Hence $\vdash \lambda \overline{\xi} \overline{\eta_i} . N'_i$
-is a valid judgment of safe $\lambda$-calculus.
-But this judgment can only be derived using the (abs) rule on the term $N'_i$. Hence
-$N'_i$ is necessarily safe. Let $z$ be a variable occurring free in
-$N'_i$. Since $M$ is closed, $z$ is either bound by $\lambda
-\overline{\eta_1}$ or $\lambda \overline{\xi}$. If it is bound by
-$\lambda \overline{\xi}$ then because $\tau(M)$ is
-incrementally-bound we have $\ord{z} \geq \ord{\lambda
-\overline{\eta_1}} = \ord{N_i}$. Hence in both case we can abstract the variables
-$\overline{\eta_1}$ using the (abs) rule which shows that $N_i$ is safe.
-
-Each of the $N_i$s are safe and $N_1 \ldots N_p$ is of type $o$ therefore
-by the (app) rule we have $\overline{\xi} \vdash N_1 \ldots N_p$. Finally, using the (abs) rule we conclude
-with the judgement $\vdash M = \lambda \overline{\xi} . N_1 \ldots N_p$.
-\end{proof}
-
-Note that the hypothesis that $M$ is closed in (ii) is necessary.
-For instance, the two terms $\lambda x y .x$ and $\lambda y . x$,
-where $x,y:o$, have (isomorphic) incrementally-bound computation
-trees. However $\lambda x y .x$ is safe whereas $\lambda y . x$ is
-not.
 
 
 
@@ -1262,7 +1287,7 @@ equivalence for safe \ialgol.
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \notetoself{the following section needs to be integrate into the previous chapter.}
 
-   
+
 \section{Game-semantic of Safe PCF}
 In this section will give a game-semantic characterization of Safe
 PCF based on syntactical arguments.

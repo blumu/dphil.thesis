@@ -39,29 +39,42 @@ the computation tree $\tau(M)$.
 
 
 \begin{definition}[Incrementally-bound computation tree]
-A variable node $x$ of a computation tree is said to be
-\defname{incrementally-bound} if either:
+Let $A$ be a subset of nodes of the computation tree. A variable
+node $x$ of a computation tree is said to be
+\defname{$A$-incrementally-bound} if either:
 \begin{enumerate}
-\item $x$ is \emph{bound} by the first $\lambda$-node in the path to the root that has
+\item $x$ is \emph{bound} by the first $\lambda$-node from $A$ occurring in the path to the root that has
 order strictly greater than $\ord{x}$. Formally:
-$$ x \mbox{ bound by } n \quad \imp \quad n \in [\theroot,x] \wedge \ord{n} > \ord{x} \wedge \forall \lambda\mbox{-node } n' \in ]n,x] . \ord{n'} \leq \ord{x},$$
+$$ x \mbox{ bound by } n \quad \imp \quad n \in [\theroot,x]\inter A \wedge \ord{n} > \ord{x} \wedge \forall \lambda\mbox{-node } n' \in ]n,x]\inter A  . \ord{n'} \leq \ord{x},$$
 
-\item $x$ is a \emph{free variable} and all the $\lambda$-nodes in the path to the root except the root have order
-smaller or equal to $\ord{x}$. Formally:
-$$ x \mbox{ free } \quad \imp \quad  \forall \lambda\mbox{-node } n' \in ]\theroot,x] . \ord{n'} \leq \ord{x} \ .$$
+\item or $x$ is a \emph{free variable} and all the $\lambda$-nodes from from $A$ occurring in the path to the root except the root have order
+ smaller or equal to $\ord{x}$. Formally:
+$$ x \mbox{ free } \quad \imp \quad  \forall \lambda\mbox{-node } n' \in ]\theroot,x]\inter A . \ord{n'} \leq \ord{x} \ .$$
 \end{enumerate}
 
-A computation tree is said to be \defname{incrementally-bound}, also
-abbreviated i.b., if all the variable nodes are incrementally-bound.
+A computation tree is said to be \defname{$A$-incrementally-bound},
+also abbreviated $A$-i.b., if all the variable nodes from $A$ are
+$A$-incrementally-bound.
+
+We say that a node (resp.\ a tree) is
+\defname{incrementally-bound} if it is
+\defname{$N$-incrementally-bound} where $N$ is the entire set of nodes of the computation tree.
 \end{definition}
+
+Let $\closure{M}$ denote the function that converts $M$ into a
+closed term obtained from $M$ by abstracting all its free variables.
+From the previous definition, if $\tau(M)$ is i.b.\ then so is
+$\tau(\closure{M})$.
+
+\smallskip
 
 A node of the computation tree is said to be \defname{reachable} if
 there is some traversal of the computation tree that visits it.
 
 
 \begin{lemma}[Safe terms have incrementally-bound computation trees]
-\label{lem:safe_imp_incrbound} Suppose that  $\Gamma \vdash M :T$ is
-a simply-typed term.
+\label{lem:incrbound_iff_etanf_safe} Suppose that  $\Gamma \vdash M
+:T$ is a simply-typed term.
 \begin{itemize}
 \item[(i)] If $M$ is a safe term then $\tau(M)$ is incrementally-bound ;
 \item[(ii)] conversely, if $M$ is \emph{closed} and $\tau(M)$ is i.b.\ then the $\eta$-normal form of $M$ is safe.
@@ -111,11 +124,11 @@ $\lambda \overline{\xi}$; If its binder is $\lambda \overline{\xi}$
 then since $\tau(M)$ is i.b.\ we have $\ord{z} \geq \ord{\lambda
 \overline{\eta_1}} = \ord{N_i}$' thus in both case we are allowed to
 abstract the variables $\overline{\eta_1}$ using the rule
-\rulename{Abs}. This shows that $N_i$ is safe.
+\rulenamet{Abs}. This shows that $N_i$ is safe.
 
 Each of the $N_i$s is safe and $N_1 \ldots N_p$ is of type $o$
 therefore by the rule \rulenamet{App} rule we have $\overline{\xi}
-\vdash N_1 \ldots N_p$. Finally, \rulename{Abs} gives us the
+\vdash N_1 \ldots N_p$. Finally, \rulenamet{Abs} gives us the
 judgement $\vdash M = \lambda \overline{\xi} . N_1 \ldots N_p$.
 \end{proof}
 
@@ -141,6 +154,7 @@ safe whereas $M_2$ is not (in the subterm $f (\lambda y . x)$, the
 free variable $x$ has the same order as $y$ but $x$ is not
 abstracted together with $y$).
 
+\subsubsection{P-incremental-justified strategies}
 \begin{definition}[P-incremental-justification]
 A strategy $\sigma$ on a game $A$ is
 \emph{P-incrementally\-justified} if and only if for any sequence of
@@ -177,20 +191,27 @@ Hence $m$'s pointer is uniquely recoverable.
 $\sem{\Gamma \vdash M : T}$ is P-incrementally-justified if and only
 if all the reachable input-variables in $\tau(\Gamma \vdash M : T)$
 are incrementally-bound.
-\end{enumerate}
 \end{proposition}
-\begin{corollary}
-  Let $M$ be a pure (\ie with no interpreted constants) simply-typed term
-  in $\beta$-normal form. Then $\sem{M}$ is P-incrementally-justified if and only if $\tau(M)$ is incrementally-bound.
-\end{corollary}
 
 \begin{proof}
-Let $\Gamma \vdash M : A$ be a simply-typed $\beta$-normal term and
-$\theroot$ denotes the root of $\tau(M)$.
+Take a simply-typed term $\Gamma \vdash M : A$ and let $\theroot$
+denote the root of $\tau(M)$.
 
-\noindent (If) Suppose that $\tau(M)$ is incrementally-bound. Take a
-play $s \in \sem{\Gamma \vdash M}$ ending with a question P-move
-$q$. By proposition \ref{prop:rel_gamesem_trav}, there is a
+\noindent (If) Suppose that $\tau(M)$ is incrementally-bound, then
+so is $\tau(\closure{M})$. Thus by Lemma
+\ref{lem:incrbound_iff_etanf_safe}(ii), $\etalnf{\closure{M}}$ is
+safe and since safety is preserved by $\beta$-reduction, so is the
+beta-normal form of $\etalnf{\closure{M}}$. Thus by Lemma
+\ref{lem:incrbound_iff_etanf_safe}(i),
+$\tau(\betanf{\etalnf{\closure{M}}})$ is incrementally-bound. Hence
+we can assume without loss of generality that $M$ is a closed term
+in beta-normal form and prove that $\sem{M}$ is
+P-incrementally-justified (this will imply that
+$\sem{\betanf{\etalnf{\closure{M}}}}$ is P-i.j.\ since these two
+game denotations are isomorphic).
+
+Take a play $s \in \sem{\Gamma \vdash M}$ ending with a question
+P-move $q$. By proposition \ref{prop:rel_gamesem_trav}, there is a
 traversal $t$ of $\tau(M)$ starting with an occurrence $r$ of the
 root $\theroot$ such that $\psi_M (t\filter r) = s$. Let $n$ be the
 last occurrence in $t$. W.l.o.g.\ we can assume that $n$ is
@@ -238,42 +259,58 @@ by the correspondence theorem, all the O-moves in $\pview{s}$
 have order smaller than $\ord{x}$.
 \end{itemize}
 
-\noindent (Only if) Suppose that $M$ is $\beta$-normal and the
-strategy $\sem{M}$ is P-incrementally-justified. Let $x$ be a
-variable node of $\tau(M)$. Since $M$ is $\beta$-normal, by lemma
-\ref{lem:betanorm_enabling}, $x$ is either her.\ just.\ by the root
-$r$ or by a constant in $N_\Sigma$. Since we are working in the
-simply-typed $\lambda$-calculus without constants we have $N_\Sigma
-= \emptyset$ therefore $x$ is hereditarily justified by $r$.
+\noindent (Only if) Suppose $\sem{M}$ is P-incrementally-justified.
+Let $x$ be a reachable input-variable node of $\tau(M)$: there
+exists a traversal of the form $t \cdot x$ in $\travset(M)$ such
+that $x$ is hereditarily justified by the first occurrence $r$ of
+$\tau(M)$'s root in $t$.
 
-
-We remark that for terms in $\beta$-normal form, every variable node
-occurring in the computation tree can be visited by some traversal
-i.e. there exists a traversal of the form $t \cdot x$ in
-$\travset(M)$. The correspondence theorem gives $\varphi((t \cdot x)
-\filter r) = \varphi((t \filter r) \cdot x) \in
-\sem{M}$. Since $\sem{M}$ is P-incrementally-justified, $\varphi(x)$
-must point to the last O-move in $\pview{\varphi(t \filter
-r)}$ with order strictly greater than $\ord{\varphi(x)}$.
-Consequently $x$ points to the last $\lambda$-node in $\pview{t
-\filter r}$ with order strictly greater than $\ord{x}$. Moreover we
-have:
+The correspondence theorem tells us that $\varphi((t \cdot x)
+\filter r) = \varphi((t \filter r) \cdot x)$ belongs to $\sem{M}$.
+Since $\sem{M}$ is P-incrementally-justified, $\varphi(x)$ points to
+the last O-move in $\pview{?(\varphi(t \filter r))}$ with order
+strictly greater than $\ord{\varphi(x)}$. Consequently $x$ points to
+the last $\lambda$-node in $\pview{?(t \filter r)}$ with order
+strictly greater than $\ord{x}$. Moreover we have:
 \begin{align*}
-\pview{t \filter r} &= \pview{t} \filter N^{r \vdash} & (\mbox{by Lemma \ref{lem:betanf_wellbehavedconst_trav_pview_red}}) \\
-& = [r,x[\  \filter N^{r \vdash} & (\mbox{by proposition \ref{prop:pviewtrav_is_path}}) \\
-& = [r,x[  & (\mbox{$M$ is in $\beta$-nf and $N_\Sigma = \emptyset$}).
+\pview{?(t \filter r)} &=
+\pview{?(t)\filter r } \\
+?(\pview{t}) \filter r & \mbox{by Lemma \ref{lem:betanf_wellbehavedconst_trav_pview_red};} \\
+& = ?([\theroot,x[)  \filter N^{r \vdash} & \mbox{Prop.\ \ref{prop:pviewtrav_is_path}: Path-P-view correspondence;} \\
+& = [\theroot,x[  \filter N^{r \vdash} & \mbox{The path $[\theroot,x[$ contains no value-leaf;} \\
+& = [\theroot,x[  & \mbox{$M$ is in $\beta$-nf and $N_\Sigma =
+\emptyset$}.
 \end{align*}
 
 \notetoself{review use of Lemma
 \ref{lem:betanf_wellbehavedconst_trav_pview_red}}
 
 Therefore if $x$ is a bound variable node then it is bound by the
-last $\lambda$-node in $[r,x[$ with order strictly greater than
-$\ord{x}$ and if $x$ is a free variable then it points to $r$ and
-therefore all the $\lambda$-node in $]r,x[$ have order smaller than
-$\ord{x}$. Hence $\tau(M)$ is incrementally-bound.
+last $\lambda$-node in $[\theroot,x[$ with order strictly greater
+than $\ord{x}$ and if $x$ is a free variable (in which case it is
+justified by the root) then all the $\lambda$-node in $]\theroot,x[$
+have order smaller than $\ord{x}$. Hence $\tau(M)$ is
+incrementally-bound.
 \end{proof}
 
+\begin{corollary}
+  Let $M$ be a pure (\ie with no interpreted constants) simply-typed term
+  in $\beta$-normal form. Then $\sem{M}$ is P-incrementally-justified if and only if $\tau(M)$ is incrementally-bound.
+\end{corollary}
+\proof This is because for a simply-typed $\beta$-normal term $M$,
+all the variable nodes in the computation tree are reachable
+input-variables. Indeed, let $x$ be a variable node of $\tau(M)$.
+Since $M$ is $\beta$-normal, by lemma \ref{lem:betanorm_enabling},
+$x$ is either hereditarily enabled by the root or by a constant in
+$N_\Sigma$. But the pure simply-typed $\lambda$-calculus does not
+have constants thus $N_\Sigma = \emptyset$ and $x$ is hereditarily
+enabled by the root. Hence all variable nodes are input-variable
+nodes. This in turns implies that every node of the computation tree
+is reachable by the traversal consisting of the path from the root
+to that node (the \rulenamet{InputVar} permitting us to visit the
+children of the input-variable nodes).\qed
+
+\smallskip
 
 \parpic[r]{
     \pssetcomptree
@@ -308,8 +345,8 @@ Unfortunately we have not provided an answer to that question yet.
 
 
 Putting proposition \ref{prop:incrbound_imp_incrjustified} and lemma
-\ref{lem:safe_imp_incrbound} together we obtain a game-semantic
-characterisation of safe terms:
+\ref{lem:incrbound_iff_etanf_safe} together we obtain a
+game-semantic characterisation of safe terms:
 \begin{corollary}[P-incrementally-justified strategies characterise safe closed $\eta\beta$-normal terms]
 Let $M$ be a simply-typed term without interpreted constants. We have:
 $$ \sem{M} \mbox{ is P-incrementally-justified if and only if $\etabetalnf{M}$ is safe,} $$
@@ -325,8 +362,9 @@ safe terms are uniquely recoverable.
 \end{theorem}
 \begin{proof}
 Let $M$ be a safe simply-typed term. The $\beta$-normal form of $M$
-denoted by $M'$ is also safe. By lemma \ref{lem:safe_imp_incrbound}
-(i), $\tau(M')$ is incrementally-bound and by proposition
+denoted by $M'$ is also safe. By lemma
+\ref{lem:incrbound_iff_etanf_safe} (i), $\tau(M')$ is
+incrementally-bound and by proposition
 \ref{prop:incrbound_imp_incrjustified}, $\sem{M'}$ is a
 P-incrementally-justified strategy. By lemma
 \ref{lem:incrjustified_pointers_uniqu_recover}, P's pointers in
@@ -905,8 +943,8 @@ $$
 
 A difficulty arises because of the presence of the Y combinator :
 computation trees of \pcf\ terms are potentially infinite. Despite
-this particularity, lemma \ref{lem:safe_imp_incrbound} still holds
-in the \pcf\ setting:
+this particularity, lemma \ref{lem:incrbound_iff_etanf_safe} still
+holds in the \pcf\ setting:
 \begin{lemma} \label{lem:pcf_safe_imp_incrbound} If $M$ is a safe
 PCF term then $\tau(M)$ is incrementally-bound.
 \end{lemma}
@@ -921,16 +959,17 @@ safe. Consequently the term $Y_A^k N_k = \underbrace{N_k ( \ldots (
 N_k}_{k \mbox{ times}} \Omega ) \ldots )$ is also safe and by
 compositionality so is $M_k$.
 
-Clearly, lemma \ref{lem:safe_imp_incrbound}(i) is remains valid for infinite
-$\pcf_1$ terms (the subterms of the form $\Omega$ are just represented by
-the constant $\bot$ in the computation tree), thus since $M_k$
-is a safe $\pcf_1$ term, $\tau(M_k)$ is incrementally-bound.
-Now let $z$ be a variable node in $\tau(M) =
-\Union_{k\in\omega} \tau(M_k)$. There exists $k\in \omega$ such
-that $z$ belongs to $\tau(M_k) \sqsubseteq \tau(M)$.
-If we write $r_k$ to denote the root of the tree $\tau(M_k)$ then the path $[r_k,z]$ in $\tau(M_k)$ is equal to the path $[r,z]$ in $\tau(M)$.
-Hence, since the node $z$ is incrementally-bound in $\tau(M_k)$,
-it is also incrementally-bound in $\tau(M)$.
+Clearly, lemma \ref{lem:incrbound_iff_etanf_safe}(i) is remains
+valid for infinite $\pcf_1$ terms (the subterms of the form $\Omega$
+are just represented by the constant $\bot$ in the computation
+tree), thus since $M_k$ is a safe $\pcf_1$ term, $\tau(M_k)$ is
+incrementally-bound. Now let $z$ be a variable node in $\tau(M) =
+\Union_{k\in\omega} \tau(M_k)$. There exists $k\in \omega$ such that
+$z$ belongs to $\tau(M_k) \sqsubseteq \tau(M)$. If we write $r_k$ to
+denote the root of the tree $\tau(M_k)$ then the path $[r_k,z]$ in
+$\tau(M_k)$ is equal to the path $[r,z]$ in $\tau(M)$. Hence, since
+the node $z$ is incrementally-bound in $\tau(M_k)$, it is also
+incrementally-bound in $\tau(M)$.
 \end{proof}
 
 
@@ -1461,7 +1500,8 @@ $\ord{x}$. Thus $\tau(M)^*$ is incrementally-bound.
 The counterpart of Lemma 4.1.6 from
 \cite{blumtransfer} can be stated as follows in the context of PCF:
 \begin{lemma}[Semi-safety and incrementally-binding]
-\label{lem:safe_imp_incrbound_pcf} Let $\Gamma \vdash M : A$ be a PCF term.
+\label{lem:incrbound_iff_etanf_safe_pcf} Let $\Gamma \vdash M : A$
+be a PCF term.
 \begin{itemize}
 \item[(i)] If $\Gamma \vdash M : A$ is a semi-safe term then $\tau(\Gamma \vdash M : A)$ is incrementally-bound ;
 \item[(ii)] conversely, if $\tau(\Gamma \vdash M : A)$ is incrementally-bound then the $\eta$-normal form of $\Gamma \vdash M : A$ is semi-safe if $M$ is open and safe if $M$ is closed.
@@ -1489,11 +1529,12 @@ justified strategy denotation. By Proposition
 \ref{prop:incrbound_imp_incrjustified_pcf}(ii), $\tau(\betanf{M})^*
 = \tau(\etalnf{\betanf{M}}^*)$ is incrementally-bound. If $M$ is
 closed then so is $\etalnf{\betanf{M}}^*$ therefore by Lemma
-\ref{lem:safe_imp_incrbound_pcf}, $\etalnf{\etalnf{\betanf{M}}^*} =
-\etalnf{\betanf{M}}^*$ is safe. If $M$ is open then so is
-$\etalnf{\betanf{M}}^*$ and by Lemma
-\ref{lem:safe_imp_incrbound_pcf}, $\etalnf{\etalnf{\betanf{M}}^*} =
-\etalnf{\betanf{M}}^*$ is semi-safe.
+\ref{lem:incrbound_iff_etanf_safe_pcf},
+$\etalnf{\etalnf{\betanf{M}}^*} = \etalnf{\betanf{M}}^*$ is safe. If
+$M$ is open then so is $\etalnf{\betanf{M}}^*$ and by Lemma
+\ref{lem:incrbound_iff_etanf_safe_pcf},
+$\etalnf{\etalnf{\betanf{M}}^*} = \etalnf{\betanf{M}}^*$ is
+semi-safe.
 \end{proof}
 
 

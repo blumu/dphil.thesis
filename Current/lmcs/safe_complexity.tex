@@ -1,29 +1,31 @@
 \newcommand\bigo{\mathcal{O}} % big O notation
-\newcommand\booltype{\mathbf{B}}
+\newcommand\booltype{\mathsf{B}}
 
 \section{Complexity of the Safe Lambda Calculus}
-Here we study the problem of deciding beta-eta equivalence of two safe lambda terms.
+This section aims at studying the complexity of the problem of deciding beta-eta equivalence of two safe lambda terms.
 
 \subsection{Statman's result}
 
 A famous result by Statman  states that deciding the $\beta\eta$-equality of two first-order typable lambda terms is not elementary recursive \cite{Statman:1979:TLE}.
-The idea of the proof is to encode the Henkin quantifier elimination of Type Theory into the simply-typed lambda calculus. The encoding relies on the fact that the function $\sf sg$ (conditional) can be encoded in the lambda-calculus. Hence the argument does not carry on   in the Safe Lambda Calculus since the conditional operator is not definable (\cite{blumong:safelambdacalculus}).
+The proof proceeds by encoding the Henkin quantifier elimination of Type Theory into the simply-typed lambda calculus.
+Mairson gave a simpler proof in \cite{mairson1992spt} which also proceeds by encoding the Henkin quantifier elimination procedure into the lambda-calculus but is much easier to understand as it makes use of list iteration to perform quantifier elimination.
 
-Mairson gave a simpler proof of Statman's theorem in \cite{mairson1992spt} which also proceeds by encoding the Henkin quantifier elimination procedure into the lambda-calculus but is much easier to understand as it makes use of list iteration to perform quantifier elimination.
+It turns out that both encodings rely on the use of unsafe terms in order to implement the quantifier elimination procedure: Statman's encoding relies on the use of the conditional
+function $\sf sg$ which is not definable (\cite{blumong:safelambdacalculus}) in the safe lambda-calculus, and Mairson's encoding uses unsafe terms for encoding both quantifier elimination and set membership. Hence the argument does not carry on in the Safe Lambda Calculus.
 
-It turns out that both encodings rely on the use of unsafe terms in order to implement the quantifier elimination procedure.
+In fact the unsafey of Mairson's encoding can be alleviated: the quantifier elimination procedure can be made safe provided that we use multiple domains of representation to encode values of the type hierarchy. Set-membership, however, seems to be intrinsically unsafe.
 
-%Here we adapt Mairson's proof to produce a safe encoding of the quantifier elimination procedure, thus showing:
-%\begin{theorem}
-%The Safe Lambda Calculus is not elementary recursive.
-%\end{theorem}
+We start this section by presenting an adaptation of Mairson's encoding where quantifier elimination is safely encoded and by showing why it is problematic to encode set-membership safely. We will then use this encoding to interpret the True Quantifier Boolean Formula (TQBF) problem into the Safe Lambda Calculus, thus showing that deciding beta-eta equality is PSPACE-hard.
 
-We recall the definition of the theory. Let $\mathcal{D}_0 = \{\mathbf{true},\mathbf{false}\}$ and $\mathcal{D}_{k+1} =powerset(\mathcal{D}_k)$.
-For any $k\geq0$, we write $x^k$, $y^k$ and $z^k$ to denote variables ranging over $\mathcal{D}_k$. Prime formulas are $x^0$, $\mathbf{true}\in y^1$, $\mathbf{false}\in y^1$, and  $x^k \in y^{k+1}$. Formulae are built up from prime formulas using the logical connectives $\zand$,$\zor$,$\rightarrow$,$\neg$ and the quantifiers
+
+\subsection{Mairson's encoding}
+
+We recall the definition of Finite Type Theory. Let $\mathcal{D}_0 = \{\mathbf{true},\mathbf{false}\}$ and $\mathcal{D}_{k+1} =powerset(\mathcal{D}_k)$.
+For any $k\geq0$, we write $x^k$, $y^k$ and $z^k$ to denote variables ranging over $\mathcal{D}_k$. Prime formulae are $x^0$, $\mathbf{true}\in y^1$, $\mathbf{false}\in y^1$, and  $x^k \in y^{k+1}$. Formulae are built up from prime formulae using the logical connectives $\zand$,$\zor$,$\rightarrow$,$\neg$ and the quantifiers
 $\forall$ and $\exists$. Meyer showed that deciding the truth of such formulae requires nonelementary time \cite{Meyer1974}.
 \smallskip
 
-In Mairson's encoding, all formula variables of a given order $k$ are encoded by terms of the same type $\Delta_k$. Using this encoding,
+In Mairson's encoding, variables of a given order $k$ are all encoded by terms of the same type $\Delta_k$. Using this encoding,
 unsafety manifests itself in two different ways.
 \begin{enumerate}[1.]
   \item
@@ -31,156 +33,157 @@ unsafety manifests itself in two different ways.
 for some terms $OR$, $F$, $eq_k$.
 This term is unsafe because of the underline occurrence of $x^k$ which is not abstracted together with $y^k$.
 
-\item Secondly, quantifier elimination is performed by using a list iterator $\mathbf{D}_{k+1}$ which acts like the $fold\_left$ function from functional programming languages over the list of all elements of $\mathcal{D}_k$.
+\item Secondly, quantifier elimination is performed by using a list iterator $\mathbf{D}_{k+1}$ which acts like the $fold\_right$ function from functional programming languages over the list of all elements of $\mathcal{D}_k$.
 Thus for instance the formula $\forall x^0 . \exists y^0 . x^0 \zor y^0$
-is encoded as $$\vdash \mathbf{D}_1 (\lambda x^0:\Delta_0. AND (\mathbf{D}_1 (\lambda y^0:\Delta_0. OR (\underline{x^0} \zor y^0)) F)) T$$ which is unsafe because of the underlined occurrence.
-
-More generally, supposing that we find a way to encode set membership with a safe term, then the encoding of the formula will be safe if and only if for any variable $x$ in the formula, its binder is precisely the first quantifier $\exists z$ or $\forall z$ in the path to the root of the formula AST verifying $\ord{z} \geq \ord{x}$. For instance the formula $\forall x^k . \exists y^{k+1} . x^k \in y^{k+1}$ would be encoded by an unsafe term whereas the encoding of $\forall y^{k+1} . \exists x^k . x^k \in y^{k+1}$ would be safe.
+is encoded as $$\vdash \mathbf{D}_1 (\lambda x^0:\Delta_0. AND (\mathbf{D}_1 (\lambda y^0:\Delta_0. OR (\underline{x^0} \zor y^0)) F)) T \ .$$
+This term is unsafe since the underlined occurrence is unsafely bound. This is due to the presence of two nested quantifiers in the formula, which are encoded as two nested list iterations. More generally, nested binding will be encoded safely if and only if every variable $x$ in the formula is bound by the first quantifier $\exists z$ or $\forall z$ in the path to the root of the AST of the formula verifying $\ord{z} \geq \ord{x}$. For instance if set-membership could be encoded safely then the interpretation of $\forall x^k . \exists y^{k+1} . x^k \in y^{k+1}$ would be unsafe whereas the encoding of $\forall y^{k+1} . \exists x^k . x^k \in y^{k+1}$ would be safe.
 \end{enumerate}
 
-Surprisingly, the unsafety of the quantifier elimination procedure can be
-easily overcome. The idea is as follows. We introduce multiple domains of representation for a given formula. An element of $\mathcal{D}_k$ is thereby represented by countably many terms of type $\Delta_k^n$ where $n\in\nat$ indicates the level of the representation. The type $\Delta_k^n$ is defined in such a way that its order strictly increases as $n$ grows. Moreover there exists a term that can reduce the level of representation of a given term. In the formula representation, each variable can now be encoded with a different level of representation. Since there are infinitely many levels, it is always possible to find an assignment of levels to variables such that the resulting encoding term is safe.
+Surprisingly, the unsafety of the quantifier elimination procedure can be easily overcome. The idea is as follows. We introduce multiple domains of representation for a given formula. An element of $\mathcal{D}_k$ is thereby represented by countably many terms of type $\Delta_k^n$ where $n\in\nat$ indicates the level of the domain of representation. The type $\Delta_k^n$ is defined in such a way that its order strictly increases as $n$ grows. Furthermore, there exists a term that can lower the domain of representation of a given term. Thus each formula variable can have a different domain of representation, and since there are infinitely many such domains, it is always possible to find an assignment of representation domains to variables such that the resulting encoding term is safe.
 
-For set-membership, however, there is no obvious way to obtain a safe encoding. The set-member function from Eq.\ \ref{eqn:setmembership} can be turned into a safe term provided that we have access to a function permitting us to increase the representation level of term, but to our knowledge, such transformation cannot be expressed in the simply-typed lambda-calculus.
+For set-membership, however, there is no obvious way to obtain a safe encoding. In order to turn Mairson's encoding of set-membership (Eq.\ \ref{eqn:setmembership}) into a safe term, we would require to have access to a function that increases the domain of representation of an encoded variable. Unfortunately, such transformation is intrinsically unsafe!
+\smallskip
 
-
+We now present the encoding in details.
 
 \subsubsection{Encoding basic boolean operations}
 
-We assume a ground type $o$.
-%For any type $\mu$ we define the type $\booltype_\mu \equiv (\mu\typear\mu)\typear \mu$.
-%We abbreviate $\booltype_0$ into $\booltype$.
-%We introduce the following hierarchy of types: $\sigma_0 \equiv o$, $\sigma_{n+1} \equiv \booltype_{\sigma_n}$ for $n\geq1$.
-%Note that the order of $\sigma_n$ strictly increases as $n$ increases.
-We introduce a parameterized type for encoding booleans defined by $\booltype_{-1} \equiv o$ and $\booltype_{n+1} \equiv \booltype_n\typear\booltype_n\typear\booltype_n$ for $n\geq0$.
-We have $\ord{\booltype_n} = n+1$ for $n\geq-1$.
+Let $o$ be a base type and define the family of types $\sigma_0 \equiv o$, $\sigma_{n+1} \equiv \sigma_n\typear\sigma_n$ verifying $\ord{\sigma_n} = n$.
 
 
-The representation of the truth values $\mathbf{true}$ and $\mathbf{false}$ will be parameterized by $n \in \nat$ as follows
+Booleans are encoded over domains $\booltype_n \equiv \sigma_n\typear o\typear o\typear o$ for $n\geq0$, each type $\booltype_n$ being of order $n+1$. We write $\underline{i}_{n+1}$ to denote the term $\lambda x^{\sigma_n}.x : \sigma_{n+1}$ for $n\geq0$.
+
+The truth values $\mathbf{true}$ and $\mathbf{false}$ are represented by the following terms parameterized by $n \in \nat$:
 \begin{align*}
-  T^n &\equiv \lambda x^{\booltype_{n-1}} y^{\booltype_{n-1}} .x : \booltype_{n}\\
-  F^n &\equiv \lambda x^{\booltype_{n-1}} y^{\booltype_{n-1}} .y : \booltype_{n}
+  T^n &\equiv \lambda u^{\sigma_n} x^o y^o .x : \booltype_{n}\\
+  F^n &\equiv \lambda u^{\sigma_n} x^o y^o .y : \booltype_{n}
 \end{align*}
-Clearly these terms as safe. Moreover the following relations hold for all $n$:
+Clearly these terms as safe. Moreover the following relations hold for all $n,n'\geq 0$:
 \begin{align*}
-  T^{n+1}~T^n~F^n &\betared^*  T^n \\
-  F^{n+1}~T^n~F^n &\betared^*  F^n
+  \lambda u^{\sigma_{n'}} . T^{n+1}~\underline{i}_{n+1}  &\betared  T^{n'} \\
+  \lambda u^{\sigma_{n'}} . F^{n+1}~\underline{i}_{n+1}  &\betared  F^{n'}
 \end{align*}
-Hence it is possible to lower the representation level of a term encoding a boolean value by applying the two terms $T^n$ and $F^n$ to it.
-For $i\in\nat$, we define the function $\_ \downarrow_i$ that lowers the level-representation of a term, turning a term of type $\booltype_n$ for some $n\in\nat$ to a term of type $\booltype_{\min(i,l)}$:
-$$ (M :\booltype_n)\downarrow_i = \left\{
-  \begin{array}{ll}
-    M~T^{n-1}~F^{n-1}~\ldots~T^{i+1}~F^{i+1}:\booltype_i, & \hbox{if $n>i$;} \\
-M:\booltype_n, & \hbox{otherwise.}
-  \end{array}
-  \right.
-$$
+Hence it is possible to change the domain of representation of a Boolean value from a higher-level to another arbitrary level using the transformation:
+$$ \mathbf{C}^{n+1\mapsto n'}_0 \equiv \lambda m^{\booltype_{n+1}} u^{\sigma_{n'}}. m~\underline{i}_{n+1}$$
+so that if a term $M : \booltype_n$ for $n\geq1$ is beta-eta convertible to $T^n$ (resp.\ $F^n$) then $\mathbf{C}^{n\mapsto n'}_0~M :\booltype_{n'}$ is beta-eta convertible to $T^{n'}$ (resp.\ $F^{n'}$).
+
+Observe that although the term $\mathbf{C}^{n+1\mapsto n'}_0$ is safe for all $n,n'\geq 0$, if we apply it to a variable then the resulting term
+$$ x:B_{n+1} \vdash \mathbf{C}_{n+1\mapsto n'}~x : B_{n}$$
+is safe if and only if the transformation decreases the domain of representation of $x$ \ie $\ord{B_{n+1}}\geq\ord{B_{n'}}$.
 
 
-Boolean functions are encoded by the following level-parameterized terms:
+Boolean functions are encoded by the following safe terms parameterized by $n$:
 \begin{align*}
-AND^n &\equiv \lambda p : \booltype_n \lambda q : \booltype_n \lambda x:\booltype_{n-1} \lambda y:\booltype_{n-1} . p~(q~x~y)~y : \booltype_n\typear\booltype_n\typear\booltype_n \\
-OR^n &\equiv \lambda p : \booltype_n \lambda q : \booltype_n \lambda x:\booltype_{n-1} \lambda y:\booltype_{n-1} . p~x~(q~x~y) : \booltype_n\typear\booltype_{n}\typear\booltype_n \\
-NOT^n &\equiv \lambda p : \booltype_n \lambda q : \booltype_n \lambda x:\booltype_{n-1} \lambda y:\booltype_{n-1} . p~y~x : \booltype_n\typear\booltype_n\typear\booltype_n \\
-IF^n &\equiv \lambda p : \booltype_n \lambda q : \booltype_n \lambda x:\booltype_{n-1} \lambda y:\booltype_{n-1} . OR^n (NOT^n p)~q : \booltype_n\typear\booltype_n\typear\booltype_n
+AND^n &\equiv \lambda p^{\booltype_n} q^{\booltype_n} u^{\sigma_n} x^o y^o . p~u~(q~u~x~y)~y : \booltype_n\typear\booltype_n\typear\booltype_n \\
+OR^n &\equiv \lambda p^{\booltype_n} q^{\booltype_n} u^{\sigma_n} x^o y^o . p~u~x~(q~u~x~y) : \booltype_n\typear\booltype_{n}\typear\booltype_n \\
+NOT^n &\equiv \lambda p^{\booltype_n} u^{\sigma_n} x^o \lambda y^o . p~u~y~x : \booltype_n\typear\booltype_n\typear\booltype_n
+%\\ IF^n &\equiv \lambda p^{\booltype_n} q^{\booltype_n} u^{\sigma_n} x^o y^o. OR^n (NOT^n p)~q : \booltype_n\typear\booltype_n\typear\booltype_n
 \end{align*}
-which are all safe terms.
 
 \subsubsection{Coding elements of the type hierarchy}
 For any $n\in\nat$ we define the hierarchy of type $\Delta_k^n$ as follows:
 $\Delta_0^n \equiv \booltype_n$ and $\Delta_{k+1}^n \equiv {\Delta_k^n}^*$ where for any type $\alpha$, $\alpha^* = (\alpha \typear \tau \typear \tau)\typear \tau \typear \tau$.
 
-An occurrence of a formula variable $x^k$ will be encoded as a term variable $x^k:\Delta_{k}^n$ for some level of representation $n\in\nat$.
-
-Following Mairson's  proof, we encode the set $\mathcal{D}_0$ as the list $\mathbf{D}_0$ containing $\mathbf{true}$ and $\mathbf{false}$, and we parameterized this representation by $n\in \nat$:
-$$\mathbf{D}_0^n \equiv \lambda c:\booltype_n \typear \tau \typear \tau . \lambda e : \tau . c~T^n~(c~F^n~e) : \Delta_1^n$$
-and for $k\geq 0$, the higher-order set $\mathcal{D}_{k+1}$ is represented by the parameterized term:
-$$\mathbf{D}_{k+1}^n \equiv powerset~\mathbf{D}_k^n : \Delta_{k+2}^n$$
-where the term $powerset$ taken from \cite{mairson1992spt} is reproduced here:
+An occurrence of a formula variable $x^k$ will be encoded as a term variable $x^k$ of type $\Delta_{k}^n$ for some level of domain representation $n\in\nat$.
+Following Mairson's  encoding, each set $\mathcal{D}_k$ is represented by a list $\mathbf{D}_{k+1}^n$ constituted of all its elements:
 \begin{align*}
-  powerset &\equiv \lambda A^* :(\alpha \typear \alpha^{**} \typear \alpha^{**}) \typear \alpha^{**} \typear \alpha^{**}.\\
-&\qquad  A^*~double~(\lambda c:\alpha^* \typear \tau\typear \tau.\lambda b:\tau . c ( \lambda c':\alpha\typear \tau\typear \tau. \lambda b':\tau.b') b)\\
-powerset &: ((\alpha \typear \alpha^{**} \typear \alpha^{**}) \typear \alpha^{**} \typear \alpha^{**})\typear \alpha^{**}
+\mathbf{D}_0^n &\equiv \lambda c^{\booltype_n \typear \tau \typear \tau} e^\tau . c~T^n~(c~F^n~e) : \Delta_1^n \\
+\mathbf{D}_{k+1}^n &\equiv powerset~\mathbf{D}_k^n : \Delta_{k+2}^n
 \end{align*}
-with
+where
 \begin{align*}
-  double &\equiv \lambda x :\alpha.\lambda l : (\alpha^* \typear \tau\typear \tau)\typear \tau\typear \tau. \\
-  & \qquad \lambda c:\alpha^*\typear \tau\typear \tau.\lambda b:\tau. \\
-  & \qquad \qquad l(\lambda e:\alpha^*.c (\lambda c':\alpha\typear \tau\typear \tau.\lambda b':\tau.c'~x~(e~c'~b')))(l~c~b)\\
-double &: \alpha \typear \alpha^{**} \typear \alpha^{**}
+  powerset &\equiv \lambda {A^*}^{(\alpha \typear \alpha^{**} \typear \alpha^{**}) \typear \alpha^{**} \typear \alpha^{**}}. \\
+&\qquad  A^*~double~(\lambda c^{\alpha^* \typear \tau\typear \tau} b^\tau . c~(\lambda c'^{\alpha\typear \tau\typear \tau} b'^\tau.b')~b)\\
+ &: ((\alpha \typear \alpha^{**} \typear \alpha^{**}) \typear \alpha^{**} \typear \alpha^{**})\typear \alpha^{**} \\
+  double &\equiv \lambda x^\alpha~l^{(\alpha^* \typear \tau\typear \tau)\typear \tau\typear \tau}~ c^{\alpha^*\typear \tau\typear \tau}~b^\tau. \\
+  & \qquad \qquad l(\lambda e^{\alpha^*}.c~(\lambda c'^{\alpha\typear \tau\typear \tau}~ b'^\tau.c'~\underline{x}~(e~c'~b')))(l~c~b)\\
+ &: \alpha \typear \alpha^{**} \typear \alpha^{**}
 \end{align*}
+In all these terms, the only variable occurrence that is potentially unsafe is the underlined occurrence $x$ in $double$. This occurrence if safely bound just when $\ord{\alpha} \geq \ord{\tau}$.
+Consequently for all $k,n\geq0$, $\mathbf{D}_k^n$ is safe if and only if $\ord{\alpha} \geq \ord{\tau}$.
 
-It can be checked that these two terms are safe.
 
 \subsubsection{Quantifier elimination}
-Following \cite{mairson1992spt}, quantifier elimination interprets $\forall x^k.\Phi(x^k)$ as the iterated conjunction $\mathbf{D}_k(\lambda x^k:\Delta_k^n.AND^n(\hat\Phi~x^k))~T^n$ where $\hat\Phi$ is the interpretation of $\Phi$
-and $n$ is the representation level chosen for the variable $x^k$; similarly $\exists x^k.\Phi(x^k)$  is interpreted by the iterated disjunction $\mathbf{D}_k(\lambda x^k:\Delta_k^n.AND^n(\hat\Phi~x^k))~T^n$
+Terms of type $\Delta_{k+1}^n$ are now used as iterators over list of elements of type $\Delta_k^n$. We set $\tau = \booltype_n$ in order to iterate a level-$n$ Boolean function. Since $\ord{\Delta_k^n} \geq \ord{\booltype_n}$ for all $n$, all the instantiations of the terms $\mathbf{D}_k^n$ will be safe. Following \cite{mairson1992spt}, quantifier elimination interprets the formula $\forall x^k.\Phi(x^k)$ as the iterated conjunction:
+$\mathbf{C}_0^{n\mapsto 0} \left( \mathbf{D}_k^n(\lambda x^k:\Delta_k^n.AND^n(\hat\Phi~x^k))~T^n \right)$ where $\hat\Phi$ is the interpretation of $\Phi$
+and $n$ is the representation level chosen for the variable $x^k$; similarly $\exists x^k.\Phi(x^k)$  is interpreted by the iterated disjunction $\mathbf{C}_0^{n\mapsto 0} \left(  \mathbf{D}_k^n(\lambda x^k:\Delta_k^n.AND^n(\hat\Phi~x^k))~T^n\right)$.
 
-Let $x^{k_p}_p \ldots x^{k_1}_1$ for $p\geq1$ be the list of variables appearing in the formula. W.l.o.g.\ we can assume that they are given in the order of appearance of their binder in the formula \ie $x^{k_p}_p$ is bound by the leftmost binder. We assign representation levels to variables as follows. The right-most variable is assigned level $1$ \ie $x^{k_1}_1 : \Delta^1_{k_1}$; suppose that $x^{k_i}_i :\Delta^l_{k_l}$ for $1\leq i< p$ then the representation level of variable $x^{k_{i+1}}_{i+1}$ is defined as
-the smallest $l'\in\nat$ such that $\ord{\Delta^{l'}_{k_i}} > \ord{\Delta^{l}_{k_{i-1}}}$.
+Let $x^{k_p}_p \ldots x^{k_1}_1$ for $p\geq1$ be the list of variables appearing in the formula. W.l.o.g.\ we can assume that they are given in the order of appearance of their binder in the formula \ie $x^{k_p}_p$ is bound by the leftmost binder. We fix the domain of representation of each variable as follows. The right-most variable $x^{k_1}_1$ will be encoded in the domain $\Delta^1_{k_1}$; suppose that for $1\leq i< p$ the domain of representation of $x^{k_i}_i$ is $\Delta^l_{k_l}$ then the domain of representation of $x^{k_{i+1}}_{i+1}$ is defined as
+$\Delta^{l'}_{k_i}$ where $l'$ is the smallest natural number such that $\ord{\Delta^{l'}_{k_i}}$ is strictly greater than $\ord{\Delta^{l}_{k_{i-1}}}$.
 
-This way, since variables that are bound first have higher order, the variables
- that are bound in the nested list-iterations (corresponding to the nested quantifiers in the formula) are necessarily safely bound.
+This way, since variables that are bound first have higher order, the variables that are bound in the nested list-iterations (corresponding to the nested quantifiers in the formula) are necessarily safely bound.
+
+\begin{example}
+The formula  $\forall x^0 . \exists y^0 . x^0 \zor y^0$, encoded by an unsafe term using Mairson's encoding, is represented in our encoding by the safe term:
+ $$\vdash \mathbf{C}_0^{2\mapsto 0}(\mathbf{D}_1^2 (\lambda x^0:\Delta_0^2. AND (\mathbf{C}_0^{1\mapsto 0} (\mathbf{D}_1^1 (\lambda y^0:\Delta_0^1. OR (x^0 \zor y^0)) F^1))) T^2 )\ .$$
+\end{example}
 
 
-\subsubsection{Coding set theory in the $\mathcal{D}_k$}
-To complete the interpretation of prime formulas, we would need to show how to encode set membership. Unfortunately, this seems to be impossible in the safe lambda calculus. It would turn to be possible if we had at hand a function $\_ \uparrow^k$, counterpart of $\_ \downarrow_k$, that increases the representation level of a term to level $k$. Here is how we would proceed if such function were representable in the safe lambda calculus.
+\subsubsection{Set-membership}
+To complete the interpretation of prime formulae, we would need to show how to encode set membership. Unfortunately the use of multiple domains of representation does not suffice to turn Mairson's encoding into a safe term. It would  be possible to give a safe encoding if it was possible to increase the domain of representation of a variable with a safe term. However such transformation is intrinsically unsafe. We conjecture that so is set-membership.
 
-Firstly, the formulae ``$\mathbf{true} \in y^1$'' and ``$\mathbf{false} \in y^1$'' can be encoded by the safe terms $y^1 (\lambda x^0 . OR^0~x^0) F^0$ and $y^1 (\lambda x^0. OR^0(NOT^0~x^0)) F^0$ respectively.
-For the general case ``$x^k\in y^{k+1}$''
-we proceed as in \cite{mairson1992spt} by introducing lambda-terms encoding set equality, set membership and subset tests, and we further parameterize these encoding by $n\in\nat$.
+%%%%%%%%%%%%%%%%%%%%%%%
+%% The following commented section gives an UNSAFE encoding of set-memberhsip.
 
-Equality of booleans is encoded by:
-$$ eq_0^n \equiv \lambda x^0 : \booltype_n .\lambda y^0 : \booltype_n. OR^n (AND^n~x^0~y^0) (AND^n (NOT^n~x^0)(NOT^n~y^0)) \ .$$
+%Firstly, the formulae ``$\mathbf{true} \in y^1$'' and ``$\mathbf{false} \in y^1$'' can be encoded by the safe terms $y^1 (\lambda x^0 . OR^0~x^0) F^0$ and $y^1 (\lambda x^0. OR^0(NOT^0~x^0)) F^0$ respectively.
+%For the general case ``$x^k\in y^{k+1}$''
+%we proceed as in \cite{mairson1992spt} by introducing lambda-terms encoding set equality, set membership and subset tests, and we further parameterize these encoding by $n\in\nat$.
 
-We now use variable of type $\Delta_{k+1}^n$ as iterators over list of elements of type $\Delta_k^n$ and we instantiate the type variable $\tau$ as $\booltype_n$ in order to iterate a level-$n$ Boolean function. We define the set membership function as follows. Note that
-the level of representation differs from input to output: \begin{align*}
-  member_{k+1}^{n+1} &\equiv \lambda x^k : \Delta_k^{n+1}.\lambda y^{k+1}:\Delta_{k+1}^{n+1}. \\
-& \qquad (y^{k+1}\downarrow_n) (\lambda y^k : \Delta_k^n . OR^n (eq_k^{n+1}~x^k~(y^k\uparrow^{n+1})))~F^n \\
-  & : \Delta_k^{n+1} \typear \Delta_{k+1}^{n+1} \typear \booltype_n
+The equality test for Booleans is represented by:
+$$ eq_0^n \equiv \lambda x^{\booltype_n} .\lambda y^{\booltype_n}. OR^n (AND^n~x~y) (AND^n (NOT^n~x)(NOT^n~y)) \ .$$
+
+We define the set membership function as follows:
+\begin{align*}
+  member_{k+1}^{n+2} &\equiv \lambda x^{\Delta_k^{n+2}} y^{\Delta_{k+1}^{n+2}}. \\
+& \quad\ \mathbf{C}_{n+1\mapsto n+2}~ \left( (\mathbf{C}_{n+2\mapsto n+1}~y)~(\lambda z^{\Delta_k^{n+1}} . OR^{n+1} (eq_k^{n+1}~(\mathbf{C}_{n+2\mapsto n+1}~x)~z))~F^{n+1}\right)\\
+  & : \Delta_k^{n+2} \typear \Delta_{k+1}^{n+2} \typear \booltype_{n+2}
 \\
-  subset_{k+1}^{n+1} &\equiv \lambda x^{k+1} : \Delta_{k+1}^{n+1}.\lambda y^{k+1}:\Delta_{k+1}^{n+1}. \\
-  & \qquad (x^{k+1}\downarrow_n) (\lambda x^k : \Delta_k^n . AND^n (member_{k+1}^{n+1}~x^k~y^{k+1}))~T^n \\
-  & : \Delta_{k+1}^{n+1} \typear \Delta_{k+1}^{n+1} \typear\booltype_n
+  subset_{k+1}^n &\equiv \lambda x^{\Delta_{k+1}^n} y^{\Delta_{k+1}^n}. \\
+  & \qquad x~(\lambda x^{\Delta_k^n} . AND^n (member_{k+1}^n~x~y))~T^n \\
+  & : \Delta_{k+1}^n \typear \Delta_{k+1}^n \typear\booltype_n
 \\
-  eq_{k+1}^{n+1} &\equiv \lambda x^{k+1} : \Delta_{k+1}^{n+1}.\lambda y^{k+1}:\Delta_{k+1}^{n+1}. \\
+  eq_{k+1}^n &\equiv \lambda x^{\Delta_{k+1}^n}~ y^{\Delta_{k+1}^n}. \\
    & \qquad
-   (\lambda op:\Delta_{k+1}^n\typear\Delta_{k+1}^n\typear\booltype_n. AND^n (op~x^{k+1}~y^{k+1})(op~y^{k+1}~x^{k+1}))~subset_{k+1}^{n+1} \\
-  & : \Delta_{k+1}^{n+1} \typear \Delta_{k+1}^{n+1} \typear \booltype_n
+   (\lambda op^{\Delta_{k+1}^n\typear\Delta_{k+1}^n\typear\booltype_n}. AND^n (op~x~y)(op~y~x))~subset_{k+1}^n \\
+  & : \Delta_{k+1}^n \typear \Delta_{k+1}^n \typear \booltype_n
 \end{align*}
-The terms $eq_{k+1}^n$ and $subset_{k+1}^n$ are safe, and so is $member_{k+1}^n$ thanks to the fact that $y^k$ has a lower representation level than $x^k$.
+The terms $eq_{k+1}^n$ and $subset_{k+1}^n$ are safe, and so is $member_{k+1}^n$ thanks to the fact that the representation domain of $z$ is lower that that of $x$. The formula $x^k\in y^{k+1}$ is then encoded by the safe term
+$$x:\Delta_k^{n+1}, y:\Delta_{k+1}^{n'+1}\vdash \mathbf{C}_0^{u\mapsto  0}  \left(member_{k+1}^{u} (\mathbf{C}_s^{n+1\mapsto u}~x)~(\mathbf{C}_{n'+1\mapsto  u} ~y)\right) : \booltype_0$$
+where $u = \min(n,n') +1$.
 
-The formula $x^k\in y^{k+1}$ is then encoded by the term
-$$x^k:\Delta_k^n, y^{k+1}:\Delta_{k+1}^{n'}\vdash \left(member_{k+1}^{\min(n,n')} (x^k\downarrow_{\min(n,n')})~(y^{k+1}\downarrow_{\min(n,n')})\right)\downarrow_0$$
+%%
+%%%%%%%%%%%%%%%%%%%%%%%
 
 
 \subsection{NP-hardness}
-To show NP-hardness it suffices to observe that the encoding of SAT in the simply-typed lambda calculus from the paper\cite{asperti-np} relies only on safe terms.
+The encoding from the previous section also shows that the equivalence problem is NP-hard since instances of the NP-complete Boolean satisfaction problem SAT are instances of the decision problem of finite type theory: These instances are the formulae in which set membership is not allowed and variables are all taken from the base domain $\mathcal{D}_0$ and are bound by existential quantifiers.
+
+\emph{Related work:} In the paper  \cite{asperti-np}, the author gives an encoding of SAT in the simply-typed lambda calculus. Since this encoding relies on safe terms only, this giving us another proof of NP-hardness.
 
 \subsection{PSPACE-hardness}
+Again, quantified boolean formulae are just special cases of type theory formulae. Therefore since the True Quantified Boolean Problem (TQBF) is PSPACE-complete, deciding $\beta\eta$-equality of two terms of the Safe Lambda Calculus is PSPACE-hard.
 
-We encode QBF into the calculus.
-We assume that the quantified propositional formula is given in prenex form:
-$$\$_{n-1} x_{n-1} \ldots \$_0 x_0 . \psi(x_0, \ldots, x_{n-1})$$
-where $\$_i \in \{\exists,\forall\}$ for $0\leq i\leq n-1$.
-
-The encoding is as follows:
-\begin{align*}
-\sem{1} &= T^0  : \booltype \\
-\sem{0} &= F^0 : \booltype \\
-\sem{x_i} &= x_i\downarrow_0 = x_i~T^{i-1}~F^{i-1}\ldots T^1~F^1: \booltype \qquad \hbox{where $x_i:\booltype_i$}\\
-\sem{\psi_1\zand \psi_2} &= AND^0~\sem{\psi_1}~\sem{\psi_2}
-:\booltype  \\
-\sem{\psi_1\zor \psi_2} &= OR^0~\sem{\psi_1}~\sem{\psi_2}
-:\booltype  \\
-\sem{\neg \psi} &= NOT^0~\sem{\psi}
-:\booltype  \\
-\sem{\forall x_i.\psi(\ldots, x_i, \ldots)} & = \mathbf{D}_0^i(\lambda x^{\booltype_i}. AND^0~\sem{\psi(\ldots, x_i, \ldots)})~T^0 :\booltype\\
-\sem{\exists x_i.\psi(\ldots, x_i, \ldots)} & = \mathbf{D}_0^i(\lambda x^{\booltype_i}.OR^0~\sem{\psi(\ldots, x_i, \ldots)})~F^0 :\booltype
-\end{align*}
-The size of $\sem{\psi}$ is in $\bigo(|\psi|^2)$.
-
-It is easy to check that this encoding is safe.
+%%We assume that the quantified propositional formula is given in prenex form:
+%%$$\$_{n-1} x_{n-1} \ldots \$_0 x_0 . \psi(x_0, \ldots, x_{n-1})$$
+%%where $\$_i \in \{\exists,\forall\}$ for $0\leq i\leq n-1$.
+%%
+%%The encoding is as follows:
+%%\begin{align*}
+%%\sem{1} &= T^0  : \booltype \\
+%%\sem{0} &= F^0 : \booltype \\
+%%\sem{x_i} &= x_i\downarrow_0 = x_i~T^{i-1}~F^{i-1}\ldots T^1~F^1: \booltype \qquad \hbox{where $x_i:\booltype_i$}\\
+%%\sem{\psi_1\zand \psi_2} &= AND^0~\sem{\psi_1}~\sem{\psi_2}
+%%:\booltype  \\
+%%\sem{\psi_1\zor \psi_2} &= OR^0~\sem{\psi_1}~\sem{\psi_2}
+%%:\booltype  \\
+%%\sem{\neg \psi} &= NOT^0~\sem{\psi}
+%%:\booltype  \\
+%%\sem{\forall x_i.\psi(\ldots, x_i, \ldots)} & = \mathbf{D}_0^i(\lambda x^{\booltype_i}. AND^0~\sem{\psi(\ldots, x_i, \ldots)})~T^0 :\booltype\\
+%%\sem{\exists x_i.\psi(\ldots, x_i, \ldots)} & = \mathbf{D}_0^i(\lambda x^{\booltype_i}.OR^0~\sem{\psi(\ldots, x_i, \ldots)})~F^0 :\booltype
+%%\end{align*}
+%%The size of $\sem{\psi}$ is in $\bigo(|\psi|^2)$.
+%
+%It is easy to check that this encoding is safe.
 \begin{example}
   The formula $\forall x \exists y \exists z (x\zor y\zor z)\zand(\neg x\zor \neg y\zor \neg z)$ is represented by the safe term:
 \begin{align*}
@@ -190,14 +193,10 @@ It is easy to check that this encoding is safe.
 &\quad\quad\quad\quad (AND^0 (OR^0(OR^0~(x~T^1 F^1 T^0 F^0)~(y~T^0 F^0))z) \\
 &\quad\quad\quad\quad\quad (OR^0(OR^0(NEG^0 (x~T^1 F^1 T^0 F^0))(NEG^0 (y~T^0 F^0)))(NEG^0~z))) \\
 &\quad\quad\quad )F^0)\\
-&\quad\quad)F^0)\\
-&\quad) T^0
+&\quad\quad)F^1)\\
+&\quad) T^2
 \end{align*}
 \end{example}
-This gives us:
-\begin{theorem}
-  Deciding $\beta\eta$-equality of two terms of the Safe Lambda Calculus is PSPACE-hard.
-\end{theorem}
 
 % NP \subseteq PSPACE \subseteq EXP
 

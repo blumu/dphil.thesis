@@ -310,7 +310,7 @@ definition from \cite{KNU02}.
 \[\begin{array}{rll}
 G^{(o, o)} \, x & \quad \rightarrow \quad & H \, \underline{(f \, {x})} \\
 F^{((o, o), o, o, o)} \, z \, x \, y & \quad \rightarrow \quad & f \, (F \, \underline{(F \, z
-\, {y})} \, y \, (z \, x) ) \, x \\
+\, {y})} \, y \, (z \, x) ) \, x
 \end{array}\]
 \item The order-2 grammar defined in Example~\ref{eg:running} is
   unsafe.
@@ -398,18 +398,18 @@ is safe.
 %                    \rulef{
 %                        \rulef{}{y \vdash y} {\sf(var)}
 %                    }
-%                    {y \vdash \lambda y . y } {\sf(abs)}
+%                    {y \vdash \lambda y . y } \rulenamet{abs}
 %                }
 %                {f , x \vdash \lambda y .y } {\sf(wk)}
 %             }
 %             {f , x \vdash f (\lambda y .y )} {\sf(app)}
 %        }
-%        { f  \vdash \lambda x . f (\lambda y .y )} {\sf(abs)}
+%        { f  \vdash \lambda x . f (\lambda y .y )} \rulenamet{abs}
 %     }
 %     {
 %        f  \vdash f (\lambda x . f (\lambda y .y ))} {\sf(app)}
 %     }
-% { \vdash M_1 = \lambda f . f (\lambda x . f (\lambda y .y )) } {\sf(abs)}
+% { \vdash M_1 = \lambda f . f (\lambda x . f (\lambda y .y )) } \rulenamet{abs}
 %$$
 \end{example}
 
@@ -535,13 +535,12 @@ Let $l\geq 1$ and $n\geq 1$. We use the abbreviations $\overline{x}$ and $\overl
 A \defname{safe redex} is a safe term of the form $(\lambda
 \overline{x} . M) N_1 \ldots N_l$ such that the variables
 $\overline{x}$ are abstracted altogether by one instance of the
-$(\sf{abs})$ rule and the term $(\lambda \overline{x} . M)$ is
-applied to $N_1$, \ldots, $N_l$ by one instance of the $(\sf{app})$ rule.
+$\rulenamet{abs}$ rule (possibly followed by $\rulenamet{wk}$) and the term $(\lambda \overline{x} . M)$ is
+applied to $N_1$, \ldots, $N_l$ by one instance of the $(\sf{app})$ rule. Thus $M$, the and the $N_i$'s are also safe.
 \end{definition}
-Thus $M$, the $N_i$'s and the redex itself are all safe terms.
 For instance, in the case $n<l$, a safe redex has a derivation tree of the following  form:
 $$   \rulef{
-            \rulef{\rulef{\ldots}{\Gamma, \overline{x}:\overline{A} \vdash M : (A_{n+1}, \ldots, A_l, B)}}{\Gamma \vdash \lambda \overline{x} . M : (A_1, \ldots, A_l, B)} ({\sf abs })
+            \rulef{\rulef{\rulef{\ldots}{\Gamma', \overline{x}:\overline{A} \vdash M : (A_{n+1}, \ldots, A_l, B)}}{\Gamma' \vdash \lambda \overline{x} . M : (A_1, \ldots, A_l, B)} \rulenamet{abs}}{\Gamma \vdash \lambda \overline{x} . M : (A_1, \ldots, A_l, B)}\rulenamet{wk}
             \quad
             \rulef{\ldots}{\Gamma \vdash N_1 :A_1}  \ \ldots \  \rulef{\ldots}{\Gamma \vdash N_l :A_l}
     }
@@ -552,7 +551,6 @@ $$
 
 
 We are now in a position to define a notion of reduction for safe terms.
-
 \begin{definition}\rm
 \label{dfn:safereduction} We use the
 abbreviations $\overline{x} = x_1 \ldots x_n$,
@@ -566,15 +564,14 @@ The relation $\beta_s$ is defined on the set of safe redexes as:
   \{ \ (\lambda \overline{x}  . M) N_1 \ldots N_l \mapsto M\subst{N_1 \ldots N_n}{\overline{x}} N_{n+1} \ldots N_l
   \mbox{, for $n\leq l$} \} \ .
 \end{eqnarray*}
-where $M\subst{R_1 \ldots R_k}{z_1 \ldots z_k}$ denotes the simultaneous substitution of $R_1$,\ldots,$R_k$ for $z_1, \ldots, z_k$ in $M$.  The
+where $M\subst{R_1 \ldots R_k}{z_1 \ldots z_k}$ denotes the simultaneous substitution in $M$ of $R_1$,\ldots,$R_k$ for $z_1, \ldots, z_k$.  The
 \defname{safe $\beta$-reduction}, written $\betasred$, is the
 compatible closure of the relation $\beta_s$ with respect to the
 formation rules of the safe lambda calculus.
 \end{definition}
 
 \noindent \emph{Remark:} The $\beta_s$-reduction is a multi-step
-$\beta$-reduction {\it i.e.}~$\betared \subset \betasred \subset
-\betaredtr$\ .
+$\beta$-reduction \ie it is a subset of the transitive closure of $\betared$.
 
 
 \begin{lemma}[$\beta_s$-reduction preserves safety]
@@ -587,15 +584,15 @@ If $\Gamma \vdash s :A$ and $s \betasred t$ then $\Gamma \vdash t :A$.
 Suppose that $s\ \beta_s\ t$ where $s$ is the
 safe-redex $(\lambda x_1 \ldots x_n . M) N_1
   \ldots N_l $ with $x_1 : B_1, \ldots, x_n: B_n$
-and $M$ of type $C$.  W.l.o.g we can assume that the last rule   used to form the term $s$ is {\sf(app)} {\it i.e.}~not the weakening rule {\sf(wk)}, thus  we have $\Gamma = fv(s)$.
+and $M$ of type $C$.  W.l.o.g we can assume that the last rule used to form the term $s$ is \rulenamet{app} (and not the weakening rule \rulenamet{wk}, thus  we have $\Gamma = fv(s)$.
 
 Suppose $n>l$ then $A = (B_{l+1}, \ldots, B_n, C)$. By Lemma \ref{lem:subst_preserve_safety} we can form the safe term %\begin{equation}
 $\Gamma, x_{l+1}:B_{l+1}, \ldots x_n :B_{n}\vdash M\subst{\overline{N}}{x_1 \ldots x_l} : C$. %\label{jud:substsafe}\ .
 %\end{equation}
-By Lemma \ref{lem:ordfreevar}, since $s$ is safe, all the variables in $\Gamma$ have order $\geq \ord{A}$. This ensures that the side-condition of the {\sf(abs)} rule is verified if we abstract the variables $x_{l+1} \ldots x_n$, which gives us the judgement $\Gamma \vdash t :A$.
+By Lemma \ref{lem:ordfreevar}, since $s$ is safe, all the variables in $\Gamma$ have order $\geq \ord{A}$. This ensures that the side-condition of the \rulenamet{abs} rule is verified when abstracting the variables $x_{l+1} \ldots x_n$, which gives us the judgement $\Gamma \vdash t :A$.
 
 Suppose $n \leq l$. The substitution lemma gives
-$\Gamma \vdash M\subst{N_1 \ldots N_n}{\overline{x}} : C$ and using {\sf(app)} we form $\Gamma \vdash t :A$.
+$\Gamma \vdash M\subst{N_1 \ldots N_n}{\overline{x}} : C$ and using \rulenamet{app} we form $\Gamma \vdash t :A$.
   \qed
 
 
@@ -650,7 +647,7 @@ If $\Gamma \vdash s :A$ then $\Gamma \vdash \elnf{s} :A$.
 It is verified for any ground type variable $x$
 since $x = \elnf{x}$.
 Step case: $x:A$ with $A=(A_1, \ldots, A_n,o)$ and $n>0$. Let $\varphi_i:A_i$ be fresh variables for $1\leq i\leq n$.
-Since $\ord{A_i} < \ord{x}$ the induction hypothesis gives $\varphi_i :A_i \vdash \elnf{\varphi_i} : A_i$. Using {\sf(wk)} we obtain $x:A, \overline{\varphi} : \overline{A}
+Since $\ord{A_i} < \ord{x}$ the induction hypothesis gives $\varphi_i :A_i \vdash \elnf{\varphi_i} : A_i$. Using \rulenamet{wk} we obtain $x:A, \overline{\varphi} : \overline{A}
   \vdash \elnf{\varphi_i} :A_i$.  The application rule gives $x :A, \overline{\varphi} : \overline{A} \vdash x \elnf{\varphi_1} \ldots \elnf{\varphi_n}
   : o$ and the abstraction rule gives $ x :A \vdash \lambda
   \overline{\varphi} . x \elnf{\varphi_1} \ldots \elnf{\varphi_n} =
@@ -665,7 +662,7 @@ The base case is covered by the previous observation.
   m$.  Let $\varphi_i: A_i$ be fresh variables for $1\leq i \leq
   n$. By the previous observation we have $\varphi_i :A_i \vdash \elnf{\varphi_i} :A_i$, the weakening rule then gives us $\Gamma , \overline{\varphi} : \overline{A}
   \vdash \elnf{\varphi_i} : A_i$.  Since the judgement
-  $\Gamma \vdash x s_1 \ldots s_m : A$ is formed using the {\sf (app)} rule, each $s_j$ must be safe for $1\leq j \leq m$, thus by the induction hypothesis we have $\Gamma \vdash \elnf{s_j} : B_j$ and by weakening we get $\Gamma, \overline{\varphi} :\overline{A} \vdash \elnf{s_j} : B_j$.  The {\sf(app)}
+  $\Gamma \vdash x s_1 \ldots s_m : A$ is formed using the \rulenamet{app} rule, each $s_j$ must be safe for $1\leq j \leq m$, thus by the induction hypothesis we have $\Gamma \vdash \elnf{s_j} : B_j$ and by weakening we get $\Gamma, \overline{\varphi} :\overline{A} \vdash \elnf{s_j} : B_j$.  The \rulenamet{app}
   rule then gives $\Gamma, \overline{\varphi} :\overline{A} \vdash x \elnf{s_1} \ldots \elnf{s_m} \elnf{\varphi_1} \ldots \elnf{\varphi_n} : o$. Finally
   the {\sf (abs)} rule gives $\Gamma \vdash \lambda \overline{\varphi} . x
   \elnf{s_1} \ldots \elnf{s_m} \elnf{\varphi_1} \ldots
@@ -681,7 +678,7 @@ we have $\elnf{s} = \lambda \overline{\varphi}. \elnf{t} \elnf{s_0} \ldots \elnf
 \item $s = \lambda \overline{\eta} . t $ where
 $\overline{\eta} : \overline{B}$ and $t:C$ is not an abstraction. The induction hypothesis gives $\Gamma,
   \overline{\eta} : \overline{B} \vdash \elnf{t} : C$ and using
-{\sf(abs)} we get $\Gamma \vdash \lambda \overline{\eta} . \elnf{t} = \elnf{s} : A$.  \qed
+\rulenamet{abs} we get $\Gamma \vdash \lambda \overline{\eta} . \elnf{t} = \elnf{s} : A$.  \qed
 \end{compactitem}
 
 
@@ -690,11 +687,11 @@ x^o . f^{(o,o,o)} x^o$ is unsafe although $\elnf{\lambda x . f x} =
 \lambda x^o y^o . f x y$ is safe.
 
 
-\notetoself{Check and prove the following lemma}
- For terms with homogeneous types however, the converse does hold:
-\begin{lemma}
-If $\Gamma \vdash \elnf{s} : T$ is homogeneously safe (i.e. it is a
-safe judgement of the safe $\lambda$-calculus and each sequent
-occurring at the nodes of the proof tree is homogeneously typed)
-then $\Gamma \vdash s :T$ is homogeneously safe.
-\end{lemma}
+%\notetoself{Check and prove the following lemma}
+% For terms with homogeneous types however, the converse does hold:
+%\begin{lemma}
+%If $\Gamma \vdash \elnf{s} : T$ is homogeneously safe (i.e. it is a
+%safe judgement of the safe $\lambda$-calculus and each sequent
+%occurring at the nodes of the proof tree is homogeneously typed)
+%then $\Gamma \vdash s :T$ is homogeneously safe.
+%\end{lemma}

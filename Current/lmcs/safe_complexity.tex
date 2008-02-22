@@ -4,22 +4,21 @@
 \section{Complexity of the Safe Lambda Calculus}
 This section aims at studying the complexity of the problem of deciding beta-eta equivalence of two safe lambda terms.
 
+Let $2_n^m$ denotes the repeated exponential defined by $2_0^m = m$ and $2_{n+1}^m =
+2^{2_{n}^m}$. A program is \defname{elementary recursive} if its run-time can be bounded by $2_K^n$ for some constant $K$ where $n$ is the length of the input.
+
 \subsection{Statman's result}
 
 A famous result by Statman  states that deciding the $\beta\eta$-equality of two first-order typable lambda terms is not elementary recursive \cite{Statman:1979:TLE}.
 The proof proceeds by encoding the Henkin quantifier elimination of Type Theory into the simply-typed lambda calculus.
-Mairson gave a simpler proof in \cite{mairson1992spt} which also proceeds by encoding the Henkin quantifier elimination procedure into the lambda-calculus but is much easier to understand as it makes use of list iteration to perform quantifier elimination.
+Simpler proofs have subsequently been given, one by Mairson in \cite{mairson1992spt} and one by Loader in  \cite{Loader1998}. Both proceed by encoding the Henkin quantifier elimination procedure into the lambda-calculus, as in the original proof, but their use of list iteration to perform quantifier elimination make them much easier to understand.
 
-It turns out that both encodings rely on the use of unsafe terms to implement the quantifier elimination procedure: Statman's encoding makes use of the conditional
-function $\sf sg$ which is not definable in the safe lambda-calculus (\cite{blumong:safelambdacalculus}), and Mairson's encoding uses unsafe terms for encoding both quantifier elimination and set membership. Hence the argument does not carry on in the Safe Lambda Calculus.
-
-In fact the unsafey of Mairson's encoding can be alleviated: the quantifier elimination procedure can be made safe provided that we use multiple domains of representation to encode values of the type hierarchy. Set-membership, however, seems to be intrinsically unsafe.
+It turns out that all these encodings rely on the use of unsafe terms to implement the quantifier elimination procedure: Statman's encoding makes use of the conditional
+function $\sf sg$ which is not definable in the safe lambda-calculus (\cite{blumong:safelambdacalculus}), Mairson's encoding uses unsafe terms for encoding both quantifier elimination and set membership, and Loader's encoding uses unsafe term to build list iterators. This leads us to conjecture that Type Theory is intrinsically unsafe in the sense that any of its encoding in the lambda calculus is necessary unsafe. Of course this conjecture does not rule out the possibility of encoding another non-elementary problem into the Safe Lambda Calculus.
 
 We start this section by presenting an adaptation of Mairson's encoding where quantifier elimination is safely encoded and by showing why it is problematic to encode set-membership safely. We will then use this encoding to interpret the True Quantifier Boolean Formula (TQBF) problem into the Safe Lambda Calculus, thus showing that deciding beta-eta equality is PSPACE-hard.
 
-
 \subsection{Mairson's encoding}
-
 We recall the definition of Finite Type Theory. Let $\mathcal{D}_0 = \{\mathbf{true},\mathbf{false}\}$ and $\mathcal{D}_{k+1} =powerset(\mathcal{D}_k)$.
 For any $k\geq0$, we write $x^k$, $y^k$ and $z^k$ to denote variables ranging over $\mathcal{D}_k$. Prime formulae are $x^0$, $\mathbf{true}\in y^1$, $\mathbf{false}\in y^1$, and  $x^k \in y^{k+1}$. Formulae are built up from prime formulae using the logical connectives $\zand$,$\zor$,$\rightarrow$,$\neg$ and the quantifiers
 $\forall$ and $\exists$. Meyer showed that deciding the truth of such formulae requires nonelementary time \cite{Meyer1974}.
@@ -41,7 +40,7 @@ This term is unsafe since the underlined occurrence is unsafely bound. This is d
 
 Surprisingly, the unsafety of the quantifier elimination procedure can be easily overcome. The idea is as follows. We introduce multiple domains of representation for a given formula. An element of $\mathcal{D}_k$ is thereby represented by countably many terms of type $\Delta_k^n$ where $n\in\nat$ indicates the level of the domain of representation. The type $\Delta_k^n$ is defined in such a way that its order strictly increases as $n$ grows. Furthermore, there exists a term that can lower the domain of representation of a given term. Thus each formula variable can have a different domain of representation, and since there are infinitely many such domains, it is always possible to find an assignment of representation domains to variables such that the resulting encoding term is safe.
 
-For set-membership, however, there is no obvious way to obtain a safe encoding. In order to turn Mairson's encoding of set-membership (Eq.\ \ref{eqn:setmembership}) into a safe term, we would need to have access to a function that increases the domain of representation of an encoded variable. Unfortunately, such transformation is intrinsically unsafe!
+For set-membership, however, there is no obvious way to obtain a safe encoding. In order to turn Mairson's encoding of set-membership (Eq.\ \ref{eqn:setmembership}) into a safe term, we would need to have access to a function that changes the domain of representation of an encoded higher-order value of the type-hierarchy. Unfortunately, such transformation is intrinsically unsafe!
 \smallskip
 
 We now present the encoding in details.
@@ -115,7 +114,7 @@ This way, since variables that are bound first have higher order, the variables 
 
 \begin{example}
 The formula  $\forall x^0 . \exists y^0 . x^0 \zor y^0$, encoded by an unsafe term using Mairson's encoding, is represented in our encoding by the safe term:
- $$\vdash \mathbf{C}_0^{1\mapsto 0} \left( \mathbf{D}_0^1~(\lambda x^0:\Delta_0^1. AND^0 ( \mathbf{D}_0^0 ~(\lambda y^0:\Delta_0^0. OR^0 (OR^0~(\mathbf{C}_0^{1\mapsto 0}~x^0)~y^0))~F^0))~T^1 )\ .$$
+ $$\vdash \mathbf{C}_0^{1\mapsto 0} \left( \mathbf{D}_0^1~(\lambda x^0:\Delta_0^1. AND^0 ( \mathbf{D}_0^0 ~(\lambda y^0:\Delta_0^0. OR^0 (OR^0~(\mathbf{C}_0^{1\mapsto 0}~x^0)~y^0))~F^0))~T^1 \right)\ .$$
 \end{example}
 
 
@@ -153,7 +152,7 @@ eq_{k+1}^n &\equiv \lambda x^{\Delta_{k+1}^n}~ y^{\Delta_{k+1}^n}. \\
    (\lambda op^{\Delta_{k+1}^n\typear\Delta_{k+1}^n\typear\booltype_0}. AND^0 (op~x~y)(op~y~x))~subset_{k+1}^n \\
   & : \Delta_{k+1}^n \typear \Delta_{k+1}^n \typear \booltype_0
 \end{align*}
-The variables in the definition of $eq_{k+1}^n$ and $subset_{k+1}^n$ are safely bounds. Moreover, the occurrence of $x$ in $member_{k+1}^{n+1}$ is now safely bound (this was not the case in Mairson's original encoding) thanks to the fact that the representation domain of $z$ is lower than that of $x$. Unfortunately, unsafety is still present due to the use of the conversion terms $\mathbf{C}_k^{n\mapsto n'}$ for $k\geq1$.
+The variables in the definition of $eq_{k+1}^n$ and $subset_{k+1}^n$ are safely bounds. Moreover, the occurrence of $x$ in $member_{k+1}^{n+1}$ is now safely bound (this was not the case in Mairson's original encoding) thanks to the fact that the representation domain of $z$ is lower than that of $x$. Unfortunately, the term is not completely safe because it uses the unsafe conversion terms $\mathbf{C}_k^{n\mapsto n'}$ for $k\geq1$.
 
 The formula $x^k\in y^{k+1}$ can then encoded by
 $$x:\Delta_k^n, y:\Delta_{k+1}^{n'}\vdash member_{k+1}^{u}~ (\mathbf{C}_k^{n\mapsto u}~x)~(\mathbf{C}^{n'\mapsto u}_{k+1} ~y) : \booltype_0$$
@@ -163,14 +162,9 @@ for some $n,n'\geq 2$ and $u = \min(n,n')+1$.
 %%%%%%%%%%%%%%%%%%%%%%%
 
 
-\subsection{NP-hardness}
-Instances of the Boolean satisfaction problem SAT can be seen as special instances of the decision problem for truth formulae of Finite Type Theory. These instances corresponds to formulae in which set membership is not allowed and variables are all taken from the base domain $\mathcal{D}_0$ and are bound by existential quantifiers.
-As we have shown in the previous section, such restricted formulae can be safely encoded in the Safe Lambda Calculus thus since SAT is NP-complete we obtain that the equivalence problem for the Safe Lambda Calculus is NP-hard.
-
-In the paper  \cite{asperti-np}, the author gives an encoding of SAT in the simply-typed lambda calculus. This encoding relies on safe terms only, thus giving us another proof of NP-hardness.
-
 \subsection{PSPACE-hardness}
-Again, quantified boolean formulae are just restricted cases of formuale of Type Theory which are all representable in the Safe Lambda Calculus using the previously defined encoding. Therefore since the True Quantified Boolean Problem (TQBF) is PSPACE-complete, deciding $\beta\eta$-equality of two terms of the Safe Lambda Calculus is PSPACE-hard.
+We observe that instances of the True Quantified Boolean Formulae satisfaction problem (TQBF) are special instances of the decision problem for Finite Type Theory. These instances corresponds to formulae in which set membership is not allowed and variables are all taken from the base domain $\mathcal{D}_0$.
+As we have shown in the previous section, such restricted formulae can be safely encoded in the Safe Lambda Calculus. Therefore since TQBF is PSPACE-complete, deciding $\beta\eta$-equality of two terms of the Safe Lambda Calculus is PSPACE-hard.
 
 %%We assume that the quantified propositional formula is given in prenex form:
 %%$$\$_{n-1} x_{n-1} \ldots \$_0 x_0 . \psi(x_0, \ldots, x_{n-1})$$
@@ -194,7 +188,7 @@ Again, quantified boolean formulae are just restricted cases of formuale of Type
 %
 %It is easy to check that this encoding is safe.
 \begin{example}
-Using the encoding where $\tau \equiv \booltype_0$ in the types $\Delta_k^n$ for all $k,n\geq 0$, the formula $\forall x \exists y \exists z (x\zor y\zor z)\zand(\neg x\zor \neg y\zor \neg z)$ is represented by the safe term:
+Using the encoding where $\tau$ is set to  $\booltype_0$ in the types $\Delta_k^n$ for all $k,n\geq 0$, the formula $\forall x \exists y \exists z (x\zor y\zor z)\zand(\neg x\zor \neg y\zor \neg z)$ is represented by the safe term:
 \begin{align*}
 \vdash &\mathbf{D}_0^2(\lambda x^{\booltype_2}. AND^0\\
 &\quad\quad (\mathbf{D}_0^1(\lambda y^{\booltype_1}.OR^0\\
@@ -207,11 +201,18 @@ Using the encoding where $\tau \equiv \booltype_0$ in the types $\Delta_k^n$ for
 \end{align*}
 \end{example}
 
-\subsection{Better bounds on the complexity}
-At present, no upper bound is known for the problem of deciding equality of two safe lambda terms. 
+\begin{remark}
+Since the Boolean satisfaction problem (SAT) can be reduced to TQBF (where formulae are restricted to use only existential quantifiers), the Safe Lambda Calculus is also NP-hard. In \cite{asperti-np}, Asperti gave an interpretation of SAT in the simply-typed lambda calculus but his encoding relies on unsafe terms.
+\end{remark}
 
-Normalization in the Safe Lambda Calculus problem
-We know however 
-We strongly suspect it to be hyper-exponential since at preseIt is not known at present what is t
-% NP \subseteq PSPACE \subseteq EXP
+\subsection{Other complexity results}
 
+\subsubsection{The normalization problem}
+It is well-known that normalization is non-elementary for the simply-typed lambda calculus. This remains true in the safe simply typed lambda calculus as the following example shows: If we write $\underline{k}$ to denote the $k$th Church Numeral $\lambda s z . \overbrace{s( \ldots (s (s}^{k\hbox{ times}}z) \ldots)$ then the safe term $\overbrace{\underline{2}~\underline{2}\ldots \underline{2}}^{n\hbox{ times}}$ has length $\bigo(n)$ whereas its normal form
+$\underline{2_n^0}$ has length $\bigo(2_n^0)$.
+
+\subsubsection{Upper bound}
+At present, no upper bound is known for the problem of deciding equality of two safe lambda terms. Proceeding by reduction to the normalization problem does not help since there is no interesting upper-bound for this more general problem (which is non-elementary as shown in the previous paragraph).
+
+\subsubsection{Better lower bound?}
+The PSPACE-hard lower bound for the equality problem is very coarse. In fact we suspect the problem to be non-elementary.

@@ -304,7 +304,7 @@ definition from \cite{KNU02}.
 % rewrite rules is unsafe.
 \end{definition}
 
-\begin{example}\begin{inparaenum}[(i)] \item Take $\; H : ((o, o), o), \; f : (o, o, o)$; the
+\begin{example}\begin{inparaenum}[(i)] \item Take $H : ((o, o), o)$ and $f : (o, o, o)$; the
     following rewrite rules are unsafe (in each case we underline the
     unsafe subterm that occurs unsafely):
 \[\begin{array}{rll}
@@ -338,18 +338,23 @@ $$ \rulename{var} \ \rulef{}{x : A\vdash_\Xi x : A} \quad
 \rulename{const} \ \rulef{}{\vdash_\Xi f : A} \quad f \in \Xi \quad
 \rulename{wk} \ \rulef{\Gamma \vdash_\Xi s : A}{\Delta \vdash_\Xi s : A} \quad
 \Gamma \subset \Delta$$
-$$ \rulename{app} \ \rulef{\Gamma \vdash_\Xi s : (A_1,\ldots,A_n,B) \
-  \Gamma \vdash_\Xi t_1 : A_1 \; \ldots \; \Gamma \vdash_\Xi t_n : A_n
+
+$$ \rulename{app} \ \rulef{\Gamma \vdash_\Xi s : (A_1,\ldots,A_n,B)
+\quad
+  \Gamma \vdash_\Xi t_1 : A_1 \quad \ldots \quad \Gamma \vdash_\Xi t_n : A_n
 } {\Gamma \vdash_\Xi s t_1 \ldots t_n : B} \ \ord{B} \sqsubseteq
 \ord{\Gamma}$$
+
 $$ \rulename{abs} \ \rulef{\Gamma, x_1 : A_1, \ldots, x_n : A_n
   \vdash_\Xi s : B} {\Gamma \vdash_\Xi \lambda x_1 \ldots x_n . s :
   (A_1, \ldots ,A_n,B)} \ \ord{A_1, \ldots ,A_n,B} \sqsubseteq
-\ord{\Gamma}$$ where $\ord{\Gamma}$ denotes the set $\{ \ord{y} : y
-\in \Gamma \}$ and ``$c \sqsubseteq S$'' means that $c$ is a
-lower-bound of the set $S$. For convenience, we shall omit the
-subscript from $\vdash_\Xi$ whenever the generator-set $\Xi$ is clear from
-the context.
+\ord{\Gamma}$$
+\smallskip
+
+where $\ord{\Gamma}$ denotes the set $\{ \ord{y} : y \in \Gamma \}$
+and ``$c \sqsubseteq S$'' means that $c$ is a lower-bound of the set
+$S$. For convenience, we shall omit the subscript from $\vdash_\Xi$
+whenever the generator-set $\Xi$ is clear from the context.
 
 \noindent \item The sub-system that is defined by the same rules in
 (i), such that all types that occur in them are homogeneous, is called
@@ -357,15 +362,18 @@ the \defname{homogeneous safe lambda calculus}.
 \end{inparaenum}
 \end{definition}
 
-The safe lambda calculus deviates from the standard definition of the simply-typed lambda calculus in a number of ways. First the rules $\rulename{app}$ and $\rulename{abs}$
-respectively can perform multiple applications and abstract several
-variables at once. (Of course this feature alone does not alter
-expressivity.) Crucially, the side-conditions in the application rule
-and abstraction rules require that variables in the typing context
-have order no smaller than that of the term being formed.  We do not
-impose any constraint on types. In particular, type-homogeneity as
-used originally to define safe grammars \cite{KNU02} is not required
-here. Another difference is that we allow $\Xi$-constants to have
+The safe lambda calculus deviates from the standard definition of
+the simply-typed lambda calculus in a number of ways. First the
+rules $\rulename{app}$ and $\rulename{abs}$ respectively can perform
+multiple applications and abstract several variables at once. (Of
+course this feature alone does not alter expressivity.) Crucially,
+the side conditions in the application rule and abstraction rule
+require the variables in the typing context to have orders no
+smaller than that of the term being formed.  We do not impose any
+constraint on types. In particular, type-homogeneity, which was an
+assumption of the original definition of safe grammars \cite{KNU02},
+is not required here. Another difference is that we allow
+$\Xi$-constants to have
 arbitrary higher-order types.  % Thus our formulation
 % of the safe lambda calculus is more general than the one proposed in
 % the technical report \cite{safety-mirlong2004}. (It is possible to
@@ -422,31 +430,32 @@ free in $M$ has order at least $ord(M)$.
 \end{lemma}
 
 
-When restricted to the homogeneously-typed
-sub-system, the safe lambda calculus captures the original notion
-of safety due to Knapik \emph{et al.} in the context of higher-order
-grammars:
+When restricted to the homogeneously-typed sub-system, the safe
+lambda calculus captures the original notion of safety due to Knapik
+\emph{et al.}~in the context of higher-order grammars:
 
 \begin{proposition} Let $G = \langle \Sigma, \mathcal{N}, \mathcal{R},
   S \rangle$ be a grammar and let $e$ be an applicative term generated
   from the symbols in $\mathcal{N} \cup \Sigma \cup \makeset{z_1^{A_1},
     \cdots, z_m^{A_m}}$.  A rule $F z_1 \ldots z_m \rightarrow e$ in
-  $\mathcal{R}$ is safe if and only if $ z_1 : A_1, \cdots, z_m : A_m
+  $\mathcal{R}$ is safe (in the original sense of Knapik \emph{et al.}) if and only if $ z_1 : A_1, \cdots, z_m : A_m
   \vdash_{\Sigma \cup \mathcal{N}} e : o$ is a valid typing judgement
   of the \emph{homogeneous} safe lambda calculus.
 \end{proposition}
 
-\emph{In what sense is the safe lambda calculus safe?} A basic idea
-in the lambda calculus is that when performing $\beta$-reduction, one
-must use capture-\emph{avoiding} substitution, which is standardly
-implemented by renaming bound variables afresh upon each substitution.
-In the safe lambda calculus, however, variable capture can never
-happen (as the following lemma shows). Substitution can therefore be
-implemented simply by capture-\emph{permitting} replacement, without
-any need for variable renaming. In the following, we write
-$M\captsubst{N}{x}$ to denote the capture-\emph{permitting}
-substitution\footnote{This substitution is done by
-textually replacing all free occurrences of $x$ in $M$ by $N$ without performing variable renaming.  In particular for the abstraction
+\emph{In what sense is the safe lambda calculus safe?} It is an
+elementary fact that when performing $\beta$-reduction in the lambda
+calculus, one must use capture-\emph{avoiding} substitution, which
+is standardly implemented by renaming bound variables afresh upon
+each substitution. In the safe lambda calculus, however, variable
+capture can never happen (as the following lemma shows).
+Substitution can therefore be implemented simply by
+capture-\emph{permitting} replacement, without any need for variable
+renaming. In the following, we write $M\captsubst{N}{x}$ to denote
+the capture-\emph{permitting} substitution\footnote{This
+substitution is done by textually replacing all free occurrences of
+$x$ in $M$ by $N$ without performing variable renaming.  In
+particular for the abstraction
   case we have
 $(\lambda y_1\ldots y_n . M)\captsubst{N}{x} = \lambda y_1\ldots y_n . M\captsubst{N}{x}$ when $x\not\in
   \{ y_1\ldots y_n \}$.}
@@ -488,14 +497,14 @@ provided that $\Gamma, x:B \vdash M : A$ and $\Gamma \vdash  N : B$ are valid ju
   \vdash (\lambda \varphi^{(o,o)} x^o . \varphi \, x) (\underline{f \,
     x}) : (o,o)\] one should rename the bound variable $x$ with a fresh name to
   prevent the capture of the free occurrence of $x$ in the underlined term during substitution. Consequently, by the previous lemma,
-  the term is not safe. Indeed, it cannot be because $\ord{x} = 0 < 1
-  = \ord{f x}$.
+  the term is not safe (because $\ord{x} = 0 < 1
+  = \ord{f x}$).
 \end{example}
 
-Note that it is not the case that $\lambda$-terms
-that satisfy the No-variable-capture Lemma are necessarily safe. For instance the $\beta$-redex in $\lambda y^o
-z^o. (\lambda x^o .y) z$ can be contracted using capture-permitting
-substitution, even though the term is not safe.
+Note that $\lambda$-terms that `satisfy' the No-variable-capture
+Lemma are not necessarily safe. For instance the $\beta$-redex in
+$\lambda y^o z^o. (\lambda x^o .y) z$ can be contracted using
+capture-permitting substitution, even though the term is not safe.
 
 \subsection*{Reductions and transformations preserving safety}
 
@@ -514,31 +523,31 @@ This is proved by an easy induction on the structure of the safe term $M$.
 
 It is desirable to have an appropriate notion of reduction for our
 calculus. However the standard $\beta$-reduction rule is not
-adequate. Indeed, safety is not preserved by $\beta$-reduction as the
-following example shows. Suppose that $w,x,y,z : o$ and $f : (o,o,o)
-\in \Sigma$ then the safe term $(\lambda x y . f x y) z w$
-$\beta$-reduces to $(\underline{\lambda y . f z y}) w$ which is unsafe
-since the underlined order-1 subterm contains a free occurrence of the
-ground-type $z$. However if we perform one more reduction we obtain
-the safe term $f z w$. This suggests an alternative notion of
-reduction that performs simultaneous reduction of ``consecutive''
-$\beta$-redexes. In order to define this reduction we first introduce
-the appropriate notion of redex.
+adequate. Indeed, safety is not preserved by $\beta$-reduction as
+the following example shows. Suppose that $w,x,y,z : o$ and $f :
+(o,o,o) \in \Sigma$ then the safe term $(\lambda x y . f x y) z w$
+$\beta$-reduces to $(\underline{\lambda y . f z y}) w$ which is
+unsafe since the underlined order-1 subterm contains a free
+occurrence of the ground-type $z$. However if we perform one more
+reduction we obtain the safe term $f z w$. This suggests
+simultaneous contraction of ``consecutive'' $\beta$-redexes. In
+order to define this notion of reduction we first introduce the
+corresponding notion of redex.
 
 In the simply-typed lambda calculus a redex is a term of the form
 $(\lambda x . M) N$. In the safe lambda calculus, a redex is a
 succession of several standard redexes:
 
 \begin{definition}\rm
-Let $l\geq 1$ and $n\geq 1$. We use the abbreviations $\overline{x}$ and $\overline{x}:\overline{A}$  for $x_1 \ldots x_n$ and $x_1:A_1, \ldots, x_n : A_n$ respectively.
-
-A \defname{safe redex} is a safe term of the form $(\lambda
-\overline{x} . M) N_1 \ldots N_l$ such that the variables
-$\overline{x}$ are abstracted altogether by one instance of the
-\rulenamet{abs} rule (possibly followed by \rulenamet{wk}) and the
-term $(\lambda \overline{x}.M)$ is applied to $N_1$, \ldots, $N_l$
-by one instance of the \rulenamet{app} rule. Thus $M$, the and the
-$N_i$'s are also safe.
+Let $l\geq 1$ and $n\geq 1$. We use the abbreviations $\overline{x}$
+and $\overline{x}:\overline{A}$  for $x_1 \ldots x_n$ and $x_1:A_1,
+\ldots, x_n : A_n$ respectively. A \defname{safe redex} is a safe
+term of the form $(\lambda \overline{x} . M) N_1 \ldots N_l$ such
+that the variables $\overline{x}$ are abstracted altogether by one
+application of the \rulenamet{abs} rule (possibly followed by
+\rulenamet{wk}) and the term $(\lambda \overline{x}.M)$ is applied
+to $N_1$, \ldots, $N_l$ by one application of the \rulenamet{app}
+rule.
 \end{definition}
 For instance, in the case $n<l$, a safe redex has a derivation tree of the following  form:
 $$   \rulef{
@@ -552,12 +561,12 @@ $$   \rulef{
 $$
 
 
-We are now in a position to define a notion of reduction for safe terms.
+We can now define a notion of reduction for safe terms.
 \begin{definition}\rm
-\label{dfn:safereduction} We use the
-abbreviations $\overline{x} = x_1 \ldots x_n$,
-$\overline{N} = N_1 \ldots N_l$.
-The relation $\beta_s$ is defined on the set of safe redexes as:
+\label{dfn:safereduction} We use the abbreviations $\overline{x} =
+x_1 \ldots x_n$, $\overline{N} = N_1 \ldots N_l$. The relation
+$\beta_s$ (when viewed as a function) is defined on the set of safe
+redexes as follows:
 \begin{eqnarray*}
   \beta_s &=&
   \{  \ (\lambda \overline{x} . M) N_1 \ldots N_l \mapsto \lambda x_{l+1} \ldots x_n. M\subst{\overline{N}}{x_1 \ldots x_l} \mbox{, for $n> l$}
@@ -572,8 +581,9 @@ compatible closure of the relation $\beta_s$ with respect to the
 formation rules of the safe lambda calculus.
 \end{definition}
 
-\noindent \emph{Remark:} The $\beta_s$-reduction is a multi-step
-$\beta$-reduction \ie it is a subset of the transitive closure of $\betared$.
+\noindent \emph{Remark:} The safe $\beta$-reduction is a multi-step
+$\beta$-reduction \ie it is a subset of the transitive closure of
+$\betared$.
 
 
 \begin{lemma}[$\beta_s$-reduction preserves safety]
@@ -599,12 +609,14 @@ side-condition of the \rulenamet{abs} rule is verified when
 abstracting the variables $x_{l+1} \ldots x_n$, which gives us the
 judgement $\Gamma \vdash t :A$.
 
-Suppose $n \leq l$. The substitution lemma gives
-$\Gamma \vdash M\subst{N_1 \ldots N_n}{\overline{x}} : C$ and using \rulenamet{app} we form $\Gamma \vdash t :A$.
+Suppose $n \leq l$. The Substitution Lemma gives $\Gamma \vdash
+M\subst{N_1 \ldots N_n}{\overline{x}} : C$ and using \rulenamet{app}
+we form $\Gamma \vdash t :A$.
   \qed
 
 
-In general, safety is not preserved by $\eta$-expansion; for instance we have
+In general, safety is not preserved by $\eta$-expansion: for
+instance we have
 % $f:o,o \vdash f$ but $f:o,o \not \vdash \lambda x^o . f x$.
 %This remark remains true for closed terms, for instance
 $\vdash \lambda y^o z^o . y : (o,o,o)$ but
@@ -629,9 +641,9 @@ The $\eta$-long normal form (or simply $\eta$-long form) of a term
 % \emph{extensional form} in the literature
 % \cite{DBLP:journals/tcs/JensenP76,DBLP:journals/tcs/Huet75,huet76})
 is obtained by hereditarily $\eta$-expanding every subterm occurring
-at an operand position. Formally the \defname{$\eta$-long form}
-$\elnf{t}$ of a term $t: (A_1,\ldots,A_n,o)$ with $n \geq 0$ is
-defined by cases according to the syntactic shape of $t$:
+at an operand position. Formally the \defname{$\eta$-long form},
+written $\elnf{t}$, of a term $t: (A_1,\ldots,A_n,o)$ with $n \geq
+0$ is defined by cases according to the syntactic shape of $t$:
 \begin{eqnarray*}
   \elnf{\lambda x . s } &=& \lambda x . \elnf{s} \\
   \elnf{x s_1 \ldots s_m } &=& \lambda \overline{\varphi} . x \elnf{s_1}\ldots \elnf{s_m} \elnf{\varphi_1} \ldots \elnf{\varphi_n} \\

@@ -333,7 +333,7 @@ A_n \typear B$, where $B$ is not necessarily ground.
 \begin{inparaenum}[(i)]
 \item The \defname{safe lambda calculus} is a sub-system of the
   simply-typed lambda calculus defined by induction over the
-  following rules:
+  following Church-style system of rules:
 $$ \rulename{var} \ \rulef{}{x : A\vdash_\Xi x : A} \quad
 \rulename{const} \ \rulef{}{\vdash_\Xi f : A} \quad f \in \Xi \quad
 \rulename{wk} \ \rulef{\Gamma \vdash_\Xi s : A}{\Delta \vdash_\Xi s : A} \quad
@@ -623,7 +623,8 @@ $\vdash \lambda y^o z^o . y : (o,o,o)$ but
 $\not \vdash \lambda x^o . (\lambda y^o z^o . y) x : (o,o,o)$.
 However safety is preserved by $\eta$-reduction:
 
-\begin{lemma}[$\eta$-reduction preserves safety]
+\begin{lemma}[$\eta$-reduction of one variable preserves safety]
+\label{lem:etared_preserve_safety}
   $\Gamma \vdash \lambda \varphi . s \varphi :A $ with $\varphi$ not
   occurring free in $s$ implies $\Gamma \vdash s :A$.
 \end{lemma}
@@ -704,18 +705,39 @@ $\overline{\eta} : \overline{B}$ and $t:C$ is not an abstraction. The induction 
 \rulenamet{abs} we get $\Gamma \vdash \lambda \overline{\eta} . \elnf{t} = \elnf{s} : A$.  \qed
 \end{compactitem}
 
+\begin{remark}\hfill
+\begin{enumerate}
+\item
+The converse of this lemma does not hold in general: Performing
+$\eta$-reduction over a large abstraction does not in general
+preserve safety. This does not contradict Lemma
+  \ref{lem:etared_preserve_safety} which states that safety is
+  preserved when performing $\eta$-reduction on an abstraction
+  of a \emph{single} variable. The simplest counter-example is
+  the
+ unsafe term $f^{(o,o,o)} \vdash \lambda x^o . f \underline{x}$
+whose eta-long normal form $f^{(o,o,o)} \vdash \lambda x^o y^o .
+f x y$ is safe. Even for closed terms the converse does not
+hold: $\lambda f^{(o,o,o)} g^{((o,o,o),o)} . g(\lambda x^o . f
+\underline{x})$ is unsafe but its eta-nf $\lambda f^{(o,o,o)}
+g^{((o,o,o),o)} . g(\lambda x^o y^o. f x y)$ is safe. In fact
+even the closed $\beta\eta$-normal unsafe term $\lambda
+f^{(o,(o,o),o,o)} g^{((o,o),o,o,o),o)} . g(\lambda y^{(o,o)} x^o
+. f \underline{x} y)$ has a safe $\eta$-\emph{long} normal form!
 
-Note that the converse does not hold in general. The simplest
-example is the unsafe term $f^{(o,o,o)} \vdash \lambda x^o . f
-\underline{x}$ whose eta-long normal form $f^{(o,o,o)} \vdash
-\lambda x^o y^o . f x y$ is safe. Even for closed terms it still
-does not hold: $\lambda f^{(o,o,o)} g^{((o,o,o),o)} . g(\lambda x^o
-. f \underline{x})$ is unsafe but its eta-nf $\lambda f^{(o,o,o)}
-g^{((o,o,o),o)} . g(\lambda x^o y^o. f x y)$ is safe. In fact even
-the closed $\beta\eta$-normal unsafe term $\lambda f^{(o,(o,o),o,o)}
-g^{((o,o),o,o,o),o)} . g(\lambda y^{(o,o)} x^o . f \underline{x} y)$
-is unsafe while its $\eta$-\emph{long} normal form is safe!
+  \item After performing $\eta$-long expansion of a term, the ``unsafetyness'' caused by the application rule is
+  completely removed. Thus the only potential source of unsafety
+  comes from occurrences of ground-type variables that are not
+  bound by the first following application of the
+  \rulenamet{abs} rule in the typing tree.
+  \end{enumerate}
+\end{remark}
 
+
+
+A consequence of this lemma is that the intrinsic safety/unsafety of
+a term is not fully revealed by its $\beta$-normal form. Instead one
+has to study the $\eta$-long $\beta$-normal form.
 
 %\notetoself{prove the following conjecture}
 % For terms with homogeneous types however, the converse does hold:

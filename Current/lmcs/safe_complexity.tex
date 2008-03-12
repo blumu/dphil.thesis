@@ -49,7 +49,7 @@ Boolean Formula (TQBF) problem in the safe lambda calculus, thus
 showing that deciding beta-eta equality is PSPACE-hard.
 
 \subsection{Mairson's encoding}
-We recall the definition of finite type theory. Let $\mathcal{D}_0 =
+We recall the definition of finite type theory. Let us define $\mathcal{D}_0 =
 \{\mathbf{true},\mathbf{false}\}$ and $\mathcal{D}_{k+1}
 =powerset(\mathcal{D}_k)$. For any $k\geq0$, we write $x^k$, $y^k$
 and $z^k$ to denote variables ranging over $\mathcal{D}_k$. Prime
@@ -65,13 +65,13 @@ In Mairson's encoding, variables of a given order $k$ are all encoded by terms o
 unsafety manifests itself in two different ways.
 \begin{enumerate}[1.]
   \item
-        First in the encoding of set membership. The prime formula $x^k \in y^{k+1}$ is encoded as \begin{equation} x^k : \Delta_k, y^{k+1}:\Delta_{k+1} \vdash y^{k+1} (\lambda y^k : \Delta_k . OR (eq_k~\underline{x^k}~y^k)~F : \Delta_k \typear \Delta_{k+1} \typear \Delta_0 \label{eqn:setmembership}\end{equation}
+        First in the encoding of set membership. The prime formula $x^k \in y^{k+1}$ is encoded as \begin{equation} x^k : \Delta_k, y^{k+1}:\Delta_{k+1} \stentail y^{k+1} (\lambda y^k : \Delta_k . OR (eq_k~\underline{x^k}~y^k)~F : \Delta_k \typear \Delta_{k+1} \typear \Delta_0 \label{eqn:setmembership}\end{equation}
 for some terms $OR$, $F$, $eq_k$.
 This term is unsafe because of the underline occurrence of $x^k$ which is not abstracted together with $y^k$.
 
 \item Secondly, quantifier elimination is performed by using a list iterator $\mathbf{D}_{k+1}$ which acts like the $fold\_right$ function from functional programming languages over the list of all elements of $\mathcal{D}_k$.
 Thus for instance the formula $\forall x^0 . \exists y^0 . x^0 \zor y^0$
-is encoded as $$\vdash \mathbf{D}_1 (\lambda x^0:\Delta_0. AND (\mathbf{D}_1 (\lambda y^0:\Delta_0. OR (\underline{x^0} \zor y^0)) F)) T \ .$$
+is encoded as $$\stentail \mathbf{D}_1 (\lambda x^0:\Delta_0. AND (\mathbf{D}_1 (\lambda y^0:\Delta_0. OR (\underline{x^0} \zor y^0)) F)) T \ .$$
 This term is unsafe since the underlined occurrence is unsafely bound. This is due to the presence of two nested quantifiers in the formula, which are encoded as two nested list iterations. More generally, nested binding will be encoded safely if and only if every variable $x$ in the formula is bound by the first quantifier $\exists z$ or $\forall z$ in the path to the root of the AST of the formula verifying $\ord{z} \geq \ord{x}$. For instance if set-membership could be encoded safely then the interpretation of $\forall x^k . \exists y^{k+1} . x^k \in y^{k+1}$ would be unsafe whereas the encoding of $\forall y^{k+1} . \exists x^k . x^k \in y^{k+1}$ would be safe.
 \end{enumerate}
 
@@ -107,7 +107,7 @@ $$ \mathbf{C}^{n+1\mapsto n'}_0 \equiv \lambda m^{\booltype_{n+1}} u^{\sigma_{n'
 so that if a term $M : \booltype_n$ for $n\geq1$ is beta-eta convertible to $T^n$ (resp.\ $F^n$) then $\mathbf{C}^{n\mapsto n'}_0~M :\booltype_{n'}$ is beta-eta convertible to $T^{n'}$ (resp.\ $F^{n'}$).
 
 Observe that although the term $\mathbf{C}^{n+1\mapsto n'}_0$ is safe for all $n,n'\geq 0$, if we apply it to a variable then the resulting term
-$$ x:B_{n+1} \vdash \mathbf{C}_0^{n+1\mapsto n'}~x : B_{n}$$
+$$ x:B_{n+1} \stentail \mathbf{C}_0^{n+1\mapsto n'}~x : B_{n}$$
 is safe if and only if the transformation decreases the domain of representation of $x$ \ie $\ord{B_{n+1}}\geq\ord{B_{n'}}$.
 
 
@@ -163,7 +163,7 @@ This way, since variables that are bound first have higher order, the variables 
 The formula  $\forall x^0 . \exists y^0 . x^0 \zor y^0$, which is
 encoded by an unsafe term in Mairson's encoding, is represented in
 our encoding by the safe term:
- $$\vdash \mathbf{C}_0^{1\mapsto 0} \left( \mathbf{D}_0^1~(\lambda x^0:\Delta_0^1. AND^0 ( \mathbf{D}_0^0 ~(\lambda y^0:\Delta_0^0. OR^0 (OR^0~(\mathbf{C}_0^{1\mapsto 0}~x^0)~y^0))~F^0))~T^1 \right)\ .$$
+ $$\sentail \mathbf{C}_0^{1\mapsto 0} \left( \mathbf{D}_0^1~(\lambda x^0:\Delta_0^1. AND^0 ( \mathbf{D}_0^0 ~(\lambda y^0:\Delta_0^0. OR^0 (OR^0~(\mathbf{C}_0^{1\mapsto 0}~x^0)~y^0))~F^0))~T^1 \right)\ .$$
 \end{example}
 
 
@@ -212,7 +212,7 @@ $member_{k+1}^{n+1}$ is now safely bound (this was not the case in
 Mairson's original encoding) thanks to the fact that the
 representation domain of $z$ is lower than that of $x$. The formula
 $x^k\in y^{k+1}$ can then be encoded as
-$$x:\Delta_k^n, y:\Delta_{k+1}^{n'}\vdash member_{k+1}^{u}~ (\mathbf{C}_k^{n\mapsto u}~x)~(\mathbf{C}^{n'\mapsto u}_{k+1} ~y) : \booltype_0$$
+$$x:\Delta_k^n, y:\Delta_{k+1}^{n'}\stentail member_{k+1}^{u}~ (\mathbf{C}_k^{n\mapsto u}~x)~(\mathbf{C}^{n'\mapsto u}_{k+1} ~y) : \booltype_0$$
 for some $n,n'\geq 2$ and $u = \min(n,n')+1$.
 
 Unfortunately, this encoding is not completely safe because it uses
@@ -258,7 +258,7 @@ safe lambda calculus is PSPACE-hard.
 \begin{example}
 Using the encoding where $\tau$ is set to  $\booltype_0$ in the types $\Delta_k^n$ for all $k,n\geq 0$, the formula $\forall x \exists y \exists z (x\zor y\zor z)\zand(\neg x\zor \neg y\zor \neg z)$ is represented by the safe term:
 \begin{align*}
-\vdash &\mathbf{D}_0^2(\lambda x^{\booltype_2}. AND^0\\
+\sentail~&\mathbf{D}_0^2(\lambda x^{\booltype_2}. AND^0\\
 &\quad\quad (\mathbf{D}_0^1(\lambda y^{\booltype_1}.OR^0\\
 &\quad\quad\quad (\mathbf{D}_0^0(\lambda z^{\booltype_0}.OR^0\\
 &\quad\quad\quad\quad (AND^0 (OR^0(OR^0~(\mathbf{C}_0^{2\mapsto 0}~x)~(\mathbf{C}_0^{1\mapsto 0}~y))z) \\

@@ -1,0 +1,593 @@
+\input{galop08-slides.pre}
+
+\pstrSetArrowColor{black}
+
+\title{\texorpdfstring{A Concrete Presentation of Game Semantics}{A Concrete Presentation of Game Semantics}}
+
+\author[W. Blum, C.-H. L. Ong]{\texorpdfstring{\\ William Blum\\ \ \\
+ Joint work with C.-H. Luke Ong}{William Blum}}
+
+
+\institute[Oxford University -- Edinburgh University]{School of Informatics, University of Edinburgh -- Oxford University Computing Laboratory}
+
+\date{\small \color{red}{Galop 2008, ?? April 2008}}
+
+
+\begin{document}
+
+\frame{\titlepage}
+
+\frame{\frametitle{Overview}
+
+\begin{itemize}
+\item
+We briefly present a new representation theory for game semantics which is very concrete: instead of playing in an arena game in which P plays the innocent strategy given by a term, the same game is played out over (a souped up version of) the abstract syntax tree of the term itself. The plays that are thus traced out are called \highlight{traversals}. More abstractly, traversals are the justified sequences that are obtained by performing parallel-composition \emph{less} the hiding. After stating and explaining a number of Path-Traversal Correspondence Theorems, we present a tool for game semantics based on the new representation.
+
+\end{itemize}
+}
+
+
+%\section<presentation>*{Outline}
+\begin{frame}
+  \frametitle{Outline}
+  \tableofcontents
+\end{frame}
+
+\AtBeginSection[] {
+   \begin{frame}
+     \frametitle{Outline}
+     \tableofcontents[currentpart,currentsection]
+   \end{frame}
+ }
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{The correspondence}
+
+
+\subsection{Game semantics}
+\frame{\frametitle{Game semantics}
+ Model of programming languages based on games (Abramsky et al.; Hyland and Ong; Nickau)
+\begin{itemize}
+\item 2 players: \highlight{O}pponnent (system) and \highlight{P}roponent (program)
+\item The term type induces an \highlight{arena} defining the possible moves
+$\sem{\nat} = \begin{tikzpicture}[baseline=(root.base),level distance=7mm,inner ysep=0.5mm,sibling distance=5mm]
+ \node (root) {$q$}
+    child {node {$\scriptstyle 0$}}
+    child {node {$\scriptstyle 1$}}
+    child {node {$\scriptstyle \ldots$}}
+;
+\end{tikzpicture}$
+\hspace{2cm}
+$\sem{\nat \rightarrow \nat} = \begin{tikzpicture}[baseline=(root.base),level distance=7mm,inner ysep=0.5mm,sibling distance=5mm]
+ \node (root) {$q^0$}
+    child{
+      node{$q^1$}
+      child{node {$\scriptstyle 0$} }
+      child{node {$\scriptstyle 1$} }
+      child {node {$\scriptstyle \ldots$}}
+    }
+    child {node {$\scriptstyle 0$}}
+    child {node {$\scriptstyle 1$}}
+    child {node {$\scriptstyle \ldots$}}
+;
+\end{tikzpicture}$
+\item \highlight{Play} = sequence of moves played alternatively by O and P with justification pointers.
+\item \highlight{Strategy for P} = prefix-closed set of plays. $s  a  b$ in the strategy means that
+P should respond $b$ when O plays $a$ in position $s$.
+\item The \highlight{denotation} of a term $M$, written $\sem{M}$, is a strategy for P.
+\item $\sem{ 7 : \nat} = \{ \epsilon, q, q\ 7 \}$\\
+$\sem{ \pcfsucc : \nat \rightarrow \nat} = Pref( \{ q^0 q^1 n ( n+1)
+\ | \ n \in \nat \} )$
+\item Compositionality: $\sem{ \pcfsucc\  7} = \sem{ \pcfsucc } ; \sem{7}$
+\end{itemize}
+}
+
+
+
+\def\highlightat#1#2{\temporal<#1>{#2}{\underline{#2}}{\textcolor{blue}{#2}}}
+
+\subsection{Computation tree, traversals}
+\frame{ \frametitle{Computation trees and traversals}
+\highlight{\it Computation tree:} AST of the $\eta$-long normal form of a term.
+
+Example: $M \equiv \lambda f z .
+(\lambda g x . f x) (\lambda y. y) z$ of type $(o \typear o) \typear
+o \typear o$. \vspace{0.5cm}
+\begin{columns}
+\column{6cm}
+ \visible<2->{\highlight{\it Traversal:} justified
+sequence of nodes representing the computation. }
+
+\setbox0=\hbox{$\textcolor{blue}{
+\pstr{\only<3->{\nd t= (q1){\lambda f z}}
+        \only<4->{\nd \cdot (n2) {@}}
+        \only<5->{\nd \cdot (n3-n2){\lambda g x}}
+        \only<6->{\nd \cdot (q3-q1,35){f}}
+        \only<7->{\nd \cdot (q4-q3){\lambda}}
+        \only<8->{\nd \cdot (n8-n3,35){x}}
+        \only<9->{\nd \cdot (n9-n2,30){\lambda}}
+        \only<10->{\nd \cdot (q2-q1,30){z}}
+}}$}
+\ht0 1cm\box0 % Make sure the height of box containing the traversal remains constant across the different generated slides
+
+\vspace*{0.5cm}
+\visible<11->{\highlight{\it Traversal reduction:} keep only
+nodes hereditarily justified by the root.
+$\color{red}{
+\Pstr[0.7cm]{t \upharpoonright r = (q1){\lambda f z} \cdot (q3-q1,50){f}
+\cdot (q4-q3,50){\lambda} \cdot (q2-q1){z} } }$
+}
+
+\vspace*{0.8cm}
+\visible<12->{
+\highlight{\it @-nodes removal:}
+ $\Pstr[0.7cm]{ t - @ = (q1){\lambda f z}
+ \cdot (n3-q1){ \lambda g x}
+ \cdot (q3-q1,35){ f}
+ \cdot (q4-q3){ \lambda}
+ \cdot (n8-n3,30){ x}
+ \cdot (n9-q1,30){ \lambda}
+ \cdot (q2-q1,35){z}
+} $}
+\column{3.5cm}
+\begin{tikzpicture}[level distance=7mm,inner ysep=0.5mm]
+ \node {\highlightat{3}{$\lambda f z$}}
+    child {
+        node {\highlightat{4}{@}}
+        child {
+            node {\highlightat{5}{$\lambda g x$}}
+            child{
+                node{\highlightat{6}{$f$}}
+                child {
+                    node{\highlightat{7}{$\lambda$}}
+                    child {
+                        node{\highlightat{8}{$x$}}
+                    }
+                }
+            }
+        }
+        child {
+            node {$\lambda y$}
+            child{ node {$y$} }
+        }
+        child {
+            node {$\highlightat{9}{\lambda}$}
+            child{ node {\highlightat{10}{$z$}} }
+            }
+        };
+\end{tikzpicture}
+\end{columns}
+}
+
+\subsection{The Correspondence Theorem}
+\frame{ \frametitle{The Correspondence Theorem}
+\begin{block}{}
+Let $M$ be a simply typed term of type $T$. There exists a partial function $\textcolor{DarkGreen}{\varphi}$
+from the nodes of the \highlight{computation tree} to the
+moves of the \highlight{arena} $\sem{T}$ such that
+$$ \textcolor{DarkGreen}{\varphi}  : \travset(M)^{-@} \textcolor{DarkGreen}{\stackrel{\cong}{\longrightarrow}} \intersem{M} $$
+$$ \textcolor{DarkGreen}{\varphi}  : \travset(M)^{\upharpoonright r}  \textcolor{DarkGreen}{\stackrel{\cong}{\longrightarrow}} \sem{M} \ .$$
+\end{block}
+where
+\begin{itemize}
+\item $\highlight{\travset(M)}$ = set of traversals of the computation tree of $M$
+\item $\highlight{\travset(M)^{\upharpoonright r}} = \{ t \upharpoonright r \ | \  t \in {\travset(M)} \}$
+\item $\highlight{\travset(M)^{-@}} = \{ t - @ \ | \  t \in {\travset(M)} \}$
+\item $\highlight{\sem{M}}$ = game-semantic denotation of $M$
+\item $\highlight{\intersem{M}}$ = revealed denotion ({\it i.e.}~internal moves are uncovered.)
+\end{itemize}
+
+}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\subsection{Example}
+\frame{\frametitle{Example}
+Left: computation tree. Right: arena.
+\begin{center}
+\begin{tikzpicture}[level distance=7mm,inner ysep=0.5mm,inner xsep=0.5mm,sibling distance=10mm]
+%\color{blue}
+\node (root) {$\lambda f z$}
+    child{
+      node{$@$}
+          child{
+            node {$\lambda g x$}
+            child{
+              node (f) {$f$}
+              child{
+                node (lmd) {$\lambda$}
+                child{
+                  node {$x$}
+                }
+              }
+            }
+          }
+          child{
+            node {$\lambda y$}
+            child{
+              node {$y$}
+            }
+          }
+          child{
+            node {$\lambda$}
+            child{
+              node (z) {$z$}
+            }
+          }
+      }
+;
+%\color{red}
+\draw +(5,0) node (q1) {$q^1$}
+    [level distance=20mm]
+      child{
+        node (q3) {$q^3$}
+        [level distance=10mm]
+        child{ node (q4) {$q^4$} }
+      }
+      child{ node (q2) {$q^2$} }
+      child{ node (q5) {$q^5$} }
+;
+\color{DarkGreen}
+\draw[->] (root) -- node[above] {$\varphi$} (q1);
+\draw[->] (f) -- (q3);
+\draw[->] (lmd) -- (q4);
+\draw[->] (z) to [bend right=20]  (q2);
+\end{tikzpicture}
+\end{center}
+Take the traversal
+%\textcolor{blue}
+{\Pstr{t = (q1){\lambda f z} \cdot (n2){@}
+\cdot (n3-n2){\lambda g x}
+\cdot (q3-q1,35){f}
+\cdot (q4-q3){\lambda}
+\cdot (n8-n3){x}
+\cdot (n9-n2,35){\lambda}
+\cdot (q2-q1,35){z}}}. We have:
+$
+\textcolor{DarkGreen}{
+\varphi (} %\textcolor{blue}
+{t \upharpoonright r}
+\textcolor{DarkGreen}{)} = \textcolor{DarkGreen}{\varphi (}
+\textcolor{blue}{
+\Pstr[70mm]{ (q1){\lambda f z}
+            \cdot (q3-q1){f}
+            \cdot (q4-q3){\lambda}
+            \cdot (q2-q1){z} }
+}
+\textcolor{DarkGreen}{)} = %\textcolor{red}
+{
+\Pstr[70mm]{
+    (q1){q}^1\
+    (q3-q1){q}^3\
+    (q4-q3){q}^4\
+    (q2-q1){q}^2
+}}
+\in %\textcolor{red}
+{\sem{M}}.
+$
+}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\frame{ \frametitle{The Correspondence Theorem (2)}
+\begin{center}
+\begin{tabular}{c|c}
+Computation tree notions & Game-semantic equivalents \\ \hline \hline \\
+computation tree & arena(s) \\ \\
+traversal & uncovered play \\ \\
+reduced traversal & play \\ \\
+path in the computation tree & P-view of an uncovered play
+\end{tabular}
+\end{center}
+}
+
+
+\frame{\frametitle{Examples}
+\begin{enumerate}
+\item
+\end{enumerate}
+}
+
+\subsection{Demo}
+\frame{\frametitle{Tool demo}
+%\includegraphics{}
+
+}
+
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+%%%%\section{Game Semantics}
+%%%%\frame{ \frametitle{Game Semantics}
+%%%%Let $\vdash M:T$ be a pure simply typed term.
+%%%%
+%%%%\begin{itemize}
+%%%%\item \highlight{Game-semantics} provides a model of $\lambda$-calculus.
+%%%%$M$ is denoted by a strategy $\sem{M}$ on a 2-player game induced by $T$.
+%%%%\item A \highlight{strategy} is represented by a set of sequences of moves together with \highlight{links}: each move points
+%%%%to a preceding move.
+%%%%\pause
+%%%%\item \textcolor{DarkGreen}{Computation tree} = canonical tree representation of a term.
+%%%%\item \textcolor{DarkGreen}{Traversals $\travset(M)$ } = sequences of nodes with links respecting some formation rules.
+%%%%\end{itemize}
+%%%%\pause
+%%%%
+%%%%\begin{block}{The Correspondence Theorem}
+%%%%The game semantics of a term can be represented on the computation
+%%%%tree:
+%%%%$$ \textcolor{DarkGreen}{\travset(M)} \cong \textcolor{blue}{\intersem{M}} $$
+%%%%$$ \textcolor{DarkGreen}{Reduction(\travset(M))} \cong \textcolor{blue}{\sem{M}}$$
+%%%%where $\textcolor{blue}{\intersem{M}}$ is the revealed game-semantic denotion (i.e. internal moves are uncovered).
+%%%%\end{block}
+%%%%}
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%
+%\part{Game semantics}
+%\frame{
+%\begin{center}
+%\bf \Huge Part II :
+%Game semantics
+%\end{center}
+%}
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+
+
+\begingroup
+\newcommand\sigcol[1]{{\color{blue} #1}}
+\newcommand\mucol[1]{{\color{red} #1}}
+\newcommand\mynode[2]{\pgfnode{rectangle}{center}{$#2$}{#1}{\pgfusepath{stroke}}}
+
+\section{Compositionality}
+\frame{ \frametitle{Compositionality}
+
+\highlight{Question} Do P-incrementally-justified strategies compose?
+
+\highlight{No.}    Take $\sigcol{\sigma} = \sem{ \vdash_s \lambda x^o v^o .x : o\typear (o,o)}$
+ and  $\mucol{\mu} = \sem{ \vdash_s \lambda y^{(o,o)} \varphi^{((o,o),o)}. \varphi (\lambda u^o . y a) : (o,o) \typear (((o,o),o),o)}$ for some constant $a:o$.
+We have $\sigcol{\sigma} \fatcompos \mucol{\mu} = \sem{ \lambda x \varphi. \varphi (\underline{\lambda u . x}) }$ which is not P-i.j. by the previous proposition.
+\bigskip
+
+%$\begin{array}{ccccccccc}
+%A &  & \multicolumn{2}{c}{B} && \multicolumn{4}{c}{C}\\
+%\cline{1-1} \cline{3-4} \cline{6-9}
+%o & \stackrel{\sigcol{\sigma}}\longrightarrow & o, & o & \stackrel{\mucol{\mu}}\longrightarrow & ((o, &o),& o),& o \\ \\
+%&&&&&&&&\rnode{n0}{\lambda x \varphi \omove  \mucol {\lambda y \varphi}}\\
+%&&&&&&&\rnode{n1}{\varphi  \pmove \mucol \varphi}\\
+%&&&&&&\rnode{n2}{\lambda u \omove  \mucol {\lambda u}} \\
+%&&&  \rnode{n3}{\omove \sigcol {\lambda x v} \pmove \mucol y} \\
+%\rnode{n4}{x \pmove \sigcol x}
+%\end{array}
+%\ncarc[arcangleA=20,arcangleB=20,linecolor=black]{->}{n4}{n0}
+%\ncarc[arcangleA=30,arcangleB=20,linecolor=red]{->}{n2}{n1}
+%\ncarc[arcangleA=30,arcangleB=20,linecolor=red]{->}{n1}{n0}
+%\ncarc[arcangleA=20,arcangleB=20,linecolor=red]{->}{n3}{n0}
+%\ncarc[arcangleA=20,arcangleB=20,linecolor=blue]{->}{n4}{n3}
+%$
+\vspace{2cm}
+
+
+\begin{pgfpicture}
+\pgfrememberpicturepositiononpagetrue 
+\mynode{toto}{toot}
+\mynode{tutu}{tutu}
+\pgfpathcircle{\pgfpointanchor{toto}{north}}{8pt}
+\pgfpathcircle{\pgfpointanchor{tutu}{north}}{8pt}
+\pgfusepath{fill}
+
+$\pgfrememberpicturepositiononpagetrue \begin{array}{ccccccccc}
+A &  & \multicolumn{2}{c}{B} && \multicolumn{4}{c}{C}\\
+\cline{1-1} \cline{3-4} \cline{6-9}
+o & \stackrel{\sigcol{\sigma}}\longrightarrow & o, & o & \stackrel{\mucol{\mu}}\longrightarrow & ((o, &o),& o),& o
+\\ \\
+&&&&&&&&\mynode{n0}{\lambda x \varphi \omove  \mucol {\lambda y \varphi}}\\
+&&&&&&&\mynode{n1}{\varphi  \pmove \mucol \varphi}\\
+&&&&&&\mynode{n2}{\lambda u \omove  \mucol {\lambda u}} \\
+&&&  \mynode{n3}{\omove \sigcol {\lambda x v} \pmove \mucol y} \\
+\mynode{n4}{x \pmove\sigcol x}
+\end{array}
+\pgfpathcircle{\pgfpointanchor{n2}{north}}{1pt}
+\pgfpathcircle{\pgfpointanchor{n3}{north}}{1pt}
+\pgfpathcircle{\pgfpointanchor{n4}{center}}{1pt}
+\pgfusepath{fill}
+$
+%\ncarc[arcangleA=20,arcangleB=20,linecolor=black]{->}{n4}{n0}
+%\ncarc[arcangleA=30,arcangleB=20,linecolor=red]{->}{n2}{n1}
+%\ncarc[arcangleA=30,arcangleB=20,linecolor=red]{->}{n1}{n0}
+%\ncarc[arcangleA=20,arcangleB=20,linecolor=red]{->}{n3}{n0}
+%\ncarc[arcangleA=20,arcangleB=20,linecolor=blue]{->}{n4}{n3}
+% add little corner
+\pgfusepath{discard}
+\pgfpathmoveto{\pgfpointanchor{n4}{north}}
+\pgfpathlineto{\pgfpointanchor{n0}{north}}
+%\pgfsetdash{{3pt}{3pt}}{0cm}%
+\pgfusepath{stroke}
+%\pgfpathmoveto{\pgfpoint{\pgf@xc}{\pgf@yb}}
+%\pgfpathmoveto{\pgfpoint{\pgf@xc}{\pgf@yb}}
+%\pgfpathlineto{\pgfpoint{\pgf@xc}{\pgf@yc}}
+\end{pgfpicture}
+}
+\endgroup
+
+
+
+\section{Applications}
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+
+
+\subsection{Higher-order grammars}
+\frame{\frametitle{Higher-order grammars}
+\emph{Notation for types:} $A_1 \rightarrow (A_2 \rightarrow (\ldots (A_n \rightarrow o)) \ldots )$
+is written $(A_1,A_2,\ldots, A_n,o)$.
+
+\begin{itemize}
+
+\item Higher-order grammars (Maslov, 1974) are used as generators of word languages, trees or graphs.
+
+\item A \highlight{higher-grammar} is formally given by a tuple
+$\langle \Sigma, \mathcal{N}, \mathcal{R}, \mathcal{S} \rangle$
+(terminals, non-terminals, rewritting rules, starting symbol)
+
+\item Example of a tree-generating order-2 grammar:
+\begin{columns}
+      \column{.3\textwidth}
+$\begin{array}{rll}
+  S & \rightarrow & H \, a\\
+  H \, z^o & \rightarrow & F \, (g \,
+  z)\\
+  F \, \phi^{(o, o)} & \rightarrow & \phi \, (\phi \, (F \, h))\\
+\end{array}$
+      \column{.3\textwidth}
+\begin{tikzpicture}[baseline=(root.base),level distance=5mm,inner ysep=0.5mm,sibling distance=10mm]
+ \node (root) {$g$}
+    child {node {$a$}}
+    child {node {$g$}
+        child { node{$a$} }
+        child { node{$h$}
+                child { node{$h$}
+                        child { node{$\vdots$} }
+                }
+        }
+    } ;
+\end{tikzpicture}
+\end{columns}
+Non-terminals: $S :o$, $H:(o,o)$ and $F:((o,o),o)$. Terminals: $a:o$ and $g,h:(o,o)$.
+\end{itemize}
+}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\subsection{Other applications}
+\frame{\frametitle{Other applications}
+\begin{itemize}
+\item Studying the game semantics of syntactic restrictions.
+For instance it can be used to show that
+for terms verifying the \emph{safety restriction} (a syntactic restriction that constrains the occurrences of variables according to their orders) pointers are uniquely recoverable in the game denotation of terms verifying the .
+\pause
+
+\end{itemize}
+
+}
+
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\subsection{Simply Typed \texorpdfstring{$\lambda$}{Lambda}-Calculus}
+\frame{\frametitle{Simply Typed $\lambda$-Calculus}
+\begin{itemize}
+\item \highlight{Simple types} $A := o\ |\ A \rightarrow A$.
+%We write $(A_1,\ldots, A_n)$ for $A_1\rightarrow \ldots \rightarrow A_n$.
+
+\item The \highlight{order} of a type is given by $\textsf{order}(o) = 0$,
+$\textsf{order}(A \rightarrow B) = \max(\textsf{order}(A) + 1, \textsf{order}(B))$.
+
+
+\end{itemize}
+}
+
+
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{Conclusion and Future Works}
+\frame{ \frametitle{Conclusion and Future Works}
+
+\highlight{Conclusion:}
+
+
+\highlight{Future works:}
+\begin{itemize}
+\item Implement other transformations: from CPDA to HORS
+%\item Implement decision procedures: MSO decidability
+\end{itemize}
+
+
+\highlight{Related works:}
+\begin{itemize}
+\item Ong introduced computation trees in LICS2006 to prove decidability of MSO theory on infinite trees
+generated by higher-order grammars.
+\item Stirling recently proved decidability of higher-order pattern matching with a game-semantic approach
+relying on equivalent notions of computation tree and traversal.
+\end{itemize}
+}
+
+
+
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{Bibliography}
+
+\begin{frame} \frametitle<presentation>{Bibliography}
+
+  \begin{thebibliography}{10}
+  \beamertemplatearticlebibitems
+    \bibitem{abramsky:game-semantics-tutorial}
+    Samson Abramsky and Guy McCusker.
+    \newblock Game semantics, Lecture notes.
+    \newblock In {\em Proceedings of the 1997 Marktoberdorf Summer School}. Springer-Verlag, 1998.
+
+%    \bibitem{safety-mirlong2004}
+%    Klaus Aehlig, Jolie~G. de~Miranda, and C.-H.~Luke Ong.
+%    \newblock Safety is not a restriction at level 2 for string languages.
+%    \newblock Technical report. University of Oxford, 2004.
+
+    \bibitem{OngLics2006}
+    C.-H.~Luke Ong.
+    \newblock On model-checking trees generated by higher-order recursion schemes.
+    \newblock In {\em Proceedings of LICS.} Computer Society Press, 2006.
+
+    \bibitem{DBLP:conf/icalp/Stirling06}
+    Colin Stirling
+    \newblock A Game-Theoretic Approach to Deciding Higher-Order Matching.
+    \newblock In {\em Proceedings of ICALP.} Springer, 2006.
+
+  \end{thebibliography}
+\end{frame}
+
+
+
+\section{Bibliography}
+\frame{\frametitle{Bibliography}
+\begin{description}
+\item [Damm82] For generating word languages, order-$n$ safe grammars are
+equivalent to order-$n$ pushdown automata.
+
+\item [KNU02] Generalization of Damm's result to
+\emph{tree generating} safe grammars/PDAs.
+
+\item [KNU02] The Monadic Second Order (MSO) model checking problem for trees generated by
+    \highlight{safe} higher-order grammars of any order is decidable.
+
+\item [Ong06] But anyway, KNU02 result's is also true for unsafe grammars...
+
+\item [Caucal02] Graphs generated by safe grammars have a decidable MSO theory.
+
+\item [HMOS06] Caucal's result does not extend to unsafe grammars.
+However deciding $\mu$-calculus theories is $n$-EXPTIME complete.
+
+\item [AdMO04] Proposed a notion of safety for the $\lambda$-calculus (unpublished).
+
+\end{description}
+
+
+\note{
+\begin{itemize}
+\item nPDA = finite state machines + order n stack
+\item For words: 1PDA recognizes context-free language.
+        and 0PDA = recognizes regular language.
+\item MSO is very expressive: more than the modal mu-calculus (into which LTL CTL CTL* can be embedded.
+But over trees, MSO and modal mu-calculus are equi-expressive.)
+\end{itemize}
+}
+}
+
+
+\end{document}

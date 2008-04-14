@@ -1,17 +1,71 @@
+% -*- TeX -*- -*- Soft -*-
+\subsection{Higher-order recursion schemes and the lambda calculus}
+\newcommand\ymut{Y_{\sf mut}}
+We extend the syntax of the simply-typed lambda calculus with a mutual recursion operator $\ymut$ as follows:
+ $$ (\ymut) \rulef{\Gamma \vdash M_1 : A \typear A_1 \qquad \Gamma \vdash M_q : A \typear A_q}{\Gamma \vdash \ymut (M_1, \ldots, M_q):A_1}\ A = A_1 \times \ldots \times A_q, q \geq 0$$
+The semantics of this operator is given by the rule
+$ \ymut (M_1 \ldots M_q) \rightarrow \pi_1 (Y \langle M_1 \ldots M_q \rangle)$
+where $\pi_1$ denotes the projection of a $q$-tuple to its first component and $Y$ denotes the extension of the usual $Y$-combinator to product types with a semantics given by the rule:
+$$ Y \langle M_1, \ldots, M_q \rangle \rightarrow 
+\langle M_1 (Y \langle M_1, \ldots, M_q \rangle),
+\ldots, M_q (Y \langle M_1, \ldots, M_q \rangle) \rangle \ .$$
 
-\begin{proposition}
-Higher-order recursion schemes are equivalent to the simply-typed lambda calculus extended with mutual recursion and $\Sigma$-constants.
-\end{proposition}
-This is shown straightforwardly by showing that every higher-order recursion scheme can be converted into an equivalent lambda-term and conversely.
-% Proof
-\newcommand\lcalculrec{\Lambda^{\rightarrow}_\Sigma+Y}
-Let $\lcalculrec$ denotes the simply-typed lambda calculus extended with the typed-constants $\Sigma$ and mutual recursion.
 
-
-\begin{itemize}
-\item The first direction is trivial. Take a recursion scheme $\mathcal{R} = \langle \Sigma, \mathcal{N}, \mathcal{R}, F_0 \rangle$.
+It is easy to see that higher-order recursion schemes have the same computational power as the simply-typed lambda calculus extended with mutual recursion and $\Sigma$-constants.
+The first direction is trivial: Take a recursion scheme $\langle \Sigma, \mathcal{N}, \mathcal{R}, F_0 \rangle$
 where $\mathcal{R} = \{ F_0, \ldots, F_q \}$ for some $q\geq 0$.
-For each rule $F_i\ x_1 \ldots x_n \rightarrow e$ in $\mathcal{R}$ we can construct the term $\widetilde{F_i} \equiv \lambda x_1 \ldots x_n . e$. The recursion scheme is then equivalent to the term $\pi_0 (Y (\langle \widetilde{F_0}, \ldots \widetilde{F_q}\rangle)) $
-We can construct an equivalent lambda term over the constant $\Sigma$ by induction on the rewriting rules as follows: we define a function $\Pi : \mathcal{A}(\Sigma,\mathcal{N}) \funto $
+We convert each rule $F_i\ x_1 \ldots x_n \rightarrow e$ into a lambda term $\widetilde{F_i} \equiv \lambda F_0 \ldots F_q x_1 \ldots x_n . e$. The recursion scheme can then be equivalently formulated as the term $\ymut ( \widetilde{F_0},\ \ldots,\  \widetilde{F_q})$.
 
-\end{itemize} 
+Conversely, any lambda term using mutual recursion and $\Sigma$-constants can be turned into an equivalent higher-order recursion schemes. This is done by proceeding inductively over the syntax of the $\eta$-long normal form of the term.
+The algorithm {\sf LmdToRS} that performs this conversion is given in table \ref{tab:LmdToRS}. We describe the algorithm in an ML-like syntax, using lists to encode the set of rules $\mathcal{R}$ and non-terminals $\mathcal{N}$. (Observe that since we work on the $\eta$-long normal form, the right-hand side of each generated rule is indeed of ground type, as required by the definition of recursion schemes.)
+
+
+\begin{table}[htbp]
+
+{\bf Input}: a closed term $\vdash_\Sigma M : T$ using mutual recursion and  $\Sigma$-constants.
+
+{\bf Output}: an equivalent higher-order recursion scheme $\langle \Sigma, \mathcal{N}, \mathcal{R}, S \rangle$.
+$$\begin{array}{ll}
+{\sf let\ LmdToRS}(\vdash_\Sigma M : T) =  \\
+\qquad {\sf let\ createRules} = {\sf fun} \\
+\qquad \qquad
+    \begin{array}{lcl}
+     |\ \Gamma \vdash x : T &\rightarrow& x \\
+     |\ \Gamma \vdash M_0 \ldots M_q : o 
+      &\rightarrow& 
+        \mbox{``}{\sf createRules} (\Gamma \vdash M_0) \ldots {\sf createRules} (\Gamma \vdash M_q)\mbox{''}
+      \\        
+     |\ \overline{x} : \overline{A} \vdash \lambda \overline{y}:\overline{B}. M : (\overline{B},o)
+       &\rightarrow&
+        {\sf let\ } t = {\sf createRules} (\overline{x}: \overline{A}, \overline{y}: \overline{B}\vdash M : o) \\
+         && {\sf and \ } F \mbox{ be a fresh non-terminal name } {\sf in}\\
+         &&\mathcal{R} \leftarrow \mbox{``}F\ \overline{x}\ \overline{y} \rightarrow t\mbox{''}::\mathcal{R} \\
+         &&\mathcal{N} \leftarrow \mbox{``}F : (\overline{A},\overline{B},o)\mbox{''}}::\mathcal{N} \\
+         && \mbox{``}F\ \overline{x}\mbox{''}
+     \\
+      |\ \overline{x} : \overline{A} \vdash \ymut (M_1, \ldots, M_q):B_1 &\multicolumn{2}{l}{\mbox{ where } \forall i \in 1..q: M_i:B_i \mbox{ and } B=B_1 \times \ldots \times B_q \rightarrow} \\
+     && 
+     {\sf for\ i = 1\ ..\ q\ do} \\
+     &&\qquad     {\sf createRules} (\overline{x}: \overline{A} \vdash M_i : B_i) \\
+     &&\qquad     rule[i] \leftarrow hd\ \mathcal{R} \\
+     &&{\sf done} \\
+     &&{\sf let\ for\ all\ i\in\{1..q\}, } \mbox{``}F_i\ \overline{x}\ f_1 \ldots f_q\ \overline{y}_i \rightarrow t_i \mbox{''} = rule[i] {\sf\ in}\\
+     &&{\sf for\ i = 1\ ..\ q\ do} \\
+%     &&\qquad {\sf and\ } \mbox{``}F_i: (\overline{A},\overline{B}, B_i) = hd\ \mathcal{N} {\sf\ in}\\
+     &&\qquad \mathcal{R} \leftarrow \mbox{``}\widehat{F_i}\ \overline{x} \ \overline{y}_i \rightarrow t[\widehat{F_1} \overline{x}/f_1] \ldots [\widehat{F_q} \overline{x}/ f_q]\mbox{''} \\
+     &&\qquad\qquad ::(tail\ \mathcal{R}[\widehat{F_1} \overline{x}/f_1] \ldots [\widehat{F_q} \overline{x}/ f_q]) \\
+     &&\qquad\mathcal{N} \leftarrow \mbox{``}F_i : (\overline{A},B_i)\mbox{''}}::(tail\ \mathcal{N}) \\
+     &&{\sf done} \\
+     &&\mbox{``}F_1\ \overline{x}\mbox{''}
+   \end{array} \\
+\qquad {\sf in}\\
+\qquad \mathcal{N},\mathcal{R} \leftarrow [],[]  \\
+\qquad appterm \leftarrow {\sf createRules}(\vdash M : T) \\
+\qquad \langle \Sigma, \mbox{``}S\ \rightarrow appterm\mbox{''}::\mathcal{N}, \mbox{``}S:o\mbox{''}::\mathcal{R}, S \rangle
+\end{array}$$
+
+\caption{Algorithm {\sf LmdToRS} converting a mutually recursive lambda term into a recursion scheme.}
+\label{tab:LmdToRS}
+\end{table}
+
+

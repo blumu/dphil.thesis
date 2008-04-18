@@ -4,11 +4,11 @@
 %\newcommand\towerexp[2]{2_{#1}(#2)}
 
 \section{Complexity of the safe lambda calculus}
-This section is concerned with the complexity of the 
+This section is concerned with the complexity of the
 beta-eta equivalence problem for the safe lambda calculus:
 given two safe lambda terms, are they equivalent up to $\beta\eta$-conversion?
 
- 
+
 
 Let $\towerexp{h}{m}$ denote the tower-of-exponential function
 defined by $\towerexp{0}{m} = m$ and $\towerexp{h+1}{m} =
@@ -64,22 +64,37 @@ deciding the validity of such formulae requires nonelementary time
 \cite{Meyer1974}.
 \smallskip
 
-In Mairson's encoding, variables of a given order $k$ are all
-encoded by terms of the same type $\Delta_k$ defined as $\Delta_0
-\equiv \booltype$ and $\Delta_{k+1} \equiv {\Delta_k}^*$ where for
-any type $\alpha$, $\alpha^* = (\alpha \typear \tau \typear
-\tau)\typear \tau \typear \tau$. Using this encoding, unsafety
-manifests itself in two different ways.
+In Mairson's encoding, boolean values are encoded by terms of type
+$\booltype = \sigma \typear \sigma\typear \sigma$ for some type
+$\sigma$, and variables of order $k \geq 0$ are encoded by terms of
+type $\Delta_k$ defined as $\Delta_0 \equiv \booltype$ and
+$\Delta_{k+1} \equiv {\Delta_k}^*$ where for any type $\alpha$,
+$\alpha^* = (\alpha \typear \tau \typear \tau)\typear \tau \typear
+\tau$ for some type $\tau$. Using this encoding, unsafety manifests
+itself in two different ways.
 \begin{enumerate}[1.]
   \item
         First in the encoding of set membership. The prime formula $x^k \in y^{k+1}$ is encoded as \begin{equation} x^k : \Delta_k, y^{k+1}:\Delta_{k+1} \stentail y^{k+1} (\lambda y^k : \Delta_k . OR (eq_k~\underline{x^k}~y^k)~F : \Delta_k \typear \Delta_{k+1} \typear \Delta_0 \label{eqn:setmembership}\end{equation}
 for some terms $OR$, $F$, $eq_k$.
 This term is unsafe because of the underline occurrence of $x^k$ which is not abstracted together with $y^k$.
 
-\item Secondly, quantifier elimination is performed using a list iterator $\mathbf{D}_{k+1}$ which acts like the $fold\_right$ function (from functional programming) over the list of all elements of $\mathcal{D}_k$.
-Thus for instance the formula $\forall x^0 . \exists y^0 . x^0 \zor y^0$
-is encoded as $$\stentail \mathbf{D}_1 (\lambda x^0:\Delta_0. AND (\mathbf{D}_1 (\lambda y^0:\Delta_0. OR (\underline{x^0} \zor y^0)) F)) T \ .$$
-This term is unsafe since the underlined occurrence is unsafely bound. This is due to the presence of two nested quantifiers in the formula, which are encoded as two nested list iterations. More generally, nested binding will be encoded safely if and only if every variable $x$ in the formula is bound by the first quantifier $\exists z$ or $\forall z$ in the path to the root of the AST of the formula verifying $\ord{z} \geq \ord{x}$. For instance if set-membership could be encoded safely then the interpretation of $\forall x^k . \exists y^{k+1} . x^k \in y^{k+1}$ would be unsafe whereas the encoding of $\forall y^{k+1} . \exists x^k . x^k \in y^{k+1}$ would be safe.
+\item Secondly, quantifier elimination is performed using a list iterator $\mathbf{D}_{k+1}$ of type $\Delta_{k+2}$ which acts like the $fold\_right$ function (from functional programming) over the list of all elements of $\mathcal{D}_k$.
+Thus for instance the formula $\forall x^0 . \exists y^0 . x^0
+\zor y^0$ is encoded as $$\stentail \mathbf{D}_0 (\lambda
+x^0:\Delta_0. AND (\mathbf{D}_0 (\lambda y^0:\Delta_0. OR
+(\underline{x^0} \zor y^0)) F))\ T : \booltype$$ where the type
+$\tau$ is instanciated as $\booltype$. This term is unsafe since
+the underlined occurrence is unsafely bound. This is due to the
+presence of two nested quantifiers in the formula, which are
+encoded as two nested list iterations. More generally, nested
+binding will be encoded safely if and only if every variable $x$
+in the formula is bound by the first quantifier $\exists z$ or
+$\forall z$ in the path to the root of the AST of the formula
+verifying $\ord{z} \geq \ord{x}$. For instance if set-membership
+could be encoded safely then the interpretation of $\forall x^k
+. \exists y^{k+1} . x^k \in y^{k+1}$ would be unsafe whereas the
+encoding of $\forall y^{k+1} . \exists x^k . x^k \in y^{k+1}$
+would be safe.
 \end{enumerate}
 
 Surprisingly, the `unsafety' of the quantifier elimination procedure can be easily overcome. The idea is as follows. We introduce multiple domains of representation for a given formula. An element of $\mathcal{D}_k$ is thereby represented by countably many terms of type $\Delta_k^n$ where $n\in\nat$ indicates the level of the domain of representation. The type $\Delta_k^n$ is defined in such a way that its order strictly increases as $n$ grows. Furthermore, there exists a term that can lower the domain of representation of a given term. Thus each formula variable can have a different domain of representation, and since there are infinitely many such domains, it is always possible to find an assignment of representation domains to variables such that the resulting encoding term is safe.
@@ -110,7 +125,7 @@ for all $n,n'\geq 0$:
   \lambda u^{\sigma_{n'}} . F^{n+1}~\underline{i}_{n+1}  &\betared  F^{n'}
 \end{align*}
 Hence it is possible to change the domain of representation of a Boolean value from a higher-level to another arbitrary level using the transformation:
-$$ \mathbf{C}^{n+1\mapsto n'}_0 \equiv \lambda m^{\booltype_{n+1}} u^{\sigma_{n'}}. m~\underline{i}_{n+1}$$
+$$ \mathbf{C}^{n+1\mapsto n'}_0 \equiv \lambda m^{\booltype_{n+1}} u^{\sigma_{n'}}. m~\underline{i}_{n+1} : \booltype_{n+1} \typear \booltype_{n'}$$
 so that if a term $M : \booltype_n$ for $n\geq1$ is beta-eta convertible to $T^n$ (resp.\ $F^n$) then $\mathbf{C}^{n\mapsto n'}_0~M :\booltype_{n'}$ is beta-eta convertible to $T^{n'}$ (resp.\ $F^{n'}$).
 
 Observe that although the term $\mathbf{C}^{n+1\mapsto n'}_0$ is safe for all $n,n'\geq 0$, if we apply it to a variable then the resulting term
@@ -170,7 +185,7 @@ This way, since variables that are bound first have higher order, the variables 
 The formula  $\forall x^0 . \exists y^0 . x^0 \zor y^0$, which is
 encoded by an unsafe term in Mairson's encoding, is represented in
 our encoding by the safe term:
- $$\sentail \mathbf{C}_0^{1\mapsto 0} \left( \mathbf{D}_0^1~(\lambda x^0:\Delta_0^1. AND^0 ( \mathbf{D}_0^0 ~(\lambda y^0:\Delta_0^0. OR^0 (OR^0~(\mathbf{C}_0^{1\mapsto 0}~x^0)~y^0))~F^0))~T^1 \right)\ .$$
+ $$\sentail \mathbf{C}_0^{1\mapsto 0} \left( \mathbf{D}_0^1~(\lambda x^0:\Delta_0^1. AND^0 ( \mathbf{D}_0^0 ~(\lambda y^0:\Delta_0^0. OR^0 (OR^0~(\mathbf{C}_0^{1\mapsto 0}~x^0)~y^0))~F^0))~T^1 \right) : \booltype_0 \ .$$
 \end{example}
 
 
@@ -272,7 +287,8 @@ Using the encoding where $\tau$ is set to  $\booltype_0$ in the types $\Delta_k^
 &\quad\quad\quad\quad\quad (OR^0(OR^0(NEG^0 (\mathbf{C}_0^{2\mapsto 0}~x))(NEG^0 (\mathbf{C}_0^{1\mapsto 0}~y)))(NEG^0~z))) \\
 &\quad\quad\quad )F^0)\\
 &\quad\quad)F^0)\\
-&\quad) T^0
+&\quad) T^0 \\
+& : \booltype_0
 \end{align*}
 \end{example}
 
@@ -305,7 +321,7 @@ We have shown that the problem is PSPACE-hard but this is probably a coarse lowe
 whether it is also EXPTIME-hard.
 
 \subsubsection{Upper bound}
-At present, no upper bound is known for the equivalence problem for safe terms. 
+At present, no upper bound is known for the equivalence problem for safe terms.
 %Proceeding by reduction to the
 %normalization problem does not help since there is no interesting
 %upper-bound for this more general problem (which is non-elementary
@@ -349,5 +365,3 @@ The \emph{beta-reduction problem} is related to the beta-eta equivalence problem
 In \cite{schubert2001cbr}, Schubert
 gave a PSPACE algorithm to decide the $\beta$-reduction problem for order-$3$
 lambda terms. Since order-$3$ terms are sufficient to encode TQBF in the lambda calculus, Schubert shows that the problem is PSPACE-complete. No complexity result is known for restrictions of this problem to terms of order greater than $3$. A natural question to ask is whether complexity characterizations can be obtained when restricting the problem to safe terms.
-
-

@@ -4,10 +4,11 @@
 %\newcommand\towerexp[2]{2_{#1}(#2)}
 
 \section{Complexity of the safe lambda calculus}
-This section is concerned with the complexity of deciding beta-eta
-equivalence of a given pair of safe lambda terms.
+This section is concerned with the complexity of the 
+beta-eta equivalence problem for the safe lambda calculus:
+given two safe lambda terms, are they equivalent up to $\beta\eta$-conversion?
 
-
+ 
 
 Let $\towerexp{h}{m}$ denote the tower-of-exponential function
 defined by $\towerexp{0}{m} = m$ and $\towerexp{h+1}{m} =
@@ -75,13 +76,13 @@ manifests itself in two different ways.
 for some terms $OR$, $F$, $eq_k$.
 This term is unsafe because of the underline occurrence of $x^k$ which is not abstracted together with $y^k$.
 
-\item Secondly, quantifier elimination is performed by using a list iterator $\mathbf{D}_{k+1}$ which acts like the $fold\_right$ function from functional programming languages over the list of all elements of $\mathcal{D}_k$.
+\item Secondly, quantifier elimination is performed using a list iterator $\mathbf{D}_{k+1}$ which acts like the $fold\_right$ function (from functional programming) over the list of all elements of $\mathcal{D}_k$.
 Thus for instance the formula $\forall x^0 . \exists y^0 . x^0 \zor y^0$
 is encoded as $$\stentail \mathbf{D}_1 (\lambda x^0:\Delta_0. AND (\mathbf{D}_1 (\lambda y^0:\Delta_0. OR (\underline{x^0} \zor y^0)) F)) T \ .$$
 This term is unsafe since the underlined occurrence is unsafely bound. This is due to the presence of two nested quantifiers in the formula, which are encoded as two nested list iterations. More generally, nested binding will be encoded safely if and only if every variable $x$ in the formula is bound by the first quantifier $\exists z$ or $\forall z$ in the path to the root of the AST of the formula verifying $\ord{z} \geq \ord{x}$. For instance if set-membership could be encoded safely then the interpretation of $\forall x^k . \exists y^{k+1} . x^k \in y^{k+1}$ would be unsafe whereas the encoding of $\forall y^{k+1} . \exists x^k . x^k \in y^{k+1}$ would be safe.
 \end{enumerate}
 
-Surprisingly, the unsafety of the quantifier elimination procedure can be easily overcome. The idea is as follows. We introduce multiple domains of representation for a given formula. An element of $\mathcal{D}_k$ is thereby represented by countably many terms of type $\Delta_k^n$ where $n\in\nat$ indicates the level of the domain of representation. The type $\Delta_k^n$ is defined in such a way that its order strictly increases as $n$ grows. Furthermore, there exists a term that can lower the domain of representation of a given term. Thus each formula variable can have a different domain of representation, and since there are infinitely many such domains, it is always possible to find an assignment of representation domains to variables such that the resulting encoding term is safe.
+Surprisingly, the `unsafety' of the quantifier elimination procedure can be easily overcome. The idea is as follows. We introduce multiple domains of representation for a given formula. An element of $\mathcal{D}_k$ is thereby represented by countably many terms of type $\Delta_k^n$ where $n\in\nat$ indicates the level of the domain of representation. The type $\Delta_k^n$ is defined in such a way that its order strictly increases as $n$ grows. Furthermore, there exists a term that can lower the domain of representation of a given term. Thus each formula variable can have a different domain of representation, and since there are infinitely many such domains, it is always possible to find an assignment of representation domains to variables such that the resulting encoding term is safe.
 
 For set-membership, however, there is no obvious way to obtain a safe encoding. In order to turn Mairson's encoding of set-membership (Eq.\ \ref{eqn:setmembership}) into a safe term, we would need to have access to a function that changes the domain of representation of an encoded higher-order value of the type-hierarchy. Unfortunately, such transformation is intrinsically unsafe!
 \smallskip
@@ -286,45 +287,6 @@ calculus but his encoding relies on unsafe terms.
 \subsection{Other complexity results}
 
 
-\subsubsection{The normalization problem}
-It is well-known that normalization is non-elementary for the
-simply-typed lambda calculus. This remains true in the safe simply
-typed lambda calculus as the following example shows. Let $\tau_{-2}
-\equiv o$ and for $n\geq -1$, $\tau_n \equiv \tau_{n-1}\typear
-\tau_{n-1}$. For $k,n\in \nat$ we write $\overline{k}^n$ to denote
-the $k$th Church Numeral parameterized by $n$ as follows:
-$$\overline{k}^n \equiv \lambda s^{\tau_n}
-z^{\tau_{n-1}} . \overbrace{s( \ldots (s (s}^{k\hbox{ times}}z)
-\ldots) : \tau_n \ .$$ Then for $n\geq1$, the safe term
-$\overline{2}^{n-1}~\overline{2}^{n-2}\ldots \overline{2}^0$ of type
-$\tau_0$ has length $\bigo(n)$ whereas its normal form
-$\overline{\towerexp{n}{1}}^0$ has length $\bigo(\towerexp{n}{1})$.
-
-Statman's result shows that in the simply-typed lambda calculus, the
-beta-eta equality problem is essentially as hard as the
-normalization problem. It is not know whether this is still the case
-in the safe lambda calculus.
-
-
-\subsubsection{Beta-eta equality for terms limited to a finite set of types}
-Statman showed \cite{Statman:1979:TLE} that there exists a finite
-set of types such that the decidability problem restricted to terms
-of these types is PSPACE-hard. In \cite{schubert2001cbr}, Schubert
-gave a PSPACE algorithm for deciding beta-eta equality of order-$3$
-lambda terms. Since order-$3$ terms are sufficient to encode TQBF in
-the lambda calculus, Schubert further obtains that the problem is
-PSPACE-complete.
-
-The picture is different in the safe lambda calculus since our
-encoding of TQBF requires us to use the full hierarchy of types. It
-was indeed necessary to introduce variables of higher-order in order
-to eliminate unsafety. Consequently, we had to use simple types of
-unbounded order (the order is linear in the size of the QBF
-formula). We suspect the decidability problem for safe terms
-restricted to any finite set of types to have a complexity lower
-than PSPACE.
-
-
 
 
 \subsubsection{Better lower bound?}
@@ -339,14 +301,53 @@ calculus. (Nevertheless, one may not rule out the possibility that
 another non recursive problem may be encodable in the safe lambda
 calculus.)
 
-We have shown that the problem is PSPACE-hard but this probably
-constitutes a coarse lower bound. It will be interesting to know
+We have shown that the problem is PSPACE-hard but this is probably a coarse lower bound. It would be interesting to know
 whether it is also EXPTIME-hard.
 
-
 \subsubsection{Upper bound}
-At present, no upper bound is known for the problem of deciding
-equality of two safe lambda terms. Proceeding by reduction to the
-normalization problem does not help since there is no interesting
-upper-bound for this more general problem (which is non-elementary
-as shown in the previous paragraph).
+At present, no upper bound is known for the equivalence problem for safe terms. 
+%Proceeding by reduction to the
+%normalization problem does not help since there is no interesting
+%upper-bound for this more general problem (which is non-elementary
+%as shown in the previous paragraph).
+
+
+\subsubsection{Beta-eta equivalence for terms limited to a finite set of types}
+Statman showed \cite{Statman:1979:TLE} that there exists a finite
+set of types such that the beta-eta equivalence problem restricted to terms
+of these types is PSPACE-hard.
+
+The picture is different in the safe lambda calculus since our
+encoding of TQBF requires the full type hierarchy. It
+was indeed necessary to introduce variables of higher-order in order
+to eliminate `unsafety'. Consequently, we had to use simple types of
+unbounded order (the order is linear in the size of the QBF
+formula). We suspect the decidability problem for safe terms
+restricted to any finite set of types to have a complexity lower
+than PSPACE.
+
+
+\subsubsection{Normalization}
+The \emph{normalization problem} is: given a term $M$, what is its $\beta$-normal form? This problem is non-elementary even when restricted to safe terms as the following example shows. Let $\tau_{-2}
+\equiv o$ and for $n\geq -1$, $\tau_n \equiv \tau_{n-1}\typear
+\tau_{n-1}$. For $k,n\in \nat$ we write $\overline{k}^n$ to denote
+the $k$th Church Numeral parameterized by $n$ as follows:
+$$\overline{k}^n \equiv \lambda s^{\tau_{n-1}}
+z^{\tau_{n-2}} . \overbrace{s( \ldots (s (s}^{k\hbox{ times}}z)
+\ldots) : \tau_n \ .$$ Then for $n\geq1$, the safe term
+$\overline{2}^{n-1}~\overline{2}^{n-2}\ldots \overline{2}^0$ of type
+$\tau_0$ has length $\bigo(n)$ whereas its normal form
+$\overline{\towerexp{n}{1}}^0$ has length $\bigo(\towerexp{n}{1})$.
+
+Statman's result shows that in the simply-typed lambda calculus, the beta-eta equality problem is essentially as hard as the
+normalization problem. It is not know whether this is still the case in the safe lambda calculus. In particular, it may be the case that the
+beta-eta equivalence problem is elementary although the normalization problem is not.
+
+\subsubsection{The beta-reduction problem}
+The \emph{beta-reduction problem} is related to the beta-eta equivalence problem. It can be stated as follows: given a term $M_1$ in $\beta$-normal form and a term $M_2$ (possibly containing redexes), does $M_2$ $\beta$-reduces to $M_1$?
+
+In \cite{schubert2001cbr}, Schubert
+gave a PSPACE algorithm to decide the $\beta$-reduction problem for order-$3$
+lambda terms. Since order-$3$ terms are sufficient to encode TQBF in the lambda calculus, Schubert shows that the problem is PSPACE-complete. No complexity result is known for restrictions of this problem to terms of order greater than $3$. A natural question to ask is whether complexity characterizations can be obtained when restricting the problem to safe terms.
+
+

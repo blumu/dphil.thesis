@@ -33,7 +33,7 @@ higher-order uninterpreted constants.\footnote{A constant $f$ is
 For the rest of the section we fix a simply-typed term-in-context
 $\Gamma \vdash M :T$.
 
-\subsection{$\eta$-long normal form}
+\subsection{\texorpdfstring{$\eta$}{eta}-long normal form}
 
 The $\eta$-long normal form appeared in
 \citep{DBLP:journals/tcs/JensenP76} and
@@ -143,8 +143,7 @@ $$\pssetcomptree\tree{\lambda\overline{x}} { \tree[levelsep=3ex]{
 Let $M$ be a simply-typed term not necessarily in $\eta$-normal
 form. Let $\mathcal{D}$ denote the set of values of base type $o$.
 The \defname{computation tree} of $M$, written $\tau(M)$ is the tree
-obtained from $\tau^*(\etalnf{M})$ by adding leaves to the nodes of
-$\tau^*(\etalnf{M})$ as follows: every node $n \in \tau(M)$ has a
+obtained from $\tau^*(\etalnf{M})$ by adding leaves to the nodes as follows: every node $n \in \tau(M)$ has a
 child leaf labelled $v_n$, called \defname{value-leaf}, for every
 possible value $v \in \mathcal{D}$.
 \end{definition}
@@ -158,6 +157,60 @@ The inner nodes of the tree are of three kinds:
 A node is said to be \defname{prime} if it is the 0$^{th}$ child of an @-node.
 An inner node whose parent is a @-nodes or a $\Sigma$-node is called a \defname{spawn} node.
 \bigskip
+
+\begin{example}
+\label{examp:comptree}
+  Take $\stentail \lambda f^{o \typear o} .
+(\lambda u^{o \typear o} . u) f : (o \typear o) \typear
+o \typear o$.
+\bigskip
+
+\noindent
+\begin{tabular}{cc}
+Its $\eta$-long normal form is: & Its computation tree is:\\[8pt]
+\begin{minipage}{0.45\textwidth}
+\centering
+$\begin{array}{ll}
+ &\stentail  \lambda f^{o \typear o} z^o . \\
+&\qquad(\lambda u^{o \typear o} v^o . u (\lambda.v)) \\
+&\qquad(\lambda y^o. f y) \\
+&\qquad(\lambda.z) \\
+&: (o \typear o) \typear o \typear o
+\end{array}$
+\end{minipage}
+&
+\begin{minipage}{0.45\textwidth}
+\centering
+\psset{levelsep=5ex,linewidth=0.5pt,nodesep=1pt,arcangle=-20,arrowsize=2pt 1}
+$\pstree{\TR{\lambda f z}}{\pstree{\TR{@}}{\pstree{\TR{\lambda u v}}{\pstree{\TR{u}}{\pstree{\TR{\lambda }}{\TR{v}}}}\pstree{\TR{\lambda y}}{\pstree{\TR{f}}{\pstree{\TR{\lambda }}{\TR{y}}}} \pstree{\TR{\lambda }}{\TR{z}}}}
+$
+\end{minipage}
+\end{tabular}
+\end{example}
+
+\begin{example}
+  Take $\stentail \lambda u^o v^{((o \typear o) \typear o)} . (\lambda x^o . v (\lambda z^o . x)) u : o \typear ((o \typear o) \typear o) \typear o$.
+  \bigskip
+
+\noindent
+\begin{tabular}{cc}
+Its $\eta$-long normal form is: & Its computation tree is:\\[8pt]
+\begin{minipage}{0.45\textwidth}
+\centering
+$\begin{array}{ll}
+ &\stentail  \lambda u^o v^{((o \typear o) \typear o)} . \\
+&\qquad(\lambda x^o . v (\lambda z^o . x)) u \\
+&: o \typear ((o \typear o) \typear o) \typear o
+\end{array}$
+\end{minipage}
+&
+\begin{minipage}{0.45\textwidth}
+\psset{levelsep=5ex,linewidth=0.5pt,nodesep=1pt,arcangle=-20,arrowsize=2pt 1}\centering
+$\pstree{\TR{\lambda u v}}{\pstree{\TR{@}}{\pstree{\TR{\lambda x}}{\pstree{\TR{v}}{\pstree{\TR{\lambda z}}{\TR{x}}}}\pstree{\TR{\lambda }}{\TR{u}}}}
+$
+\end{minipage}
+\end{tabular}
+\end{example}
 
 \emph{Notations:} We write $\theroot$ to denote the root of
 $\tau(M)$. We write $E$ to denote the parent-child relation of the
@@ -175,6 +228,9 @@ we write $L_\$$ to denote the set of value-leaves of nodes from $N_\$$
 {\it i.e.}\ $L_\$ = \{ v_n \ | \ n \in N_\$, v \in \mathcal{D} \}$,
 and $V_\$$ to denote the set of nodes of $N_\$$ or value-leaves of nodes of $N_\$$
 {\it i.e.}\ $V_\$ = N_\$ \union L_\$ $.
+
+For any lambda node $n$ in $N_\lambda$ we write
+$M^{(n)}$ for the subterm rooted at $n$ and $V^{(n)}$ for the set of nodes and leaves of the sub-computation tree $\tau(M^{(n)})$ (thus $V^{(n)} = E^*(\{n\})$).
 
 
 Let $\mathcal{T}$ denote the set of $\lambda$-terms.
@@ -246,16 +302,23 @@ the root of the tree such that $m$ is labelled $\lambda
 
 \begin{definition}[Enabling]
 The \defname{enabling relation} $\vdash$ is defined on the set of
-nodes and leaves of the computation tree as follows. We write $m \vdash n$ and
-we say that $m$ enables $n$ if and only if
-$m \in L \union N_\lambda \union N_{\sf var}$ and
+nodes and leaves of the computation tree as follows. We write $m \vdash n$ and we say that $m$ enables $n$ if and only if
+$m \in L \union N_\lambda \union N_{\sf var}$ 
+and one of the following conditions holds:
 \begin{itemize}
-\item if $n \in L$ then $m$ is $n$'s parent ({\it i.e.}\ $n=v_m$ for some $v\in\mathcal{D}$);
-\item if $n\in N_\lambda$ then $m$ is $n$'s parent;
-\item if $n \in N_{\sf var} \setminus N_{\sf fv}$ then
+\item $n \in N_{\sf fv}$ and $m$ is the root $\theroot$;
+\item $n \in N_{\sf var} \setminus N_{\sf fv}$ and
         $m$ is $n$'s binder, in which case we write $m \vdash_i n$ to precise that $n$ is the $i^{\sf th}$ variable bound by $m$;
-\item if $n \in N_{\sf fv}$ then $m$ is the root $\theroot$.
+\item $n\in N_\lambda$ and  $m$ is $n$'s parent;
+\item $n \in L$ and $m$ is $n$'s parent ({\it i.e.}\ $n=v_m$ for some $v\in\mathcal{D}$).
 \end{itemize}
+Formally:
+$$ \begin{array}{lcl}
+  \vdash & = & \{ (\theroot,n) \ | n \in N_{\sf fv} \} \\
+&&\union\  \{ (\lambda \overline{x},x) \ | x \in N_{\sf var}\setminus N_{\sf fv} \zand \lambda\overline{x} \mbox{ is $x$'s binder} \} \\
+&& \union\ \{ (m,\lambda\overline\eta) \ | \ m \mbox{ is $\lambda\overline\eta$'s parent and } \lambda\overline\eta \in N_\lambda \} \\
+&& \union\ \{ (m,v_m) \ | \ v \in \mathcal{D}, m \in N  \}
+\end{array}$$
 Note that in particular, free variable nodes are enabled by the root.
 Table \ref{tab:enabler_type} recapitulates the possible node types for the enabler node depending on the type of $n$.
 \end{definition}
@@ -491,7 +554,7 @@ This is proved by an easy induction.
 \label{subsec:traversal}
 A \emph{traversal} is a justified sequence of nodes of the computation tree where each node indicates a step that is taken during the evaluation of the term.
 
-\subsubsection{Traversals for simply-typed $\lambda$-terms}
+\subsubsection{Traversals for simply-typed \texorpdfstring{$\lambda$}{lambda}-terms}
 
 We first consider the simply-typed $\lambda$-calculus without interpreted constants.
 Everything remains valid in the presence of \emph{uninterpreted} constants as we can just
@@ -501,6 +564,26 @@ We define the notion of traversal over the computation tree $\tau(M)$.
 We will then we show how to extend the notion of traversal to more general settings with interpreted constants.
 
 \input{../thesis/traversal_rules_def}
+
+
+\begin{example}
+\label{examp:trav} The following justified sequence is a traversal
+of the computation tree of example \ref{examp:comptree}:
+$$\pstr[1.3cm]{\nd t= (n0){\lambda f z}
+        \nd\cdot (n1){@}
+        \nd\cdot (n2-n1){\lambda u v}
+        \nd\cdot (n3-n2){u}
+        \nd\cdot (n4-n1){\lambda y}
+        \nd\cdot (n5-n0){f}
+        \nd\cdot (n6-n5){\lambda }
+        \nd\cdot (n7-n4){y}
+        \nd\cdot (n8-n3){\lambda }
+        \nd\cdot (n9-n2){v}
+        \nd\cdot (n10-n1){\lambda }
+        \nd\cdot (n11-n0){z} \ .
+}$$
+\end{example}
+
 
 \begin{remark} \hfill
 \label{rem:traversal_rules}
@@ -547,20 +630,25 @@ We will then we show how to extend the notion of traversal to more general setti
     these proofs, we will use the above-defined reformulation of
     \rulenamet{Value} in place of its original definition.
 
-    \item For the rule \rulenamet{InputValue}, the last node in the traversal before application of the rule must necessarily belong to $N_{\sf var} \union L_\lambda$. Indeed, since the pending node $x$ is a variable node, the traversal before application of the rule must necessarily be of the form
+    \item In the rule \rulenamet{InputValue}, although it is not specified, the last node in the traversal $t_1 \cdot x \cdot t_2$ must necessarily belong to $N_{\sf var} \union L_\lambda$. Indeed, since the pending node $x$ is a variable node, it is of the form
 $$\Pstr[0.5cm]{\ldots \cdot x \cdot  (l){\lambda \overline{\eta}_1}\ldots (v-l){v^1_{\lambda \overline{\eta}_1}}
 (l2){\lambda \overline{\eta}_2}\ldots (v2-l2){v^2_{\lambda \overline{\eta}_2}}
 \ldots (lk){\lambda \overline{\eta}_k}\ldots (vk-lk){v^k_{\lambda \overline{\eta}_k}}
-}$$ for some nodes $\lambda \overline{\eta}_k$ and values $v^k \in \mathcal{D}$ for $k\geq 0$.
-Thus the last occurrence is in $N_{\sf var}$ if $k=0$ and in $L_\lambda$ if $k\geq1$.
+}$$ for some nodes $\lambda \overline{\eta}_k$, values $v^k \in \mathcal{D}$ and $k\geq 0$; thus the last occurrence belongs to $N_{\sf var}$ if $k=0$ and to $L_\lambda$ if $k\geq1$.
 
     Furthermore, the pending node appears necessarily in the O-view.
 
-    These two observations indicate that the rule \rulenamet{InputValue} is just a version of \rulenamet{InputVar}
-    specialized for value-leaves. They are defined identically except that \rulenamet{InputValue} constrains the visited node
-    to be justified by the pending node (which necessarily occurs in the O-view) whereas \rulenamet{InputVar}
-    allows the node to be justified by \emph{any} variable node occurring in the O-view.
-    This further restriction ensures that the visited value-leaf does not violate the well-bracketing condition.
+    These two observations show that the rule \rulenamet{InputValue} is essentially \rulenamet{InputVar} specialized for value-leaves. The only difference is that \rulenamet{InputVar}
+    allows the visited node to be justified by \emph{any} variable node occurring in the O-view whereas \rulenamet{InputValue} constrains the node
+    to be justified by the pending node (which necessarily occurs in the O-view). This restriction is here to ensure that traversals are well-bracketed.
+
+\item In the rule
+\rulenamet{Value}, it is possible to replace the condition ``$n\in N$'' by the stronger ``$n\in N\setminus N_{\sf \lambda}^{\vdash\theroot}$''. Indeed a later result (Lemma \ref{lem:trav_oview_single_threaded}) will show that if $n$ belongs to $N_{\lambda}^{\vdash\theroot}$ then the preceding occurrence $m$ is necessarily an input-variable. 
+Furthermore, another result (Prop.\ \ref{prop:pviewtrav_is_path}) shows that traversals are well-bracketed, therefore $m$ is necessarily the pending node. Hence the rule \rulenamet{InputValue} can be use in place of
+\rulenamet{Value} to visit $v_m$.
+
+
+The advantage of this alternative formulation is that the traversal rules have a disjoint domains of definition.
 \end{enumerate}
 \end{remark}
 \bigskip
@@ -700,7 +788,7 @@ and $x_j \in V^{\lambda \overline{\eta}_{i'} \vdash}$).
 \proof The proof is by an easy induction. \qed
 
 
-\subsubsection{Traversals for interpreted constants}
+\subsubsection{Traversal rules for interpreted constants}
 
 The framework that we have established up to know aims at providing
 a computation model of simply-typed lambda terms. It is however
@@ -912,8 +1000,15 @@ Otherwise $n \in  N_\lambda \union L_{\sf var} \union L_\Sigma \union L_@$. By O
 
 A traversal ending with an input-variable, \ie hereditarily enabled by the root, can be extended in a non-deterministic way. Occurrences of these nodes correspond to point of the computation at which the term interacts with its context. In contrast, if a traversal ends with a node hereditarily enabled by an @-node or by a constant nodes then the next visited node is uniquely determined. We can therefore think of them as nodes ``internal'' to the computation: their semantics is predefined and cannot be altered by the context in which the term appears. Hence, if we want to extract the essence of the computation from a traversal, a natural way to proceed is to keep only occurrences of nodes that are hereditarily enabled by the root:
 \begin{definition}
-The \defname{reduction of a traversal} $t$ is defined as the subsequence of $t$ consisting of the occurrences of nodes that are hereditarily enabled by the root $\theroot$ of the computation tree.
+The \defname{reduction of a traversal} $t$, written $t\filter \theroot$, is defined as the subsequence of $t$ consisting of the occurrences of nodes that are hereditarily enabled by the root $\theroot$ of the computation tree.
 \end{definition}
+
+\begin{example}
+The reduction of the traversal given in example \ref{examp:trav} is:
+$$ \Pstr[0.7cm]{t \filter \lambda f z = (n0){\lambda f z} \cdot (n1-n0){f}\cdot (n2-n1){\lambda }\cdot (n3-n0){z} } \ .$$
+\end{example}
+
+
 \begin{remark}\hfill
   \begin{itemize}
     \item The root occurs at most once in a traversal, therefore if $t$ is a non-empty traversal then the reduction of $t$ is equal to $t\filter r$ where $r$ denotes the only occurrence of $\theroot$ in $t$.
@@ -925,7 +1020,7 @@ We define $\travset(M)^{\filter \theroot}$ as the set of reductions of traversal
 $$\travset(M)^{\filter \theroot} = \{ t \filter r\ :\  t  \in \travset(M) \hbox{ and $r$ is the only occurrence of $\theroot$ in $t$}\} \ . $$
 
 
-\subsubsection{Removing @-nodes and $\Sigma$-nodes from traversals}
+\subsubsection{Removing @-nodes and \texorpdfstring{$\Sigma$}{constant}-nodes from traversals}
 \label{subsec:tstar}
 
 When defining computation trees, it was necessary to introduce
@@ -981,6 +1076,11 @@ $$
 If $t = \Pstr[0.4cm]{ (l){\lambda \overline{\xi}} \cdot (at)@ \cdot (lx-at){\lambda x}\cdot (f)f \cdot (l-f){\lambda} \cdot (x-lx,60)x}$ then
 $$t-@ = \Pstr[0.5cm]{ (l){\lambda \overline{\xi}}
  \cdot (lx-l){\lambda x}\cdot (f)f\cdot (l-f){\lambda} \cdot (x-lx)x} \ .$$
+\end{example}
+
+\begin{example}
+Let $t$ be the traversal given in example \ref{examp:trav}, we have:
+  $$\Pstr[1.3cm]{ t - @ = (n0){\lambda f z}\cdot (n1-n0){\lambda u v}\cdot (n2-n1){u}\cdot (n3-n0){\lambda y}\ (n4-n0){f}\cdot (n5-n4){\lambda }\cdot (n6-n3){y}\cdot (n7-n2){\lambda }\cdot (n8-n1){v}\cdot (n9-n0){\lambda }\cdot (n10-n0){z}} \ .$$
 \end{example}
 
 
@@ -1058,17 +1158,17 @@ as follows:
 \begin{definition}
 \label{def:subterm_trav_projection}
   Let $t$ be a traversal such that $t^\omega\not\in L_@ \union L_\Sigma$ and $r_0$ be an occurrence of some
-lambda-node $r'$. Then the projection $t^\star \filter V^{(r')}$ is
+lambda-node $n$. Then the projection $t^\star \filter V^{(n)}$ is
 defined as the subsequence of $t^\star$ constituted of nodes of
-$V^{(r')}$ only. If a variable node loses its pointer in $t^\star
-\filter V^{(r')}$ then its justifier is reassigned to the only
-occurrence of $r'$ in $\pview{t^\star}$.
+$V^{(n)}$ only. If a variable node loses its pointer in $t^\star
+\filter V^{(n)}$ then its justifier is reassigned to the only
+occurrence of $n$ in $\pview{t^\star}$.
 \end{definition}
 Note that this operation is well-defined. Indeed if a variable $x$
-loses its pointer in $t^\star \filter V^{(r')}$ then it means that
-$x$ is free in $M^{(r')}$. But then $r'$ must occur in the path to
+loses its pointer in $t^\star \filter V^{(n)}$ then it means that
+$x$ is free in $M^{(n)}$. But then $n$ must occur in the path to
 the root $\theroot$ which is precisely $\pview{t_{\prefixof x}}$.
-Thus by Eq. \ref{eqn:pview_tstar}, $r'$ must occur in
+Thus by Eq.\ \ref{eqn:pview_tstar}, $n$ must occur in
 $\pview{{t_{\prefixof x}}^\star}$.
 
 
@@ -1108,12 +1208,12 @@ $t'\filterplus r_0$ it is reassigned to be $r_0$.
 \end{definition}
 
 We call this transformation a subterm projection with respect to a reference node occurrence because it keeps only nodes
-that appear in the sub-tree rooted at this node. If $n$ is an occurrence of a lambda node $r' \in N_\lambda$ then we
-will call $t \filterplus n$ a \defname{sub-traversal of the
+that appear in the sub-tree rooted at this node. If $n_0$ is an occurrence of a lambda node $n \in N_\lambda$ then we
+will call $t \filterplus n_0$ a \defname{sub-traversal of the
 computation tree $\tau(M)$}. This appellation is suggestive of the
 forthcoming Proposition \ref{prop:trav_projection} stating that $t
-\filterplus n$ is a traversal of the sub-computation tree of
-$\tau(M)$ rooted at $r'$.
+\filterplus n_0$ is a traversal of the sub-computation tree of
+$\tau(M)$ rooted at $n$.
 \bigskip
 
 
@@ -1166,7 +1266,7 @@ $m$ (since $v_m$ is necessarily visited with a copy-cat rule). \qed
 
 \begin{lemma}
 \label{lem:projplus_pendingnode}
- Let $t \in \travset(M)$ and $r_0$ be the occurrence in $t$ of a $\lambda$-node $r'$.
+ Let $t \in \travset(M)$ and $r_0$ be the occurrence in $t$ of a $\lambda$-node.
  We have:
   $$?(t\filterplus r_0) =\ ?(t) \filterplus r_0 \ .$$
 \end{lemma}
@@ -1195,15 +1295,12 @@ and therefore appear in $t^\star \filter V^{\theroot\vdash}$. \qed
 
 \subsubsection{O-view and P-view of the subterm projection}
 
-For any lambda node $r'$ in $N_\lambda$ we write
-$M^{(r')}$ for the subterm rooted at $r'$ and $V^{(r')}$ for the set of nodes and leaves of the sub-computation tree $\tau(M^{(r')})$ (thus $V^{(r')} = E^*(\{r'\})$).
-
 \paragraph{P-view projection}
 
 
 \begin{lemma}[P-view Projection for traversals]
 \label{lem:pviewproj_traversal} Let $t$ be a traversal and
-$r_0$ be an occurrence of a lambda node $r'$ in $t$. Then:
+$r_0$ be an occurrence in $t$ of a lambda node $r' \in N_\lambda$. Then:
 \begin{itemize}
 \item[(i)] If $t^\omega$ appears in $t\filterplus r_0$ then
     \begin{itemize}
@@ -2405,13 +2502,8 @@ Whereas if $B$ is the product game $B_0
 \gameprod \ldots \gameprod B_l$ then the \emph{partially covered composition}
 $\Sigma_1 ;^{U_{\sf sup}, U_{\sf prof}} \Sigma_2$
 only keeps the superficial internal moves from the component $B_k$ for some $k \in U_{\sf sup}$ and the profound internal moves from the component $B_k$ for some $k \in U_{\sf prof}$.
-
-
 \smallskip
 
-We write $\mathcal{I}$ for the set of all revealed strategies. Note
-that $\mathcal{I}$ is not a category since composition is not
-associative and there is no identity interaction strategy.
 
 
 \begin{lemma}[Complete interaction sequence]
@@ -2454,10 +2546,9 @@ The induction hypothesis permits to conclude.
 \end{proof}
 Consequently if $u\filter type(T)$ is complete then $u$ is maximal {\em i.e.~no move (and in particular no internal move) can be played after $u$}.
 
-\subsubsection{Modeling the $\lambda$-calculus in $\mathcal{I}$: two examples of revealed semantics}
+\subsubsection{Fully-revealed and syntactically-revealed semantics}
 
-We call revealed semantics of a language any model that maps each term of the language to a unique revealed strategy from $\mathcal{I}$ as defined in the previous section.
-As we have already observed, depending on the internal moves that we wish to hide, we obtain different possible revealed strategies for a given term. Hence there is not a unique way to define a revealed semantics. In this section we give two examples of such semantics.
+We call \emph{revealed semantics} any game model of a language in which a term is denoted by some revealed strategy as defined in the previous section. As we have already observed, depending on the internal moves that we wish to hide, we obtain different possible revealed strategies for a given term. Hence there is not a unique way to define a revealed semantics. In this section we give two examples of such semantics.
 
 Let $\pi_i$ denote the $i^{th}$ projection strategy $\pi_i : \sem{X_1 \gameprod
 \ldots \gameprod X_l} \gamear \sem{X_i}$.
@@ -2545,8 +2636,10 @@ Take the term $\lambda x . (\lambda f . f x) (\lambda y . y)$.
 %$$
 Its fully-revealed denotation is $$\Lambda ( \langle \sem{ x:X \vdash \lambda f . f
 x : (o\typear o) \typear o} , \sem{ x:X \vdash \lambda y . y
-: o \typear o} \rangle \| ev_2 ) \ .$$
+: o \typear o} \rangle \| ev^2 ) \ .$$
 \end{example}
+
+Note that the set of fully-revealed strategy is not a category (composition is not associative and there is no identity  strategy).
 
 
 \begin{definition}[Syntactically-revealed semantics]
@@ -2630,8 +2723,8 @@ $N_1$, \ldots, $N_p$ while omitting the internal moves produced by the copy-cat 
     \end{figure}
 
 
-\subsubsection{Obtaining the revealed denotation from the standard one and vice-versa}
-\label{subsec:relating_revealed_and_standard_denotation}
+\subsubsection{Revealed semantics versus standard game semantics}
+\label{subsec:relating_revealed_and_standard_denotation} 
 
 In the standard semantics, given two strategies $\sigma : A
 \gamear B$, $\tau : B \gamear C$ and a sequence $s \in
@@ -3092,50 +3185,49 @@ $q_{g_1}\sim q_y$ and $q_{\lambda g}\sim q_{\lambda x}$.
 \end{example}
 
 
-\begin{lemma}[Projection lemma for @/$\Sigma$-free traversals]
-\label{lem:varphi_proj} Let $r'\in N_\lambda$, $\Delta \vdash
-M^{(r')} : A$ be the subterm of $\elnf{M}$ rooted at $r'$,
-$t\in\travset(M)$, $r'_0$ be an occurrence of $r'$ in $t$ and $m_0$
-be the occurrence of the initial $A$-move $\varphi_M(r'_0)$ in
+\begin{lemma}[Traversal projection lemma]
+\label{lem:varphi_proj} Let $\odot$ denote a lambda node in $N_\lambda$, $\Delta \vdash
+M^{(\odot)} : A$ be the subterm of $\elnf{M}$ rooted at $\odot$,
+$t\in\travset(M)$, $r_0$ be an occurrence of $\odot$ in $t$ and $m_0$ be the occurrence of the initial $A$-move $\varphi_M(r_0)$ in
 $\varphi_M(t^\star)$ then:
 $$\begin{array}{rrcl}
-(i)& \varphi_{M^{(r')}}(t^\star \filter V^{(r')} \filter r'_0) &=& \varphi_M(t^\star) \filter \revsem{\Delta \vdash A} \filter m_0 \\ \\
+(i)& \varphi_{M^{(\odot)}}(t^\star \filter V^{(\odot)} \filter r_0) &=& \varphi_M(t^\star) \filter \revsem{\Delta \vdash A} \filter m_0 \\ \\
 (ii) & \varphi_M(\travset(M)^\star) \filter \sem{\Gamma \gamear T} &=& \psi_M(\travset(M)^{\filter \theroot})
 \end{array}
 $$
-where $\revsem{\Delta \vdash A }$ is the interaction game of the interaction strategy denoting the subterm $M^{(r')}$.
+where $\revsem{\Delta \vdash A }$ is the interaction game of the interaction strategy denoting the subterm $M^{(\odot)}$.
 \end{lemma}
-\proof ($i$) Firstly we observe that the expression ``$\varphi_{M^{(r')}}(t^\star \filter V^{(r')} \filter r'_0)$'' is well-defined. Indeed, by Proposition \ref{prop:trav_projection} $t\filterplus r'_0$ is a traversal of $\travset(M^{(r')})$ therefore
-the sequence $t^\star \filter V^{(r')} \filter r'_0$, which is equal to $(t\filterplus r'_0)^\star$ by Lemma \ref{lem:tstarproj_eq_tprojplusstar},
-does belong to $\travset(M^{(r')})^\star$.
+\proof ($i$) Firstly we observe that the expression ``$\varphi_{M^{(\odot)}}(t^\star \filter V^{(\odot)} \filter r_0)$'' is well-defined. Indeed, by Proposition \ref{prop:trav_projection} $t\filterplus r_0$ is a traversal of $\travset(M^{(\odot)})$ therefore
+the sequence $t^\star \filter V^{(\odot)} \filter r_0$, which is equal to $(t\filterplus r_0)^\star$ by Lemma \ref{lem:tstarproj_eq_tprojplusstar},
+does belong to $\travset(M^{(\odot)})^\star$.
 
-We now make the assumption that $r'$ is a level-$2$ lambda nodes ({\it i.e.}\ a grand-child of the root $\theroot$). The proof can easily
-be generalized to any lambda node by iterating the argument at every lambda nodes occurring in the path from $r'$ to the root $\theroot$.
+We now make the assumption that $\odot$ is a level-$2$ lambda nodes ({\it i.e.}\ a grand-child of the root $\theroot$). The proof can easily
+be generalized to any lambda node by iterating the argument at every lambda nodes occurring in the path from $\odot$ to the root $\theroot$.
 
 
-\emph{Claim:} The justification pointers in the sequences of nodes $t^\star \filter V^{(r')}$ are the same as those
+\emph{Claim:} The justification pointers in the sequences of nodes $t^\star \filter V^{(\odot)}$ are the same as those
 of the sequence of moves $\varphi_M(t^\star) \filter \revsem{\Delta \vdash A }$.
 
 By Definition \ref{dfn:phi_for_justsequ}, the sequences $\varphi_M(t^\star)$ and $t^\star$ have the same justification pointers,
-The projection operations $\_ \filter V^{(r')}$ (Definition \ref{def:subterm_trav_projection})
+The projection operations $\_ \filter V^{(\odot)}$ (Definition \ref{def:subterm_trav_projection})
 and $\_ \filter \revsem{\Delta \vdash A}$ (Definition \ref{def:sub_interstrat_projection}) may alter the
 pointers in the sequences $\varphi_M(t^\star)$ and $t^\star$, but fortunately they do so identically!
-Indeed, the operation $\_ \filter V^{(r')}$ changes pointers only for variable nodes that are free in $V^{(r')}$: it makes them point to
-the only occurrence of $r'$ in the P-view at that point (which is also the only occurrence of a level-2 lambda node in the P-view).
+Indeed, the operation $\_ \filter V^{(\odot)}$ changes pointers only for variable nodes that are free in $V^{(\odot)}$: it makes them point to
+the only occurrence of $\odot$ in the P-view at that point (which is also the only occurrence of a level-2 lambda node in the P-view).
 Similarly, the operation $\_ \filter \revsem{\Delta \vdash A}$ changes pointers only for initial A-moves: it makes them point to
 the only occurrence of an initial B-move in  the P-view at that point.
-But free variables in $V^{(r')}$ are precisely mapped by $\varphi_M$ to initial A-moves and level-2 lambda nodes are mapped to
+But free variables in $V^{(\odot)}$ are precisely mapped by $\varphi_M$ to initial A-moves and level-2 lambda nodes are mapped to
 initial B-moves. Hence the claim holds.
 
-Since the sequences $t^\star \filter V^{(r')}$ and  $\varphi_M(t^\star) \filter \revsem{\Delta \vdash A }$ have the same justification pointers,
-the hereditary projections $\_ \filter r'_0$ and $\_ \filter  m_0$ will preserve exactly the same set of occurrences, thus we have
-$\varphi_{M}(t^\star \filter V^{(r')} \filter r'_0) = \varphi_M(t^\star) \filter \revsem{\Delta \vdash A} \filter m_0$.
-Finally, because of the function $\varphi$ is defined inductively on the structure of the computation tree we have that $\varphi_{M^{(r')}}$ coincides with the restriction of $\varphi_{M}$ to $M^{(r')}$.
+Since the sequences $t^\star \filter V^{(\odot)}$ and  $\varphi_M(t^\star) \filter \revsem{\Delta \vdash A }$ have the same justification pointers,
+the hereditary projections $\_ \filter r_0$ and $\_ \filter  m_0$ preserve exactly the same occurrence positions, thus we have
+$\varphi_{M}(t^\star \filter V^{(\odot)} \filter r_0) = \varphi_M(t^\star) \filter \revsem{\Delta \vdash A} \filter m_0$.
+Finally, because the function $\varphi$ is defined inductively on the structure of the computation tree we have that $\varphi_{M^{(\odot)}}$ coincides with the restriction of $\varphi_{M}$ to $M^{(\odot)}$.
 
 
 ($ii$) Let $H$ be the set of nodes of $\tau(M)$ which are mapped by
 $\psi^*(M)$ to moves that are $\sim$-equivalent to moves in
-$\sem{\Gamma \gamear T}$. We show that $H = V^{\theroot\vdash}$.
+$\sem{\Gamma \gamear T}$. We need to show that $H = V^{\theroot\vdash}$.
 
 Since $\psi_M \subseteq \psi^*(M)$ and the image of $\psi(M)$ is
 $\sem{\Gamma \gamear T}$, $H$ must contain the domain of
@@ -3145,23 +3237,23 @@ Conversely, suppose that a node $n \in V\setminus (V_@\union V_\Sigma)$ is mappe
 $\varphi^*(M)$ to some move $m\in \mathcal{M}_I$ which is $\sim$-equivalent
 to some move in $\sem{\Gamma \gamear T}$.
  If $m = \psi_M(n)$ then $n\in V^{\theroot\vdash}$. Otherwise,
-$m = \psi_{\kappa(r')}(n)$ for some $r' \in N_{\sf spawn}$. There
-may be several node $r'$ such that $n$ belongs to the domain of
-definition of $\psi_{\kappa(r')}$. W.l.o.g.\ we can take $r'$ to be
-the one which is closest to the root $r$. Let $\Gamma(r') \vdash
-\kappa(r') : T(r')$.
+$m = \psi_{\kappa(\odot)}(n)$ for some $\odot \in N_{\sf spawn}$. There
+may be several node $\odot$ such that $n$ belongs to the domain of
+definition of $\psi_{\kappa(\odot)}$. W.l.o.g.\ we can take $\odot$ to be
+the one which is closest to the root $r$. Let $\Gamma(\odot) \vdash
+\kappa(\odot) : T(\odot)$.
     \begin{compactitem}
     \item Suppose that $m$ is $\sim$-equivalent to a move in the subgame $\sem{\Gamma}$ of $\sem{\Gamma \gamear T}$
     then this means that $n$ is hereditarily justified by a free variable node in $M$ and therefore $n \in V^{\theroot\vdash}$.
 
     \item Suppose that $m$ is $\sim$-equivalent to a move in the subgame $\sem{T}$ of $\sem{\Gamma \gamear T}$
-    then $m$ necessarily belongs to the subgame $\Gamma(r')$ of $\sem{\Gamma(r')\gamear T(r')}$ .
-    Indeed, since $r'$'s parent node is an application node, moves in the subgame
-    $\sem{T(r')}$ correspond to internal moves of the application. By definition of
+    then $m$ necessarily belongs to the subgame $\Gamma(\odot)$ of $\sem{\Gamma(\odot)\gamear T(\odot)}$ .
+    Indeed, since $\odot$'s parent node is an application node, moves in the subgame
+    $\sem{T(\odot)}$ correspond to internal moves of the application. By definition of
     the interaction strategy for the application case, such moves can only be $\sim$-equivalent to other internal
     moves and thus cannot be equivalent to move in $\sem{T}$.
 
-    Consequently, $n$ is her.\ just.\ by a free variable node $z$ in $\kappa(r')$. By assumption, $r'$ is the closest node to the root $r$ (excluding $r$ itself) for which $n$ belongs to $V^{r'\vdash}$ (the domain of definition of $\psi_{\kappa(r')}$). Hence $z$ is not bound by any $\lambda$-node occurring in the path to the root. Thus $z\in
+    Consequently, $n$ is her.\ just.\ by a free variable node $z$ in $\kappa(\odot)$. By assumption, $\odot$ is the closest node to the root $r$ (excluding $r$ itself) for which $n$ belongs to $V^{\odot\vdash}$ (the domain of definition of $\psi_{\kappa(\odot)}$). Hence $z$ is not bound by any $\lambda$-node occurring in the path to the root. Thus $z\in
     V^{\theroot\vdash}$ and therefore $n \in V^{\theroot\vdash}$.
     \end{compactitem}
 Hence $H = V^{\theroot\vdash}$. Consequently, for any traversal $t$
@@ -3170,10 +3262,9 @@ $ \varphi_M(t\filter r)$ by Lemma
 \ref{lem:he_proj_root_is_hj_proj_r}. \qed
 
 
-\subsection{The correspondence theorem for the simply-typed $\lambda$-calculus without interpreted constants}
+\subsection{The correspondence theorem for the pure simply-typed lambda-calculus} 
 In this section, we establish a connection between the interaction
-semantics of a simply-typed term without constants ($\Sigma =
-\emptyset$) and the traversals of its computation tree: we show that
+semantics of a pure simply-typed term (\ie without constants interpreted constants, $\Sigma = \emptyset$) and the traversals of its computation tree: we show that
 the set $\travset(M)$ of traversals of the computation tree is
 isomorphic to the set of uncovered plays of the strategy denotation
 (this is the counterpart of the ``Path-Traversal Correspondence'' of
@@ -3201,24 +3292,27 @@ otherwise.
 \end{lemma}
 \proof Take $t \cdot n_1, t \cdot n_2 \in \travset(M)$. Suppose that
 $n_1$ and $n_2$ belong to two distinct categories of node ($N_{\sf
-var}$, $N_@$, $N_\lambda$, $L_{\sf var}$, $L_@$, or $L_\lambda$)
+var}$, $N_@$, $N_\lambda$, $N_\Sigma$, $L_{\sf var}$, $L_@$, or $L_\lambda$, $L_\Sigma$)
 then necessarily one must be visited with the rule
 \rulenamet{InputVar} and the other by \rulenamet{InputVal} (they are
 the only rules that have a common domain of definition), thus one is
 a leaf-node and the other is an inner node which implies that
 $\psi(n_1) \neq \psi(n_2)$.
 
-Otherwise, $n_1$ and $n_2$ belong to the same node category. Let us
-do a case analysis:
+Otherwise $n_1$ and $n_2$ belong to the same category of nodes and we proceed by case analysis:
 \begin{compactitem}
 \item If $n_1, n_2 \in N_@$ then $t
-\cdot n_1$ and $t \cdot n_2$ were formed using the \rulenamet{App}
+\cdot n_1$ and $t \cdot n_2$ are formed using the \rulenamet{App}
 rule. Since this rule is deterministic we must have $n_1=n_2$ which
 violates the second hypothesis.
 
-\item If $n_1, n_2 \in L_@$ then the traversals were formed using the deterministic rule
+\item If $n_1, n_2 \in L_@$ then the traversals are formed using the deterministic rule
 \rulenamet{Value^{@\mapsto\lambda}} which again violates the
 second hypothesis.
+
+\item If $n_1, n_2 \in N_\Sigma$ then they are formed using the deterministic constant rule (see Def.\ \ref{def:constant_traversal}).
+
+\item If $n_1, n_2 \in L_\Sigma$  then they are formed using the deterministic value-constant rule (see Def.\ \ref{def:constant_traversal}).
 
 \item If $n_1,n_2\in N_{\sf var}$ then
      $t \cdot n_1$ and $t \cdot n_2$ were formed using either rule \rulenamet{Lam} or \rulenamet{App}.
@@ -3272,7 +3366,7 @@ $\psi_M$ defined on the set of traversal reduction is injective:
 For any two traversals $t_1$ and $t_2$:
 \begin{itemize}
 \item[(i)] If $\varphi (t_1^\star) = \varphi (t_2^\star)$ then $t_1^\star =t_2^\star$\ ;
-\item[(ii)] if $\psi (t_1 \filter r ) = \psi (t_2 \filter r )$ then $t_1\filter r = t_2\filter r$\ .
+\item[(ii)] if $\psi (t_1 \filter \theroot ) = \psi (t_2 \filter \theroot )$ then $t_1\filter \theroot = t_2\filter \theroot$\ .
 \end{itemize}
 \end{lemma}
 \proof \noindent (i) The result is trivial if either $t_1$ or $t_2$
@@ -3302,7 +3396,7 @@ not her.\ just.\ by the root) and we have either $\ptrdist(n_1) \neq
 \varphi(t_2^\star)$.
 \smallskip
 
-\noindent (ii) Suppose that $t_1 \filter r \neq t_2 \filter r$ then
+\noindent (ii) Suppose that $t_1 \filter \theroot \neq t_2 \filter \theroot$ then
 necessarily $t_1 \neq t_2$. W.l.o.g.\ we can assume that the two
 sequences differ only by their last occurrence. Hence we have $t_1 =
 t \cdot n_1$, $t_2 = t' \cdot n_2$ for some sequence $t$ and some
@@ -3310,25 +3404,23 @@ nodes $n_1, n_2$ where either $n_1\neq n_2$ or $\ptrdist(n_1) \neq
 \ptrdist(n_2)$.
 
 If $n_1 \neq n_2$ then Lemma \ref{lem:varphiinjective:prelem} gives
-$\psi( t_1\filter r ) \neq \psi( t_2\filter r )$.
+$\psi( t_1\filter \theroot ) \neq \psi( t_2\filter \theroot )$.
 
 If $n_1 = n_2$ then $\ptrdist(n_1) \neq \ptrdist(n_2)$.
 \rulenamet{InputVar} and \rulenamet{InputValue} are the only rules
 that can visit the same node with two different pointers, thus $n_1$
-and $n_2$ must be in $V_\lambda^{\theroot\vdash}$. Since $r$ is the
-only occurrence of the root $\theroot$ in the traversals, both $n_1$
-and $n_2$ are her.\ just.\ by $r$. Hence:
+and $n_2$ must be in $V_\lambda^{\theroot\vdash}$. Hence:
 \begin{equation*}
-\psi(t_1\filter r) = \psi(t\filter r) \cdot \psi(n_1) \mbox{ for $i
+\psi(t_i\filter \theroot) = \psi(t\filter \theroot) \cdot \psi(n_i) \mbox{ for $i
 \in \{1..2\}$}
 \end{equation*}
 where $\ptrdist_{\psi(t_i\filter r)}(\psi(n_i)) =
 \ptrdist_{t_i\filter r}(n_i)$.
 
 Furthermore, since $\ptrdist(n_1) \neq \ptrdist(n_2)$ and
-${t_1}_{<n_1} = {t_2}_{<n_2}$ we have $\ptrdist_{t_1\filter r}(n_1)
-\neq \ptrdist_{t_2\filter r}(n_2)$. Thus $\psi(t_1\filter r) \neq
-\psi(t_2\filter r)$. \qed
+${t_1}_{<n_1} = {t_2}_{<n_2}$ we have $\ptrdist_{t_1\filter \theroot}(n_1)
+\neq \ptrdist_{t_2\filter \theroot}(n_2)$. Thus $\psi(t_1\filter \theroot) \neq
+\psi(t_2\filter \theroot)$. \qed
 %end of proof
 
 
@@ -3707,10 +3799,10 @@ $\varphi_M(t^\star) = u$.
             & \mbox{(By Eq.\ \ref{eqn:corresp_outmost_ih})} \\
          &= \varphi_{M}(t^\star) \filter T^{0k}\filter b
             & \mbox{(By Eq.\ \ref{eqn:corresp_phi_t_minu_at_eq_u})} \\
-         &= \varphi_{N_k}(t^\star \filter V^{(r')} \filter r_k )
+         &= \varphi_{N_k}(t^\star \filter V^{(\theroot_k)} \filter r_k )
             & \mbox{(By Lemma \ref{lem:varphi_proj}(i)).}
         \end{align*}
-        Since $\varphi_{N_k}$ is a bijection from  $\travset(N_k)^\star$ to $\varphi_{N_k}(\travset(N_k)^\star )$ (by Corollary \ref{cor:varphi_bij}) this implies that  $t_k^\star = t^\star \filter V^{(r')} \filter r_k$ which in turn is equal to $(t\filterplus r_k)^\star$ by Lemma \ref{lem:tstarproj_eq_tprojplusstar} from Section \ref{sec:tstar}. But since $t_k$ and $t$ do not end with an @-node, this implies the equality from Equation \ref{equ:claim_tk}.
+        Since $\varphi_{N_k}$ is a bijection from  $\travset(N_k)^\star$ to $\varphi_{N_k}(\travset(N_k)^\star )$ (by Corollary \ref{cor:varphi_bij}) this implies that  $t_k^\star = t^\star \filter V^{(\theroot_k)} \filter r_k$ which in turn is equal to $(t\filterplus r_k)^\star$ by Lemma \ref{lem:tstarproj_eq_tprojplusstar} from Section \ref{sec:tstar}. But since $t_k$ and $t$ do not end with an @-node, this implies the equality from Equation \ref{equ:claim_tk}.
     \smallskip
 
     We now show that $t$ is indeed a traversal by case analysis on the rule used to visit the last occurrence of $t_k$ in the tree $\tau(N_k)$:
@@ -3798,8 +3890,8 @@ $\varphi_M(t^\star) = u$.
   $u$ is a position of $\syntrevsem{\Gamma \vdash M : T}$ we have to prove that it satisfies condition (\ref{eqn:u_in_app_intersem}):
 \begin{itemize}
     \item $\varphi_{M}(t^\star) \in L_T$: It suffices to show that $\varphi_{M}(t^\star) \filter \sem{type(T)}$ is a legal
-    standard position for any subtree $T'$ of $T$. This reduces to showing that for any lambda node $r'$ in the $\tau(M)$,
-    $t^\star \filter V^{(r')}$ is well-bracketed, satisfy visibility and alternation. But this follows immediately from the fact that $t$ verifies these properties (since $t$ is a traversal).
+    standard position for any subtree $T'$ of $T$. This reduces to showing that for any lambda node $n$ in the $\tau(M)$,
+    $t^\star \filter V^{(n)}$ is well-bracketed, satisfy visibility and alternation. But this follows immediately from the fact that $t$ verifies these properties (since $t$ is a traversal).
 
     \item Take an initial $B$-move $b \in B_k$, for some $k\in\{0..p\}$, occurring in $\varphi_{M}(t^\star)$. There is a corresponding occurrence $r_k$ in $t$ of a level-$2$ lambda node $\theroot_k$ of $\tau(M)$.
 
@@ -3808,7 +3900,7 @@ $\varphi_M(t^\star) = u$.
     Moreover:
     \begin{align*}
         u \filter T^{0k}\filter b &= \varphi_{M}(t^\star) \filter T^{0k}\filter b \\
-         &= \varphi_{M}(t^\star \filter V^{(r')} \filter r_k ) & \mbox{by Lemma \ref{lem:varphi_proj}(i)} \\
+         &= \varphi_{M}(t^\star \filter V^{(\theroot_k)} \filter r_k ) & \mbox{by Lemma \ref{lem:varphi_proj}(i)} \\
          &= \varphi_{M}((t\filterplus r_k)^\star) & \mbox{by Lemma \ref{lem:tstarproj_eq_tprojplusstar}} \\
          &= \varphi_{N_k}((t\filterplus r_k)^\star) & \mbox{since $t\filterplus r_k$ is a traversal of $N_k$ by Prop.\ \ref{prop:trav_projection}} \\
          &\in \varphi_{N_k}(\travset(N_k)^\star) \\
@@ -3953,9 +4045,10 @@ which in turn implies $t'=t$ by injectivity of $\varphi$. The
 other direction is proved identically using injectivity and
 monotonicity of $\varphi^{-1}$.
 \end{proof}
-\smallskip The following diagram recapitulates the main results of
-this section:
-
+\smallskip The diagram on figure \ref{fig:correspondence} recapitulates the main results of
+this section.
+\begin{figure}[htbp]
+\centering
 \begin{tikzpicture}[style={anchor=base}]
   \matrix (m) [matrix of math nodes, column sep=3cm, row sep=0.7cm]
   {
@@ -3977,6 +4070,13 @@ this section:
 \draw[->] ([xshift=-3pt]m-3-3.north) -- node[left]{full uncovering} ([xshift=-3pt]m-1-3.south);
 \draw[<-] ([xshift=3pt]m-3-3.north)  -- node[right]{$\_ \filter \sem{\Gamma\gamear T}$} ([xshift=3pt]m-1-3.south);
 \end{tikzpicture}
+
+\noindent where an arrow `$A \stackrel{f}\longrightarrow B$' indicates that
+$f(A) = B$.
+
+\caption{Transformations involved in the Correspondence Theorem.}
+\label{fig:correspondence}
+\end{figure}
 % SAME DIAGRAM USING XYPIC
 %$$
 %\xymatrix @C=6pc{
@@ -3990,8 +4090,6 @@ this section:
 %}
 %$$
 
-where each arrow $A \stackrel{f}\rightarrow B$ in the diagram indicates that
-$f(A) = B$.
 
 \begin{example}
 Take $M = \lambda f z . (\lambda g x . f x) (\lambda y. y) (f z) :
@@ -4000,8 +4098,11 @@ Take $M = \lambda f z . (\lambda g x . f x) (\lambda y. y) (f z) :
 $\psi_M$ (dashed line). (Only question moves are shown for clarity.)
 The justified sequence of nodes $t$ defined hereunder is an example
 of traversal:
+\bigskip
 
-\begin{tabular}{cp{6.3cm}}
+\noindent\begin{tabular}{cc}
+\begin{minipage}{6cm}
+\centering
 $\pssetcomptree\pstree[levelsep=2.5ex,treesep=0.3cm]{ \TR[name=root]{\lambda f z} }
      {  \tree[levelsep=4ex]{@}
         {   \tree{\lambda g x}{
@@ -4018,7 +4119,7 @@ $\pssetcomptree\pstree[levelsep=2.5ex,treesep=0.3cm]{ \TR[name=root]{\lambda f z
             }
         }
      }
-\hspace{1.5cm}
+\hspace{2cm}
   \pstree[levelsep=8ex, treesep=0.3cm]{ \TR[name=q0]{q^0} }
     {   \pstree[levelsep=4ex]{\TR[name=q1]{q^1}} {\TR[name=q2]{q^2}}
         \TR[name=q3]{q^3}
@@ -4030,31 +4131,33 @@ $\pssetcomptree\pstree[levelsep=2.5ex,treesep=0.3cm]{ \TR[name=root]{\lambda f z
 \ncarc[arcangle=10]{->}{lmd}{q2}
 \ncline{->}{f2}{q1}
 \ncline{->}{lmd2}{q2}$
-\hspace{2cm}
+\end{minipage}
 &
+\begin{minipage}{8cm}
 \begin{asparablank}
-  \item  \Pstr[0.8cm]{
-t = (n){\lambda f z} \
-(n2){@} \
-(n3-n2,60){\lambda g x} \
-(n4-n,45){f^{[1]}} \
-(n5-n4,45){\lambda^{[2]}} \
-(n6-n3,45){x} \
-(n7-n2,35){\lambda^{[3]}} \
-(n8-n,35){f^{[4]}} \
-(n9-n8,45){\lambda^{[5]}} \
+  \item  \Pstr[1cm]{
+t = (n){\lambda f z} \cdot
+(n2){@} \cdot
+(n3-n2,60){\lambda g x} \cdot
+(n4-n,45){f^{[1]}}\cdot
+(n5-n4,45){\lambda^{[2]}} \cdot
+(n6-n3,45){x} \cdot
+(n7-n2,35){\lambda^{[3]}} \cdot
+(n8-n,35){f^{[4]}} \cdot
+(n9-n8,45){\lambda^{[5]}} \cdot
 (n10-n,35){z}
 }
 
-\item \Pstr[0.9cm]{
-t\filter r = (n){\lambda f z} \ (n4-n,50){f}^{[1]} \
-(n5-n4,60){\lambda}^{[2]} \ (n8-n,45){f}^{[4]} \
-(n9-n8,60){\lambda}^{[5]} \ (n10-n,40){z}}
+\item \Pstr[1.2cm]{
+t\filter r = (n){\lambda f z} \cdot (n4-n,50){f}^{[1]} \cdot
+(n5-n4,60){\lambda}^{[2]} \cdot (n8-n,45){f}^{[4]} \cdot
+(n9-n8,60){\lambda}^{[5]} \cdot (n10-n,40){z}}
 \item
-\Pstr[0.8cm]{ {\psi_M(t\filter r) =\ } (n){q^0}\
-(n4-n,60){q^1}\ (n5-n4,60){q^2}\ (n8-n,45){q^1}\ (n9-n8,60){q^2}\
-(n10-n,38){q^3} \in \sem{M}\ .}
+\Pstr[1.2cm]{ {\varphi_M(t\filter r) =\ } (n){q^0}\cdot
+(n4-n,60){q^1}\cdot (n5-n4,60){q^2}\cdot (n8-n,45){q^1}\cdot
+(n9-n8,60){q^2}\cdot (n10-n,38){q^3} \in \sem{M}\ .}
 \end{asparablank}
+\end{minipage}
 \end{tabular}
 \end{example}
 
@@ -4064,7 +4167,7 @@ t\filter r = (n){\lambda f z} \ (n4-n,50){f}^{[1]} \
 
 \todo{Ong's work on MSO decidability of infinite trees generated by HORS.}
 
-\todo{Automata characterization of recursion scheme: CPDA=HORS, analyzing the effect of safety constraints on the game model (safe lambda calculus), Colin Stirling's proof of decidability of higher-order matching.}
+\todo{Automata characterization of recursion scheme: CPDA = HORS, analyzing the effect of safety constraints on the game model (safe lambda calculus), Colin Stirling's proof of decidability of higher-order matching.}
 
 
 \section{Related works}
@@ -4098,13 +4201,14 @@ A concrete presentation such as the one given by the traversal theory, allows on
 
 \section{Further works}
 
-\subsubsection{Verification} As mentioned before, the theory of traversals was first applied to the domain of verification of infinite structures by Ong. \todo{Application to the reachability problem.}
+\subsection{Verification} As mentioned before, the theory of traversals was first applied to the domain of verification of infinite structures by Ong.
+ \todo{Application to the reachability problem.}
 
 
-\subsubsection{Automata theory} The traversal theory was also used in \cite{hmos-lics08} to establish an equi-expressivity result between a certain type of automaton device called Collapsible Pushdown Automaton (CPDA) and higher-order recursion schemes (HORS).
+\subsection{Automata theory} The traversal theory was also used in \cite{hmos-lics08} to establish an equi-expressivity result between a certain type of automaton device called Collapsible Pushdown Automaton (CPDA) and higher-order recursion schemes (HORS).
 One direction of this proof relies on the traversal theory: for a given HORS, a CPDA is constructed that computes precisely the set of traversals over the computation tree of the HORS.
 A crucial point which makes this encoding possible is that the structures generated by these devices are of ground type. Such structures cannot interact with their environment which makes their game-semantic denotation very simple: more precisely, the O-view of the traversal does not play any role in the traversal rules and therefore the automaton does not need to keep track of it. A natural question to ask is whether it is possible to find similar automata-characterization for infinite structures of a higher-order.
 
-\subsubsection{Further correspondences}
+\subsection{Further correspondences}
 The traversal theory that we have presented here captures the lambda calculus fragment of the game model of call-by-name programming languages such as PCF and Idealized Algol. A natural way to extend this work would be to define the appropriate notion of traversal
 corresponding to the call-by-value games \cite{plotkin-75, abramsky98callbyvalue}.

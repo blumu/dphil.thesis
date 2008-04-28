@@ -55,61 +55,6 @@ from this generic language. We will explicitly specify when a result
 holds only in the pure (\ie no constants) simply-typed calculus
 fragment of the language.
 
-\subsection{Almost safety}
-\begin{definition}
-We call \defname{almost-safe application} a term of the form
-$N_0 N_1 \ldots N_k$ for $k\geq 1$ where each of the $N_i$ is a safe.
-They are denoted by judgments of the form ``$\Gamma \asaentail M: T$'' and given by the rules:
-$$ \rulename{app_{as}^1} \ \rulef{\Gamma \sentail s : A\typear B
-\quad \Gamma \sentail t : A} {\Gamma \asaentail s~t : B}
-\qquad
-\rulename{app_{as}^2} \ \rulef{\Gamma \asaentail s : A\typear B
-\quad \Gamma \sentail t : A} {\Gamma \asaentail s~t : B}
-$$
-
-We call \defname{almost-safe abstraction} a term that can be written under the form $\lambda \overline{x} . N$ for some safe term $N$. They are denoted by judgments
-``$\Gamma \asabsentail s : A$'' formed with the rule:
-$$ \rulef{\Gamma, \overline{x}:\overline{A}\sentail M: B}{\Gamma \asabsentail \lambda\overline{x}. M: (\overline A,B)}  .
-$$
-
-
-We say that a term is \defname{almost-safe}, written ``$\Gamma \asentail s : A$'', if it is safe or if it is an almost-safe application or an almost-safe abstraction:
-$$
-\rulename{\delta} \ \rulef{\Gamma \sentail s : A}{\Gamma \asentail s : A}
-\qquad
-\rulename{\delta'} \ \rulef{\Gamma \asaentail s : A}{\Gamma \asentail s : A}
-\qquad
-\rulename{\delta'} \ \rulef{\Gamma \asabsentail s : A}{\Gamma \asentail s : A} \ .
-$$
-\end{definition}
-
-The intuition behind the term ``almost-safe'' is that
-an almost safe term is equivalent (in the sense that its game
-denotation is isomorphic) to some safe term obtained by either performing $\eta$-expansion or by closing it.
-\begin{lemma}
-\label{lem:almostsafe}
-  If $M$ is almost-safe then there is a safe term $N$ such that $\sem{M} = \sem{N}$.
-\end{lemma}
-\begin{proof}
-Let $\Gamma \asentail M :T$ be an almost-safe. If it is safe then the result immediately holds. Suppose that $M$ is an application $N_0 N_1 \ldots N_k : (A_1,\ldots,A_n)$ with $k\geq 1$ then let $\varphi_i:A_i$ for $i\in\{1..n\}$ be fresh variables, using the
-\rulenamet{app} and \rulenamet{abs} rules we can build the equivalent safe term $\Gamma \sentail \lambda \varphi_1 \ldots \varphi_n . N_0 N_1 \ldots N_k \varphi_1 \ldots \varphi_n :T$.
-If $M$ is an abstraction $\lambda \overline{x} . N$ then we can apply
-the abstraction rule on the safe term $N$ to build the equivalent safe term $\lambda
-\overline{y} \overline{x}. N$ where $\overline{y} = fv(\lambda
-\overline{x}. N)$.
-\end{proof}
-
-\notetoself{
-\begin{lemma}
-\label{lem:betasred_preserves_almostsafety}
-Safe beta reduction preserves almost-safety.
-\end{lemma}
-\begin{lemma}
-\label{lem:almostsafe_iif_etalnf_almostsafe}
-A term is almost safe if and only if its eta-long normal form is safe.
-\end{lemma}
-}
-
 
 \subsection{Incremental binding}
 
@@ -183,17 +128,17 @@ on these two trees (since free variable nodes are enabled by the root), therefor
 :T$ is a simply-typed term.
 \begin{itemize}
 \item[(i)] If $M$ is almost safe then $\tau(M)$ is incrementally-bound ;
-\item[(ii)] conversely, if $\tau(M)$ is i.b.\ then the $\eta$-long normal form of $M$ is almost-safe, and safe if further $M$ is closed.
+\item[(ii)] conversely, if $\tau(M)$ is i.b.\ then the $\eta$-long normal form of $M$ is almost safe, and safe if further $M$ is closed.
 \end{itemize}
 \end{lemma}
 \begin{proof}
-(i) Suppose that $M$ is almost-safe. By the previous remark,
+(i) Suppose that $M$ is almost safe. By the previous remark,
 to show that $\tau(M)$ is i.b., it is equivalent to show that
 $\tau(\closure{M})$ is incrementally-bound.
 
 By definition, the computation tree $\tau(\closure{M})$ is
 an abstract syntax representation of the $\eta$-long normal form of the closure of $M$.
-Since $M$ is almost-safe, by Lemma \ref{lem:almostsafe} the
+Since $M$ is almost safe, by Lemma \ref{lem:almostsafe_iff_etalnf_almostsafe} the
 $\eta$-long normal form of the closure of $M$ is safe.
 Hence the underlying term represented by the abstract syntax tree $\tau(\closure{M})$ is a safe term.
 
@@ -231,14 +176,14 @@ abstract the variables $\overline{\eta_1}$ using the rule
 \rulenamet{abs}, which shows that $N_i$ is safe.
 Since all the $N_i$s are safe and the term $N_1 \ldots N_p$ is of type $o$, by the rule \rulenamet{app} we have that $N_1 \ldots N_p$ is safe \ie $\overline{\xi} \sentail N_1 \ldots N_p :o$. The rule \rulenamet{app} then gives us $\sentail \lambda \overline{\xi} . N_1 \ldots N_p$.
 
-Now suppose that $M$ is open: $\overline{y} \entail M:T$. The preceding case shows that $\closure{M}$ is safe hence $M$ is almost-safe by definition.
+Now suppose that $M$ is open: $\overline{y} \entail M:T$. The preceding case shows that $\closure{M}$ is safe hence $M$ is almost safe by definition.
 \end{proof}
 
 Note that the hypothesis that $M$ is closed in (ii) is necessary.
 Take for instance the two terms $\lambda x y .x$ and $\lambda y . x$,
 where $x,y:o$. Their have isomorphic incrementally-bound computation
 trees. But $\lambda x y .x$ is safe and $\lambda y . x$ is
-only almost-safe.
+only almost safe.
 
 
 \begin{corollary}
@@ -246,7 +191,7 @@ only almost-safe.
 \end{corollary}
 \proof Suppose that $\tau(M)$ is i.b. Then by Lemma
 \ref{lem:incrbound_iff_etanf_safe}(ii) the eta-long normal form of $M$ is almost safe, therefore so is $M$ by Lemma \ref{lem:almostsafe_iif_etalnf_almostsafe}.
-But almost-safety is preserved by $\beta_s$-reduction (Lemma \ref{lem:betasred_preserves_almostsafety}) therefore $N$ is almost-safe. Finally by Lemma \ref{lem:incrbound_iff_etanf_safe}(i), $\tau(N)$ is
+But almost safety is preserved by $\beta_s$-reduction (Lemma \ref{lem:betasred_preserves_almostsafety}) therefore $N$ is almost safe. Finally by Lemma \ref{lem:incrbound_iff_etanf_safe}(i), $\tau(N)$ is
 incrementally-bound. \qed
 \smallskip
 
@@ -521,11 +466,11 @@ game-semantic characterization of safe terms:
 \label{thm:safeincrejust} Let $\Gamma \stentail M : A$ be a pure simply-typed term
 (with no interpreted constants).
 \begin{enumerate}[(i)]
-\item If $\Gamma \stentail M : A$ is almost-safe (and in particular if it is safe) then $\sem{\Gamma \stentail M : A}$
+\item If $\Gamma \stentail M : A$ is almost safe (and in particular if it is safe) then $\sem{\Gamma \stentail M : A}$
 is P-incrementally justified.
 \item If $\sem{\Gamma \stentail M : A}$ is
   P-incrementally justified then the eta-long normal form of the beta-normal form of $M$ is
-almost-safe, and safe if further $M$ is closed.
+almost safe, and safe if further $M$ is closed.
 \end{enumerate}
 \end{theorem}
 In particular, a term has a P-incrementally justified denotation if and only
@@ -678,12 +623,12 @@ $\ord{x}$. Thus $\tau(M)^*$ is incrementally-bound.
 
 The counterpart of Lemma 4.1.6 from
 \cite{blumtransfer} can be stated as follows in the context of PCF:
-\begin{lemma}[Almost-safety and incrementally-binding]
+\begin{lemma}[Almost safety and incrementally-binding]
 \label{lem:incrbound_iff_etanf_safe_pcf} Let $\Gamma \vdash M : A$
 be a PCF term.
 \begin{itemize}
-\item[(i)] If $\Gamma \vdash M : A$ is almost-safe then $\tau(\Gamma \vdash M : A)$ is incrementally-bound ;
-\item[(ii)] conversely, if $\tau(\Gamma \vdash M : A)$ is incrementally-bound then the $\eta$-normal form of $\Gamma \vdash M : A$ is almost-safe if $M$ is open and safe if $M$ is closed.
+\item[(i)] If $\Gamma \vdash M : A$ is almost safe then $\tau(\Gamma \vdash M : A)$ is incrementally-bound ;
+\item[(ii)] conversely, if $\tau(\Gamma \vdash M : A)$ is incrementally-bound then the $\eta$-normal form of $\Gamma \vdash M : A$ is almost safe if $M$ is open and safe if $M$ is closed.
 \end{itemize}
 \end{lemma}
 The proof can be obtained by adapting the proof
@@ -697,7 +642,7 @@ holds in the \pcf\ setting:
 \begin{lemma} \label{lem:pcf_safe_imp_incrbound} The computation tree of a Safe PCF term is incrementally-bound.
 \end{lemma}
 \begin{proof}
-\notetoself{adapt this proof to almost-safe terms}
+\notetoself{adapt this proof to almost safe terms}
 (i) Let $M$ be a safe PCF term and  $i$ denote the number of occurrences of the Y combinator in $M$.
 We first prove by induction on $i$ that $M_k$ is safe for any $k\in
 \omega$. \emph{Base case:} $i=0$ then $M_k = M$. \emph{Step case:}
@@ -724,13 +669,13 @@ incrementally-bound in $\tau(M)$.
 
 
 
-\begin{theorem}[Almost-safety and P-incremental justification]
+\begin{theorem}[Almost safety and P-incremental justification]
 \label{thm:almostsafeincrejust_pcf} Let $\Gamma \vdash M : A$ be a PCF term. Then:
 \begin{enumerate}[(i)]
-\item If $\Gamma \vdash M : A$ is almost-safe then $\sem{\Gamma \vdash M : A}$ is P-incrementally justified.
+\item If $\Gamma \vdash M : A$ is almost safe then $\sem{\Gamma \vdash M : A}$ is P-incrementally justified.
 \item If $\sem{\Gamma \vdash M : A}$ is
   P-incrementally justified then $\etalnf{\betanf{M}}^*$ is
-  almost-safe  if $M$ is open, and safe if $M$ is closed.
+  almost safe  if $M$ is open, and safe if $M$ is closed.
 \end{enumerate}
 \end{theorem}
 
@@ -749,7 +694,7 @@ $\etalnf{\etalnf{\betanf{M}}^*} = \etalnf{\betanf{M}}^*$ is safe. If
 $M$ is open then so is $\etalnf{\betanf{M}}^*$ and by Lemma
 \ref{lem:incrbound_iff_etanf_safe_pcf},
 $\etalnf{\etalnf{\betanf{M}}^*} = \etalnf{\betanf{M}}^*$ is
-almost-safe.
+almost safe.
 \end{proof}
 
 \begin{theorem}
@@ -789,7 +734,7 @@ and $B =(B_1, \ldots, B_l,o)$ be two PCF types for some $i,l\geq 0$
 and $\sigma$ be a well-bracketed innocent P-i.j.\ strategy with
 finite view function defined on the game $!A_1 \otimes \ldots
 \otimes !A_i \lingamear (!B_1 \lingamear \ldots \lingamear !B_l
-\lingamear o) $. There exists an \emph{almost-safe} PCF' term
+\lingamear o) $. There exists an \emph{almost safe} PCF' term
 $\overline{x} : \overline{A} \vdash M : B$ in $\eta$-long normal
 form such that:
 $$ \sem{\overline{x} : \overline{A} \vdash M_\sigma : B} = \sigma $$
@@ -804,7 +749,7 @@ $M_\sigma$ to be $\etalnf{\betanf{N}}^* $. We have
 $\sem{\overline{x} : \overline{A} \vdash M_\sigma : B} =
 \sem{\overline{x} :\overline{A} \vdash N : B} = \sigma$ and by
 Theorem  \ref{thm:almostsafeincrejust_pcf}(ii), $M_\sigma$ is
-almost-safe. For the second part we just need to take $M'_\sigma =
+almost safe. For the second part we just need to take $M'_\sigma =
 \lambda \overline{x}. M_\sigma$.
 \end{proof}
 
@@ -993,7 +938,7 @@ The type system for Safe \ialgol\ is given in section \ref{subsec:safeia_rules}.
 Ultimately this allows us to show that the pointers in the game denotation of safe IA terms can be recovered uniquely. Such result has potential applications in algorithmic game semantics: using ideas from \cite{ghicamccusker00},
 it may be possible to give a characterisation of the game semantics
 of some higher-order fragments of safe \ialgol\ using extended
-regular expressions, which would subsequently lead to a decision procedure for 
+regular expressions, which would subsequently lead to a decision procedure for
 observational equivalence of program from the considered fragment.
 \notetoself{prove this conjecture!}
 
@@ -1011,4 +956,4 @@ the set of complete plays, this pointer economy suggests that the
 game denotation of a safe \ialgol\ can be represented in a compact
 way. This raises the question of the decidability of observational
 equivalence for safe \ialgol.
-}
+} 

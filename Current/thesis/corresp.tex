@@ -119,25 +119,29 @@ term as follows:
 \begin{itemize}[-]
 \item If $m\geq0$ and $\alpha$ is a variable or constant then:
 $$ \tau^*( \lambda\overline{x} . \alpha s_1 \ldots s_m : o) =
-    \pssetcomptree
-    \tree{\lambda\overline{x}}
-    {
-        \tree[levelsep=3ex]{ \alpha }
-            { \SubTree{\tau^*(s_1)} \SubTree[linestyle=none]{\ldots} \SubTree{\tau^*(s_m)}
-            }
-    }
+\begin{tikzpicture}[baseline=(A.base),level distance=4ex,inner ysep=0.5mm,shape border rotate=90,sibling distance=15mm]
+    \node{$\lambda\overline{x}$}
+        child { node{$\alpha$}
+                child[child anchor=north]{node[isosceles triangle,draw,anchor=north]{$\tau^*(s_1)$}}
+                child{node{$\ldots$}}
+                child[child anchor=north]{node[isosceles triangle,draw,anchor=north]{$\tau^*(s_m)$}}
+        };
+\end{tikzpicture}
 $$
 
 \item If $m \geq 1$ and $s_0$ is an abstraction then:
 \begin{align*}
  \tau^*(\lambda\overline{x} . (\lambda\overline{y}.s) s_1 \ldots s_m : o)=
-   %\hspace{2cm}
+\begin{tikzpicture}[baseline=(A.base),level distance=4ex,inner ysep=0.5mm,shape border rotate=90,sibling distance=20mm]
+    \node{$\lambda\overline{x}$}
+        child { node{$@$}
+                child[child anchor=north]{node[isosceles triangle,draw,anchor=north]{$\tau^*(\lambda\overline{y}.s)$}}
+                child[child anchor=north]{node[isosceles triangle,draw,anchor=north]{$\tau^*(s_1)$}}
+                child{node{$\ldots$}}
+                child[child anchor=north]{node[isosceles triangle,draw,anchor=north]{$\tau^*(s_m)$}}
+        };
+\end{tikzpicture}
 \end{align*}
-$$\pssetcomptree\tree{\lambda\overline{x}} { \tree[levelsep=3ex]{
-        @ } { \SubTree{\tau^*(\lambda\overline{y}.s)}
-            \SubTree{\tau^*(s_1)}
-            \SubTree[linestyle=none]{\ldots}
-            \SubTree{\tau^*(s_m)} }}$$
 \end{itemize}
 
 Let $M$ be a simply-typed term not necessarily in $\eta$-normal
@@ -181,9 +185,28 @@ $\begin{array}{ll}
 &
 \begin{minipage}{0.45\textwidth}
 \centering
-\psset{levelsep=5ex,linewidth=0.5pt,nodesep=1pt,arcangle=-20,arrowsize=2pt 1}
-$\pstree{\TR{\lambda f z}}{\pstree{\TR{@}}{\pstree{\TR{\lambda u v}}{\pstree{\TR{u}}{\pstree{\TR{\lambda }}{\TR{v}}}}\pstree{\TR{\lambda y}}{\pstree{\TR{f}}{\pstree{\TR{\lambda }}{\TR{y}}}} \pstree{\TR{\lambda }}{\TR{z}}}}
-$
+\begin{tikzpicture}[baseline=(root.base),level distance=5ex,inner ysep=0.5mm,sibling distance=10mm]
+\node (root) {$\lambda f z$}
+child {node {$@$}
+    child {node {$\lambda u v$}
+           child {node {$u$}
+                  child {node {$\lambda$}
+                      child {node {$v$}}
+                  }
+           }
+    }
+    child {node {$\lambda y$}
+           child {node {$f$}
+                  child {node {$\lambda$}
+                      child {node {$y$}}
+                  }
+           }
+    }
+    child {node {$\lambda$}
+           child {node {$z$}}
+    }
+    };
+\end{tikzpicture}
 \end{minipage}
 \end{tabular}
 \end{example}
@@ -205,12 +228,26 @@ $\begin{array}{ll}
 \end{minipage}
 &
 \begin{minipage}{0.45\textwidth}
-\psset{levelsep=5ex,linewidth=0.5pt,nodesep=1pt,arcangle=-20,arrowsize=2pt 1}\centering
-$\pstree{\TR{\lambda u v}}{\pstree{\TR{@}}{\pstree{\TR{\lambda x}}{\pstree{\TR{v}}{\pstree{\TR{\lambda z}}{\TR{x}}}}\pstree{\TR{\lambda }}{\TR{u}}}}
-$
+\centering
+\begin{tikzpicture}[baseline=(root.base),level distance=5ex,inner ysep=0.5mm,sibling distance=10mm]
+\node (root) {$\lambda u v$}
+child {node {$@$}
+    child {node {$\lambda x$}
+           child {node {$v$}
+                  child {node {$\lambda z$}
+                      child {node {$x$}}
+                  }
+           }
+    }
+    child {node {$\lambda$}
+           child {node {$u$}}
+    }
+    };
+\end{tikzpicture}
 \end{minipage}
 \end{tabular}
 \end{example}
+
 
 \emph{Notations:} We write $\theroot$ to denote the root of
 $\tau(M)$. We write $E$ to denote the parent-child relation of the
@@ -303,7 +340,7 @@ the root of the tree such that $m$ is labelled $\lambda
 \begin{definition}[Enabling]
 The \defname{enabling relation} $\vdash$ is defined on the set of
 nodes and leaves of the computation tree as follows. We write $m \vdash n$ and we say that $m$ enables $n$ if and only if
-$m \in L \union N_\lambda \union N_{\sf var}$ 
+$m \in L \union N_\lambda \union N_{\sf var}$
 and one of the following conditions holds:
 \begin{itemize}
 \item $n \in N_{\sf fv}$ and $m$ is the root $\theroot$;
@@ -643,7 +680,7 @@ $$\Pstr[0.5cm]{\ldots \cdot x \cdot  (l){\lambda \overline{\eta}_1}\ldots (v-l){
     to be justified by the pending node (which necessarily occurs in the O-view). This restriction is here to ensure that traversals are well-bracketed.
 
 \item In the rule
-\rulenamet{Value}, it is possible to replace the condition ``$n\in N$'' by the stronger ``$n\in N\setminus N_{\sf \lambda}^{\vdash\theroot}$''. Indeed a later result (Lemma \ref{lem:trav_oview_single_threaded}) will show that if $n$ belongs to $N_{\lambda}^{\vdash\theroot}$ then the preceding occurrence $m$ is necessarily an input-variable. 
+\rulenamet{Value}, it is possible to replace the condition ``$n\in N$'' by the stronger ``$n\in N\setminus N_{\sf \lambda}^{\vdash\theroot}$''. Indeed a later result (Lemma \ref{lem:trav_oview_single_threaded}) will show that if $n$ belongs to $N_{\lambda}^{\vdash\theroot}$ then the preceding occurrence $m$ is necessarily an input-variable.
 Furthermore, another result (Prop.\ \ref{prop:pviewtrav_is_path}) shows that traversals are well-bracketed, therefore $m$ is necessarily the pending node. Hence the rule \rulenamet{InputValue} can be use in place of
 \rulenamet{Value} to visit $v_m$.
 
@@ -2724,7 +2761,7 @@ $N_1$, \ldots, $N_p$ while omitting the internal moves produced by the copy-cat 
 
 
 \subsubsection{Revealed semantics versus standard game semantics}
-\label{subsec:relating_revealed_and_standard_denotation} 
+\label{subsec:relating_revealed_and_standard_denotation}
 
 In the standard semantics, given two strategies $\sigma : A
 \gamear B$, $\tau : B \gamear C$ and a sequence $s \in
@@ -2752,30 +2789,52 @@ Consider the following term $M \equiv \lambda f z . (\lambda g x . f (f x)) (\la
 Its $\eta$-long normal form is $\lambda f z . (\lambda g x . f (f x)) (\lambda y. y) (\lambda .z)$.
 The following figure represents the computation tree of $M$ on the left and the
 arena of the game $\sem{(o \typear o) \typear o \typear o}$ on the right:
-$$
-\pssetcomptree
-\tree{\lambda f z}
-{ \tree{@}
-    {
-        \tree{\lambda g x}
-            { \tree{f}{   \tree{\lambda}{ \tree{f}{  \tree{\lambda}{\TR{x}}} }  }
+\begin{center}
+\begin{tikzpicture}[baseline=(root.base),level distance=5ex,inner ysep=0.5mm,sibling distance=10mm]
+\node (root) {$\lambda f z$}
+child {node {$@$}
+    child {node {$\lambda g x$}
+        child {node {$f$}
+            child {node {$\lambda$}
+                child {node {$f$}
+                    child {node {$\lambda$}
+                        child {node {$x$}}
+                    }
+                }
             }
-        \tree{\lambda y}{\TR{y}}
-        \tree{\lambda}{\TR{z}}
+        }
     }
-}
-\hspace{2cm}
-\pssetarena
-\tree{q^1} {
-    \tree{q^3}
-        {  \tree{q^4}
-                {\TR{a^4_1} \TR{\ldots}}
-            \TR{a^3_1} \TR{\ldots} }
-    \tree{q^2}
-    { \TR{a^2_1} \TR{a^2_2}\TR{\ldots} }
-    \TR{a_1} \TR{a_2}\TR{\ldots}
-}
-$$
+    child {node {$\lambda y$}
+           child {node {$y$}}
+    }
+    child {node {$\lambda$}
+           child {node {$z$}}
+    }
+};
+\end{tikzpicture}
+\hspace{3cm}
+\begin{tikzpicture}[baseline=(root.base),level distance=5ex,inner ysep=0.5mm,sibling distance=8mm]
+\node (root) {$q^1$}
+child {node {$q^3$}
+    child {node {$q^4$}
+           child {node {$a_1^4$}}
+           child {node {$\ldots$}}
+    }
+    child {node {$a_1^3$}}
+    child {node {$\ldots$}}
+    }
+child[missing]{}
+child[missing]{}
+child {node {$q^2$}
+       child {node {$a_1^2$}}
+       child {node {$a_2^2$}}
+       child {node {$\ldots$}}
+    }
+child {node {$a_1$}}
+child {node {$a_2$}}
+child {node {$\ldots$}};
+\end{tikzpicture}
+\end{center}
 
 \newlength{\yNull}
 \def\bow{\quad\psarc{->}(0,\yNull){1.5ex}{90}{270}}
@@ -2809,6 +2868,47 @@ $$
 \ncline{->}{f2}{q3}
 \ncline{->}{lmd2}{q4}
 $$
+
+\begin{center}
+\begin{tikzpicture}[baseline=(root.base),level distance=5ex,inner ysep=0.5mm,sibling distance=15mm]
+\path 
+node (root) {$\lambda f z^{[1]}$}
+child{node {$@^{[2]}$}
+    child{node {$\lambda g x^{[3]}$}
+        child{node (f6) {$f^{[6]}$}
+            child{node (l7) {$\lambda^{[7]}$}
+                child{node (f8) {$f^{[8]}$}
+                    child{node (l9) {$\lambda^{[9]}$}
+                        child{node (l10) {$x^{[10]}$}}
+                    }
+                }
+            }
+        }
+    }
+    child {node {$\lambda y^{[4]}$}
+           child {node {$y$}}
+    }
+    child {node {$\lambda^{[5]}$}
+           child {node {$z$}}
+    }
+}
++(5cm,0)
+node (q1){$q^1$}
+child[level distance=12ex]{node(q3){$q^3$}
+    child{node(q4){$q^4$}}
+    }
+child[level distance=12ex]{node {$q^2$}};
+\draw[dashed] (f6) -- (q3)
+         (f8) -- (q3)
+         (l7) -- (q4)
+         (l9) -- (q4)
+         (root) -- node[above]{$\psi$} (q1)
+;
+\end{tikzpicture}
+\end{center}
+%\begin{tikzpicture}[baseline=(root.base),level distance=5ex,inner ysep=0.5mm,sibling distance=8mm]
+%level 1/.style={sibling distance=8mm},
+%level 2/.style={sibling distance=8mm}]
 
 Consider the justified sequence of moves $s \in \sem{M}$:
  $$s = \Pstr[12pt][5pt]{(q1){q}^1\ (q3-q1,60){q}^3\ (q4-q3,60){q}^4\ (q3b-q1){q}^3\ (q4b-q3b,60){q}^4\ (q2-q1,30){q}^2 }
@@ -3262,7 +3362,7 @@ $ \varphi_M(t\filter r)$ by Lemma
 \ref{lem:he_proj_root_is_hj_proj_r}. \qed
 
 
-\subsection{The correspondence theorem for the pure simply-typed lambda-calculus} 
+\subsection{The correspondence theorem for the pure simply-typed lambda-calculus}
 In this section, we establish a connection between the interaction
 semantics of a pure simply-typed term (\ie without constants interpreted constants, $\Sigma = \emptyset$) and the traversals of its computation tree: we show that
 the set $\travset(M)$ of traversals of the computation tree is

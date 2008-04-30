@@ -444,9 +444,30 @@ curveto
 %      \pgfset{inner xsep=1pt}%
       \pgfset{inner ysep=1pt}%
       %\pgftransformshift{\bendpt} % position the label at the bendpoint
-      \pgftransformshift{\pgfpointcurveattime{0.5}{\ptA}{\cptC}{\cptD}{\ptB}} % position the label at half-way on the curve
+      \pgftransformshift{\pgfpointcurveattime{0.5}{\ptA}{\cptC}{\cptD}{\ptB}} % position the label half-way on the curve
       \pgfnode{rectangle}{south}{\color{black} {\pstr@LabelStyle $\label$}}{}{\pgfusepath{discard}}%
     \fi%
+}
+
+
+% Simulation of the \underbrace TeX command with PGF.
+%  #1 and #2 are the names of the nodes delimiting the width of the brace
+%  #3 is the vertical distance between the brace and the nodes
+%  #4 is a label to be written under the brace
+\def\pstrPGFbrace#1#2#3#4{
+\pgfsetlinewidth{1pt}
+\pgfsetarrowsstart{}%
+\pgfsetarrowsend{}%
+\pgfsetdash{}{0pt}
+\def\ptA{\pgfpointdiff{\pgfpoint{0pt}{#3}}{\pgfpointanchor{#2}{base east}}}
+\def\ptB{\pgfpointdiff{\pgfpoint{0pt}{#3}}{\pgfpointanchor{#1}{base west}}}
+\begin{pgfdecoration}{{brace}{\pgfdecoratedpathlength}}
+\pgfpathmoveto{\ptA}
+\pgfpathlineto{\ptB}
+\end{pgfdecoration}
+\pgfusepath{stroke}
+\pgftransformshift{\pgfpointdiff{\pgfpoint{0pt}{5pt}}{\pgfpointlineattime{0.5}\ptA\ptB}}
+\pgfnode{rectangle}{north}{\color{black}{}#4}{}{\pgfusepath{discard}}%
 }
 
 
@@ -518,7 +539,9 @@ curveto
 % pstr with one optional parameter
 \gdef\pstr@PGF@i[#1]{\@ifnextchar[{\pstr@PGF@ii[#1]}{\pstr@PGF@ii[#1][1pt]}}
 % pstr with two optional parameters
-\gdef\pstr@PGF@ii[#1][#2]#3{%
+\gdef\pstr@PGF@ii[#1][#2]#3{\@ifnextchar[{\pstr@PGF@iii[#1][#2]{#3}}{\pstr@PGF@iii[#1][#2]{#3}[]}}
+% pstr with two optional parameters + an optional PGF postamble
+\gdef\pstr@PGF@iii[#1][#2]#3[#4]{%
 \begin{pgfpicture}%
   \def\pstr@arcoptions{#2}%
   \pgfsetbaseline{0pt}%
@@ -526,12 +549,13 @@ curveto
   \pgfset{minimum height=0pt}%
   \pgfset{inner xsep=0pt}%
   \pgfset{inner ysep=0.3pt}%
-  \pgfsetarrows{-stealth}%
-  \pgfsetlinewidth{\pstr@ArrowLineWidth}%
   \pstr@ptrlist={}% Create an empty list of links.
   \pstr@defineUserCommands% define the command \nd and \txt that the package user can use to define the sequence
-  #3%
+  #3%call the body specification
+  \pgfsetarrows{-stealth}%
+  \pgfsetlinewidth{\pstr@ArrowLineWidth}%
   \the\pstr@ptrlist% dump the list of links.
+#4%call the PGF postamble
 \end{pgfpicture}%
 }
 
@@ -677,7 +701,16 @@ curveto
 
 Change log:
 -----------
-Version 0.3.4 29 Oct 2007:
+% 
+%  #1 and #2 are the names of the nodes delimiting the width of the brace
+%  #3 is the vertical distance between the brace and the nodes
+%  #4 is a label to be written under the brace
+\def\pstrPGFbrace#1#2#3#4{
+Version 0.3.4 29 April 2008:
+- add the command \pstrPGFbrace to simulate the \underbrace TeX command in PGF mode.
+This allows you to put brace around a subsequence of nodes.
+
+Version 0.3.4 29 April 2008:
 - updated for use with the latest version of the pgf package
 Version 0.3.3 12 Oct 2007:
 - it is possible to specify the line style with the option \pstrSetArrowLineStyle

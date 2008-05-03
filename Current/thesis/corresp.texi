@@ -120,8 +120,32 @@ Furthermore, since the transformation does not introduce any new redex, the $\et
 
 
 \subsection{Computation tree}
-The computation tree of a term is a certain tree representation of its
-$\eta$-long normal form. It is defined as follows:
+\notetoself{
+Definition from LMCS paper:
+
+In \cite{OngLics2006} the computation tree of a grammar is
+defined as the unravelling of a finite graph representing the \emph{long transform} of a grammar. Similarly we define the computation tree of a $\lambda$-term as some abstract syntax tree of its $\eta$-long normal form.  We write $l\langle t_1, \ldots, t_n \rangle$ with $n \geq 0$ to denote the ordered tree with a root labelled $l$ with $n$ child-subtrees $t_1$, \ldots, $t_n$. In the following we consider arbitrary simply-typed terms.
+\begin{definition}\rm
+\label{dfn:comptree}
+  The \defname{computation tree} $\tau(M)$ of a simply-typed term
+  $\Gamma \stentail M:T$ with variable names in a countable set
+  $\mathcal{V}$ is a tree with labels in $$ \{ @ \} \union \mathcal{V}
+  \union \{ \lambda x_1 \ldots x_n \ | \ x_1 ,\ldots, x_n \in
+  \mathcal{V}, n\in\nat \}$$ defined from its $\eta$-long form as follows. Suppose $\overline{x} = x_1 \ldots x_n$ for $n\geq 0$ then
+\begin{eqnarray*}
+  \mbox{for $m\geq 0$, $z \in \mathcal{V}$: } \tau(\lambda \overline{x} . z s_1 \ldots s_m : o) &=& \lambda \overline{x} \langle z \langle\tau(s_1),\ldots,\tau(s_m)\rangle\rangle \\
+  \mbox{for $m \geq 1$: } \tau(\lambda \overline{x} . (\lambda y.t) s_1 \ldots s_m :o) &=& \lambda \overline{x} \langle @ \langle \tau(\lambda y.t),\tau(s_1),\ldots,\tau(s_m) \rangle \rangle \ .
+\end{eqnarray*}
+\end{definition}
+
+
+Even-level nodes are $\lambda$-nodes (the root is on level 0). A
+single $\lambda$-node can represent several consecutive variable
+abstractions or it can just be a \emphind{dummy lambda} if the
+corresponding subterm is of ground type.  Odd-level nodes are
+variable or application nodes.
+}
+
 
 \begin{definition}
 \label{dfn:comptree} Let $M$ be a simply-typed term in $\eta$-normal
@@ -296,22 +320,26 @@ In particular $\kappa(r) = \elnf{M}$.
 \begin{definition}[Type and order of a node]
 \label{def:nodeorder}
 Suppose $\Gamma \vdash M : T$.
-The \defname{type} of a node $n \in N$ of $\tau(M)$ written $\typeof{n}$ is defined as follows:
+The \defname{type} of an inner-node $n \in N$ of $\tau(M)$ written $\typeof{n}$ is defined as follows:
 \begin{eqnarray*}
-\typeof{\theroot} &=& \Gamma \typear T \\
+\typeof{\theroot} &=& \Gamma \typear T, \\
 \hbox{for $n \in (N_\lambda \union N_@) \setminus \{\theroot \}$: } \typeof{n} &=& \hbox{type of the term $\kappa(n)$,} \\
 \hbox{ for $n\in N_{\sf var} \union N_\Sigma$: } \typeof{n} &=& \hbox{type of the variable labelling $n$}.
 \end{eqnarray*}
-The order of an inner node $n$ written $\ord{n}$ is defined to be
-the order of the type of $n$. The order of a value-leaf $v \in L$ is
-$0$.
-\end{definition}
+where the notation $\Gamma \typear T$ is an abbreviation for
+$(A_1,\ldots,A_p, T)$ where $A_1,\ldots, A_p$ are the types of the variables in the context $\Gamma$.
 
-In particular, $\ord{@} = 0$, $\ord{\lambda \overline{\xi}} = 1+
-\max_{z\in \overline{\xi}} \ord{z}$ for $\lambda \overline{\xi}\neq
-r$ and if the root is $\lambda \overline{\xi}$ then $\ord{r} = 1 + \max_{z\in
-\overline{\xi}\union \Gamma} \ord{z}$ with the convention $\max
-\emptyset = -1$.
+The \defname{order} of a node $n$, written $\ord{n}$, is defined as
+follows: a value-leaf $v \in L$ has order $0$ and
+the order of an inner node $n \in N$ is defined as
+the order of its type.
+\end{definition}
+In particular, the type of a lambda node different from the root is the type of the term represented by the sub-tree rooted at that node, and the type of a variable-node is the type of the variable labelling it. 
+
+Since the computation tree is calculated from the $\eta$-long normal form, all the @-nodes have order $0$ ($\ord{@} = 0$);
+for any lambda node $\lambda \overline{\xi} \neq
+\theroot$ we have $\ord{\lambda \overline{\xi}} = 1+
+\max_{z\in \overline{\xi}} \ord{z}$; and if the root $\theroot$ is labelled $\lambda \overline{\xi}$ then $\ord{\theroot} = 1 + \max_{z\in \overline{\xi}\union \Gamma} \ord{z}$ with the convention $\max \emptyset = -1$.
 
 \begin{remark} \hfill
 \begin{itemize}
@@ -350,16 +378,15 @@ child {node {$n$}
 \end{itemize}
 \end{remark}
 
+\begin{definition}[Binder]
+We say that a variable node $n$ labelled $x$ is \defname{bound} by a node $m$, and $m$ is called the \defname{binder} of $n$, if $m$ is
+the closest node in the path from $n$ to the root such that $m$ is
+labelled $\lambda \overline{\xi}$ with $x\in \overline{\xi}$.
+\end{definition}
+
 
 \subsection{Pointers and justified sequence of nodes}
 \subsubsection{Definitions}
-\begin{definition}[Binder]
-Let $n$ be a variable node of the computation tree labelled $x$. We
-say that a node $n$ is bound by the node $m$, and $m$ is called the
-binder of $n$, if $m$ is the closest node in the path from $n$ to
-the root of the tree such that $m$ is labelled $\lambda
-\overline{\xi}$ with $x\in \overline{\xi}$.
-\end{definition}
 
 \begin{definition}[Enabling]
 The \defname{enabling relation} $\vdash$ is defined on the set of

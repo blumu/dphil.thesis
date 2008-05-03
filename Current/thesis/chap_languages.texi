@@ -1,55 +1,116 @@
+\section{PCF}
+The Programming language for Computable Functions, \pcf\ for short, is a simple programming language introduced in a classical paper by Plotkin ``LCF considered as a programming language''
+(\cite{DBLP:journals/tcs/Plotkin77}). \pcf\ is based on LCF, the
+Logic of Computable Functions devised by Dana Scott in
+\cite{scott_lcf}. It is a simply-typed lambda calculus extended with
+arithmetic operators, conditional and recursion.
+
+\subsection{The syntax of \pcf}
+\pcf\ is a simply-typed $\lambda$-calculus extended with integer arithmetics, conditional and recursion.
+The set of types is given by the following grammar:
+$$ T ::= \iaexp\ |\ T \rightarrow T$$
+where the base type \pcfexp represents the set of integers.
+
+Terms of \pcf\ can be concisely given by the grammar:
+\begin{eqnarray*}
+ M ::= x\ |\ \lambda x :A . M \ |\ M M \ |\ \\
+\ |\ n \ |\ \pcfsucc\  M \ |\  \pcfpred\  M \\
+\ |\ \pcfcond\  M M M \ |\ \texttt{Y}_A\ M
+\end{eqnarray*}
+where $x$ ranges over a set of countably many variables, $n$
+represents an integer constant ranging over the set of natural numbers,
+\pcfsucc\ represents the successor function on integer, \pcfpred the predecessor, 
+\pcfcond\ the conditional (\ie if-then-else branching) and 
+$Y_A : (A\rightarrow A)\rightarrow A$ for any type $A$ is the recursion
+combinator.
+
+Instead of defining \pcf\ terms using the grammar given above, we will use term-in-context 
+given by judgements of the form $\Gamma \vdash M : A$ and defined by induction over the rules
+of table \ref{tab:pcf_formrules}.
+\begin{table}[htbp]
+$$ \rulename{var} \rulef{}{x_1:A_1, x_2:A_2, \ldots x_n : A_n  \vdash x_i : A_i}\ i \in 1..n$$
+$$ \rulename{app} \rulef{\Gamma \vdash M : A\rightarrow B \qquad \Gamma \vdash N:A}{\Gamma \vdash M\ N : B}
+\qquad \rulename{abs} \rulef{\Gamma, x:A \vdash M : B}{\Gamma \vdash \lambda x :A . M : A\rightarrow B}$$
+
+$$ \rulename{const} \rulef{}{\Gamma \vdash n :\iaexp}
+\qquad \rulename{succ} \rulef{\Gamma \vdash M:\iaexp }{\Gamma \vdash \pcfsucc\ M:\iaexp}
+\qquad \rulename{pred} \rulef{\Gamma \vdash M:\iaexp }{\Gamma \vdash \pcfpred\ M:\iaexp}$$
+
+$$
+\rulename{cond} \rulef{\Gamma \vdash M : \iaexp \qquad \Gamma \vdash N_1 : \iaexp \qquad \Gamma \vdash N_2 : \iaexp }{\Gamma \vdash \pcfcond\ M\ N_1\ N_2}
+\qquad  \rulename{rec} \rulef{\Gamma \vdash M : A\rightarrow A }{ \Gamma \vdash Y_A M : A}$$
+
+\caption{Formation rules for \pcf\ terms.}
+\label{tab:pcf_formrules}
+\end{table}
+
+\subsection{Operational semantics of \pcf}
+
+We now give the operational semantics of the language using a big-step style 
+semantics. A call \emphind{canonical form} a term that is either a number or a function:
+$$V ::= n\ |\ \lambda x. M$$
+The notation $M \eval V$ means that the closed term $M$ evaluates to the canonical form $V$. 
+We write $M \eval$ if the judgment $M \eval V$ is valid for some value $V$.
+The full operational semantics is given in table
+\ref{tab:bigstep_pcf}. Since the evaluation rules are defined for closed
+terms only, the context $\Gamma$ is omitted in the rules. 
+\begin{table}[htbp]
+$$\rulef{}{V \eval V} \quad \mbox{ provided that $V$ is in canonical form.} $$
+
+$$ \rulef{M \eval \lambda x. M' \quad M'\subst{x}{N} \eval V}{M N \eval V}$$
+
+$$\rulef{M \eval n}{\pcfsucc\ M \eval n+1}
+\qquad \rulef{M \eval n+1}{\pcfpred\ M \eval n}
+\qquad \rulef{M \eval 0}{\pcfpred\ M \eval 0}$$
+
+$$\rulef{M \eval 0 \quad N_1 \eval V}{\pcfcond\ M N_1 N_2  \eval V}
+\qquad
+ \rulef{M \eval n+1 \quad N_2 \eval V}{\pcfcond\ M N_1 N_2  \eval V}$$
+
+$$\rulef{M (\mathrm{Y} M) \eval V }{\texttt{Y} M \eval V}$$
+\caption{Big-step operational semantics of \pcf.}
+\label{tab:bigstep_pcf}
+\end{table}
+
+
+
+
 
 \section{Idealized Algol}
 
-Idealized Algol, \ialgol\ for short, is \pcf extended with imperative features.
+Idealized Algol, \ialgol\ for short, is \pcf\ extended with imperative features.
 It was introduced by J.C.~Reynold in \cite{Reynolds81}. It adds imperative features such as local
 variables and sequential composition. On top of the base type \iaexp, it has
 two new types: \iacom\ for commands and \iavar\ for
-variables. There is a constant \iaskip\ of type \iacom\ 
+variables. There is a constant \iaskip\ of type \iacom\
 which corresponds to the command that does nothing.
 
 Commands can be composed using the sequential composition operator
-$\iaseq_A$: suppose that $M$ and $N$ are of type \iacom\
-and $A$ respectively then they can be composed to form the term $S =
-\iaseq_A M N : \iacom$. $S$ denotes program that
-executes $M$ until it terminates and then behaves like $N:A$. If $A
-= \iaexp$ then the expression is allowed to have a side-effect
-and $S$ returns the expression computed by $N$, if $A =
-\iacom$ then the command $N$ is executed after $M$. We say
-that the language has \emph{active expressions} to indicate the
-presence of the sequential operator $\iaseq_{\iaexp}$ in the
-language.
+$\iaseq_A$ for any base type $A$. Take two terms $N_0 : \iacom$ and $N_1:A$, their sequential composition is given by the term $M = \iaseq_A N_0 N_1 : \iacom$ which is interpreted operationally as follows:
+$N_0$ is evaluated first and if it terminates then the term $N_1$ is evaluated.
+In the case where $A = \iaexp$, the result of the evaluation of $N_1$ is returned.
+Otherwise, if $A = \iacom$, the command $N_1$ is just evaluated after $N_0$ and the expression yields no result. 
+Terms formed with the operator $\iaseq_\iaexp$ are called \emphind{active expressions}
 
+Local variables can be declared using the \ianew\ operator, their content is modified
+using \iaassign\ and retrieved using \iaderef. Operationally, these variables behave like memory cells.
 
-Local variables are
-declared using the \ianew\ operator, variable content is altered
-using \iaassign\ and retrieved using \iaderef.
+In addition \ialgol\ has the so called ``\emphind{bad variable construct}'' \iamkvar.
+This operator lets the programmer create a special kind of variable by letting him
+specify custom assignment and dereferencing functions. 
+It takes two arguments. The first one, the acceptor, is the function that is responsible of affecting a value
+to the variable. The second one is an expression that returns the value hold by the variable. This mechanism is similar to the ``set/get'' object programming paradigm used by C++ programmers.
+Variables created that way are called ``bad variables'' because they do not necessarily behave like a memory cell: reading the content of the variable does not necessarily gives you the last value that was written.
+For instance reading from the variable $\iamkvar\ (\lambda v.\iaskip)\ 0$ will always return $0$ whatever has been written into it previously.
 
-In addition IA has the constant \iamkvar\ that can be used to
-create a particular kind of variables. The \iamkvar\ operator
-works in an object oriented fashion: it takes two arguments, the
-first one is a function (called the acceptor) that affects a value
-to the variable and the second argument is an expression that
-returns a value from the variable. This mechanism is similar to
-the ``set/get'' object programming paradigm used by C++ programmers.
-
-Variables created with \iamkvar\ are less constrained than the
-variables created with \ianew. Indeed, variables created with
-\ianew\ act like memory cells, they obey the following rule:
-the value read from the variable is always the last value that has
-been assigned to it. This rule does not apply to variables created
-with \iamkvar. For instance the variable:
-$$\iamkvar\  (\lambda v.\iaskip)\ 0$$
-will always return $0$ even if another number has been assigned it.
-
-
-One may think that this addition to the language is artificial, however the full abstraction result of the game model of IA relies upon this addition.\footnote{McCusker showed in \cite{mccusker2001} that the game model of IA with \iamkvar\ which is fully abstract with respect to the observational preorder is also fully abstract for the language without \iamkvar\, but for observational equivalence only. Hence the model is equationally but not inequationally fully abstract for IA without \iamkvar .}
+Although this addition to the language may seem a little bit artificial, its presence makes a difference from a semantic point of view.\footnote{McCusker showed in \cite{mccusker2001} that the standard game model of \ialgol
+is only equationally fully abstract for the language without bad variables, whereas it is inequationally fully abstract for full \ialgol.}
 
 
 \subsection{The syntax of \ialgol}
 
-The set of formation rules for the constructs of \ialgol are given
-in table \ref{tab:ia_formrules}. (They are defined on top of the formations rules of \pcf.)
+The set of formation rules for \ialgol\ terms are defined on top of the formations rules of \pcf.
+The rules for the constructs of \ialgol\ are given in table \ref{tab:ia_formrules}.
 Judgements are of the form $\Gamma \vdash M : A$. If $\Gamma = \emptyset$ then we say that $M$
 is a closed term.
 
@@ -88,7 +149,7 @@ A term $\Gamma \vdash M:T$ of finitary Idealized algol is an $i$th-order term if
 The fragment of finitary Idealized Algol
 consisting of the collection of $i$th-order terms is denoted $\ialgol_i$.
 If we add the iteration construct defined as
-$$  \rulef{\Gamma \vdash M : \iabool \qquad \Gamma \vdash N : \iacom}{\Gamma \vdash \iawhile\ M \iado\ N : \iacom } \quad \mbox{where } \forall x \in \Gamma : \ord{x} < i $$
+$$  \rulef{\Gamma \vdash M : \iabool \qquad \Gamma \vdash N : \iacom}{\Gamma \vdash \iawhile\ M\ \iado\ N : \iacom } \quad \mbox{where } \forall x \in \Gamma : \ord{x} < i $$
 we obtain the fragments $\ialgol_i + \textsf{while}$ for $i\in\nat$.
 Finally $\ialgol_i + \textsf{Y}_j$ for $j< i$ denotes the fragment $\ialgol_i$ augmented with a set of fixed-point iterators $\textsf{Y}_A : (A\typear A ) \typear A$ for any type $A$ of order $j$ at most, whose syntax is defined by the rule:
 $$  \rulef{\Gamma \vdash \lambda x . M : A\rightarrow A}{\Gamma \vdash Y_A M : A} \quad \mbox{where } \forall x \in \Gamma : \ord{x} < i \mbox{ and } \ord{A} \leq j $$
@@ -119,36 +180,35 @@ that maps $x$ to $n$ and acts according to the store $s$ otherwise.
 %substitution used for beta-reduction).
 
 
-The canonical forms for IA are given by the grammar:
+The \emphind{canonical forms} for IA are given by the grammar:
 $$ V ::= \iaskip\ |\ n\ |\ \lambda x. M\ |\ x\ |\  \iamkvar\  M\ N$$
+where $n$ ranges over natural number and $x$ over variable names.
 
-where $n \in \nat$ and $x: \iavar$.
 
-
-In \ialgol, a program is a term together with a $\Gamma$-store such
+An \ialgol program is a term together with a $\Gamma$-store such
 that $\Gamma \vdash M : A$. The evaluation semantics is expressed by
 the judgment form:
 $$s,M \eval s', V$$
 where $s$ and $s'$ are $\Gamma$-stores, $V$ is a canonical form and $\Gamma \vdash V : A$.
 
 The operational semantics for IA is given by the rule of \pcf\ (table \ref{tab:bigstep_pcf})
-together with the rules of table \ref{tab:bigstep_ia} where the following abbreviation is used:
+together with the rules of table \ref{tab:bigstep_ia} in which the following abbreviation is used:
 $$ \rulef{M_1 \eval V_1 \quad M_2 \eval V_2}{M \eval V} \qquad \mbox{for} \qquad
   \rulef{s,M_1 \eval s',V_1 \quad s', M_2 \eval s'',V_2 }{s,M \eval s'',V}
 $$
 
 
 \begin{table}[htbp]
-$$\mbox{\textbf{Sequencing }}
+$$\mbox{\textbf{Sequencing: }}
     \rulef{M \eval \iaskip \quad N \eval V}{\texttt{seq } M\ N \eval V}
 $$
 
-$$\mbox{\textbf{Variables }}
+$$\mbox{\textbf{Variables: }}
     \rulef{s,N \eval s',n \quad s',M \eval s'',x}{s, \iaassign\ M\ N \eval (s''\ |\ x \mapsto n),\iaskip}
 \qquad
     \rulef{s,M \eval s',x }{s, \iaderef\ M \eval s',s'(x)}$$
 
-$$\mbox{\texttt{\textbf{mkvar}}}
+$$\mbox{\textbf{Bad-variables: }}
     \rulef{N \eval n \quad M \eval \iamkvar\  M_1\ M_2 \quad M_1\ n \eval \iaskip}
     {\iaassign\ M\ N \eval \iaskip}
 \qquad
@@ -156,26 +216,23 @@ $$\mbox{\texttt{\textbf{mkvar}}}
     {\iaderef\ M \eval n}
 $$
 
-$$\mbox{\textbf{Block}}
+$$\mbox{\textbf{Block: }}
     \rulef{(s\ |\ x \mapsto 0),M \eval (s'\ |\ x \mapsto n),V }
     {s, \texttt{new } x \texttt{ in } M \eval s',V}
 $$
 
+\caption{Big-step operational semantics of IA.}
 \label{tab:bigstep_ia}
-\caption{Big-step operational semantics of IA}
 \end{table}
 
 \subsection{Small-step semantics of \ialgol}
 \label{subsec:smallstep_ia}
 The previous section defined the operational semantics of
-\ialgol\ using a big step semantics. Equivalently, we can define it using a small-step semantics.
-The reduction rules of the small-step semantics are of the form $s,e
-\rightarrow s',e'$ where $s$ and $s'$ denotes the stores and $e$ and
-$e'$ denotes \ialgol\ expressions.
-
-The reduction rules are the following:
+\ialgol\ by mean of a big step semantics. We can equivalently define it using a small-step semantics.
+The reduction rules are of the form $s,e \rightarrow s',e'$ where $s$ and $s'$ denotes the stores and $e$ and
+$e'$ denotes \ialgol\ expressions. The reduction rules are:
 \begin{itemize}
-\item the $\beta$-reduction;
+\item The $\beta$-reduction of the lambda calculus;
 \item reduction rules for \pcf\ constants:
 \begin{eqnarray*}
 \pcfsucc\ n &\rightarrow& n+1 \\
@@ -196,15 +253,15 @@ s, \iaderef\ x &\rightarrow& s, s(x) \\
 \end{eqnarray*}
 \end{itemize}
 
-Redex can also be reduced when they occur as subexpressions within a
-larger expression. We make use of evaluation contexts to indicate
-when such reduction can happen. Evaluation contexts are given by the
-following grammar:
+Furthermore, redexes can be reduced when occurring as part of a
+larger expression. This is formally defined using the notion of \emphind{evaluation contexts}. These
+are expressions containing a hole denoted by $-$ which indicates a position at which a 
+reduction can happen.
+Evaluation contexts are given by the grammar
 \begin{eqnarray*}
 E[-] &::=& - |\ E N\ |\ \pcfsucc\ E\ |\ \pcfpred\ E\ |\ \pcfcond\ E\ N_1\ N_2\ |\ \\
 &&    \iaseq\ E\ N\ |\ \iaderef\ E\ |\ \iaassign\ E\ n\ |\ \iaassign\ M\ E \ |\ \\
 &&    \iamkvar\ M\ E\ |\ \iamkvar\ E\ M\ |\ \ianewin{x}\ E  .
 \end{eqnarray*}
-
-The small-step semantics is completed with following rule:
-$$ \rulef{M \rightarrow N}{E[M] \rightarrow E[N]} $$
+The small-step semantics is then completed with the rule:
+$$ \rulef{M \rightarrow N}{E[M] \rightarrow E[N]} $$ 

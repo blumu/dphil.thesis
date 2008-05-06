@@ -1,41 +1,11 @@
 \section{Safe \texorpdfstring{$\lambda$}{lambda}-calculus without the homogeneity constraint}
 \label{sec:safe_nonhomog}
 
-
-In section \ref{sec:safe_homog}, we have presented a version of the
-safe lambda calculus where types are required to be homogeneous. We
-now give a more general version of the safe simply-typed
-$\lambda$-calculus where type homogeneity is not required.
-
-\subsection{Rules}
-
-We use a set of sequents of the form $\Gamma \vdash M : A$ where
-$\Gamma$ is the context of the term and $A$ is its type. Let
-$\Sigma$ be a set of higher-order constants. We call safe terms any
-simply-typed lambda term that is typable within the following system
-of formation rules:
-$$ \rulename{var} \   \rulef{}{x : A\vdash x : A}
-\qquad  \rulename{const} \   \rulef{}{\vdash f : A} \quad f \in \Sigma
-\qquad  \rulename{wk} \   \rulef{\Gamma \vdash M : A}{\Delta \vdash M : A} \quad \Gamma \subset \Delta$$
-
-$$ \rulename{app} \  \rulef{\Gamma \vdash M : (A,\ldots,A_l,B)
-                                        \qquad \Gamma \vdash N_1 : A_1
-                                        \quad \ldots \quad \Gamma \vdash N_l : A_l  }
-                                   {\Gamma  \vdash M N_1 \ldots N_l : B}
-                                    \quad
-                                   \forall y \in \Gamma : \ord{y} \geq \ord{B}$$
-
-$$ \rulename{abs} \   \rulef{\Gamma \union \overline{x} : \overline{A} \vdash M : B}
-                                   {\Gamma  \vdash \lambda \overline{x} : \overline{A} . M : (\overline{A},B)} \qquad
-                                   \forall y \in \Gamma : \ord{y} \geq \ord{\overline{A},B}$$
-
-
-Remark:
+\subsection{Comparison with the homogeneous safe lambda calculus}
 \begin{itemize}
-\item $(\overline{A},B)$ denotes the type $(A_1,A_2, \ldots, A_n, B)$;
 \item all the types appearing in the rule are not required to be homogeneous (for instance
 it is possible to have $\ord{A_l} < \ord{B}$ in rule $\rulename{app}$) ;
-\item the environment $\Gamma \union \overline{x}:\overline{A}$ is not stratified, in particular, variables in $\overline{x}$ do not necessarily have the same order;
+\item environments are not stratified, in particular in the context $\Gamma \union \overline{x}:\overline{A}$, variables in $\overline{x}$ do not necessarily have the same order;
 \item in the abstraction rule, the side-condition imposes that at least all variables of the lowest order
 in the context are abstracted. Variables of greater order can also be
 abstracted together with the lowest order variables and, in contrast to
@@ -54,207 +24,80 @@ For $x:o$, $g:(o,(o,o),o)$, the term $\vdash \lambda g x . g x$ is unsafe and no
 and the term $\lambda g x . g x (\lambda x . x)$ is safe and not homogeneously typed.
 \end{example}
 
-Side-remark: safety is preserved by full $\eta$-expansion. Indeed,
-consider the safe term $\Gamma \vdash M:(A_1,\ldots,A_l,o)$ where
-$(A_1,\ldots,A_l,o)$ is not necessarily homogeneous. Its full $\eta$-expansion
-is $\lambda x_1 .. x_l . M x_1 \dots x_l$ for some variables
-$x_1:A_1, \ldots, x_l:A_l$ fresh in $M$. For all $i \in 1..l$ we
-have $\Gamma, \Sigma \vdash x_i :A_i$ where $\Sigma = \{ x_1:A_1,
-\cdots x_l :A_l \}$. Applying $\rulename{app}$ we obtain $\Gamma,
-\Sigma \vdash M x_1 \ldots x_l$ and by the (abs) rule we get
-$$\Gamma \vdash \lambda x_1:A_1 \ldots x_l:A_l .M x_1 \ldots x_l.$$
+\begin{example}
+Let $f,g:o\rightarrow o$, $x,y:o\rightarrow o$, $\Gamma =
+g:o\rightarrow o$ and $\Gamma' = g:o\rightarrow o, y:o$. The term
+$(\lambda f x . x) g y $ is safe. One possible proof tree is:
+$$ \rulef{
+        \rulef{
+            \rulef{
+                \rulef{\vdots}{\Gamma \vdash \lambda f x. x}      \qquad \axiomf{\Gamma \vdash g} }
+            {\Gamma \vdash (\lambda f x. x) g} \rulename{app}
+        }
+        { \Gamma' \vdash (\lambda f x. x) g } \rulename{wk}
+        \qquad \axiomf{\Gamma' \vdash y}
+    }
+    { \Gamma' \vdash (\lambda f x. x) g y } \rulename{app}
+$$
+Here is another proof for the same judgment:
+$$ \rulef{  \rulef{ \rulef{\vdots}{\Gamma \vdash \lambda f x. x} }{\Gamma' \vdash \lambda f x. x} \rulename{wk}    \qquad \rulef{}{\Gamma' \vdash g} \qquad \rulef{}{\Gamma' \vdash y}}
+    {\Gamma' \vdash (\lambda f x. x) g y } \rulename{app}$$
+
+We see on this particular example that there may exist different
+proof trees deriving the same judgment.
+\end{example}
+
+\begin{example}
+This example is taken from \cite{serenistypesct05}, where it is used as a counter-example to show that not all simply-typed terms are \emph{size-change terminating}
+(see \cite{jones01} for a definition):
+
+$$ E =  (\lambda a . a (\lambda b . a (\lambda c d .d))) (\lambda e . e (\lambda f .f))$$
+where:
+\begin{eqnarray*}
+a &:& \sigma \typear \mu \typear \mu \\
+b &:& \tau \typear \tau \\
+c &:& \tau \typear \tau \\
+d &:& \mu \\
+e &:& \sigma = (\tau \typear \tau) \typear \mu \typear \mu \\
+f &:& \tau
+\end{eqnarray*}
+and $\tau$, $\mu$ and $\sigma$ are type variables.
+
+This example shows that the rules of the safe $\lambda$-calculus
+without the homogeneity restriction generates a class of terms that
+strictly contains the class of terms generated by the rules of the
+homogeneous safe $\lambda$-calculus of section \ref{sec:safe_homog}.
+
+Indeed, for $E$ to be an homogeneous safe lambda term, in the sense
+of the rules of section \ref{sec:safe_homog}, $\tau$ and $\mu$ must
+be homogeneous types and the variables $a,b,c,d,e,f$ must be
+homogeneously typed. This implies that $ \ord{\tau} \geq
+\ord{\mu}-1$. Conversely, if this condition is met then $\vdash E :
+\mu \typear \mu$ is a valid judgement of the \emph{homogeneous} safe $\lambda$-calculus.
+
+In the safe $\lambda$-calculus \emph{without} the homogeneity
+constraint, however, the judgement $\vdash E : \mu \typear \mu$ is
+always valid whatever the types $\mu$ and $\tau$ are.
+\end{example}
 
 \begin{lemma}[Context reduction]
-\label{lem:nonhomosafe_basic_prop}
-If $\Gamma \vdash M : B$ is a valid judgment then
-\begin{enumerate}
-\item $fv(M) \vdash M : B$
-\item every variable in $\Gamma$ \emph{occurring free in $M$} has order at
-least $ord(M)$.
-\end{enumerate}
+If $\Gamma \sentail M : B$ is a valid judgment then so is $fv(M) \sentail M : B$
 where $fv(M)$ denotes the context constituted of the free variables occurring in $M$.
 \end{lemma}
 \begin{proof}
-(i) Suppose that some variable $x$ in $\Gamma$ does not occur free
+Suppose that some variable $x$ in $\Gamma$ does not occur free
 in $M$, then necessarily $x$ has been introduced in the context
 using the weakening rule. Hence $\Gamma\setminus \{ x \} \vdash M$
-must also be typable. (ii) An easy structural induction.
+must also be typable.
 \end{proof}
-
-The converse of this lemma is not true: consider the simply-typed
-term $\lambda y z. (\lambda x . y ) z$ with $x,y,z:o$. This term is
-closed therefore it satisfies property (i) and (ii) of lemma
-\ref{lem:nonhomosafe_basic_prop}. However it is not typable by the
-rules of the safe lambda-calculus since the subterm $\lambda x .y$
-is not safe.
-
-\subsection{Substitution in the safe lambda calculus}
-
-The traditional notion of substitution, on which the
-$\lambda$-calculus is based, is defined as follows:
-\begin{definition}[Substitution]
-\label{dfn:subst}
-\begin{eqnarray*}
-c \subst{t}{x} &=& c \quad \mbox{where $c$ is a $\Sigma$-constant},\\
-x \subst{t}{x} &=& t\\
- y\subst{t}{x} &=& y \quad \mbox{for } x \not \neq y,\\
-(M_1 M_2) \subst{t}{x} &=& (M_1 \subst{t}{x}) (M_2 \subst{t}{x})\\
-(\lambda x . M) \subst{t}{x} &=& \lambda x . M\\
-(\lambda y . M) \subst{t}{x} &=& \lambda z . M \subst{z}{y}
-\subst{t}{x} \mbox{where $z$ is a fresh variable and $x\not = y$}.
-\end{eqnarray*}
-\end{definition}
-
-In the setting of the safe lambda calculus, the notion of
-substitution can be simplified. Indeed, similarly to what we observe
-in the homogeneous safe $\lambda$-calculus, we remark that for safe
-$\lambda$-terms there is no need to rename variables when performing
-substitution:
-
-\begin{lemma}[No variable capture lemma]
-\label{lem:nocapture} There is no variable capture when performing
-substitution on a safe term.
-\end{lemma}
-
-This is the counterpart of lemma \ref{lem:homog_nocapture}. The
-proof (which does not rely on homogeneity) is the same.
-Consequently, in the safe lambda calculus setting, we can omit to
-rename variable when performing substitution. The equation
-$$(\lambda x . M) \subst{t}{y} = \lambda z . M \subst{z}{x}
-\subst{t}{y} \mbox{where $z$ is a fresh variable}$$ becomes
-$$(\lambda x . M) \subst{t}{y} = \lambda x . M \subst{t}{y}.$$
-
-Unfortunately, this notion of substitution is still not adequate for
-the purpose of the safe simply-typed lambda calculus. The problem is
-that performing a single $\beta$-reduction on a safe term will not
-necessarily produce another safe term.
-
-The solution consists in reducing several consecutive $\beta$-redex
-at the same time until we obtain a safe term. To achieve this, we
-introduce the \emph{simultaneous substitution}, a generalization of
-the standard substitution given in definition \ref{dfn:subst}.
-
-\begin{definition}[Simultaneous substitution]
-\label{dnf:simsubst}
- The expression $\subst{\overline{N}}{\overline{x}}$ is an abbreviation for $\subst{N_1 \ldots N_n}{x_1
-\ldots x_n}$:
-\begin{eqnarray*}
-c \subst{\overline{N}}{\overline{x}} &=& c \quad \mbox{where $c$ is a $\Sigma$-constant},\\
-x_i \subst{\overline{N}}{\overline{x}} &=& N_i\\
- y \subst{\overline{N}}{\overline{x}} &=& y \quad \mbox{ if } y \not \neq x_i \mbox{ for all } i,\\
-(M N) \subst{\overline{N}}{\overline{x}} &=& (M \subst{\overline{N}}{\overline{x}}) (N \subst{\overline{N}}{\overline{x}}) \\
-(\lambda x_i . M) \subst{\overline{N}}{\overline{x}} &=& \lambda x_i
-. M
-\subst{N_1 \ldots N_{i-1} N_{i+1}\ldots N_n}{x_1 \ldots x_{i-1} x_{i+1}\ldots x_n} \\
-(\lambda y . M)
-\subst{\overline{N}}{\overline{x}} &=& \lambda z . M \subst{z}{y} \subst{\overline{N}}{\overline{x}} \\
-&& \mbox{where $z$ is a fresh variables and } y \neq x_i \mbox{ for
-all } i.
-\end{eqnarray*}
-\end{definition}
-
-In general, variable capture should be avoided, this explains why
-the definition of simultaneous substitution uses auxiliary fresh
-variables. However in the current setting, lemma \ref{nocapture} can
-clearly be transposed to the simultaneous substitution, therefore
-there is no need to rename variables.
-
-The notion of substitution that we need is therefore the
-\emph{capture-permitting simultaneous substitution} defined as
-follows:
-
-\begin{definition}[Capture-permitting simultaneous substitution]
- We use the notation
-$\subst{\overline{N}}{\overline{x}}$ for $\subst{N_1 \ldots N_n}{x_1
-\ldots x_n}$:
-\begin{eqnarray*}
-c \subst{\overline{N}}{\overline{x}} &=& c \quad \mbox{where $c$ is a $\Sigma$-constant},\\
- x_i \subst{\overline{N}}{\overline{x}} &=& N_i\\
- y \subst{\overline{N}}{\overline{x}} &=& y \quad \mbox{where } x \not \neq y_i \mbox{ for all } i,\\
-(M_1 M_2) \subst{\overline{N}}{\overline{x}} &=& (M_1 \subst{\overline{N}}{\overline{x}}) (M_2 \subst{\overline{N}}{\overline{x}})\\
-(\lambda x_i . M) \subst{\overline{N}}{\overline{x}} &=& \lambda x_i
-. M
-\subst{N_1 \ldots N_{i-1} N_{i+1}\ldots N_n}{x_1 \ldots x_{i-1} x_{i+1}\ldots x_n} \\
-(\lambda y . M) \subst{\overline{N}}{\overline{x}} &=& \lambda y . M
-\subst{\overline{N}}{\overline{x}} \mbox{where $y \not = x_i$ for
-all $i$}. \qquad \mathbf{(\star)}
-\end{eqnarray*}
-The symbol $\mathbf{(\star)}$ identifies the equation which has
-changed compared to the previous definition.
-\end{definition}
-
-\begin{lemma}[Substitution preserves safety]
-\label{lem:subst_preserve_i}
-$$ \Gamma\union \overline{x} : \overline{A}\vdash M : T
-\quad \mbox{and} \quad \Gamma \vdash N_k : B_k \mbox{, } k \in
-1..n \qquad \mbox{ implies } \qquad \Gamma \vdash
-M[\overline{N}/\overline{x}] : T$$
-\end{lemma}
-
-\begin{proof}
-Suppose that $\Gamma \union \overline{x}: \overline{A} \vdash M :T$ and
-$\Gamma \vdash N_k : B_k$ for $k \in 1..n$.
-
-We prove $\Gamma \vdash M[\overline{N}/\overline{x}]$ by induction
-on the size of the proof tree of $\Gamma\union
-\overline{x}:\overline{A} \vdash M : T$ and by case analysis on the
-last rule used. We only give the proof for the abstraction case. If
-$\Gamma \union \overline{x}:\overline{A} \vdash \lambda \overline{y}
-: \overline{C}. P : (\overline{C}|D)$ where $\Gamma\union
-\overline{x}:\overline{A}\union \overline{y}:\overline{C} \vdash P :
-D$, then by the induction hypothesis $\Gamma\union
-\overline{y}:\overline{C} \vdash P\subst{\overline{N}}{\overline{x}}
-: D$. Applying the rule $\rulename{abs}$ gives $\Gamma \vdash
-\lambda \overline{y}:\overline{C} . P
-\subst{\overline{N}}{\overline{x}}$.
-\end{proof}
-
-\subsection{Safe-redex}
-In the simply-typed lambda calculus a redex is a term of the form
-$(\lambda x . M) N$. We generalize this definition to the safe
-lambda calculus:
-\begin{definition}[Safe redex]
-We call safe redex a term of the form $(\lambda \overline{x} . M)
-N_1 \ldots N_l$ such that:
-\begin{itemize}
-\item $ \Gamma \vdash (\lambda \overline{x} . M) N_1 \ldots N_l $;
-\item the variable $\overline{x}=x_1\ldots x_n$ are abstracted altogether by one occurrence of the rule $\rulename{abs}$ in the proof
-tree;
-\item the terms $(\lambda \overline{x} . M)$, $N_1$, $N_l$ are applied together at once using the $\rulename{app}$ rule :
-$$   \rulef{
-            \Sigma \vdash \lambda \overline{x} . M
-            \quad
-            \Sigma \vdash N_1         \quad \ldots \quad \Sigma \vdash N_l
-    }
-    {
-       \Sigma \vdash (\lambda \overline{x} . L) N_1 \ldots N_l
-    } (\mathbf{app})
-$$
-and consequently each $N_i$ is safe;
-\end{itemize}
-\end{definition}
-
-The relation $\beta_s$ is defined exactly the same way as in the homogeneous safe $\lambda$-calculus. The safe $\beta$-reduction $\betasred$ is defined as the closure of $\beta_s$ by
-compatibility with the formation rules of the safe
-$\lambda$-calculus.  It is straightforward to show, as we did for the homogeneous safe $\lambda$-calculus, that $\betasred \subset \betaredtr$.
-
-
-\begin{lemma}
-\label{lem:safereduction} A safe redex reduces to a safe term.
-\end{lemma}
-
-This lemma, which is a consequence of lemma
-\ref{lem:subst_preserve_i}, is the counterpart of lemma
-\ref{lem:homoh_safered_preserve_safety} in the homogeneous safe
-lambda calculus. Their proofs are identical.
 
 
 \subsection{Particular case of homogeneously-safe lambda terms}
 
-In this section, we derive a new set of rules by adding the type-homogeneity restriction to the non-homogenous safe lambda calculus.
+In this section, we derive a new set of rules by enforcing the type-homogeneity restriction into the non-homogenous safe lambda calculus.
 
 We recall the definition of type-homogeneity from section
-\ref{sec:safe_homog}: a type $(A_1, A_2, \ldots A_n, o)$ is said to
+\ref{sec:safe_homog}: a type $(A_1, \ldots A_n, o)$ is said to
 be homogeneous whenever $\ord{A_1} \geq \ord{A_2} \geq \ldots \geq
 \ord{A_n}$ and each of the $A_i$ is homogeneous. A term is said to
 be homogeneous if its type is homogeneous.
@@ -452,60 +295,3 @@ $$
 
 \end{itemize}
 \end{proof}
-
-
-\subsection{Examples}
-\subsubsection{Example 1}
-Let $f,g:o\rightarrow o$, $x,y:o\rightarrow o$, $\Gamma =
-g:o\rightarrow o$ and $\Gamma' = g:o\rightarrow o, y:o$. The term
-$(\lambda f x . x) g y $ is safe. One possible proof tree is:
-$$ \rulef{
-        \rulef{
-            \rulef{
-                \rulef{\vdots}{\Gamma \vdash \lambda f x. x}      \qquad \axiomf{\Gamma \vdash g} }
-            {\Gamma \vdash (\lambda f x. x) g} \rulename{app}
-        }
-        { \Gamma' \vdash (\lambda f x. x) g } \rulename{wk}
-        \qquad \axiomf{\Gamma' \vdash y}
-    }
-    { \Gamma' \vdash (\lambda f x. x) g y } \rulename{app}
-$$
-Here is another proof for the same judgment:
-$$ \rulef{  \rulef{ \rulef{\vdots}{\Gamma \vdash \lambda f x. x} }{\Gamma' \vdash \lambda f x. x} \rulename{wk}    \qquad \rulef{}{\Gamma' \vdash g} \qquad \rulef{}{\Gamma' \vdash y}}
-    {\Gamma' \vdash (\lambda f x. x) g y } \rulename{app}$$
-
-We see on this particular example that there may exist different
-proof trees deriving the same judgment.
-
-\subsubsection{Example 2 - Damien Sereni's SCT counter-example}
-In \cite{serenistypesct05}, the following counter-example is given
-to show that not all simply-typed terms are size-change terminating
-(see \cite{jones01} for a definition of size-change termination):
-
-$$ E =  (\lambda a . a (\lambda b . a (\lambda c d .d))) (\lambda e . e (\lambda f .f))$$
-where:
-\begin{eqnarray*}
-a &:& \sigma \typear \mu \typear \mu \\
-b &:& \tau \typear \tau \\
-c &:& \tau \typear \tau \\
-d &:& \mu \\
-e &:& \sigma = (\tau \typear \tau) \typear \mu \typear \mu \\
-f &:& \tau
-\end{eqnarray*}
-and $\tau$, $\mu$ and $\sigma$ are type variables.
-
-This example shows that the rules of the safe $\lambda$-calculus
-without the homogeneity restriction generates a class of terms that
-strictly contains the class of terms generated by the rules of the
-homogeneous safe $\lambda$-calculus of section \ref{sec:safe_homog}.
-
-Indeed, for $E$ to be an homogeneous safe lambda term, in the sense
-of the rules of section \ref{sec:safe_homog}, $\tau$ and $\mu$ must
-be homogeneous types and the variables $a,b,c,d,e,f$ must be
-homogeneously typed. This implies that $ \ord{\tau} \geq
-\ord{\mu}-1$. Conversely, if this condition is met then $\vdash E :
-\mu \typear \mu$ is a valid judgement of the \emph{homogeneous} safe $\lambda$-calculus.
-
-In the safe $\lambda$-calculus \emph{without} the homogeneity
-constraint, however, the judgement $\vdash E : \mu \typear \mu$ is
-always valid whatever the types $\mu$ and $\tau$ are.

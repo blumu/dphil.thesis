@@ -1,0 +1,77 @@
+\notetoself{alpha-conversion,...}
+
+A naive way to implement substitution is called \emph{capture-permitting substitution}. It is done by just textually replacing all free occurrences of $x$ in $M$ by $N$ without performing variable renaming:
+
+\begin{definition}[Capture-permitting substitution]
+\label{def:captpermsubst}
+The \defname{capture-permitting substitution} of $N$ for $x$ in $M$,
+written $M\captsubst{N}{x}$, is defined by induction as follows:
+\begin{eqnarray*}
+c \captsubst{N}{x} &=& c \quad \mbox{where $c$ is a $\Sigma$-constant},\\
+ x_i \captsubst{N}{x} &=& N_i\\
+ y \captsubst{N}{x} &=& y \quad \mbox{where } x \not \neq y_i \mbox{ for all } i,\\
+(M_1 M_2) \captsubst{N}{x} &=& (M_1 \captsubst{N}{x}) (M_2 \captsubst{N}{x})\\
+(\lambda x . M) \captsubst{N}{x} &=& \lambda x . M \\
+(\lambda y . M) \captsubst{N}{x} &=& \lambda y . M\captsubst{N}{x} \mbox{where $y \not = x$.}
+\end{eqnarray*}
+\end{definition}
+
+This simple form of substitution, however, does not convey the proper idea of substitution that is needed to give a computational sense to the syntax of the lambda calculus.
+In particular, the result of a substitution should not be dependant of the syntax of the terms. Take for instance the terms $M_1\equiv \lambda y .x$, $M_2\equiv \lambda z .x$ and $N \equiv y$. We have $M_1\captsubst{N/x} \equiv \lambda y . y$ which is the identity term, and on the other hand $M_2\captsubst{N/x} \equiv \lambda z . y$ which is a term that returns the free variable $y$ whatever is passed as a parameter. Clearly these two terms have different behaviour although the term $M_1$ and $M_2$ are morally the same (they are $\alpha$-equivalent).
+The source of the problem is the last equation: in the abstraction case, when pushing the substitution under the lambda, some care needs to be taken so that the free-variable in $M$ do not get ``captured'' by the abstraction. This is traditionally achieved by renaming all the free variables in $M$ afresh before continuing with the substitution:
+\begin{definition}[Substitution]
+\label{dfn:subst}
+The substitution of $N$ for $x$ in $M$ written $M\subst{N}{x}$ is defined by induction as follows:
+\begin{eqnarray*}
+c \subst{t}{x} &=& c \quad \mbox{where $c$ is a $\Sigma$-constant},\\
+x \subst{t}{x} &=& t\\
+ y\subst{t}{x} &=& y \quad \mbox{for } x \not \neq y,\\
+(M_1 M_2) \subst{t}{x} &=& (M_1 \subst{t}{x}) (M_2 \subst{t}{x})\\
+(\lambda x . M) \subst{t}{x} &=& \lambda x . M\\
+(\lambda y . M) \subst{t}{x} &=& \lambda z . M \subst{z}{y}
+\subst{t}{x} \mbox{where $z$ is a fresh variable and $x\not = y$}.
+\end{eqnarray*}
+\end{definition}
+Observe that only the last equation differs from the definition of capture-permitting substitution.
+
+
+These two operations can easily be generalized to perform several substitutions at once.
+This is called \emphind{simultaneous substitution}:
+\begin{definition}[Simultaneous capture-permitting substitution]
+\label{def:captpermsimultsubst}
+The \defname{simultaneous capture-permitting substitution} of $N_1$, \ldots, $N_n$ for
+$x_1$,\ldots $x_n$ in $M$, written $M\captsubst{N_1 \ldots N_n}{x_1 \ldots x_n}$ and abbreviated here as
+$M\captsubst{\overline{N}}{\overline{x}}$ is defined by induction as follows:
+\begin{eqnarray*}
+c \captsubst{\overline{N}}{\overline{x}} &=& c \quad \mbox{where $c$ is a $\Sigma$-constant},\\
+ x_i \captsubst{\overline{N}}{\overline{x}} &=& N_i\\
+ y \captsubst{\overline{N}}{\overline{x}} &=& y \quad \mbox{where } x \not \neq y_i \mbox{ for all } i,\\
+(M_1 M_2) \captsubst{\overline{N}}{\overline{x}} &=& (M_1 \captsubst{\overline{N}}{\overline{x}}) (M_2 \captsubst{\overline{N}}{\overline{x}})\\
+(\lambda x_i . M) \captsubst{\overline{N}}{\overline{x}} &=& \lambda x_i
+. M
+\captsubst{N_1 \ldots N_{i-1} N_{i+1}\ldots N_n}{x_1 \ldots x_{i-1} x_{i+1}\ldots x_n} \\
+(\lambda y . M) \captsubst{\overline{N}}{\overline{x}} &=& \lambda y . M
+\captsubst{\overline{N}}{\overline{x}} \mbox{where $y \not = x_i$ for
+all $i$.}
+\end{eqnarray*}
+\end{definition}
+
+\begin{definition}[Simultaneous substitution]
+\label{dnf:simsubst}
+The \defname{simultaneous substitution} of $N_1$, \ldots, $N_n$ for
+$x_1$,\ldots $x_n$ in $M$, written $M\subst{N_1 \ldots N_n}{x_1 \ldots x_n}$ and abbreviated here as $M\subst{\overline{N}}{\overline{x}}$ is defined by induction as follows:
+\begin{eqnarray*}
+c \subst{\overline{N}}{\overline{x}} &=& c \quad \mbox{where $c$ is a $\Sigma$-constant},\\
+x_i \subst{\overline{N}}{\overline{x}} &=& N_i\\
+ y \subst{\overline{N}}{\overline{x}} &=& y \quad \mbox{ if } y \not \neq x_i \mbox{ for all } i,\\
+(M N) \subst{\overline{N}}{\overline{x}} &=& (M \subst{\overline{N}}{\overline{x}}) (N \subst{\overline{N}}{\overline{x}}) \\
+(\lambda x_i . M) \subst{\overline{N}}{\overline{x}} &=& \lambda x_i
+. M
+\subst{N_1 \ldots N_{i-1} N_{i+1}\ldots N_n}{x_1 \ldots x_{i-1} x_{i+1}\ldots x_n} \\
+(\lambda y . M)
+\subst{\overline{N}}{\overline{x}} &=& \lambda z . M \subst{z}{y} \subst{\overline{N}}{\overline{x}} \\
+&& \mbox{where $z$ is a fresh variables and } y \neq x_i \mbox{ for
+all } i.
+\end{eqnarray*}
+\end{definition}
+

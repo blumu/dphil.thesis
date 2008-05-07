@@ -14,8 +14,7 @@ from O-moves' pointers. We then introduce the notion of
 incremental-binding and P-incremental-justification (proposition \ref{prop:Nher_incrbound_iff_incrjustified}). Finally, we show that safe simply-typed terms have incrementally\--bound computation trees, consequently their game denotation is P-incrementally-justified.
 
 
-The first section of this chapter is concerned only with the safe $\lambda$-calculus without interpreted constants. In the next
-section we extend the result by taking into account the interpreted
+The first section of this chapter is concerned only with the safe $\lambda$-calculus without interpreted constants. In the following sections we extend the result by taking into account the interpreted
 constants of \pcf\ and \ialgol. We define the language safe \ialgol\
 (resp. safe \pcf) to be the fragment of \ialgol\ (resp. \pcf) where
 the application and abstraction rules are constrained the same way
@@ -30,17 +29,19 @@ Some of the results presented in this chapter were first published in TLCA \cite
 
 In this section, we assume that we work in a general setting of a
 language extending the simply-typed lambda calculus with new
-constants and respecting the following prerequisites:
+constants. We assume the following prerequisites:
 \begin{itemize}
+\item Terms of the language are denoted by sequents of the form
+$\Gamma \entail M : T$.
 \item A fully-abstract game-semantic model of the language is
-defined;
+defined. The strategy denotation of a term-in-context $\Gamma
+\stentail M : T$ is written $\sem{\Gamma \stentail M : T}$;
 \item A notion of safety is defined for the language such that the
 restriction of the language to the safe pure simply-typed
-fragment coincides with the definition of the Safe Lambda
-Calculus and such that for any typable term $\Gamma \vdash M :
+fragment coincides with the definition of the safe lambda
+calculus and such that for any typable term $\Gamma \sentail M :
 T$ we have $\forall z \in \Gamma . \ord{z} \geq \ord{T}$ ;
 \item The small-step reduction semantics of the language preserves safety;
-%\item Substitution preserves safety.
 \item New traversal rules are defined to take into account the constants of the language.
 \item Constant traversal rules are well-behaved (see Def.\
 \ref{def:wellbehaved_traversal});
@@ -52,25 +53,31 @@ We will show that both \pcf\ and \ialgol\ fit this setting.
 
 For the rest of this section we fix a term $\Gamma \vdash M : T$
 from this generic language. We will explicitly specify when a result
-holds only in the pure (\ie no constants) simply-typed calculus
-fragment of the language.
+holds only in the pure (\ie no constants) fragment of the language.
 
 
 \subsection{Incremental binding}
 
-In a computation tree, a binder node always occurs in the path from
-the bound node to the root. We now introduce a class of computation
-trees in which binder nodes can be uniquely recovered from the order
-of the nodes. We call path any sequence of nodes such that for any
-two consecutive nodes $a \cdot b$ in the sequence, $a$ is the parent
-of $b$. We write $[n_1,n_2]$ to denote the path going from node
-$n_1$ to node $n_2$ equipped with the justification pointers induced
-by the enabling relation $\vdash$ (each node of the tree has a
-unique enabler in the path to the root thus for each occurrence in
-$[n_1,n_2]$ there is at most one occurrence of its enabler in
-$[n_1,n_2]$). We write $]n_1,n_2]$ for the sub-sequence of
-$[n_1,n_2]$ obtained by removing $n_1$ as welle as all the
-associated pointers.
+
+Recall from the definition of computation trees (Chapter
+\ref{chap:localbeta}) that a variable node $n$ labelled $x$ is said
+to be \emph{bound} by a node $m$ if $m$ is the closest node in the
+path from $n$ to the root such that $m$ is labelled $\lambda
+\overline{\xi}$ with $x\in \overline{\xi}$. Thus a binder node
+always occurs in the path from the bound node to the root. We now
+introduce a class of computation trees  in which the binder node is
+uniquely determined by the nodes' orders.
+
+\emph{Notations:} We call \defname{path} any sequence of nodes such
+that for any two consecutive nodes $a \cdot b$ in the sequence, $a$
+is the parent of $b$. We write $[n_1,n_2]$ to denote, if it exists,
+the unique path going from node $n_1$ to node $n_2$ equipped with
+the justification pointers induced by the enabling relation $\vdash$
+(each node of the tree has a unique enabler in the path to the root
+thus for each occurrence in $[n_1,n_2]$ there is at most one
+occurrence of its enabler in $[n_1,n_2]$). We write $]n_1,n_2]$ for
+the sub-sequence of $[n_1,n_2]$ obtained by removing $n_1$ as welle
+as all the associated pointers.
 
 We recall that $\theroot$ denotes the root of the computation tree
 $\tau(M)$ and $N^{\theroot\vdash}$ denotes the subset of $N$
@@ -79,8 +86,9 @@ consisting of nodes that are hereditarily enabled by $\theroot$.
 
 
 \begin{definition}[Incrementally-bound computation tree]
-Let $A$ be a subset of nodes of the computation tree. A variable
-node $x$ of a computation tree is said to be
+Let $A$ be a subset of nodes of the computation tree.
+\begin{enumerate}[(i)]
+\item A variable node $x$ of a computation tree is said to be
 \defname{$A$-incrementally-bound} if its enabler is the first
 $\lambda$-node from $A$ in the path to the root that has order
 strictly greater than $\ord{x}$. Formally:
@@ -93,8 +101,7 @@ x \mbox{ is $A$-incrementally-bound} \  \iff \  \left\{
                                                   \end{array}
                                                 \right.
 \end{align*}
-
-This definition can be split into two cases:
+\noindent This definition can be split into two cases:
 \begin{enumerate}
 \item $x$ is \emph{bound} by the first $\lambda$-node from $A$ occurring in the path to the root that has
 order strictly greater than $\ord{x}$.
@@ -102,11 +109,13 @@ order strictly greater than $\ord{x}$.
  smaller or equal to $\ord{x}$.
 \end{enumerate}
 
-A computation tree is said to be \defname{$A$-incrementally-bound},
-also abbreviated $A$-i.b., if all the variable nodes from $A$ are
-$A$-incrementally-bound, and we say that a node (resp.\ a tree) is
+\item A computation tree is said to be
+\defname{$A$-incrementally-bound}, also abbreviated $A$-i.b., if all
+the variable nodes from $A$ are $A$-incrementally-bound, and we say
+that a node (resp.\ a tree) is
 \defname{incrementally-bound} if it is
 \defname{$N$-incrementally-bound} where $N$ is the entire set of nodes of the computation tree.
+\end{enumerate}
 \end{definition}
 
 Clearly for any two sets of nodes $A$ and $B$ verifying $A\subseteq
@@ -123,14 +132,14 @@ Clearly, $\tau(M)$ and $\tau(\closure{M})$ are isomorphic and the enabling relat
 on these two trees (since free variable nodes are enabled by the root), therefore $\tau(M)$ is $A$-i.b.\ if and only if $\tau(\closure{M})$ is.
 \smallskip
 
-\begin{lemma}[Safe terms have incrementally-bound computation trees]
-\label{lem:incrbound_iff_etanf_safe} Suppose that  $\Gamma \vdash M
+\begin{proposition}[Safe terms have incrementally-bound computation trees]
+\label{prop:incrbound_iif_etanf_safe} Suppose that  $\Gamma \stentail M
 :T$ is a simply-typed term.
 \begin{itemize}
 \item[(i)] If $M$ is almost safe then $\tau(M)$ is incrementally-bound ;
 \item[(ii)] conversely, if $\tau(M)$ is i.b.\ then the $\eta$-long normal form of $M$ is almost safe, and safe if further $M$ is closed.
 \end{itemize}
-\end{lemma}
+\end{proposition}
 \begin{proof}
 (i) Suppose that $M$ is almost safe. By the previous remark,
 to show that $\tau(M)$ is i.b., it is equivalent to show that
@@ -174,9 +183,9 @@ i.b. we have that $\ord{z}$ is smaller than $\ord{\lambda
 \overline{\eta_1}}=\ord{N_i}$, thus in both case we are allowed to
 abstract the variables $\overline{\eta_1}$ using the rule
 \rulenamet{abs}, which shows that $N_i$ is safe.
-Since all the $N_i$s are safe and the term $N_1 \ldots N_p$ is of type $o$, by the rule \rulenamet{app} we have that $N_1 \ldots N_p$ is safe \ie $\overline{\xi} \sentail N_1 \ldots N_p :o$. The rule \rulenamet{app} then gives us $\sentail \lambda \overline{\xi} . N_1 \ldots N_p$.
+Since all the $N_i$s are safe and the term $N_1 \ldots N_p : o$ is of order $0$, by the rule \rulenamet{app} we have that $N_1 \ldots N_p$ is safe \ie $\overline{\xi} \sentail N_1 \ldots N_p :o$. The rule \rulenamet{abs} then gives us $\sentail \lambda \overline{\xi} . N_1 \ldots N_p$.
 
-Now suppose that $M$ is open: $\overline{y} \entail M:T$. The preceding case shows that $\closure{M}$ is safe hence $M$ is almost safe by definition.
+Now if $M$ is open, by the preceding case we have that $\closure{M}$ is safe. But clearly by ``pealing-off'' abstractions from a safe term we obtain an almost safe term, thus $M$ is almost safe.
 \end{proof}
 
 Note that the hypothesis that $M$ is closed in (ii) is necessary.
@@ -189,9 +198,9 @@ only almost safe.
 \begin{corollary}
 \label{cor:betasred_preserve_incrbound} If $\tau(M)$ is incrementally-bound and $M \betasred N$ then $\tau(N)$ is incrementally-bound.
 \end{corollary}
-\proof Suppose that $\tau(M)$ is i.b. Then by Lemma
-\ref{lem:incrbound_iff_etanf_safe}(ii) the eta-long normal form of $M$ is almost safe, therefore so is $M$ by Lemma \ref{lem:almostsafe_iif_etalnf_almostsafe}.
-But almost safety is preserved by $\beta_s$-reduction (Lemma \ref{lem:betasred_preserves_almostsafety}) therefore $N$ is almost safe. Finally by Lemma \ref{lem:incrbound_iff_etanf_safe}(i), $\tau(N)$ is
+\proof Suppose that $\tau(M)$ is i.b. Then by Proposition
+\ref{prop:incrbound_iif_etanf_safe}(ii) the eta-long normal form of $M$ is almost safe, therefore so is $M$ by Lemma \ref{lem:almostsafe_iif_etalnf_almostsafe}.
+But almost safety is preserved by $\beta_s$-reduction (Lemma \ref{lem:betasred_preserves_almostsafety}) therefore $N$ is almost safe. Finally by Proposition \ref{prop:incrbound_iif_etanf_safe}(i), $\tau(N)$ is
 incrementally-bound. \qed
 \smallskip
 
@@ -249,24 +258,39 @@ is $A$-incrementally-bound but $\tau(N)$ is not.
 
 
 \subsection{P-incremental-justified strategies}
-\begin{definition}[P-incremental-justification]
-A strategy $\sigma$ on a game $A$ is
-\emph{P-incrementally\-justified} if and only if for any sequence of
-moves $s q \in P_A$ we have:
-\begin{eqnarray*}
-s q \in \sigma \wedge q \mbox{ is a P-question } &\implies&
-\parbox[t]{9cm}{$q$  points to the last O-move in $\pview{s}$
-with order strictly greater than $\ord{q}$.}
-\end{eqnarray*}
+\notetoself{Redefine this:
+
+ We define the \defname{order} of a move $m$, written
+$\ord{m}$, to be the length of the path from $m$ to its furthest
+leaf in the arena minus 1. (There are several ways to define the
+order of a move; the definition chosen here is sound in the current
+setting where each question move in the arena enables at least one
+answer move.)
+%\ie ~height of the subarena rooted at $q$ minus 2.
+}
+
+
+\begin{definition}\rm
+  A strategy $\sigma$ is said to be \defname{P-incrementally
+    justified} if for any play $s \, q \in \sigma$ where $q$ is a
+  P-question, $q$ points to the last unanswered O-question in $\pview{s}$ with
+  order strictly greater than $\ord{q}$.
 \end{definition}
 
 
 
+Note that although the pointer is determined by the P-view, the
+choice of the move itself can be based on the whole history of the
+play. Thus P-incremental justification does not imply innocence.
 
+The definition suggests an algorithm that, given a play of a
+P-incrementally justified denotation, uniquely recovers the pointers
+from the underlying sequence of moves and from the pointers
+associated to the O-moves therein. Hence:
 \begin{lemma}
-\label{lem:incrjustified_pointers_uniqu_recover} Pointers emanating
-from P-moves are superfluous for P-incrementally-justified
-strategies.
+\label{lem:incrjustified_pointers_uniqu_recover} In P-incrementally
+justified strategies, pointers emanating from P-moves are
+superfluous.
 \end{lemma}
 \begin{proof}
 Suppose $\sigma$ is a P-incrementally-justified strategy. We prove
@@ -283,11 +307,16 @@ compute the P-view $\pview{s}$. Hence $m$'s pointer is uniquely
 recoverable.
 \end{proof}
 
-%\begin{example}
-%The denotation of the evaluation map $ev$ is
-%P-incrementally-justified since it is the uncurrying of the identity
-% map on the game A=>B.
-%\end{example}
+\begin{example}
+Copycat strategies, such as the identity strategy $id_A$ on game $A$
+or the evaluation map $ev_{A,B}$ of type $(A \Rightarrow B) \times A
+\typear B$, are all P-incrementally justified.\footnote{In such
+strategies, a P-move $m$ is justified as follows: either $m$ points
+to the preceding move in the P-view or the preceding move is of
+smaller order and $m$ is justified by the second last O-move in the
+P-view.}
+\end{example}
+
 
 
 
@@ -400,9 +429,12 @@ abstracted together with $y$).
 
 
 
-\begin{corollary}[of Proposition \ref{prop:Nher_incrbound_and_incrjustified}]
-\label{cor:Nher_incrbound_iff_incrjustified}
-  Let $\Gamma \stentail M : T$ be a pure (\ie with no interpreted constants) simply-typed term in $\beta$-normal form. Then $\sem{\Gamma \stentail M : T}$ is P-incrementally-justified if and only if $\tau(M)$ is incrementally-bound.
+\begin{corollary}[of Proposition \ref{prop:Nher_incrbound_iff_incrjustified}]
+\label{cor:Nher_incrbound_iff_incrjustified_lmd}
+  Let $\Gamma \stentail M : T$ be a pure
+   (\ie with no interpreted constants) simply-typed term in $\beta$-normal form.
+   Then $\sem{\Gamma \stentail M : T}$ is P-incrementally-justified
+   if and only if the computation tree $\tau(M)$ is incrementally-bound.
 \end{corollary}
 \proof We first observe that all the variable nodes are
 input-variable nodes. Indeed, let $x$ be a variable node of
@@ -421,58 +453,74 @@ permitting us to visit the children of the input-variable nodes
 occurring in the path).\qed
 \smallskip
 
+
+%\noindent \emph{Example:}
+\begin{example}
+\begin{enumerate}[(i)]
+\item For any higher-order variable $x:A$ the computation tree
+$\tau(x)$ is incrementally-bound therefore the projection
+strategies are P-incrementally-justified.
+
+\item
 \parpic[r]{
-\begin{tikzpicture}[level distance=7mm,inner ysep=0.5mm]
- \node {$\lambda x^3$}
-    child {
-        node {$f^2$}
-        child {
-            node {$\lambda y^1$}
-            child{
-                node{$x^0$}
-            }
-        }
-    };
+\raisebox{-12pt} {\begin{tikzpicture}[level distance=4.4ex,inner
+ysep=0.5mm] \node {$\lambda^3$} child {node {$f^2$}
+       child {node {$\lambda y^1$} child {node {$x^0$}}}};
 \end{tikzpicture}
-} \noindent \emph{Examples:} Consider the $\beta$-normal term
-$\lambda x . f (\lambda y .x)$ where $x,y:o$ and $f:(o,o),o$. The
-figure on the right represents the computation tree with the order
-of each node in the exponent part. Since node $x$ of order $0$ is
-not bound by the order 1 node $\lambda y$, $\tau(M)$ is not
-incrementally-bound and by proposition
-\ref{prop:Nher_incrbound_and_incrjustified} $\sem{\lambda x . f
-(\lambda y .x)}$ is not P-incrementally-justified. Similarly we can
-check that $\sem{f (\lambda y .x)}$ is not P-incrementally-justified
-whereas $\sem{\lambda y. x}$ is. Also, for any higher-order variable
-$x:A$ the computation tree $\tau(x)$ is incrementally-bound
-therefore the projection strategies $\pi_i$ are
-P-incrementally-justified. From these examples we observe that
-application does not preserve P-incremental-justification ($\sem{f}$
-and $\sem{\lambda y. x}$ are P-incrementally-justified whereas
-$\sem{f (\lambda y .x)}$ is not).
+} } Consider the $\beta$-normal term $\Gamma\stentail f (\lambda
+y .x) : o$ where $y:o$ and $\Gamma =f:((o,o),o),~x:o$. The
+figure on the right represents its computation tree with the
+node orders given as superscripts.  The node $x$ is not
+incrementally-bound because the node $x$ of order $0$ is not
+bound by the order 1 node $\lambda y$. Therefore $\tau(f
+(\lambda y .x))$ is not incrementally-bound and by Corollary
+\ref{prop:Nher_incrbound_iff_incrjustified_lmd}, $\sem{\Gamma
+\stentail f (\lambda y .x) : o}$ is not P-incrementally
+justified. Similarly we can check that $\sem{\lambda y. x}$ is
+P-i.j.\ while $\sem{f (\lambda y .x)}$ is not.
+
+\item The previous examples show that $\sem{\Gamma \stentail f : ((o,o),o)}$ and $\sem{\Gamma \stentail \lambda
+  y. x : (o,o)}$ are P-incrementally-justified whereas
+$\sem{\Gamma \stentail f (\lambda y .x) : o}$ is not. This
+implies that application does not preserve
+P-incremental-justification.
+\end{enumerate}
+\end{example}
 \smallskip
 
-These examples suggest that P-incremental-justification is not a
+The third example suggests that P-incremental-justification is not a
 compositional property. In Chapter \ref{chap:model} we will identify
 a sufficient condition for the composition of two
 P-incrementally-justified strategies to be
 P-incrementally-justified. \smallskip
 
 
-Putting Corollary \ref{cor:Nher_incrbound_iff_incrjustified} and
-Lemma \ref{lem:incrbound_iff_etanf_safe} together gives us a
+Putting Corollary \ref{cor:Nher_incrbound_iff_incrjustified_lmd} and
+Proposition \ref{prop:incrbound_iif_etanf_safe} together gives us a
 game-semantic characterization of safe terms:
 \begin{theorem}[Safety and P-incremental justification]
-\label{thm:safeincrejust} Let $\Gamma \stentail M : A$ be a pure simply-typed term
-(with no interpreted constants).
+\label{thm:safeincrejust_lmd} Let $\Gamma \stentail M : A$ be a pure
+simply-typed term (with no interpreted constants).
 \begin{enumerate}[(i)]
-\item If $\Gamma \stentail M : A$ is almost safe (and in particular if it is safe) then $\sem{\Gamma \stentail M : A}$
+\item If $\Gamma \stentail M : A$ is \emph{almost safe} (and in particular if it is safe) then $\sem{\Gamma \stentail M : A}$
 is P-incrementally justified.
 \item If $\sem{\Gamma \stentail M : A}$ is
   P-incrementally justified then the eta-long normal form of the beta-normal form of $M$ is
 almost safe, and safe if further $M$ is closed.
 \end{enumerate}
 \end{theorem}
+\proof (i) Let $M$ be a safe simply-typed term. By Lemma
+\ref{lem:safered_preserve_safety}, its $\beta$-normal form $M'$ is
+also safe. By Proposition \ref{prop:incrbound_iif_etanf_safe}(i),
+$\tau(M')$ is incrementally-bound and by Proposition
+\ref{prop:Nher_incrbound_iff_incrjustified_lmd}, $\sem{M'}$ is an
+incrementally-justified. Finally the soundness of the game model
+gives $\sem{M} = \sem{M'}$.  (ii) is a consequence of Lemma
+\ref{lem:safered_preserve_safety}, Corollary
+\ref{cor:Nher_incrbound_iff_incrjustified_lmd} and
+Proposition \ref{prop:incrbound_iif_etanf_safe}(ii) and soundness of the game model.
+\qed
+
 In particular, a term has a P-incrementally justified denotation if and only
 its eta-long beta-normal form is almost safe.
 
@@ -481,19 +529,60 @@ This result was first presented in TLCA2007, \cite[Theorem 3(ii)]{blumong:safela
 
 \begin{corollary}[P's pointers are superfluous for safe terms]
 \label{cor:safe_ptr_recoverable} Pointers emanating from P-moves in the game semantics of
-safe terms are uniquely recoverable.
+safe lambda terms are uniquely recoverable.
 \end{corollary}
 \begin{proof}
 Let $M$ be a safe simply-typed term. Then the $\beta$-normal form of
-$M$ is also safe, thus by lemma \ref{lem:incrbound_iff_etanf_safe}
+$M$ is also safe, thus by Proposition \ref{prop:incrbound_iif_etanf_safe}
 (i), $\tau(\betanf{M})$ is incrementally-bound and by proposition
-\ref{prop:Nher_incrbound_and_incrjustified}, $\sem{\Gamma \vdash
+\ref{prop:Nher_incrbound_iff_incrjustified_lmd}, $\sem{\Gamma \vdash
 \betanf{M} :T}$ is a P-incrementally-justified strategy. By lemma
 \ref{lem:incrjustified_pointers_uniqu_recover}, P's pointers in
 $\sem{\Gamma \vdash \betanf{M} :T}$ are uniquely recoverable.
 Finally, the soundness of the game model gives $\sem{\Gamma \vdash
 M:T} = \sem{\Gamma \vdash \betanf{M} : T}$.
 \end{proof}
+
+
+
+Putting Theorem \ref{thm:safeincrejust_lmd}(i) and Lemma
+\ref{lem:incrjustified_pointers_uniqu_recover} together gives:
+\begin{proposition}
+   In the game semantics of safe $\lambda$-terms, pointers emanating from P-moves are unnecessary
+  \ie~they are uniquely recoverable from the underlying sequences of
+  moves and from O-moves' pointers.
+\end{proposition}
+
+ \begin{example} If justification pointers are omitted then the denotations of the
+   two Kierstead terms from Example~\ref{ex:kierstead} are not distinguishable.
+   In the safe lambda calculus this ambiguity disappears
+   since $M_1$ is safe whereas $M_2$ is not.
+ \end{example}
+
+In fact, as the last example highlights, pointers are superfluous at
+order $3$ for safe terms whether from P-moves or O-moves. This is
+because for question moves in the first two levels of an arena
+(initial moves being at level $0$), the associated pointers are
+uniquely recoverable thanks to the visibility condition. At the
+third level, the question moves are all P-moves therefore their
+associated pointers are uniquely recoverable by P-incremental
+justification. This is not true anymore at order $4$: Take the safe
+term $\psi:(((o^4,o^3),o^2),o^1) \sentail \psi (\lambda \varphi .
+\varphi a) : o^0$ for some constant $a:o$, where $\varphi:(o,o)$.
+Its strategy denotation contains plays whose underlying sequence of
+moves is $q_0 \, q_1 \, q_2 \, q_3 \, q_2 \, q_3 \, q_4$. Since
+$q_4$ is an O-move, it is not constrained by P-incremental
+justification and thus it can point to any of the two occurrences of
+$q_3$.\footnote{More generally, a P-incrementally justified strategy
+can contain plays that are not ``O-incrementally justified'' since
+it must take into account any possible strategy incarnating its
+context, including those that are not P-incrementally justified. For
+instance in the given example, there is one version of the play that
+is not O-incrementally justified (the one where $q_4$ points to the
+first occurrence of $q_3$). This play is involved in the strategy
+composition $\sem{ \stentail M_2 : (((o,o),o),o)} ; \sem{
+\psi:(((o,o),o),o) \stentail \psi (\lambda \varphi . \varphi a):o}$
+where $M_2$ denotes the unsafe Kierstead term.}
 
 
 \section{Safe PCF}
@@ -504,18 +593,19 @@ We recall that the $\beta$-normal form of a \pcf\ term is the possibly infinite 
 
 \subsubsection{Game characterization of safe terms}
 
-In the context of the simply-typed lambda calculus, we have shown the
-correspondence between safety and P-incremental justification (Theorem \ref{thm:safeincrejust}).
-We will show (theorem \ref{}) that that the first part of the theorem
-still holds for Safe \pcf. The second part, however, does not
-hold anymore: Indeed, take the closed \pcf\ term $M = \lambda f x y. f
-(\lambda z. \pcfcond (\pcfsucc\ x) y z )$ where $x,y,z:o$ and
-$f:((o,o),o)$. $M$ is in normal form (conditional cannot be reduced
-since the value of $x$ is undetermined). The $\eta$-long form of the
-$\beta$-normal form of $M$ is therefore $M$ itself which is unsafe.
-But clearly we have $\sem{M} = \sem{\lambda f x y. f (\lambda z.
-z)}$, and since $\lambda f x y. f (\lambda z. z)$ is safe, by (i),
-$\sem{M}$ is P-incrementally justified.
+In the context of the simply-typed lambda calculus, we have shown
+the correspondence between safety and P-incremental justification
+(Theorem \ref{thm:safeincrejust_lmd}). We will show (theorem \ref{})
+that that the first part of the theorem still holds for Safe \pcf.
+The second part, however, does not hold anymore: Indeed, take the
+closed \pcf\ term $M = \lambda f x y. f (\lambda z. \pcfcond
+(\pcfsucc\ x) y z )$ where $x,y,z:o$ and $f:((o,o),o)$. $M$ is in
+normal form (conditional cannot be reduced since the value of $x$ is
+undetermined). The $\eta$-long form of the $\beta$-normal form of
+$M$ is therefore $M$ itself which is unsafe. But clearly we have
+$\sem{M} = \sem{\lambda f x y. f (\lambda z. z)}$, and since
+$\lambda f x y. f (\lambda z. z)$ is safe, by (i), $\sem{M}$ is
+P-incrementally justified.
 
 Such counter-example arises because the conditional operator of
 \pcf\ permits us to construct terms in normal form that contain
@@ -621,26 +711,20 @@ therefore all the $\lambda$-node in $]r,x[$ have order smaller than
 $\ord{x}$. Thus $\tau(M)^*$ is incrementally-bound.
 \end{proof}
 
-The counterpart of Lemma 4.1.6 from
-\cite{blumtransfer} can be stated as follows in the context of PCF:
-\begin{lemma}[Almost safety and incrementally-binding]
-\label{lem:incrbound_iff_etanf_safe_pcf} Let $\Gamma \vdash M : A$
+
+In Proposition \ref{prop:incrbound_iif_etanf_safe} we have established a correspondence between almost safety
+and incremental binding in the setting of the simply-typed lambda calculus.
+Clearly, this result extends to $\pcf_1$: the computation tree of a $\pcf_1$ term is just a standard computation tree where subterms of the form $\Omega_A$ are just represented by 
+the single constant node $\bot_A$. In \pcf\ a difficulty arises as computation trees are potentially infinite
+due to the presence of the Y combinator. Despite this problem, the result still holds in \pcf.
+\begin{proposition}[Almost safety and incrementally-binding]
+\label{prop:incrbound_iif_etanf_safe_pcf} Let $\Gamma \vdash M : A$
 be a PCF term.
 \begin{itemize}
 \item[(i)] If $\Gamma \vdash M : A$ is almost safe then $\tau(\Gamma \vdash M : A)$ is incrementally-bound ;
 \item[(ii)] conversely, if $\tau(\Gamma \vdash M : A)$ is incrementally-bound then the $\eta$-normal form of $\Gamma \vdash M : A$ is almost safe if $M$ is open and safe if $M$ is closed.
 \end{itemize}
-\end{lemma}
-The proof can be obtained by adapting the proof
-of Lemma 4.1.6 from \cite{blumtransfer}.
-
-A difficulty arises because of the presence of the Y combinator :
-computation trees of \pcf\ terms are potentially infinite. Despite
-this particularity, lemma \ref{lem:incrbound_iff_etanf_safe} still
-holds in the \pcf\ setting:
-
-\begin{lemma} \label{lem:pcf_safe_imp_incrbound} The computation tree of a Safe PCF term is incrementally-bound.
-\end{lemma}
+\end{proposition}
 \begin{proof}
 \notetoself{adapt this proof to almost safe terms}
 (i) Let $M$ be a safe PCF term and  $i$ denote the number of occurrences of the Y combinator in $M$.
@@ -653,10 +737,7 @@ safe. Consequently the term $Y_A^k N_k = \underbrace{N_k ( \ldots (
 N_k}_{k \mbox{ times}} \Omega ) \ldots )$ is also safe and by
 compositionality so is $M_k$.
 
-Clearly, lemma \ref{lem:incrbound_iff_etanf_safe}(i) remains
-valid for infinite $\pcf_1$ terms (the subterms of the form $\Omega$
-are just represented by the constant $\bot$ in the computation
-tree), thus since $M_k$ is a safe $\pcf_1$ term, $\tau(M_k)$ is
+The result holds for $\pcf_1$ terms, thus since $M_k$ is a safe $\pcf_1$ term, $\tau(M_k)$ is
 incrementally-bound. Now let $z$ be a variable node in $\tau(M) =
 \Union_{k\in\omega} \tau(M_k)$. There exists $k\in \omega$ such that
 $z$ belongs to $\tau(M_k) \sqsubseteq \tau(M)$. If we write $r_k$ to
@@ -664,16 +745,21 @@ denote the root of the tree $\tau(M_k)$ then the path $[r_k,z]$ in
 $\tau(M_k)$ is equal to the path $[r,z]$ in $\tau(M)$. Hence, since
 the node $z$ is incrementally-bound in $\tau(M_k)$, it is also
 incrementally-bound in $\tau(M)$.
+
+(ii) \notetoself{missing proof}
+
 \end{proof}
 
 
 
 
+
+
 \begin{theorem}[Almost safety and P-incremental justification]
-\label{thm:almostsafeincrejust_pcf} Let $\Gamma \vdash M : A$ be a PCF term. Then:
+\label{thm:almostsafeincrejust_pcf} Let $\Gamma \entail M : A$ be a PCF term. Then:
 \begin{enumerate}[(i)]
-\item If $\Gamma \vdash M : A$ is almost safe then $\sem{\Gamma \vdash M : A}$ is P-incrementally justified.
-\item If $\sem{\Gamma \vdash M : A}$ is
+\item If $M$ is almost safe (\ie $\Gamma \asentail M : A$) then $\sem{\Gamma \entail M : A}$ is P-incrementally justified.
+\item If $\sem{\Gamma \entail M : A}$ is
   P-incrementally justified then $\etalnf{\betanf{M}}^*$ is
   almost safe  if $M$ is open, and safe if $M$ is closed.
 \end{enumerate}
@@ -681,34 +767,37 @@ incrementally-bound in $\tau(M)$.
 
 \begin{proof}
 \noindent(i)
-A proof of this is given in the proof of Theorem 4.2.10 in \cite{blumtransfer}.
+\notetoself{Proof needed here. Might be somewhere else in the thesis...}
 
-\noindent(ii) Suppose $M$ is a \pcf\ term with a P-incrementally
+\noindent(ii) 
+\notetoself{review that proof to account for almost safe terms}
+Suppose $M$ is a \pcf\ term with a P-incrementally
 justified strategy denotation. By Proposition
 \ref{prop:Nher_incrbound_and_incrjustified_pcf}(ii),
 $\tau(\betanf{M})^* = \tau(\etalnf{\betanf{M}}^*)$ is
 incrementally-bound. If $M$ is closed then so is
-$\etalnf{\betanf{M}}^*$ therefore by Lemma
-\ref{lem:incrbound_iff_etanf_safe_pcf},
+$\etalnf{\betanf{M}}^*$ therefore by Proposition
+\ref{prop:incrbound_iff_etanf_safe_pcf},
 $\etalnf{\etalnf{\betanf{M}}^*} = \etalnf{\betanf{M}}^*$ is safe. If
-$M$ is open then so is $\etalnf{\betanf{M}}^*$ and by Lemma
-\ref{lem:incrbound_iff_etanf_safe_pcf},
+$M$ is open then so is $\etalnf{\betanf{M}}^*$ and by Proposition
+\ref{prop:incrbound_iff_etanf_safe_pcf},
 $\etalnf{\etalnf{\betanf{M}}^*} = \etalnf{\betanf{M}}^*$ is
 almost safe.
 \end{proof}
+
 
 \begin{theorem}
 Safe PCF terms are denoted by P-incrementally-justified strategies.
 \end{theorem}
 \begin{proof}
-Let $M^{\infty}$ be the $\beta$-normal form of $M$ (i.e. the possibly infinite term obtained by reducing all the $\beta$-redexes in $M$). By lemma \ref{lem:ia_safety_preserved}, safety is preserved by small-step reduction therefore, by lemma \ref{lem:pcf_safe_imp_incrbound}, if $M$ is a \pcf\ term then $\tau(M^{\infty})$ is also
+Let $M^{\infty}$ be the $\beta$-normal form of $M$ (i.e. the possibly infinite term obtained by reducing all the $\beta$-redexes in $M$). By lemma \ref{lem:ia_safety_preserved}, safety is preserved by small-step reduction therefore, by Proposition \ref{prop:incrbound_iif_etanf_safe_pcf}, if $M$ is a \pcf\ term then $\tau(M^{\infty})$ is also
 incrementally-bound.
 
 Since \pcf\ constant rules are well-behaved (by Lemma
 \ref{lem:sigma_order1_are_wellbehaved}), the result from Lemma
 \ref{lem:betanf_wellbehavedconst_trav_pview_red} is also true for
 Safe \pcf. Thus proposition
-\ref{prop:Nher_incrbound_and_incrjustified}(i) remains valid for the
+\ref{prop:Nher_incrbound_iff_incrjustified}(i) remains valid for the
 infinite computation trees of \pcf: infinite terms in $\beta$-nf
 with an incrementally-bound computation tree are denoted by
 P-incrementally-justified strategies. Consequently,
@@ -722,8 +811,7 @@ Consequently, P-pointers are superfluous in the game denotation of safe \pcf\ te
 We write \pcf' to denote the language obtained by extending \pcf\
 with the $\pcfcase_k$ construct (see \cite{Abr02}).
 The $\pcfcase_k$ construct is the obvious generalisation of the
-conditional operator \pcfcond\ to $k$ branches instead of $2$. All the results obtained so far concerning Safe \pcf\ (including those
-cited from \cite{blumtransfer}) can clearly be transposed to \pcf'.
+conditional operator \pcfcond\ to $k$ branches instead of $2$. Clearly, all the results obtained so far concerning Safe \pcf\ also hold for \pcf'.
 
 \subsubsection{Definability result}
 
@@ -880,22 +968,33 @@ compose in general.
 
 \subparagraph{First attempt}
 
-Take the types $A=o$, $B=(o,o)$, $C=o$, the variables
-$x,u,v:o$, $y:B$ and $\varphi:((o,o),o)$ and $\Sigma$-constant $a:o$.
-Consider the two safe terms $\vdash_s  M_f = \lambda xv.x : A\typear B$ and $\vdash_s M_g = \lambda y . \varphi (\lambda u . y a) : B\typear C$.
-The $\eta\beta$-nf of $M_{f\fatcompos g}$ is $\vdash \lambda x . \varphi (\underline{\lambda u . x})$ which is unsafe because of the underlined term. It is then tempting to use
-Theorem \ref{thm:safeincrejust}(ii) to conclude that
-$\sem{M_{f\fatcompos g}}$ is not P-incrementally justified. However this theorem cannot be used here because $M_g$ contains an order $2$ constants ($\varphi$) therefore
-$M_{f\fatcompos g}$ is not a valid simply typed $\lambda$-term (nor a \pcf-term).
+Take the types $A=o$, $B=(o,o)$, $C=o$, the variables $x,u,v:o$,
+$y:B$ and $\varphi:((o,o),o)$ and $\Sigma$-constant $a:o$. Consider
+the two safe terms $\vdash_s  M_f = \lambda xv.x : A\typear B$ and
+$\vdash_s M_g = \lambda y . \varphi (\lambda u . y a) : B\typear C$.
+The $\eta\beta$-nf of $M_{f\fatcompos g}$ is $\vdash \lambda x .
+\varphi (\underline{\lambda u . x})$ which is unsafe because of the
+underlined term. It is then tempting to use Theorem
+\ref{thm:safeincrejust_lmd}(ii) to conclude that
+$\sem{M_{f\fatcompos g}}$ is not P-incrementally justified. However
+this theorem cannot be used here because $M_g$ contains an order $2$
+constants ($\varphi$) therefore $M_{f\fatcompos g}$ is not a valid
+simply typed $\lambda$-term (nor a \pcf-term).
 
 \subparagraph{Second attempt} The previous example can be easily
 changed into a working counter-example: we just need to elevate
 $\varphi$ from the status of constant to variable.
 
-Take $A=o$, $B=(o,o)$, $C=(((o,o),o),o)$, the variables
-$x,u,v:o$, $y:B$ and $\varphi:((o,o),o)$ and the $\Sigma$-constant $a:o$. Consider the two safe terms $\vdash_s  M_f = \lambda xv.x : A\typear B$ and  $\vdash_s M_g = \lambda y \varphi. \varphi (\lambda u . y a) : B\typear C$.
-The $\eta\beta$-nf of $M_{f\fatcompos g}$ is $\vdash \lambda x \varphi. \varphi (\underline{\lambda u . x})$ which is unsafe because of the underlined term, thus by Theorem \ref{thm:safeincrejust}(ii), $\sem{M_{f\fatcompos g}}=\sem{M_f} \fatcompos
-\sem{M_g}$ is not P-incrementally justified. The following diagram illustrates a play that is not P-i.j.:
+Take $A=o$, $B=(o,o)$, $C=(((o,o),o),o)$, the variables $x,u,v:o$,
+$y:B$ and $\varphi:((o,o),o)$ and the $\Sigma$-constant $a:o$.
+Consider the two safe terms $\vdash_s  M_f = \lambda xv.x : A\typear
+B$ and  $\vdash_s M_g = \lambda y \varphi. \varphi (\lambda u . y a)
+: B\typear C$. The $\eta\beta$-nf of $M_{f\fatcompos g}$ is $\vdash
+\lambda x \varphi. \varphi (\underline{\lambda u . x})$ which is
+unsafe because of the underlined term, thus by Theorem
+\ref{thm:safeincrejust_lmd}(ii), $\sem{M_{f\fatcompos g}}=\sem{M_f}
+\fatcompos \sem{M_g}$ is not P-incrementally justified. The
+following diagram illustrates a play that is not P-i.j.:
 
 \begin{center}
 \begin{tikzpicture}[style={anchor=base}]
@@ -927,6 +1026,22 @@ Let $A=o$, $B=C=(((o,o),o),o)$ and let $x:A$, $y:B$, $u:o$, $v,\varphi:((o,o),o)
 and $g:(o,o)$ be variables and  $a:o$ be a $\Sigma$-constant. Take the two safe terms $\vdash  M_f = \lambda x v.x$ and $\vdash M_g = \lambda y \varphi. \varphi (\lambda u . y (\lambda g. a))$.
 The $\eta\beta$-nf of $M_{f\fatcompos g}$ is $\vdash \lambda x \varphi. \varphi (\underline{\lambda u . x})$ which is unsafe because of the underlined term, so
 $f\fatcompos g$ is not P-incrementally justified.
+
+
+\subsection{Towards a fully abstract game model}
+
+The standard game models which have been shown to be fully abstract
+for PCF \cite{abramsky94full,hylandong_pcf} are of course also fully
+abstract for the restricted language safe PCF. One may ask, however,
+whether there exists a fully abstract model with respect to safe
+context only. Such model may be obtain by considering
+P-incrementally justified strategies. Its is reasonable to think
+that O-moves also needs to be constrained by a symmetrical
+notion of ``O-incremental justification'' corresponding to the requirement
+that contexts are safe. These issues will be addressed in Chapter
+\ref{chap:model}.
+
+
 
 
 \section{Safe Idealized Algol}

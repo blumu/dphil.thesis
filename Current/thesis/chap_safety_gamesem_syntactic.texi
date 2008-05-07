@@ -1,3 +1,34 @@
+Our aim is to characterize safety by game semantics. This chapter
+assumes that the reader is familiar with the basics of game
+semantics introduced in Chapter \ref{chap:gamesem}.  Recall that a
+\emph{justified sequence} over an arena is an alternating sequence
+of O-moves and P-moves such that every move $m$, except the opening
+move, has a pointer to some earlier occurrence of the move $m_0$
+such that $m_0$ enables $m$ in the arena. A \emph{play} is just a
+justified sequence that satisfies Visibility and Well-Bracketing. A
+basic result in game semantics is that $\lambda$-terms are denoted
+by \emph{innocent strategies}, which are strategies that depend only
+on the \emph{P-view} of a play. The main result
+(Theorem~\ref{thm:safeincrejust_lmd}) of this section is that if a
+$\lambda$-term is safe, then its game semantics (is an innocent
+strategy that) is, what we call, \emph{P-incrementally justified}.
+In such a strategy, pointers emanating from the P-moves of a play
+are uniquely reconstructible from the underlying sequence of moves
+and pointers from the O-moves therein: specifically a P-question
+always points to the last pending O-question (in the P-view) of a
+greater order.
+
+The proof of Theorem~\ref{thm:safeincrejust_lmd} relies on the
+Correspondence Theorem from Chapter \ref{chap:localbeta} that
+relates the strategy denotation of a $\lambda$-term $M$ to the set
+of \emph{traversals} over a souped-up abstract syntax tree of the
+$\eta$-long form of $M$. In the language of game semantics, this theorem says that
+traversals are just (concrete representations of) the
+\emph{uncovering} (in the sense of Hyland and Ong
+\cite{hylandong_pcf}) of plays in the strategy denotation.
+
+
+
 Since the safety condition is a syntactic constraint, it can seem
 difficult to give a characterization in term of game
 semantics, as game models are by essence syntax-independent. This is where the the Correspondence Theorem comes to the rescue and help us to reason syntactically about the game denotation of a term. This ultimately permits us to give a precise game-semantic characterization of the safety restriction.
@@ -23,7 +54,7 @@ denoted by P-incrementally-justified strategies and we give the key
 elements for a possible extension of the result to Safe Idealized
 Algol.
 
-Some of the results presented in this chapter were first published in TLCA \cite{blumong:safelambdacalculus}. The present chapter reproduced those results here with complete proof and generalized them to other languages such as \pcf\ and \ialgol.
+Some of the results presented in this chapter were first published in TLCA \cite{blumong:safelambdacalculus}. The present chapter reproduced those results here with complete proof and generalized them to the languages \pcf\ and \ialgol.
 
 \section{Preliminaries}
 
@@ -365,10 +396,9 @@ the last $\lambda$-node in $[\theroot,n]\ \inter
 N^{\theroot\vdash}$ of order strictly greater than $\ord{n}$.
 By the Path--P-view correspondence (Prop.\
 \ref{prop:pviewtrav_is_path}) we have $[\theroot,n] \inter
-N^{\theroot\vdash} = \pview{t} \filter r$. By Lemma
+N^{\theroot\vdash} = \pview{t} \filter r$. This in turn is equal to $\pview{?(t \filter r)}$ by Lemma
 \ref{lem:betanf_wellbehavedconst_trav_pview_red}, since $M$ is
-in $\beta$-normal form, this in turn is
-equal to $\pview{?(t \filter r)}$.
+in $\beta$-normal form and since we assumed that the traversal constant for the language considered are well-behaved.
 
 
 By property \ref{proper:psi_properties} (iv), the P-view of
@@ -385,7 +415,7 @@ Finally Lemma \ref{lem:views_and_questionmarkfilter} gives us
 $?(\pview{s}) = \pview{?(s)}$, and since $s$'s last move is a
 question, $\pview{s}$ contains only question moves and therefore
 $\pview{?(s)} = \pview{s}$. Thus $q$ points to the last O-move
-in $\pview{s}$ with order is strictly greater than $\ord{q}$.
+in $\pview{s}$ with order strictly greater than $\ord{q}$.
 \smallskip
 
 \noindent (ii) Suppose $\sem{M}$ is P-incrementally-justified. Let
@@ -395,7 +425,7 @@ hereditarily justified by the first occurrence $r$ of $\tau(M)$'s
 root in $t$.
 
 The correspondence theorem tells us that $\varphi((t \cdot x)
-\filter r) = \varphi((t \filter r) \cdot x)$ belongs to $\sem{M}$.
+\filter r) = \varphi(t \filter r) \cdot \varphi(x)$ belongs to $\sem{M}$.
 Since $\sem{M}$ is P-incrementally-justified, $\varphi(x)$ points to
 the last O-move in $\pview{\varphi(t \filter r)}$ with order
 strictly greater than $\ord{\varphi(x)}$. Consequently $x$ points to
@@ -446,10 +476,10 @@ $\lambda$-calculus does not have constants thus $N_\Sigma =
 input-variable node. Consequently, incremental-binding coincides
 with $N^{\vdash \theroot}$-incremental-binding.
 
-Furthermore, since all the input-variables are reachable, every node
-of the computation tree can be reached by the traversal consisting
+Furthermore, since $M$ is in $\beta$-normal form, all the variable nodes of the computation tree are reachable: 
+each variable node can be reached by the traversal consisting
 of the path from the root to that node (the \rulenamet{InputVar}
-permitting us to visit the children of the input-variable nodes
+permitting us to visit the children of each variable node
 occurring in the path).\qed
 \smallskip
 
@@ -635,88 +665,74 @@ some term $N'$.
 Let $M$  be a \pcf\ term in $\eta$-nf. An occurrence of a variable
 $x$ in $M$ is said to be a \defname{dead occurrence} if it occurs in
 the dead code of $M$. In other words, it is a dead occurrence of $x$
-if the corresponding node in the computation tree does not appear in
-any traversal of $\travset(M)$. Equivalently, thanks to the
-Correspondence Theorem, an occurrence of $x:B$ is dead if and only
-if the initial move of the arena $\sem{B}$ does not appear in any
-play of $\sem{M}$.
-
+if the corresponding node in the computation tree is not reachable \ie does not appear in
+any traversal of $\travset(M)$. 
 
 We define $M^*$ as the term obtained from $M$ after substituting all
 subterms of the form  $x N_1 \dots N_k$ for some dead variable
-occurrence $x:(B_1,\ldots, B_k, o)$ by the constant $0$. This
-process is called \defname{dead variable elimination}. Note that if
-$M$ is in $\eta\beta$-nf then so is $M^*$. We also write $\tau(M)^*$
+occurrence $x:(B_1,\ldots, B_k, o)$ by a constant $0$ of type $o$. This
+process is called \defname{dead variable elimination}. (Note that if
+$M$ is in eta-long beta-nf then so is $M^*$.) We write $\tau(M)^*$
 to denote the equivalent transformation on the computation tree.
-Since the computation tree is constructed from the $\eta$-nf of $M$,
-we will use this notation even when $M$ is not in $\eta$-nf.
+Clearly we have:
+\begin{equation}
+\travset(M^*) \subseteq \travset(M) \label{eqn:reachable_in_deadcodefree_imp_reachable}
+\end{equation}
 
 
-
-\begin{proposition}[Incremental-binding and P-incremental justification coincide] \
-\label{prop:Nher_incrbound_and_incrjustified_pcf} Let $\Gamma \vdash
+In \pcf, the correspondence between incremental binding and P-incremental justification showed in Prop.\ \ref{prop:Nher_incrbound_iff_incrjustified} becomes:
+\begin{corollary}[Corollary of Prop.\ \ref{prop:Nher_incrbound_iff_incrjustified}] \
+\label{prop:Nher_incrbound_iff_incrjustified_pcf} Let $\Gamma \vdash
 M : A$ be a PCF term in $\beta$-normal form.
 \begin{enumerate}[(i)]
-\item  If $\tau(\Gamma \vdash M : A)$ is incrementally-bound then $\sem{\Gamma \vdash M : A}$ is P-incrementally justified,
+\item  If $\tau(\Gamma \vdash M : A)$ is incrementally-bound then $\sem{\Gamma \vdash M : A}$ is P-incrementally justified;
 \item  if $\sem{\Gamma \vdash M : A}$ is P-incrementally justified
 then $\tau(\Gamma \vdash M : A)^*$ is incrementally-bound.
 \end{enumerate}
-\end{proposition}
+\end{corollary}
 \begin{proof}
-(i) The proof is exactly the same as in the simply typed lambda calculus case,
-see \cite[Proposition 4.1.5(i)]{blumtransfer}.
+(i) If $\tau(M)$ is incrementally bound then in particular it is $N^{\vdash \theroot}$-incrementally bound therefore by Proposition \ref{prop:Nher_incrbound_iff_incrjustified}(i), the denotation of $M$ is P-incrementally justified.
 
-\noindent (ii)
-Take $\Gamma \vdash M : A$ a \pcf\ term in $\beta$-normal form denoted by $\sem{\Gamma \vdash M : A}$ P-incrementally justified. Let $r$ denote the root of $\tau(M)^*$.
-Let $n$ be a node of $\tau(M)^*$ labelled by the variable $x$.
-$\tau(M)^*$ is free from dead code therefore $n$ is not a dead occurrence of $x$ and there exists a traversal of $\tau(M)^*$ of the form $t \cdot x$.
+\noindent (ii) Suppose that $\sem{M}$ is P-incrementally justified.
+Let $x$ be a variable node in $\tau(M)^*$. By definition of $\tau(M)^*$, $x$ is reachable in $\tau(M)^*$.
+Hence there exists a traversal of $\tau(M)^*$ of the form $t \cdot x$.
+By Eq.\ \ref{eqn:reachable_in_deadcodefree_imp_reachable}, $t \cdot x$ is also a traversal of $\tau(M)$ therefore
+$x$ is also reachable in $\tau(M)$.
 
-\pcf\ constants are of order $1$ at most therefore they cannot
-hereditarily justify a variable node, thus $x$ is necessarily
-hereditarily justified by the only occurrence $r$ of the root of the
-computation tree.
+We observe that all the variable nodes are input-variable nodes. Indeed, since $M$ is $\beta$-normal, by lemma
+\ref{lem:betanorm_enabling}, variable node are either hereditarily enabled by
+the root or by a constant in $N_\Sigma$. But since the constant of \pcf\ are
+of order $1$ at most, they cannot hereditarily justify any variable node
+thus variable nodes are necessarily hereditarily enabled by the root.
 
-By considering $t\cdot x$ as a traversal of $\tau(M)$,  the
-correspondence theorem gives $\varphi((t \cdot x) \filter r) =
-\varphi((t \filter r) \cdot x) \in \sem{M}$. Since $\sem{M}$ is
-P-incrementally justified, $\varphi(x)$ must point to the last
-O-move in $\pview{\varphi(t \filter r)}$ with order strictly greater
-than $\ord{\varphi(x)}$. Consequently $x$ points to the last node in
-$\pview{t \filter r} \filter N^{\lambda}$ with order strictly
-greater than $\ord{x}$. We have:
+
+Thus $x$ is a reachable input-variable node of $\tau(M)$ and by Prop.\ \ref{prop:Nher_incrbound_iff_incrjustified}(ii)
+it is $N^{\vdash \theroot}$-incrementally bound in $\tau(M)$:
+$x$ points to the last lambda node in $\pview{t} \filter N^{\theroot\vdash}$ with order greater than $\ord{x}$.
+By the Path-View correspondence (Prop.\ \ref{prop:pviewtrav_is_path}) we have:
 \begin{align*}
-\pview{t \filter r} &= \pview{t} \filter N^{r \vdash} & (\mbox{by Lemma \ref{lem:betanf_wellbehavedconst_trav_pview_red}}) \\
-& = [r,x[ \ \filter N^{r \vdash} & (\mbox{by Prop.\ \ref{prop:pviewtrav_is_path}})
+\pview{t} \filter N^{\theroot\vdash} & = [\theroot,x[ \ \filter N^{\theroot\vdash} & (\mbox{by Prop.\ \ref{prop:pviewtrav_is_path}})
 \end{align*}
-\notetoself{review use of Lemma
-\ref{lem:betanf_wellbehavedconst_trav_pview_red}}
-
-Since $M$ is in $\beta$-nf, the set of nodes not hereditarily
-enabled by $r$ is exactly the set of nodes hereditarily enabled by
-$N_{\Sigma}$ thus $[r,x[ \ \filter N^{r \vdash} = [r,x[\ \setminus\
-N^{\filter \Sigma}$. Moreover \pcf\ constants are of order $1$ at
-most therefore $N^{\filter \Sigma} = N_{\Sigma} \union N^c_{\Sigma}$
+Since $M$ is in $\beta$-nf, the nodes that are \emph{not} hereditarily
+enabled by the root are precisely the nodes hereditarily enabled by
+$N_\Sigma$ thus $[\theroot,x[ \ \filter N^{\theroot \vdash} = [\theroot,x[\ \setminus\
+N^{\filter \Sigma}$. Since \pcf\ constants are of order $1$ at
+most we have $N^{\filter \Sigma} = N_{\Sigma} \union N^c_{\Sigma}$
 where $N^c_{\Sigma}$ is the set of children nodes of $N_{\Sigma}$.
-Thus $\pview{t \filter r} \filter N^{\lambda} = ([r,x[\ \setminus\
-N_{\Sigma} \setminus N^c_{\Sigma} ) \filter N^{\lambda} = ([r,x[\
-\setminus\  N^c_{\Sigma} )  \filter N^{\lambda}$, and since
-$N^c_{\Sigma}$ is constituted of order $0$ lambda-nodes only, $x$
-must point to the last node in $[r,x[ \filter N^{\lambda}$ with
-order strictly greater than $\ord{x}$.
-
-Hence if $x$ is a bound variable node then it is bound by the
-last $\lambda$-node in $[r,x[$ with order strictly greater than
-$\ord{x}$ and if $x$ is a free variable then it points to $r$ and
-therefore all the $\lambda$-node in $]r,x[$ have order smaller than
-$\ord{x}$. Thus $\tau(M)^*$ is incrementally-bound.
+Hence $x$ points to the last lambda node of greater order in $[\theroot,x[\ \setminus\
+N_\Sigma \setminus N^c_\Sigma$ 
+But $N_\Sigma$ does not contain any lambda node, and 
+$N^c_\Sigma$ is constituted of order-$0$ lambda-nodes only therefore
+$x$ points to the last lambda node in $[\theroot,x[$ with order strictly greater than $\ord{x}$.
+This shows that $\tau(M)^*$ is incrementally-bound.
 \end{proof}
 
 
 In Proposition \ref{prop:incrbound_iif_etanf_safe} we have established a correspondence between almost safety
 and incremental binding in the setting of the simply-typed lambda calculus.
 Clearly, this result extends to $\pcf_1$: the computation tree of a $\pcf_1$ term is just a standard computation tree where subterms of the form $\Omega_A$ are just represented by 
-the single constant node $\bot_A$. In \pcf\ a difficulty arises as computation trees are potentially infinite
-due to the presence of the Y combinator. Despite this problem, the result still holds in \pcf.
+the single constant node $\bot_A$. In full \pcf\ a difficulty arises as computation trees are potentially infinite
+due to the presence of the Y combinator. Despite this problem, the result still holds:
 \begin{proposition}[Almost safety and incrementally-binding]
 \label{prop:incrbound_iif_etanf_safe_pcf} Let $\Gamma \vdash M : A$
 be a PCF term.
@@ -767,29 +783,7 @@ incrementally-bound in $\tau(M)$.
 
 \begin{proof}
 \noindent(i)
-\notetoself{Proof needed here. Might be somewhere else in the thesis...}
-
-\noindent(ii) 
 \notetoself{review that proof to account for almost safe terms}
-Suppose $M$ is a \pcf\ term with a P-incrementally
-justified strategy denotation. By Proposition
-\ref{prop:Nher_incrbound_and_incrjustified_pcf}(ii),
-$\tau(\betanf{M})^* = \tau(\etalnf{\betanf{M}}^*)$ is
-incrementally-bound. If $M$ is closed then so is
-$\etalnf{\betanf{M}}^*$ therefore by Proposition
-\ref{prop:incrbound_iff_etanf_safe_pcf},
-$\etalnf{\etalnf{\betanf{M}}^*} = \etalnf{\betanf{M}}^*$ is safe. If
-$M$ is open then so is $\etalnf{\betanf{M}}^*$ and by Proposition
-\ref{prop:incrbound_iff_etanf_safe_pcf},
-$\etalnf{\etalnf{\betanf{M}}^*} = \etalnf{\betanf{M}}^*$ is
-almost safe.
-\end{proof}
-
-
-\begin{theorem}
-Safe PCF terms are denoted by P-incrementally-justified strategies.
-\end{theorem}
-\begin{proof}
 Let $M^{\infty}$ be the $\beta$-normal form of $M$ (i.e. the possibly infinite term obtained by reducing all the $\beta$-redexes in $M$). By lemma \ref{lem:ia_safety_preserved}, safety is preserved by small-step reduction therefore, by Proposition \ref{prop:incrbound_iif_etanf_safe_pcf}, if $M$ is a \pcf\ term then $\tau(M^{\infty})$ is also
 incrementally-bound.
 
@@ -804,6 +798,21 @@ P-incrementally-justified strategies. Consequently,
 $\sem{M^{\infty}}$ is P-incrementally-justified. By soundness of the
 game denotation, $\sem{M^{\infty}} = \sem{M}$, thus $\sem{M}$ is
 P-incrementally-justified.
+
+\noindent(ii) 
+\notetoself{review that proof to account for almost safe terms}
+Suppose $M$ is a \pcf\ term with a P-incrementally
+justified strategy denotation. By Proposition
+\ref{prop:Nher_incrbound_iff_incrjustified_pcf}(ii),
+$\tau(\betanf{M})^* = \tau(\etalnf{\betanf{M}}^*)$ is
+incrementally-bound. If $M$ is closed then so is
+$\etalnf{\betanf{M}}^*$ therefore by Proposition
+\ref{prop:incrbound_iff_etanf_safe_pcf},
+$\etalnf{\etalnf{\betanf{M}}^*} = \etalnf{\betanf{M}}^*$ is safe. If
+$M$ is open then so is $\etalnf{\betanf{M}}^*$ and by Proposition
+\ref{prop:incrbound_iff_etanf_safe_pcf},
+$\etalnf{\etalnf{\betanf{M}}^*} = \etalnf{\betanf{M}}^*$ is
+almost safe.
 \end{proof}
 
 Consequently, P-pointers are superfluous in the game denotation of safe \pcf\ terms {\it i.e.} pointers emanating from P-moves are uniquely recoverable.

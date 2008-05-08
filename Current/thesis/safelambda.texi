@@ -82,95 +82,6 @@ arbitrary higher-order types.  % Thus our formulation
 % each type occurring in our rules is homogeneous and by restricting
 % constants to at most order 1.)
 
-
-\subsection{Almost safety}
-We now give an alternative presentation of the safe lambda calculus.
-Consider the following system of rules:
-$$ \rulename{var_{as}} \ \rulef{}{x : A\asappentail x : A}
-%\rulename{const_{as}} \ \rulef{}{\asappentail f : A}~f \in \Xi \qquad
-\qquad
-\rulename{app_{as}} \ \rulef{\Gamma \asappentail s : A\typear B
-\quad \Gamma \sentail t : A} {\Gamma \asappentail s~t : B}
-\qquad
-\rulename{abs_{as}}\  \rulef{\dps  \Gamma, x : A \asentail s : B} {\Gamma \asentail \lambda x  . s : A\typear B}
-$$
-
-$$
-\rulename{wk_{as}} \ \rulef{\Gamma \asappentail s : A}{\Delta \asappentail s : A} \quad
-\Gamma \subset \Delta
-\qquad
-\rulename{wk} \ \rulef{\Gamma \sentail s : A}{\Delta \sentail s : A} \quad
-\Gamma \subset \Delta
-$$
-
-$$
-\rulename{\delta} \ \rulef{\Gamma \sentail s : A}{\Gamma \asentail s : A}
-\qquad
-\rulename{\delta'} \ \rulef{\Gamma \asappentail s : A}{\Gamma \asentail s : A}
-\qquad
-\rulename{\rho}\
-\rulef{\Gamma \asentail s : A}{\Gamma \sentail s : A}\
-\ord{A} \leq \ord{\Gamma} \ .
-$$
-
-
-It is easy to see that this system of rules is equivalent to the one from
-Def.\ \ref{def:safelambda} in the sense that both systems generate the same set of judgments of the form $\Gamma \sentail M : T$. The above system of rules, however, has the advantage of decomposing the application and abstraction rules into atomic steps where only one variable is abstracted at a time and only two terms are applied together at a time.
-
-\begin{definition}
-Terms typed with the entailment operator $\asentail$  are called \defname{almost safe} terms. Terms typed with the entailment operator $\asappentail$ are distinguished almost safe terms called \defname{almost safe applications}.
-\end{definition}
-
-
-The intuition behind these rules is as follows: almost safe terms represent terms that are not safe but which can become safe if sufficiently many safe terms are applied to them or if sufficiently many variables are abstracted. The rule \rulenamet{app_{as}} is used to form applications in which each applied term is safe:
-\begin{lemma}
-\label{lem:almostsafe_is_appplicative_safe}
-If $\Gamma \asappentail M : T$ then $M$ is of the form $N_0
-\ldots N_k : T$ for some $k\geq 0$ where $N_0$ is not an application and
-for every $0 \leq i\leq m$, $N_i$ is safe.
-\end{lemma}
-This results follows immediately from the definition of the rules.
-The rule \rulenamet{abs_{as}} is the standard abstraction rule of the lambda calculus. As soon as the context and the type of the term being formed respect the safety condition (\ie all the context variables have order greater that the order of the type), the term can be marked as safe. This is done using the rule \rulenamet{\rho}. Together with the rule \rulenamet{\delta'} this implies that the closure of an almost safe term is always safe:
-\begin{lemma}
-  \label{lem:closealmostsafe_is_safe}
-  If $fv(M) \asappentail M : T$ then $\sentail \closure{M} : T$.
-\end{lemma}
-
-
-The two weakening rules \rulenamet{wk} and \rulenamet{wk_{as}} permit one to extend the context of a safe term or an almost safe application.
-We could have added a third rule to allow weakening for almost safe terms $\Gamma \asentail M : T$ as well. This is however not necessary because this kind of weakening can always be eliminated. (In particular if the term is an abstraction then we can instead apply the rule \rulenamet{wk_{as}} just before the abstraction rule).
-
-A term is almost safe if and only if its eta-long normal form is safe:
-\begin{lemma}
-\label{lem:almostsafe_iff_etalnf_almostsafe}
-  $\Gamma \asentail M : T$ if and only if $\Gamma \asentail \etalnf{M} : T$.
-\end{lemma}
-\begin{proof}
-\emph{Only if:} Let $\Gamma \asentail M :T$ be an almost safe term.
-We proceed by induction on $M$.
-Suppose that the last rule used is \rulenamet{\delta'}.
-Then by Lemma \ref{lem:almostsafe_is_appplicative_safe}
-$M$ is an application $N_0 N_1 \ldots N_k : (A_1,\ldots,A_n)$ with $k\geq 0$. Let $\varphi_i:A_i$ for $i\in\{1..n\}$ be fresh variables, using the
-rules \rulenamet{var_{as}}, \rulenamet{wk_{as}}, \rulenamet{app_{as}} and \rulenamet{abs_{as}} we can build the almost safe term $\Gamma \asentail \lambda \varphi_1 \ldots \varphi_n . N_0 N_1 \ldots N_k \varphi_1 \ldots \varphi_n :T$.
-
-If the last rule used is \rulenamet{\delta} then
-$M$ is safe therefore by Proposition \ref{prop:safe_iff_elnfsafe}, its eta-long normal form is safe and therefore by \rulenamet{\delta} it is also almost safe.
-
-If the last rule used is \rulenamet{abs_{as}} then by the induction hypothesis the eta-long nf of the premise is almost safe so we can conclude using \rulenamet{abs_{as}}.
-
-\emph{If:} It is again a proof by structural induction on the eta-long normal form. The basic idea is that the rule \rulenamet{abs_{as}} (resp.\ \rulenamet{app_{app}}) allows us to ``peal-off'' the lambda-abstraction (resp.\ extra operands) introduced during the eta-expansion.
-\end{proof}
-The two preceding lemmas show that the closure of the eta-long expansion of an almost safe term is safe. This explains the expression ``almost safe'': an almost safe is semantically safe in the sense that it is (extensionally) equivalent to a safe term; on the other hand it is syntactically unsafe since it cannot appear as an operand of an application inside a larger safe term.
-
-
-\notetoself{
-\begin{lemma}
-\label{lem:betasred_preserves_almostsafety}
-Safe beta reduction preserves almost safety.
-\end{lemma}
-}
-
-
 \begin{example}[Kierstead terms]
 \label{ex:kierstead}
 Consider the terms $M_1 = \lambda f . f (\lambda x . f (\lambda y . y
@@ -324,8 +235,8 @@ provided that $M$ and $N$ are safe, this substitution is
 capture-permitting.
 
 
-\begin{lemma}[Substitution preserves safety]
-\label{lem:subst_preserve_safety}
+\begin{lemma}[Substitution Lemma]
+\label{lem:subst_preserves_safety}
 If $\Gamma, x :A \sentail M : B$ and $\Gamma \sentail N : A$ then $\Gamma \sentail M[N/x] : B$.
 Moreover if $M$ and $N$ are homogeneously safe then so is $M[N/x]$.
 \end{lemma}
@@ -375,31 +286,29 @@ term of the form $(\lambda \overline{x} . M) N_1 \ldots N_l$ such
 that $M$ is safe and $N_i$ is safe for $1\leq i\leq n$.
 \end{definition}
 For instance, in the case $n<l$, a safe redex has a derivation tree of the following form:
-\def\defaultHypSeparation{}
-\begin{prooftree}
-    \AxiomC{\ldots}
-  \UnaryInfC{$\Gamma', \overline{x}:\overline{A} \sentail M : (A_{n+1}, \ldots, A_l, B)$}
-  \RightLabel{\rulenamet{abs}}
-  \UnaryInfC{$\Gamma' \sentail \lambda \overline{x} . M : (A_1, \ldots, A_l, B)$}
-  \RightLabel{\rulenamet{wk}}
-  \UnaryInfC{$\Gamma \sentail \lambda \overline{x} . M : (A_1, \ldots, A_l, B)$}
-  \RightLabel{\rulenamet{\delta}}
-  \UnaryInfC{$\Gamma \asentail \lambda \overline{x} . M : (A_1, \ldots, A_l, B)$}
-  \AxiomC{\ldots}
-  \UnaryInfC{$\Gamma \sentail N_1 :A_1$}
-  \RightLabel{\rulenamet{app_{as}}}
-   \BinaryInfC{$\Gamma \asentail (\lambda \overline{x} . M) N_1 : (A_2, \ldots A_l, B)$}
-%  \AxiomC{\ldots}
-%  \RightLabel{\rulenamet{app_{as}}}
-%  \BinaryInfC{\vdots\raisebox{0.5cm}{}}
-  \noLine\UnaryInfC{\vdots\raisebox{0.5cm}{}}
-  \RightLabel{\rulenamet{app_{as}}}
-  \UnaryInfC{$\Gamma \asentail (\lambda \overline{x} . M) N_1 \ldots N_{l-1} : (A_l, B)$}
-  \AxiomC{\ldots}
-  \UnaryInfC{$\Gamma \sentail N_l :A_l$}
-  \RightLabel{\rulenamet{app}}
-  \BinaryInfC{$\Gamma \sentail (\lambda \overline{x} . M) N_1 \ldots N_l : B$}
-\end{prooftree}
+\begin{mathpar}
+  \inferrule* [Left=\rulenamet{app}]
+  {
+      \inferrule* [Left=\rulenamet{wk}]
+      {
+          \inferrule* [Left=\rulenamet{abs}]
+            {\ldots}
+            {\Gamma', \overline{x}:\overline{A} \sentail M : (A_{n+1}, \ldots, A_l, B)}
+      }
+      {\Gamma \sentail \lambda \overline{x} . M : (A_1, \ldots, A_l, B)}
+      \\
+      \inferrule*
+       {\ldots}
+       {\Gamma \sentail N_1 :A_1}
+%      \\
+%      \cdots
+      \\
+      \inferrule*
+       {\ldots}
+       {\Gamma \sentail N_l :A_l}
+  }
+  {\Gamma \sentail (\lambda \overline{x} . M) N_1 \ldots N_l : B}
+\end{mathpar}
 \smallskip
 
 We can now define a notion of reduction for safe terms.
@@ -427,9 +336,10 @@ $\beta$-reduction \ie it is a subset of the transitive closure of
 $\betared$.
 
 
-\begin{lemma}[$\beta_s$-reduction preserves safety]
+\begin{lemma}[Subject Reduction]
 \label{lem:safered_preserve_safety}
-If $\Gamma \sentail s :A$ and $s \betasred t$ then $\Gamma \sentail t :A$.
+Suppose that $s \betasred t$. Then
+$\Gamma \sentail s :A$ implies $\Gamma \sentail t :A$.
 \end{lemma}
 
 \proof
@@ -439,12 +349,12 @@ safe-redex $(\lambda x_1 \ldots x_n . M) N_1
   \ldots N_l $ with $x_1 : B_1, \ldots, x_n: B_n$
 and $M$ of type $C$.  W.l.o.g we can assume that the last rule used
 to form the term $s$ is \rulenamet{app} (and not the weakening rule
-\rulenamet{wk}, thus  we have $\Gamma = fv(s)$, and since $s$ is
+\rulenamet{wk}), thus  we have $\Gamma = fv(s)$, and since $s$ is
 safe, Lemma \ref{lem:ordfreevar} gives us $\ord{A} \leq
 \ord{\Gamma}$.
 
 Suppose $n>l$ then $A = (B_{l+1}, \ldots, B_n, C)$. By Lemma
-\ref{lem:subst_preserve_safety} we can form the safe term $\Gamma,
+\ref{lem:subst_preserves_safety} we can form the safe term $\Gamma,
 x_{l+1}:B_{l+1}, \ldots x_n :B_{n}\sentail M\subst{\overline{N}}{x_1
 \ldots x_l} : C$. And since we have $\ord{A} \leq \ord{\Gamma}$, we
 can use the \rulenamet{abs} rule to form the safe term $\Gamma
@@ -685,6 +595,105 @@ A term is safe if and only if its $\eta$-long normal form is safe.
 % The following statement is wrong:
 %``In the homogeneous safe lambda calculus, the notion of safe terms and long-safe terms coincide''
 % Because of the example given earlier (which is homogeneously typed)
+
+
+\subsection*{Almost safety}
+\label{sec:almostsafety}
+We now give an alternative presentation of the safe lambda calculus.
+Consider the following system of rules:
+$$ \rulename{var_{as}} \ \rulef{}{x : A\asappentail x : A}
+\qquad
+\rulename{app_{as}} \ \rulef{\Gamma \asappentail s : A\typear B
+\quad \Gamma \sentail t : A} {\Gamma \asappentail s~t : B}
+\qquad
+\rulename{abs_{as}}\  \rulef{\dps  \Gamma, x : A \asentail s : B} {\Gamma \asentail \lambda x  . s : A\typear B}
+$$
+
+$$
+\rulename{const_{as}} \ \rulef{}{\asappentail f : A}~f \in \Xi \qquad
+\rulename{wk_{as}} \ \rulef{\Gamma \asappentail s : A}{\Delta \asappentail s : A} \quad
+\Gamma \subset \Delta
+\qquad
+\rulename{wk} \ \rulef{\Gamma \sentail s : A}{\Delta \sentail s : A} \quad
+\Gamma \subset \Delta
+$$
+
+$$
+\rulename{\delta} \ \rulef{\Gamma \sentail s : A}{\Gamma \asentail s : A}
+\qquad
+\rulename{\delta'} \ \rulef{\Gamma \asappentail s : A}{\Gamma \asentail s : A}
+\qquad
+\rulename{\rho}\
+\rulef{\Gamma \asentail s : A}{\Gamma \sentail s : A}\
+\ord{A} \leq \ord{\Gamma} \ .
+$$
+
+
+It is easy to see that this system of rules is equivalent to the one from
+Def.\ \ref{def:safelambda} in the sense that both systems generate the same set of judgments of the form $\Gamma \sentail M : T$. The above system of rules, however, has the advantage of decomposing the application and abstraction rules into atomic steps where only one variable is abstracted at a time and only two terms are applied together at a time.
+
+\begin{definition}
+Terms typed with the entailment operator $\asentail$  are called \defname{almost safe} terms. Terms typed with the entailment operator $\asappentail$ are distinguished almost safe terms called \defname{almost safe applications}.
+\end{definition}
+
+
+The intuition behind these rules is as follows: almost safe terms represent terms that are not safe but which can become safe if sufficiently many safe terms are applied to them or if sufficiently many variables are abstracted. The rule \rulenamet{app_{as}} is used to form applications in which each applied term is safe:
+\begin{lemma}\hfill
+\label{lem:almostsafe_is_appplicative_safe}
+\begin{enumerate}
+  \item
+If $\Gamma \asappentail M : T$ then $M \equiv N_0
+\ldots N_m$ for some $m\geq 0$ where $N_i$ is safe
+for every $0 \leq i\leq m$;
+
+\item If $\Gamma \asentail M : T$ then $M\equiv\lambda x_1 \ldots x_n . N_0 \ldots N_m$ for some $n, m\geq 0$ where $N_i$ is safe for every $0 \leq i\leq m$.
+\end{enumerate}
+\end{lemma}
+This results follows immediately from the definition of the rules.
+
+The rule \rulenamet{abs_{as}} is nothing less than the standard abstraction rule of the lambda calculus. As soon as the context and the type of the term being formed respect the safety condition (\ie all the context variables have order greater that the order of the type), the term can be marked as safe. This is done using the rule \rulenamet{\rho}. Together with the rule \rulenamet{\delta'} this implies that the closure of an almost safe term is always safe:
+\begin{lemma}
+  \label{lem:closealmostsafe_is_safe}
+  If $fv(M) \asappentail M : T$ then $\sentail \closure{M} : T$.
+\end{lemma}
+
+
+The two weakening rules \rulenamet{wk} and \rulenamet{wk_{as}} permit one to extend the context of a safe term or an almost safe application.
+We could have added a third rule to allow weakening for almost safe terms $\Gamma \asentail M : T$ as well. This is however not necessary because this kind of weakening can always be eliminated. (In particular if the term is an abstraction then we can instead apply the rule \rulenamet{wk_{as}} just before the abstraction rule).
+
+A term is almost safe if and only if its eta-long normal form is safe:
+\begin{lemma}
+\label{lem:almostsafe_iff_etalnf_almostsafe}
+  $\Gamma \asentail M : T$ if and only if $\Gamma \asentail \etalnf{M} : T$.
+\end{lemma}
+\begin{proof}
+\emph{Only if:} Let $\Gamma \asentail M :T$ be an almost safe term.
+We proceed by induction on $M$.
+Suppose that the last rule used is \rulenamet{\delta'}.
+Then by Lemma \ref{lem:almostsafe_is_appplicative_safe}
+$M$ is an application $N_0 N_1 \ldots N_k : (A_1,\ldots,A_n)$ with $k\geq 0$. Let $\varphi_i:A_i$ for $i\in\{1..n\}$ be fresh variables, using the
+rules \rulenamet{var_{as}}, \rulenamet{wk_{as}}, \rulenamet{app_{as}} and \rulenamet{abs_{as}} we can build the almost safe term $\Gamma \asentail \lambda \varphi_1 \ldots \varphi_n . N_0 N_1 \ldots N_k \varphi_1 \ldots \varphi_n :T$.
+
+If the last rule used is \rulenamet{\delta} then
+$M$ is safe therefore by Proposition \ref{prop:safe_iff_elnfsafe}, its eta-long normal form is safe and therefore by \rulenamet{\delta} it is also almost safe.
+
+If the last rule used is \rulenamet{abs_{as}} then by the induction hypothesis the eta-long nf of the premise is almost safe so we can conclude using \rulenamet{abs_{as}}.
+
+\emph{If:} It is again a proof by structural induction on the eta-long normal form. The basic idea is that the rule \rulenamet{abs_{as}} (resp.\ \rulenamet{app_{app}}) allows us to ``peal-off'' the lambda-abstraction (resp.\ extra operands) introduced during the eta-expansion.
+\end{proof}
+The two preceding lemmas show that the closure of the eta-long expansion of an almost safe term is safe. This explains the expression ``almost safe'': an almost safe is semantically safe in the sense that it is (extensionally) equivalent to a safe term; on the other hand it is syntactically unsafe since it cannot appear as an operand of an application inside a larger safe term.
+
+
+\begin{lemma}
+\label{lem:betasred_preserves_almostsafety}
+Safe beta reduction preserves almost safety.
+\end{lemma}
+\proof
+Let $M$ be an almost safe term. By Lemma \ref{lem:almostsafe_is_appplicative_safe}, $M\equiv\lambda x_1 \ldots x_n . N_0 \ldots N_m$ for some $n, m\geq 0$ where $N_i$ is safe for every $0 \leq i\leq m$.
+Suppose that $M \betasred M'$. There are two cases:
+If the reduced redex occurs in some $N_i$ for $0 \leq i \leq m$ then we have $N \equiv \lambda x_1 \ldots x_n . N_0 \ldots N'_i \ldots N_m$ where $N_i \betasred N'_i$ for some $N'_i$. Since safety is preserved by safe reduction (Lemma \ref{lem:safered_preserve_safety}), $N'_i$ is safe. Hence we can conclude using the application and abstraction rule.
+The second case is when the redex is $N_1 \ldots N_q$ for some $1 \leq q\leq m$. This mean that $N_0$ is of the form $\lambda y_1 \ldots y_q. P$ for some safe term $P$, and $M' \equiv P[N_1/y_1 \ldots N_q/y_q] N_{q+1} \ldots N_m$. The substitution lemma \ref{lem:subst_preserves_safety} and the application and abstraction rule permit to conclude.
+\qed
 
 \subsection*{The type inhabitation problem}
 

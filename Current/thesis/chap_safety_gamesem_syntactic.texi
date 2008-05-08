@@ -56,38 +56,91 @@ Algol.
 
 Some of the results presented in this chapter were first published in TLCA \cite{blumong:safelambdacalculus}. The present chapter reproduced those results here with complete proof and generalized them to the languages \pcf\ and \ialgol.
 
-\section{Preliminaries}
+\section{P-incrementally justified strategies}
 
-In this section, we assume that we work in a general setting of a
+In the game-semantic literature, some authors use the term ``order of a question move'' to refer to the length of the path in the arena to the initial move that hereditarily enables it. For the purpose of studying the safety restriction, however, it will be convenient instead to call it the \defname{level} of the node, and reserve the term ``order'' to refer to another quantity: The \defname{order of a move} $m$, written $\ord{m}$, is defined as the length of the path from $m$ to its furthest leaf in the arena minus 1. Thus the order of an arena can be defined in term of move-order: it is precisely the greatest order of its initial moves.
+
+
+\begin{definition}\rm
+  A strategy $\sigma$ is said to be \defname{P-incrementally
+    justified} if for any play $s \, q \in \sigma$ where $q$ is a
+  P-question, $q$ points to the last unanswered O-question in $\pview{s}$ with
+  order strictly greater than $\ord{q}$.
+\end{definition}
+
+
+
+Note that although the pointer is determined by the P-view, the
+choice of the move itself can be based on the whole history of the
+play. Thus P-incremental justification does not imply innocence.
+
+The definition suggests an algorithm that, given a play of a
+P-incrementally justified denotation, uniquely recovers the pointers
+from the underlying sequence of moves and from the pointers
+associated to the O-moves therein. Hence:
+\begin{lemma}
+\label{lem:incrjustified_pointers_uniqu_recover} In P-incrementally
+justified strategies, pointers emanating from P-moves are
+superfluous.
+\end{lemma}
+\begin{proof}
+Suppose $\sigma$ is a P-incrementally-justified strategy. We prove
+that pointers attached to P-moves in a play $s\in \sigma$ are
+uniquely recoverable by induction on the length of $s$. \noindent
+\emph{Base case}: if $|s| \leq 1$ then there is no pointer to
+recover. \noindent \emph{Step case}: suppose $s m \in \sigma$. If
+$m$ is an answer move then by the well-bracketing condition $m$
+points to the last unanswered question in $s$. If $m$ is a
+P-question then by  P-incremental-justification of $\sigma$, $m$
+points to the last O-move in $\pview{s}$ with order strictly greater
+than $\ord{q}$. Since we have access to O-moves' pointers, we can
+compute the P-view $\pview{s}$. Hence $m$'s pointer is uniquely
+recoverable.
+\end{proof}
+
+\begin{example}
+Copycat strategies, such as the identity strategy $id_A$ on game $A$
+or the evaluation map $ev_{A,B}$ of type $(A \Rightarrow B) \times A
+\typear B$, are all P-incrementally justified.\footnote{In such
+strategies, a P-move $m$ is justified as follows: either $m$ points
+to the preceding move in the P-view or the preceding move is of
+smaller order and $m$ is justified by the second last O-move in the
+P-view.}
+\end{example}
+
+
+
+\section{Incremental binding}
+
+In this section, we assume that we work in the general setting of a
 language extending the simply-typed lambda calculus with new
-constants. We assume the following prerequisites:
+constants and verifying the following prerequisites:
 \begin{itemize}
 \item Terms of the language are denoted by sequents of the form
 $\Gamma \entail M : T$.
-\item A fully-abstract game-semantic model of the language is
-defined. The strategy denotation of a term-in-context $\Gamma
-\stentail M : T$ is written $\sem{\Gamma \stentail M : T}$;
-\item A notion of safety is defined for the language such that the
-restriction of the language to the safe pure simply-typed
-fragment coincides with the definition of the safe lambda
-calculus and such that for any typable term $\Gamma \sentail M :
-T$ we have $\forall z \in \Gamma . \ord{z} \geq \ord{T}$ ;
+\item The language has a properly defined fully-abstract game-semantic model where each term-in-context $\Gamma \entail M : T$ is denoted by a strategy $\sem{\Gamma \entail M : T}$;
+
+\item A notion of safety is defined for the language by way of a system of rules producing sequents of the form $\Gamma \sentail M : T$ such that the restriction of the language to the safe pure simply-typed
+fragment coincides with the definition of the safe lambda calculus;
+
+\item For any safe term-in-context $\Gamma \sentail M : T$ we have $\forall z \in \Gamma . \ord{z} \geq \ord{T}$ ;
+
 \item The small-step reduction semantics of the language preserves safety;
-\item New traversal rules are defined to take into account the constants of the language.
-\item Constant traversal rules are well-behaved (see Def.\
-\ref{def:wellbehaved_traversal});
-\item These constant traversal rules correctly model the behaviour of the constants in such a way that the game-semantic correspondence (Theorem
-\ref{thm:correspondence}) still holds.
+
+\item New well-behaved (see Def.\
+\ref{def:wellbehaved_traversal}) traversal rules are defined to take into account the constants of the language;
+
+\item These constant traversal rules model the behaviour of the constants in such a way that the game-semantic correspondence (Theorem \ref{thm:correspondence}) holds for that language.
 \end{itemize}
 
 We will show that both \pcf\ and \ialgol\ fit this setting.
 
-For the rest of this section we fix a term $\Gamma \vdash M : T$
-from this generic language. We will explicitly specify when a result
-holds only in the pure (\ie no constants) fragment of the language.
+For the rest of this section we fix a term $\Gamma \entail M : T$
+of this unspecified language. We will explicitly indicate when a result
+only holds in the pure simply-typed fragment of the language.
 
 
-\subsection{Incremental binding}
+\subsection*{Definition}
 
 
 Recall from the definition of computation trees (Chapter
@@ -162,6 +215,8 @@ closed term obtained from $M$ by abstracting all its free variables
 Clearly, $\tau(M)$ and $\tau(\closure{M})$ are isomorphic and the enabling relation $\vdash$ is defined identically
 on these two trees (since free variable nodes are enabled by the root), therefore $\tau(M)$ is $A$-i.b.\ if and only if $\tau(\closure{M})$ is.
 \smallskip
+
+\subsection*{Safety, incremental binding and incremental justification}
 
 \begin{proposition}[Safe terms have incrementally-bound computation trees]
 \label{prop:incrbound_iff_etanf_safe} Suppose that  $\Gamma \stentail M
@@ -286,71 +341,7 @@ child{
 and if we take $A$ to be the set of nodes that are hereditarily enabled by
 the root (underlined in the above figure) then $\tau(M)$
 is $A$-incrementally-bound but $\tau(N)$ is not.
-
-
-\subsection{P-incremental-justified strategies}
-\notetoself{Redefine this:
-
- We define the \defname{order} of a move $m$, written
-$\ord{m}$, to be the length of the path from $m$ to its furthest
-leaf in the arena minus 1. (There are several ways to define the
-order of a move; the definition chosen here is sound in the current
-setting where each question move in the arena enables at least one
-answer move.)
-%\ie ~height of the subarena rooted at $q$ minus 2.
-}
-
-
-\begin{definition}\rm
-  A strategy $\sigma$ is said to be \defname{P-incrementally
-    justified} if for any play $s \, q \in \sigma$ where $q$ is a
-  P-question, $q$ points to the last unanswered O-question in $\pview{s}$ with
-  order strictly greater than $\ord{q}$.
-\end{definition}
-
-
-
-Note that although the pointer is determined by the P-view, the
-choice of the move itself can be based on the whole history of the
-play. Thus P-incremental justification does not imply innocence.
-
-The definition suggests an algorithm that, given a play of a
-P-incrementally justified denotation, uniquely recovers the pointers
-from the underlying sequence of moves and from the pointers
-associated to the O-moves therein. Hence:
-\begin{lemma}
-\label{lem:incrjustified_pointers_uniqu_recover} In P-incrementally
-justified strategies, pointers emanating from P-moves are
-superfluous.
-\end{lemma}
-\begin{proof}
-Suppose $\sigma$ is a P-incrementally-justified strategy. We prove
-that pointers attached to P-moves in a play $s\in \sigma$ are
-uniquely recoverable by induction on the length of $s$. \noindent
-\emph{Base case}: if $|s| \leq 1$ then there is no pointer to
-recover. \noindent \emph{Step case}: suppose $s m \in \sigma$. If
-$m$ is an answer move then by the well-bracketing condition $m$
-points to the last unanswered question in $s$. If $m$ is a
-P-question then by  P-incremental-justification of $\sigma$, $m$
-points to the last O-move in $\pview{s}$ with order strictly greater
-than $\ord{q}$. Since we have access to O-moves' pointers, we can
-compute the P-view $\pview{s}$. Hence $m$'s pointer is uniquely
-recoverable.
-\end{proof}
-
-\begin{example}
-Copycat strategies, such as the identity strategy $id_A$ on game $A$
-or the evaluation map $ev_{A,B}$ of type $(A \Rightarrow B) \times A
-\typear B$, are all P-incrementally justified.\footnote{In such
-strategies, a P-move $m$ is justified as follows: either $m$ points
-to the preceding move in the P-view or the preceding move is of
-smaller order and $m$ is justified by the second last O-move in the
-P-view.}
-\end{example}
-
-
-
-
+\bigskip
 
 A node of the computation tree is said to be \defname{reachable} if
 there is some traversal of the computation tree that visits it.
@@ -621,7 +612,11 @@ PCF based on syntactical arguments.
 
 We recall that the $\beta$-normal form of a \pcf\ term is the possibly infinite term obtained by reducing all the $\beta$-redexes. A $\beta$-normal form is therefore not necessarily normal with respect to the full system of rules of \pcf\ (\eg\ the term $\pcfcond\, 0\, M\, N$ is $\beta$-normal although it reduces in one step to $M$).
 
-\subsubsection{Game characterization of safe terms}
+We extend the notion of \emph{almost safety} (Sec.\ \ref{sec:almostsafety}) to \pcf: a \pcf\ term is \defname{almost safe}
+if it can be written $\lambda x_1 \ldots x_n . N_0 \ldots N_p$ for some $n,p \geq 0$ where $N_i$ is safe for all $0\leq i \leq p$.
+
+
+\subsection{Game characterization}
 
 In the context of the simply-typed lambda calculus, we have shown
 the correspondence between safety and P-incremental justification
@@ -729,8 +724,8 @@ This shows that $\tau(M)^*$ is incrementally-bound.
 
 
 In Proposition \ref{prop:incrbound_iff_etanf_safe} we have established a correspondence between almost safety
-and incremental binding in the setting of the simply-typed lambda calculus.
-Clearly, this result extends to $\pcf_1$: the computation tree of a $\pcf_1$ term is just a standard computation tree where subterms of the form $\Omega_A$ are just represented by
+and incremental binding in the general setting of a simply-typed lambda calculus extended with constants.
+$\pcf_1$ is such a language: the computation tree of a $\pcf_1$ term is just a standard computation tree where subterms of the form $\Omega_A$ are just represented by
 the single constant node $\bot_A$. In full \pcf\ a difficulty arises as computation trees are potentially infinite
 due to the presence of the Y combinator. Despite this problem, the result still holds:
 \begin{proposition}[Almost safety and incrementally-binding]
@@ -743,10 +738,8 @@ be a PCF term.
 \end{proposition}
 \begin{proof}
 \notetoself{adapt this proof to almost safe terms}
-(i) Let $M$ be a safe PCF term and  $i$ denote the number of occurrences of the Y combinator in $M$.
-We first prove by induction on $i$ that $M_k$ is safe for any $k\in
-\omega$. \emph{Base case:} $i=0$ then $M_k = M$. \emph{Step case:}
-$i>0$. Let $Y_A N$ be a subterm of $M$. Since $M$ is safe, $N$ is
+(i) Let $M$ be an almost safe \pcf\ term and  $i$ denote the number of occurrences of the Y combinator in $M$.
+We first prove by induction on $i$ that for any $k\in \omega$, the $k$th approximants to $M$, denoted $M_k$, is almost safe. The base case $i=0$ is trivial: $M_k = M$. Step case: $i>0$. Let $Y_A N$ be a subterm of $M$. Since $M$ is almost safe, $N$ is
 also safe. The number of occurrences of the Y combinator in $N$ is
 smaller than $i$ therefore by the induction hypothesis $N_k$ is
 safe. Consequently the term $Y_A^k N_k = \underbrace{N_k ( \ldots (
@@ -758,8 +751,7 @@ incrementally-bound. Now let $z$ be a variable node in $\tau(M) =
 \Union_{k\in\omega} \tau(M_k)$. There exists $k\in \omega$ such that
 $z$ belongs to $\tau(M_k) \sqsubseteq \tau(M)$. If we write $r_k$ to
 denote the root of the tree $\tau(M_k)$ then the path $[r_k,z]$ in
-$\tau(M_k)$ is equal to the path $[r,z]$ in $\tau(M)$. Hence, since
-the node $z$ is incrementally-bound in $\tau(M_k)$, it is also
+$\tau(M_k)$ is equal to the path $[r,z]$ in $\tau(M)$. Hence, since $z$ is incrementally-bound in $\tau(M_k)$, it is also
 incrementally-bound in $\tau(M)$.
 
 (ii) \notetoself{missing proof}
@@ -822,7 +814,7 @@ with the $\pcfcase_k$ construct (see \cite{Abr02}).
 The $\pcfcase_k$ construct is the obvious generalisation of the
 conditional operator \pcfcond\ to $k$ branches instead of $2$. Clearly, all the results obtained so far concerning Safe \pcf\ also hold for \pcf'.
 
-\subsubsection{Definability result}
+\subsection{Definability}
 
 The previous theorem leads to the following definability result for safe \pcf':
 \begin{proposition}[Definability for safe \pcf' terms]
@@ -846,12 +838,11 @@ $M_\sigma$ to be $\etalnf{\betanf{N}}^* $. We have
 $\sem{\overline{x} : \overline{A} \vdash M_\sigma : B} =
 \sem{\overline{x} :\overline{A} \vdash N : B} = \sigma$ and by
 Theorem  \ref{thm:almostsafeincrejust_pcf}(ii), $M_\sigma$ is
-almost safe. For the second part we just need to take $M'_\sigma =
-\lambda \overline{x}. M_\sigma$.
+almost safe. For the second part we just need to take $M'_\sigma$ to be the closure $\lambda \overline{x}. M_\sigma$ of $M_\sigma$.
 \end{proof}
 
 
-\subsubsection{Compositionality of P-i.j.\ strategies (syntactic
+\subsection{Compositionality of P-i.j.\ strategies (syntactic
 argument)}
 
 
@@ -871,7 +862,8 @@ composition $f\fatcompos g$ is also P-incrementally justified.
 
 By the definability result, there are two closed safe terms (in $\eta$-nf) $\vdash M_f :(\overline{A},B)$  and $\vdash M_g :B \typear C$ such that $\sem{M_f} = f$
 and $\sem{M_f} = g$.
-We define the term $M_{f\fatcompos g} = \lambda \overline{x} . M_g (M_f \overline{x})$ for some fresh variables $\overline{x} : \overline{A}$. Clearly we have $\sem{M_{f\fatcompos g}} = \sem{M_f} \fatcompos \sem{M_g} = f\fatcompos g$.
+We define the composition term $M_{f\fatcompos g}$ as:
+ $$ M_{f\fatcompos g} \equiv \lambda \overline{x} . M_g (M_f \overline{x})$$ for some fresh variables $\overline{x} : \overline{A}$. Clearly we have $\sem{M_{f\fatcompos g}} = \sem{M_f} \fatcompos \sem{M_g} = f\fatcompos g$.
 
 \paragraph{Sufficient conditions}
 

@@ -612,8 +612,7 @@ PCF based on syntactical arguments.
 
 We recall that the $\beta$-normal form of a \pcf\ term is the possibly infinite term obtained by reducing all the $\beta$-redexes. A $\beta$-normal form is therefore not necessarily normal with respect to the full system of rules of \pcf\ (\eg\ the term $\pcfcond\, 0\, M\, N$ is $\beta$-normal although it reduces in one step to $M$).
 
-We extend the notion of \emph{almost safety} (Sec.\ \ref{sec:almostsafety}) to \pcf: a \pcf\ term is \defname{almost safe}
-if it can be written $\lambda x_1 \ldots x_n . N_0 \ldots N_p$ for some $n,p \geq 0$ where $N_i$ is safe for all $0\leq i \leq p$.
+We recall that a \pcf\ term is \emph{almost safe} if it can be written $\lambda x_1 \ldots x_n . N_0 \ldots N_p$ for some $n,p \geq 0$ where $N_i$ is safe for all $0\leq i \leq p$.
 
 
 \subsection{Game characterization}
@@ -642,26 +641,16 @@ bound then the resulting term will be unsafe even if the rest of the
 tree is incrementally bound. In the example above, it was possible
 to turn $M$ into the equivalent safe term $\lambda f x y. f (\lambda
 z. z)$ by eliminating the dead code from $M$. In fact we can
-generalise this method to any \pcf\ term with a P-incrementally
+generalise this method to any \pcf\ term having a P-incrementally
 justified denotation.
 \smallskip
 
-Dead code elimination can be difficult to achieve in practice but it
-is easy to define it formally: We say that a subterm $N$ occurring
-in a context $C[-]$ in $M : (A_1, \ldots, A_n,o)$ is part of the
-\defname{dead code} of $M$ if for any term $T_0$ of the form $M M_1
-\ldots M_n$, any reduction sequence starting from $T_0$ does not
-involve a reduction of the subterm $N$ \ie for any reduction
-sequence $T_0 \redar T_1 \redar \ldots \redar T_k$, there is no
-$j\in \{0.. k-1\}$ such that $T_j = C[N]$ and $T_{j+1} = C[N']$ for
-some term $N'$.
+Dead code elimination boils down to a \emphind{reachability} problem: We say that a subterm $N$ of $M : (A_1, \ldots, A_n,o)$ is \defname{dead code} if for any context $C[-]$ such that $C[M]$ is of ground type, any reduction sequence starting from $C[M]$ does not involve a reduction of the subterm $N$ \ie for any reduction sequence $C[M] \equiv T_0 \redar T_1 \redar \ldots \redar T_k$, there is no $j\in \{0.. k-1\}$ such that $T_j = C'[N]$ and $T_{j+1} = C'[N']$ for some context $C'[-]$ and term $N'$.
 
+Let $M$ be a \pcf\ term in eta-long normal form. Occurrences of a variables that are in the dead code of $M$ are called \defname{dead occurrences}. By a game semantic argument, it is easy to show that an occurrence of $x$ is dead just if if the corresponding node in the computation tree is not \emphind{reachable} by any traversal.
 
-Let $M$  be a \pcf\ term in $\eta$-nf. An occurrence of a variable
-$x$ in $M$ is said to be a \defname{dead occurrence} if it occurs in
-the dead code of $M$. In other words, it is a dead occurrence of $x$
-if the corresponding node in the computation tree is not reachable \ie does not appear in
-any traversal of $\travset(M)$.
+Clearly, this reachibility problem is not decidable since the halting problem for \pcf\ can be encoded into it (and \pcf\ is turing-complete).
+
 
 Given a term \pcf\ $M$, we define $M^*$ as the term obtained from the (possibly infinite) $\eta$-long normal form of $M$ by substituting all
 subterms of the form  $x N_1 \dots N_k$ for some dead variable
@@ -676,7 +665,7 @@ Clearly we have:
 
 In \pcf, the correspondence between incremental binding and P-incremental justification showed in Prop.\ \ref{prop:Nher_incrbound_iff_incrjustified} becomes:
 \begin{corollary}[Corollary of Prop.\ \ref{prop:Nher_incrbound_iff_incrjustified}] \
-\label{prop:Nher_incrbound_iff_incrjustified_pcf} Let $\Gamma \vdash
+\label{cor:Nher_incrbound_iff_incrjustified_pcf} Let $\Gamma \vdash
 M : A$ be a PCF term in $\beta$-normal form.
 \begin{enumerate}[(i)]
 \item  If $\tau(\Gamma \vdash M : A)$ is incrementally-bound then $\sem{\Gamma \vdash M : A}$ is P-incrementally justified;
@@ -735,8 +724,7 @@ be a PCF term.
 \item[(ii)] conversely, if $\tau(\Gamma \vdash M : A)$ is incrementally-bound then the $\eta$-normal form of $\Gamma \vdash M : A$ is almost safe if $M$ is open and safe if $M$ is closed.
 \end{itemize}
 \end{proposition}
-\begin{proof}
-\notetoself{adapt this proof to almost safe terms}
+\proof
 (i) Let $M$ be an almost safe \pcf\ term and  $i$ denote the number of occurrences of the Y combinator in $M$.
 We first prove by induction on $i$ that for any $k\in \omega$, the $k$th approximants to $M$, denoted $M_k$, is almost safe. The base case $i=0$ is trivial: $M_k = M$. Step case: $i>0$. Let $Y_A N$ be a subterm of $M$. Since $M$ is almost safe, $N$ is
 also safe. The number of occurrences of the Y combinator in $N$ is
@@ -753,9 +741,10 @@ denote the root of the tree $\tau(M_k)$ then the path $[r_k,z]$ in
 $\tau(M_k)$ is equal to the path $[r,z]$ in $\tau(M)$. Hence, since $z$ is incrementally-bound in $\tau(M_k)$, it is also
 incrementally-bound in $\tau(M)$.
 
-(ii) \notetoself{missing proof}
-
-\end{proof}
+(ii)
+Suppose that the term is not almost safe then necessarily one of its approximant is not almost safe either.
+Since the result holds for any $\pcf_1$ term, the computation tree of the approximant is not incrementally-bound.  But the computation tree of $M$ contains the computation tree of its approximant, therefore it is not incrementally-bound.
+\qed
 
 
 
@@ -765,7 +754,7 @@ incrementally-bound in $\tau(M)$.
 \begin{theorem}[Almost safety and P-incremental justification]
 \label{thm:almostsafeincrejust_pcf} Let $\Gamma \entail M : A$ be a PCF term. Then:
 \begin{enumerate}[(i)]
-\item If $M$ is almost safe (\ie $\Gamma \asentail M : A$) then $\sem{\Gamma \entail M : A}$ is P-incrementally justified.
+\item If $M$ is almost safe then $\sem{\Gamma \entail M : A}$ is P-incrementally justified.
 \item If $\sem{\Gamma \entail M : A}$ is
   P-incrementally justified then $\etalnf{\betanf{M}}^*$ is
   almost safe  if $M$ is open, and safe if $M$ is closed.
@@ -774,27 +763,16 @@ incrementally-bound in $\tau(M)$.
 
 \begin{proof}
 \noindent(i)
-\notetoself{review that proof to account for almost safe terms}
-Let $M^{\infty}$ be the $\beta$-normal form of $M$ (i.e. the possibly infinite term obtained by reducing all the $\beta$-redexes in $M$). By lemma \ref{lem:ia_safety_preserved}, safety is preserved by small-step reduction therefore, by Proposition \ref{prop:incrbound_iff_etanf_safe_pcf}, if $M$ is a \pcf\ term then $\tau(M^{\infty})$ is also
-incrementally-bound.
-
-Since \pcf\ constant rules are well-behaved (by Lemma
-\ref{lem:sigma_order1_are_wellbehaved}), the result from Lemma
-\ref{lem:betanf_wellbehavedconst_trav_pview_red} is also true for
-Safe \pcf. Thus proposition
-\ref{prop:Nher_incrbound_iff_incrjustified}(i) remains valid for the
-infinite computation trees of \pcf: infinite terms in $\beta$-nf
-with an incrementally-bound computation tree are denoted by
-P-incrementally-justified strategies. Consequently,
-$\sem{M^{\infty}}$ is P-incrementally-justified. By soundness of the
-game denotation, $\sem{M^{\infty}} = \sem{M}$, thus $\sem{M}$ is
-P-incrementally-justified.
+Let $M$ be an almost safe term and $M^{\infty}$ be the $\beta$-normal form of $M$. Since almost-safety is preserved by the small-step reduction of PCF, $M^\infty$ is also almost-safe
+and by Proposition \ref{prop:incrbound_iff_etanf_safe_pcf}, $\tau(M^{\infty})$ is incrementally-bound.
+By Corollary \ref{cor:Nher_incrbound_iff_incrjustified_pcf}(i),
+$\sem{M^{\infty}}$ is P-incrementally-justified and by soundness of the game denotation, $\sem{M^{\infty}} = \sem{M}$, thus $\sem{M}$ is P-incrementally-justified.
 
 \noindent(ii)
 \notetoself{review that proof to account for almost safe terms}
 Suppose $M$ is a \pcf\ term with a P-incrementally
-justified strategy denotation. By Proposition
-\ref{prop:Nher_incrbound_iff_incrjustified_pcf}(ii),
+justified strategy denotation. By Corollary
+\ref{cor:Nher_incrbound_iff_incrjustified_pcf}(ii),
 $\tau(\betanf{M})^* = \tau(\etalnf{\betanf{M}}^*)$ is
 incrementally-bound. If $M$ is closed then so is
 $\etalnf{\betanf{M}}^*$ therefore by Proposition
@@ -823,24 +801,25 @@ and $\sigma$ be a well-bracketed innocent P-i.j.\ strategy with
 finite view function defined on the game $!A_1 \otimes \ldots
 \otimes !A_i \lingamear (!B_1 \lingamear \ldots \lingamear !B_l
 \lingamear o) $. There exists an \emph{almost safe} PCF' term
-$\overline{x} : \overline{A} \vdash M : B$ in $\eta$-long normal
+$\overline{x} : \overline{A} \asentail M : B$ in $\eta$-long normal
 form such that:
 $$ \sem{\overline{x} : \overline{A} \vdash M_\sigma : B} = \sigma $$
-and a safe closed PCF' term $\vdash_s M'_\sigma : (\overline{A},B)$ in $\eta$-long normal form such that:
+and a safe closed PCF' term $\sentail M'_\sigma : (\overline{A},B)$ in $\eta$-long normal form such that:
 $$ \sem{\vdash M'_\sigma : (\overline{A},B)} \cong \sigma \ .$$
 \end{proposition}
 \begin{proof}
-By the standard definability result for PCF', there is a term
+By the standard definability result for PCF', there is a \emph{finite} term
 $\overline{x} : \overline{A} \vdash N : B$ such that
 $\sem{\overline{x} :\overline{A} \vdash N : B} = \sigma$. Take
-$M_\sigma$ to be $\etalnf{\betanf{N}}^* $. We have
+$M_\sigma$ to be $\etalnf{\betanf{N}}^*$.  We have
 $\sem{\overline{x} : \overline{A} \vdash M_\sigma : B} =
 \sem{\overline{x} :\overline{A} \vdash N : B} = \sigma$ and by
 Theorem  \ref{thm:almostsafeincrejust_pcf}(ii), $M_\sigma$ is
 almost safe. For the second part we just need to take $M'_\sigma$ to be the closure $\lambda \overline{x}. M_\sigma$ of $M_\sigma$.
 \end{proof}
 
-This result shows that the game model of Safe \pcf\ is \defname{intentionally fully-abstract}. (every compact strategy is definable \cite{abramsky94full}).
+This result shows that the game model of Safe \pcf\ is \defname{intentionally fully-abstract} (every compact strategy is definable \cite{abramsky94full}). Note however that the proof of this result is not constructive: we know that the term $M_\sigma$ exists but we do not have an algorithm to compute it.
+This is because we rely on dead code-elimination which is undecidable.
 
 \subsection{Compositionality of P-i.j.\ strategies (syntactic
 argument)}

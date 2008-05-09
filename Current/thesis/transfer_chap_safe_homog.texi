@@ -15,8 +15,7 @@ to derive a version of the safety restriction for the
 $\lambda$-calculus.
 
 The safe $\lambda$-calculus has been first proposed in
-\cite{DBLP:conf/fossacs/AehligMO05}, a corrected definition appeared
-in \cite{Ong2005}. The definition that we give here is slightly more
+\cite{DBLP:conf/fossacs/AehligMO05}. The definition that we give here is slightly more
 general in the sense that we allow the use of $\Sigma$-constants of
 any higher-order type whereas the original definition only allows
 first-order constants.
@@ -108,49 +107,6 @@ typing judgement.
 \end{proof}
 
 
-With the traditional substitution, it is necessary to rename
-variables when performing substitution on an abstraction in order to
-avoid possible variable capture. As a consequence, in order to
-implement substitution one needs to have access to an unbound number
-of variable names. An interesting property of the homogeneous Safe
-$\lambda$-Calculus is that variable capture never occurs when
-performing substitution. In other words, the traditional
-substitution can be safely replaced by the capture-permitting
-substitution:
-
-\begin{lemma}[No variable capture lemma]
-\label{lem:nocapture} In the safe $\lambda$-calculus, there is
-no variable capture when performing the following simultaneous capture-permitting
-substitution:
-$$ M[N_1 / x_1 , \cdots, N_n / x_n] $$
-provided that $\Gamma \union \overline{x} \vdash M$, $\Gamma \vdash  N_1, \cdots ,\Gamma \vdash  N_n$ are valid judgments of the safe lambda-calculus.
-\end{lemma}
-
-\begin{proof}
-We prove the result by induction. The variable, constant and
-application cases are trivial. For the abstraction case, suppose $M
-= \lambda \overline{y} : \overline{A}. P$ where $\overline{y} = y_1
-\ldots y_p$. The simultaneous capture-permitting substitution gives:
-$$M \subst{\overline{N}}{\overline{x}} = \lambda \overline{y} . P
-\subst{\overline{N} \filter I}{\overline{x} \filter
-I} \mbox{ where } I  = \{ i \in 1..n \ | \ x_i \not \in \overline{y}
-\}. $$
-
-
-By the induction hypothesis there is no variable capture in $P
-\subst{\overline{N} \filter I}{\overline{x} \filter
-I}$. Hence variable capture can only happen if the following two conditions are met for some $i \in I$ and $j \in 1..p$: the variable $y_j$
-occurs freely in $N_i$, and $x_i$ occurs freely in $P$ . By property
-\ref{proper:safe_basic_prop} (ii) the latgives:
-$$ \ord{y_j} \geq \ord{N_i} = \ord{x_i}$$
-
-Moreover $i\in I$ therefore $x_i \not \in \overline{y}$ and since $x_i$ occurs freely in $P$, $x_i$ must also occur freely in the safe term
-$\lambda \overline{y}. P$. Thus, property \ref{proper:safe_basic_prop} (ii) gives:
-$$ \ord{x_i} \geq \ord{\lambda y_1 \ldots y_p . T} \geq 1+ \ord{y_j} > \ord{y_j}$$
-
-which, together with the previous equation, gives a contradiction.
-\end{proof}
-
 
 
 
@@ -215,56 +171,6 @@ $$ \rulef{
     } \rulename{app}
 $$
 
-
-We observe that safe $\beta$-reduction is a certain kind of multi-steps $\beta$-reduction.
-\begin{property}
-$\betasred \subset \betaredtr$, \ie the safe
-$\beta$-reduction relation is included in the transitive closure of the $\beta$-reduction relation.
-\end{property}
-\begin{proof}
-Suppose that $(M\mapsto N) \in \beta_s$. We show that $M \betared^* N$.
-\begin{itemize}
-\item Suppose that the safe-redex is
-$M \equiv (\lambda \overline{x} : \overline{A} . T) N_1 \ldots N_l$ such that $n\leq l$ then:
-\begin{eqnarray*}
- M &=_\alpha& (\lambda z_1 \ldots z_n .T [z_1,\ldots z_n /x_1,\ldots x_n] ) \ N_1  N_2 \ldots N_l
-            \\
-&& \mbox{where the $z_i$ are fresh variables}  \\
-     &\betared& (\lambda z_2 \ldots z_n .T [z_1,\ldots z_n /x_1,\ldots x_n] \subst{N_1}{z_1} ) \ N_2 \ldots N_l \\
-&& \mbox{ (because the $z_i$s do not occur freely in $N_1$) }\\
-%%    &=_\alpha& (\lambda z_2 \ldots z_n .T [z_2,\ldots z_n /x_2,\ldots x_n] \subst{N_1}{x_1})\  N_2 \ldots N_l  \qquad \mbox{where the $z_i$ are fresh variables}  \\
-    &\betared& \ldots \\
-    &\betared& (T [z_1,\ldots z_n /x_1,\ldots x_n] \subst{N_1}{z_1}  \ldots \subst{N_n}{z_n})\  N_{n+1} \ldots N_l \\
-    &\betared& (T [N_1\ldots N_l/x_1,\ldots x_l])\ N_{n+1} \ldots
-    N_l,
-\end{eqnarray*}
-and since $T$ is safe, the substitution $T [N_1\ldots N_l/x_1,\ldots
-x_l]$ in the last equation can be performed using the
-capture-permitting substitution. Hence $M \betared^* N$.
-
-\item
- Suppose that $M \equiv (\lambda \overline{x} : \overline{A} . T) N_1 \ldots N_l$ such that $n> l$, then necessarily
-the redex must be formed using the $\rulename{app^+}$ rule. The
-side-condition of this rules says that the free variables of the
-terms $N_1, \ldots N_l$ have all order strictly greater than
-$\ord{\overline{x}}$, hence the $x_i$s do not occur freely in $N_1,
-\ldots N_l$. Therefore:
-\begin{eqnarray*}
- M &=& (\lambda x_1 \ldots x_n .T) \ N_1  N_2 \ldots N_l  \\
-     &\betared& (\lambda x_2 \ldots x_n .T \subst{N_1}{x_1} ) \ N_2 \ldots N_l \\
-            && \mbox{(for $i \in 2..n$, $x_i$ does not occur freely in $N_1$)}\\
-    &\betared& \ldots \\
-    &\betared& \lambda x_{l+1} \ldots x_n . T \subst{N_1}{x_1}  \ldots \subst{N_l}{x_l} \\
-        && \mbox{(for $i \in (l+1)..n$,  $x_i$ does not occur freely in $N_l$)}\\
-    &\betared& \lambda x_{l+1} \ldots x_n . T [N_1\ldots, N_l /  \ x_1,\ldots, x_l] \\
-        && \mbox{(the $x_i$ do not occur freely in $N_1, \ldots
-        N_l$)},
-\end{eqnarray*}
-and since $T$ is safe, the substitution $T [N_1\ldots N_l/x_1,\ldots
-x_l]$ in the last equation can be performed using the
-capture-permitting substitution. Hence $M \betared^* N$.
-\end{itemize}
-\end{proof}
 
 \begin{property} In the simply-typed $\lambda$-calculus:
 \begin{enumerate}

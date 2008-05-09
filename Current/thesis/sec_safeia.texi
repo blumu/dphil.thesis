@@ -1,20 +1,113 @@
+% -*- TeX -*- -*- Soft -*-
+\section{Safe \pcf}
+We define \defname{Safe \pcf} as the applied safe lambda calculus extended with the constants of \pcf\ (additions, substraction, conditional and recursion). Equivalently, it is the restriction of \pcf\ where the application and abstraction rules are constrained similarly as in the safe lambda calculus. The rules are given in Table \ref{tab:safepcf}. The circled rules are those that
+differ from their \pcf\ counterpart. Observe that it is necessary to add a further abstraction rule \rulenamet{abs'} to allow terms formed with the arithmetic and recursion rules to be abstracted.
+
+\begin{FramedTable}
+ {\bf Functional part}
+$$ \rulename{var} \ \rulef{}{x : A\sentail x : A} \qquad
+\rulename{wk} \ \rulef{\Gamma \sentail s : A}{\Delta \sentail s : A} \quad
+\Gamma \subset \Delta$$
+
+\begin{center}
+\ovalbox{%
+\begin{Bcenter}
+$ \rulename{app_{as}} \ \rulef{\Gamma \sentail s : (A_1, \ldots , A_n,B)
+\quad \Gamma \sentail t_1 : A_1 \quad \ldots
+\quad \Gamma \sentail t_n : A_n} {\Gamma \asappentail s~t_1 \ldots t_n : B} $
+ \\[12pt]
+$ \rulename{app} \ \rulef{\Gamma \sentail s : (A_1, \ldots , A_n,B)
+\quad \Gamma \sentail t_1 : A_1 \quad \ldots
+\quad \Gamma \sentail t_n : A_n} {\Gamma \sentail s~t_1 \ldots t_n : B} \quad \ord{B} \leq
+\ord{\Gamma}$
+ \\[12pt]
+$ \rulename{abs} \ \rulef{\Gamma, x_1 : A_1, \ldots, x_n : A_n
+  \asappentail s : B} {\Gamma \sentail \lambda x_1 \ldots x_n . s :
+  (A_1, \ldots ,A_n,B)} \quad \ord{(A_1, \ldots ,A_n,B)} \leq
+\ord{\Gamma}$
+ \\[12pt]
+$ \rulename{abs'} \ \rulef{\Gamma, x_1 : A_1, \ldots, x_n : A_n
+  \sentail s : B} {\Gamma \sentail \lambda x_1 \ldots x_n . s :
+  (A_1, \ldots ,A_n,B)} \quad \ord{(A_1, \ldots ,A_n,B)} \leq
+\ord{\Gamma}$
+\end{Bcenter}
+}
+\end{center}
+\smallskip
+
+
+{\bf Arithmetic and recursion}
+$$ \rulename{const} \ \rulef{}{\sentail n :\iaexp}
+\qquad \rulename{succ} \ \rulef{\Gamma \sentail M:\iaexp }{\Gamma \sentail \pcfsucc\ M:\iaexp}
+\qquad \rulename{pred} \ \rulef{\Gamma \sentail M:\iaexp }{\Gamma \sentail \pcfpred\ M:\iaexp}$$
+
+$$
+\rulename{cond} \ \rulef{\Gamma\sentail M : \iaexp \quad \Gamma\sentail N_1 : \iaexp \quad \Gamma\sentail N_2 : \iaexp }{\Gamma \sentail \pcfcond\ M\ N_1\ N_2}
+\quad  \rulename{rec} \ \rulef{\Gamma \sentail M : A\rightarrow A }{ \Gamma \sentail Y_A M : A}$$
+\caption{Formation rules for Safe \pcf.}
+\label{tab:safepcf}
+\end{FramedTable}
+
+The Substitution Lemma and No-variable-capture Lemma shown for the safe lambda calculus naturally extends to safe \pcf. The small-step semantics of safe \pcf\ is obtained from the one of \pcf\ by replacing $\beta$-reduction by safe $\beta$-reduction (Def.\ \ref{dfn:safereduction}) in the definition of the relation $\rightarrow$.  The Subject Reduction Lemma from the safe lambda calculus implies that the relation $\rightarrow$ preserves safety: Suppose that $M \rightarrow N$, then $\Gamma \sentail M:T$ implies $\Gamma \sentail N:T$. Finally, a term is safe if and only if its eta-long normal form is safe.
+
+\subsection*{Remark concerning recursion}
+There are many ways to introduce recursion in the syntax of a programming language.
+In its usual presentation, \pcf\ introduces recursion by mean of a set of constants $Y_A$, $A$ ranging over \pcf\ types, incarnating the $Y$-combinator of the lambda calculus. Its syntax is given by the rule \rulenamet{rec} of table \ref{tab:safepcf}. For instance, the addition function can be represented by the \pcf\ term:
+$$ plus \equiv Y (\lambda p\; x\; y. \pcfcond\ x\;y\;(p\ (\pcfpred\ x)\ (\pcfsucc\ y))) \ .$$
+Equivalently, we can introduce recursion using the ``least upper bound'' abstractor $\mu$ given by the formation rule
+$$ \rulename{\mu} \rulef{\Gamma, f: A \entail M : A}{\Gamma \entail  \mu f. M: A}$$
+where the semantics of $\mu$ is given by the rule:
+$ \mu f. M \rightarrow M[(\mu f. M)/f]$.
+Using this construct, the addition function can be defined as:
+$$ plus \equiv \mu p . \lambda x y. \pcfcond\ x\;y\;(p\ (\pcfpred\ x)\ (\pcfsucc\ y)) \ .$$
+
+Clearly in the context of \pcf, these two definitions are interchangeable:
+$\mu f.M:A$ is equivalent to $Y_A (\lambda f . M)$,
+and $Y_A F : A$ is eta-equivalent to $Y_A (\lambda f. F f)$ for some fresh variable $f:A$, which is equivalent to $\mu f. F f$.
+
+In the context of safe \pcf, however, the distinction is important.
+Indeed, let us call safe $\mu$-\pcf\ the calculus obtain by replacing the rule \rulenamet{rec} by \rulenamet{\mu} in Table \ref{tab:safepcf}. It turns out that safe \pcf\ is strictly contained in safe $\mu$-\pcf.
+Indeed, compare the two ways of defining a recursive term:
+\begin{mathpar}
+\inferrule*[Left=\rulenamet{rec}]{\inferrule*[Left=\rulenamet{abs}]{\Gamma, f: A \sentail M : A}{\Gamma\sentail \lambda f. M : A\typear A}}{\Gamma \sentail Y_A (\lambda f . M)}
+\hspace{2cm}
+\inferrule* [Left=\rulenamet{\mu}]{\Gamma, f: A \sentail M : A}{\Gamma \sentail  \mu f. M: A}
+\end{mathpar}
+Both derivations start with the premise $\Gamma, f: A \sentail M : A$ which implies that $\ord{\Gamma} \geq \ord{A}$. In the left derivation, before applying the $Y$ combinator, we need first to abstract the variable $f$. This is done using the abstraction rule whose side-conditions gives $\ord{\Gamma} > \ord{A}$. The right derivation, however, only imposes the condition $\ord{\Gamma} \geq \ord{A}$.
+
+In fact, the safe $\mu$-\pcf\ does not really deserve its name, because
+it does not verifies the No-variable-capture lemma!
+For instance for any types $A$ and $B$ with $\ord{A}\geq\ord{B}$, the term
+$$ \lambda f:A \typear B\; a:A. (\lambda x:B.(\mu f:B.x))(f a)$$
+is a safe $\mu$-\pcf\ term that $\beta$-reduces to
+$$ \lambda f:A \typear B\; a:A. (\mu f:B.x)[f a/x] \ .$$
+At this point it would not be sound to push the substitution under the $\mu$ without first renaming the variables afresh as it would cause the variable $f$ to be captured by $\mu f$.
+Hence the definition that we really want for safe \pcf\ is the one based on the Y-combinator.
+
+
+Observe that if we were able to distinguish variables that are bound by $\lambda$ from those bound by $\mu$ - for instance by tagging their occurrences appropriately - then the clash of variable name could be tolerated in this particular example because the two clashing occurrences of $f$ are bound by a different kind of binder.
+
+
+Unfortunately, this argument cannot be generalized: there are safe $\mu$-\pcf\ terms that, when reduced using capture-permitting substitution, cause clashes between $\lambda$-bound variables. Take for instance:
+\begin{align*}
+ M &\equiv \lambda g:3\; h:3\; x:1 . g ( \mu F:3. N(g,h,x))\\
+ N(g,h,x) &\equiv x ( h ( \lambda x:1 . F (\lambda z:0.z)))
+\end{align*}
+where $0$ denotes the type $o$ and $n+1$ denotes $n \typear o$, for $n\in\nat$.
+The safe $\mu$-\pcf\ term $M$ reduces to:
+$$ \lambda g:3\; h:3\; x:1 . g (x ( h ( \lambda \underline{x}:1 . F (\lambda z:0.z))))[N(g,h,\underline{x})/F] \ .$$
+Performing the substitution capture-permitting causes a clash between the two underlined variables.
+
+In fact, the same example can be used to show that the game-semantic characterization of safe \pcf\ that we will give in Chapter \ref{chap:model} does not hold for safe $\mu$-\pcf.
+
+
 \section{Safe Idealized Algol}
 
 In this section we present two possible approaches to accommodate
-the safety restriction to a language featuring block-variable constructs such as Idealized Algol. This gives rise to two
-different versions of ``Safe Idealized Algol''. In the first
-version, all free variables are required to satisfy the safety
-constraint whereas in the second version, only variables that are
+the safety restriction to a language featuring block-variable constructs such as Idealized Algol. This gives rise to two different versions of ``Safe Idealized Algol''. In the first version, all free variables are required to satisfy the safety constraint whereas in the second version, only variables that are
 not abstracted by the \ianew\ construct (including variables of type
 \iavar) are required to satisfy the safety constraint.
 We then show that the nice properties of the safe $\lambda$-calculus remain in these two extensions of the safe lambda calculus.
-
-We recall the definition of the \defname{safety constraint} $SC(\Gamma ; B)$
-for some finite type alphabet $\Gamma$ and type $B$:
-$$SC(\Gamma ; B) \quad \mbox{iff} \quad  \forall x:A\; \in \Gamma . \forall A' \in Pr(A) . \ord A' \geq \ord B$$
-where $Pr(A)$ denotes the set of prime sub-types of $A$.
-
-
 
 \subsection{Strongly Safe IA}
 
@@ -26,7 +119,7 @@ safety constraint as in the safe lambda calculus (defined in section
 \ref{sec:safe_nonhomog}). Let us call this
 language \defname{Strongly Safe IA}. The rules are formally given in
 Table \ref{tab:safeia_formrules}. The circled rules are those that
-differs from their IA counterpart. Note that the IA rule $\rulename{new}$ is kept unchanged: it has no side-condition, contrary to the $\rulename{abs}$ rule. In other words, the calculus allows us to abstract variables of type \iavar\ without having to satisfy the safety constraint provided that this abstraction is performed by a block-variable allocation.
+differ from their IA counterpart. Note that the IA rule $\rulename{new}$ is kept unchanged: it has no side-condition, contrary to the $\rulename{abs}$ rule. In other words, the calculus allows us to abstract variables of type \iavar\ without having to satisfy the safety constraint provided that the binder is a block-variable declaration.
 
 
 \begin{FramedTable}
@@ -41,13 +134,24 @@ $$
 \begin{center}
 \ovalbox{%
 \begin{Bcenter}
-$ \dps \rulename{app} \ \rulef{\Gamma  \vsafeentail s :
-(A_1,\ldots,A_n,B) \quad \Gamma  \vsafeentail t_1 : A_1 \quad \ldots
-\quad \Gamma  \vsafeentail t_n : A_n
-} {\dps \Gamma  \vsafeentail s t_1 \ldots t_n : B} \quad SC(\Gamma ; B)$ \\[12pt]
-$ \dps  \rulename{abs} \ \rulef{\Gamma, x_1 : A_1, \ldots, x_n : A_n
+$ \rulename{app_{as}} \ \rulef{\Gamma \vsafeentail s : (A_1, \ldots , A_n,B)
+\quad \Gamma \vsafeentail t_1 : A_1 \quad \ldots
+\quad \Gamma \vsafeentail t_n : A_n} {\Gamma \asappentail s~t_1 \ldots t_n : B} $
+ \\[12pt]
+$ \rulename{app} \ \rulef{\Gamma \vsafeentail s : (A_1, \ldots , A_n,B)
+\quad \Gamma \vsafeentail t_1 : A_1 \quad \ldots
+\quad \Gamma \vsafeentail t_n : A_n} {\Gamma \sentail s~t_1 \ldots t_n : B} \quad \ord{B} \leq
+\ord{\Gamma}$
+ \\[12pt]
+$ \rulename{abs} \ \rulef{\Gamma, x_1 : A_1, \ldots, x_n : A_n
+  \asappentail s : B} {\Gamma \vsafeentail \lambda x_1 \ldots x_n . s :
+  (A_1, \ldots ,A_n,B)} \quad \ord{(A_1, \ldots ,A_n,B)} \leq
+\ord{\Gamma}$
+ \\[12pt]
+$ \rulename{abs'} \ \rulef{\Gamma, x_1 : A_1, \ldots, x_n : A_n
   \vsafeentail s : B} {\Gamma \vsafeentail \lambda x_1 \ldots x_n . s :
-  (A_1, \ldots ,A_n,B)} \quad SC(\Gamma ; (A_1, \ldots ,A_n,B) )$
+  (A_1, \ldots ,A_n,B)} \quad \ord{(A_1, \ldots ,A_n,B)} \leq
+\ord{\Gamma}$
 \end{Bcenter}
 }
 \end{center}
@@ -55,7 +159,7 @@ $ \dps  \rulename{abs} \ \rulef{\Gamma, x_1 : A_1, \ldots, x_n : A_n
 
 
 {\bf Arithmetic and recursion}
-$$ \rulename{const} \ \rulef{}{\emptyset  \vsafeentail n :\iaexp}
+$$ \rulename{const} \ \rulef{}{\vsafeentail n :\iaexp}
 \qquad \rulename{succ} \ \rulef{\Gamma \vsafeentail M:\iaexp }{\Gamma \vsafeentail \pcfsucc\ M:\iaexp}
 \qquad \rulename{pred} \ \rulef{\Gamma \vsafeentail M:\iaexp }{\Gamma \vsafeentail \pcfpred\ M:\iaexp}$$
 
@@ -95,21 +199,20 @@ variables in a term. In the present setting of a language with
 imperative features, one can distinct two types of variables: The
 ``standard ones'' -- those that we abstract using
 $\lambda$-abstraction, for instance $x$ in the term $\lambda x . x$;
-and the ``imperative'' ones -- those that are used as identifier for
-memory cell, also called block-allocated variables. We observe that
+and the ``imperative'' ones -- those that are used as identifiers for
+memory cells, also called block-allocated variables. We observe that
 for this second type of variables there is no gain in imposing any
 constraint since no substitution can ever occur for such variables
-when performing reduction! Inspired by this observation we can now identify a new fragment of IA subsuming Strongly Safe IA and which incarnates the notion ``safety''
- more faithfully.
+when performing reduction! Inspired by this observation we can obtain a more general fragment of IA subsuming Strongly Safe IA and incarnating the notion ``safety''
+more faithfully.
 
 We consider a new judgment of the form $\Gamma | \Gamma^{\ianew}
 \safeentail M : A$ - called a ``split term'' in \cite{abramsky:game-semantics-tutorial} - where the context is partitioned into two
 components: The first component contains standard lambda calculus
 variables; the second component contains block-allocated variable --
 abstracted by an occurrence of the \ianew\ construct. The component
-$\Gamma^{\ianew}$ contains variables of type \iavar\ only while the
-other component can contain variables of any type including the type
-\iavar. It is straightforward to redefine the typing rule of IA in
+$\Gamma^{\ianew}$ contains variables of type \iavar\ only, while the
+other component can contain variables of any type including \iavar. It is straightforward to redefine the typing rule of IA in
 such a way that these two distinct contexts are maintained
 appropriately. In particular the abstraction rule must only be able
 to abstract variables taken from the first component of the context;
@@ -123,7 +226,7 @@ being that:
 \item the rule $\rulename{abs}$ and $\rulename{new}$ can only
 abstract variables from their respective context component;
 \item the side-condition in $\rulename{abs}$ refers only to
-the first context component.
+the first component of the context.
 \end{itemize}
 
 \begin{FramedTable}
@@ -141,15 +244,23 @@ $$
 where $\Gamma^{\ianew}$ and $\Delta^{\ianew}$ are finite sets of variables
 of type \iavar.
 
+$$ \rulename{app_{as}} \ \rulef{\Gamma | \Gamma^{\ianew} \safeentail s : (A_1,\ldots,A_n,B) \quad
+\Gamma | \Gamma^{\ianew} \safeentail t_1 : A_1 \quad \ldots \quad \Gamma | \Gamma^{\ianew} \safeentail t_n : A_n
+} {\Gamma | \Gamma^{\ianew} \asappentail s t_1 \ldots t_n : B}$$
+
 $$ \rulename{app} \ \rulef{\Gamma | \Gamma^{\ianew} \safeentail s : (A_1,\ldots,A_n,B) \quad
 \Gamma | \Gamma^{\ianew} \safeentail t_1 : A_1 \quad \ldots \quad \Gamma | \Gamma^{\ianew} \safeentail t_n : A_n
-} {\Gamma | \Gamma^{\ianew} \safeentail s t_1 \ldots t_n : B} \ SC(\Gamma ; B)$$
+} {\Gamma | \Gamma^{\ianew} \safeentail s t_1 \ldots t_n : B} \quad \ord{B} \leq \ord{\Gamma}$$
 
-\begin{center}\ovalbox{$
- \rulename{abs} \ \dps  \rulef{\dps \Gamma, x_1 : A_1, \ldots, x_n : A_n |
-\Gamma^{\ianew}
-  \safeentail s : B} {\Gamma | \Gamma^{\ianew} \safeentail \lambda x_1 \ldots x_n . s :
-  (A_1, \ldots ,A_n,B)} \ SC(\Gamma ; (A_1, \ldots ,A_n,B) )$}\end{center}
+\begin{center}\ovalbox{
+\begin{Bcenter}
+ \rulename{abs} \ \dps  \rulef{\dps \Gamma, x_1 : A_1, \ldots, x_n : A_n | \Gamma^{\ianew} \asappentail s : B} {\Gamma | \Gamma^{\ianew} \safeentail \lambda x_1 \ldots x_n . s : (A_1, \ldots ,A_n,B)} \ord{(A_1, \ldots ,A_n,B)} \leq \ord{\Gamma}$
+\\[12pt]
+ \rulename{abs'} \ \dps  \rulef{\dps \Gamma, x_1 : A_1, \ldots, x_n : A_n | \Gamma^{\ianew} \safeentail s : B} {\Gamma | \Gamma^{\ianew} \safeentail \lambda x_1 \ldots x_n . s : (A_1, \ldots ,A_n,B)} \ord{(A_1, \ldots ,A_n,B)} \leq \ord{\Gamma}$
+\end{Bcenter}
+}
+\end{center}
+\smallskip
 
 
 {\bf Arithmetic and recursion}
@@ -186,15 +297,15 @@ $$ \rulename{mkvar} \ \rulef{\Gamma| \Gamma^{\ianew} \safeentail M_1 : \iaexp \r
 
 Split-terms with an empty block-variable context $\Gamma^\ianew$ are called \emph{semi-closed}. We define \defname{Safe IA} to be the set of semi-closed split-terms typable with the system of rules of Table \ref{tab:safeia_formrules}. For convenience we introduce the additional rule
 $$ \rulef{\Gamma | \emptyset \safeentail M : A} {\Gamma \safeentail M : A}$$
-so that Safe IA is exactly the set of terms of the form $\Gamma \safeentail M : A$.
+so that Safe IA is given by the set of terms-in-context $\Gamma \safeentail M : A$.
 
-\subsubsection{Examples}
-
+\begin{example}
 Clearly Strongly Safe IA is a subset of Safe IA, the following example
 showing that the inclusion is strict:
 
-$$ \safeentail \lambda f^{(\iaexp \rightarrow \iacom) \rightarrow \iaexp} . \ianewin{i}\ f ( \lambda x . \iaassign\ i\ x ) : \iaexp$$
-$$ \mbox{ but } \not \vsafeentail \lambda f^{(\iaexp \rightarrow \iacom) \rightarrow \iaexp} . \ianewin{i}\ f ( \lambda x . \iaassign\ i\ x ) : \iaexp \ .$$
+$$ \safeentail \lambda f:{(\iaexp \rightarrow \iacom) \rightarrow \iaexp} . \ianewin{i}\ f ( \lambda x . \iaassign\ i\ x ) : \iaexp$$
+$$ \mbox{ but } \not \vsafeentail \lambda f:{(\iaexp \rightarrow \iacom) \rightarrow \iaexp} . \ianewin{i}\ f ( \lambda x . \iaassign\ i\ x ) : \iaexp \ .$$
+\end{example}
 
 \notetoself{Need more examples}
 
@@ -206,7 +317,7 @@ capture occurs when performing substitution on a safe term.
 }
 
 
-The small-step reduction semantics of safe IA is defined similarly as for IA (see Sec.\ \ref{subsec:smallstep_ia}). The only difference is that $\beta$-reduction is replaced by safe $\beta$-reduction (see Def.\ \ref{dfn:safereduction}).
+The small-step reduction semantics of safe IA is defined similarly as in Sec.\ \ref{subsec:smallstep_ia} except that $\beta$-reduction is replaced by safe $\beta$-reduction.
 
 \begin{lemma}[Reduction preserves safety]
 \label{lem:ia_safety_preserved} Let $M$ be a safe IA term. If
@@ -217,5 +328,4 @@ This can be proved easily by induction on the structure of $M$.
 Prove that this lemma holds for both definition of safe IA...
 }
 
-\subsection{Game-semantic analysis via a syntactic argument}
 

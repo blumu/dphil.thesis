@@ -15,7 +15,12 @@ We use typing judgements of the form:
 The which is shorthand for $x_{11} : A_{11}, \cdots, x_{1r}: A_{1r}, A_{21},\ldots \hentail M : B$ such that the context variables are listed in decreasing type order and with the condition that $\ord{x_{ik}} < \ord{x_{jl}}$ for any $k, l$ and $i<j$.
 In other words, the context is partitioned into list of variables of the same orders, and the partitions are arranged in strict decreasing order.
 
-The \emph{valid typing judgements} are defined by induction over the following rules, where $\Delta$ is a given homogeneously-typed alphabet \ie a countable set of symbols such that each symbol has an homogeneous type, and $\Sigma$ is a set of homogeneously-typed constants:
+The \emph{valid typing judgements} are defined by induction over the following rules:
+
+$$ \rulename{const}  \rulef{}{\hentail b : A}\ b:A \in \Sigma
+\qquad
+ \rulename{var} \rulef{}{x_{ij} : A_{ij}\, \hentail x_{ij} : A_{ij}}
+$$
 
 $$ \rulename{wk}
     {   \rulef{ \Gamma\hentail M:B \qquad {\Gamma \subset \Delta} }
@@ -29,38 +34,30 @@ $$ \rulename{wk}
     }
 $$
 
-$$ \rulename{\Sigma\mbox{\textbf{-const}}}  \rulef{}{\hentail b : A}\ b:A \in \Sigma
-\qquad
- \rulename{var} \rulef{}{x_{ij} : A_{ij}\, \hentail x_{ij} : A_{ij}}
-$$
-
 $$\rulename{abs}
 \rulef{
- {\overline{x_1} : \overline{A_1}\, | \, \cdots\, | \, \overline{x_{n+1}} : \overline{A_{n+1}}\hentail M : B}            \qquad \ord{\overline{A_{n+1}}} \geq \ord{B} -1
- }
+ {\overline{x_1} : \overline{A_1}\, | \, \cdots\, | \, \overline{x_{n+1}} : \overline{A_{n+1}}\hentail M : B}      }
  { \overline{x_1} : \overline{A_1}\, | \, \cdots\, | \, \overline{x_{n}} : \overline{A_{n}}
     \hentail \lambda \overline{x_{n+1}} : \overline{A_{n+1}} .M : (\overline{A_{n+1}} \, | \, B)
- }
+ } \quad \ord{\overline{A_{n+1}}} \geq \ord{B} -1
 $$
 
-$$ \rulename{app} \rulef{{\Gamma\hentail M : (\overline{B_1} \, | \, \cdots \, | \, \overline{B_m} \, | \, o) \qquad
-\Gamma\hentail N_1 : B_{11} \quad \cdots \quad \Gamma\hentail N_{l} :
-B_{1l} \qquad l = |\overline{B_1}| }}
-    { \Gamma\hentail M N_1
-\cdots N_{l} : (\overline{B_2} \, | \, \cdots \, | \,
-\overline{B_m} \, | \, o)} $$
+$$ \rulename{app} \rulef{\Gamma\hentail M : \left(B_{11}, \ldots, B_{1l} \, | \, \cdots \, | \, \overline{B_m} \, | \, o\right) \quad
+\Gamma\hentail N_1 : B_{11} \ \ldots \ \Gamma\hentail N_{l} :
+B_{1l}}
+    { \Gamma\hentail M N_1 \cdots N_{l} : (\overline{B_2} \, | \, \cdots \, | \, \overline{B_m} \, | \, o)} $$
 
 $$ \rulename{app^+} \rulef
-    {\Gamma\hentail M : (\overline{B_1} \, | \, \cdots \, | \, \overline{B_m} \, | \, o) \qquad
-    \Gamma\hentail N_1 : B_{11} \quad \cdots \quad \Gamma\hentail N_{l} :
-    B_{1l} \qquad l < |\overline{B_1}| }
+    {\Gamma\hentail M : \left(B_{11}, \ldots, B_{1l},\overline{B} \, | \, \cdots \, | \, \overline{B_m} \, | \, o\right) \quad
+    \Gamma\hentail N_1 : B_{11} \ \ldots \ \Gamma\hentail N_{l} :
+    B_{1l} }
     { \Gamma\hentail M N_1
     \cdots N_{l} : (\overline{B} \, | \, \overline{B_2} \, | \ \cdots \, | \,
-    \overline{B_m} \, | \, o)} $$
-
-where $\overline{B_1} = B_{11}, \ldots, B_{1l},\overline{B}$ with
-the condition that every variable in $\Gamma$ has an order strictly greater
-than $\ord{\overline{B_1}}$.
+    \overline{B_m} \, | \, o)}
+    \ \ 
+        \forall z \in \Gamma . \ord{z} > \ord{\overline{B_1}}
+$$
+where $\Delta$ is an homogeneously-typed alphabet, $\Sigma$ is a set of homogeneously-typed constants, and $\sigma$ denotes a variable list permutation.
 \end{definition}
 
 \begin{lemma}[Basic properties]
@@ -82,7 +79,7 @@ typing judgement.
 \end{proof}
 
 \begin{proposition}
-Let $\Gamma \stentail M : T$ be a simply-type term. Then
+Let $\Gamma \stentail M : T$ be a simply-typed term. Then
 $\Gamma \hentail M : T$ is a valid judgment if and only if there is a derivation tree for
 $\Gamma \sentail M : T$ in the safe lambda calculus (Def. \ref{def:safelambda}) such that all the types appearing in the derivation tree are homogeneously typed.
 \end{proposition}
@@ -363,6 +360,11 @@ $$ \rulef{\Gamma \vdash^0 M : A\rightarrow B
 The full set of rules is given in table \ref{tab:homosafelmd_rules_refined}.
 
 \begin{table}[htbp]
+$$
+\rulename{const} \  \rulef{}{\vdash^0 b : A}\ b:A \in \Sigma
+\qquad
+ \rulename{var} \   \rulef{}{x : A\vdash^{0} x : A} $$
+
 $$  \rulename{perm} \
     \rulef{
       { \Gamma \vdash^0 M:B \qquad \sigma(\Gamma)  } \hbox{ homogeneous}
@@ -372,11 +374,6 @@ $$  \rulename{perm} \
 \qquad
 \rulename{seq} \  \rulef{\Gamma \vdash^{0} M : A}{\Gamma \vdash^{-1} M : A}
 $$
-
-$$
-\rulename{\Sigma\mbox{\textbf{-const}}} \  \rulef{}{\vdash^0 b : A}\ b:A \in \Sigma
-\qquad
- \rulename{var} \   \rulef{}{x : A\vdash^{0} x : A} $$
 
 $$ \rulename{wk^{0}} \   \rulef{\Gamma \vdash^{0} M : A}{\Gamma , x : B \vdash^{0} M : A} \quad \ord{B} \geq \ord{A} $$
 

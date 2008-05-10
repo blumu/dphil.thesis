@@ -3,7 +3,8 @@
 
 \subsection{A typing system}
 
-We now give a system of rules for generating term of the homogeneous safe lambda calculus defined in Sec.\ \ref{def:safelambda} in which type homogeneity is enforced by construction.
+We now give a system of rules for generating term of the \emph{homogeneous safe lambda calculus} (defined in Sec.\ \ref{def:safelambda}) in which type homogeneity is enforced by the typing rules. We recall the definition of type-homogeneity from section \ref{sec:safe_homog}: a type $(A_1, \ldots A_n, o)$ is said to be homogeneous whenever $\ord{A_1} \geq \ord{A_2} \geq \ldots \geq \ord{A_n}$ and each of the $A_i$ is homogeneous.
+
 
 \begin{definition}
   \label{dfn:homogsafelmd}
@@ -17,7 +18,7 @@ In other words, the context is partitioned into list of variables of the same or
 
 The \emph{valid typing judgements} are defined by induction over the following rules:
 
-$$ \rulename{const}  \rulef{}{\hentail b : A}\ b:A \in \Sigma
+$$ \rulename{const}  \rulef{}{\hentail f : A}\ f:A \in \Sigma
 \qquad
  \rulename{var} \rulef{}{x_{ij} : A_{ij}\, \hentail x_{ij} : A_{ij}}
 $$
@@ -42,492 +43,63 @@ $$\rulename{abs}
  } \quad \ord{\overline{A_{n+1}}} \geq \ord{B} -1
 $$
 
-$$ \rulename{app} \rulef{\Gamma\hentail M : \left(B_{11}, \ldots, B_{1l} \, | \, \cdots \, | \, \overline{B_m} \, | \, o\right) \quad
+$$ \rulename{app} \rulef{\Gamma\hentail N_0 : \left(B_{11}, \ldots, B_{1l} \, | \, \overline{B_2} \, | \, \cdots \, | \, \overline{B_m} \, | \, o\right) \quad
 \Gamma\hentail N_1 : B_{11} \ \ldots \ \Gamma\hentail N_{l} :
 B_{1l}}
-    { \Gamma\hentail M N_1 \cdots N_{l} : (\overline{B_2} \, | \, \cdots \, | \, \overline{B_m} \, | \, o)} $$
+    { \Gamma\hentail N_0 N_1 \cdots N_{l} : (\overline{B_2} \, | \, \cdots \, | \, \overline{B_m} \, | \, o)} $$
 
 $$ \rulename{app^+} \rulef
-    {\Gamma\hentail M : \left(B_{11}, \ldots, B_{1l},\overline{B} \, | \, \cdots \, | \, \overline{B_m} \, | \, o\right) \quad
-    \Gamma\hentail N_1 : B_{11} \ \ldots \ \Gamma\hentail N_{l} :
-    B_{1l} }
-    { \Gamma\hentail M N_1
-    \cdots N_{l} : (\overline{B} \, | \, \overline{B_2} \, | \ \cdots \, | \,
+    {\Gamma\hentail M : \left(B_{11}, \ldots, B_{1l} \, | \, \overline{B_2} \, | \cdots \, | \, \overline{B_m} \, | \, o\right) \quad
+    \Gamma\hentail N : B_{11} }
+    { \Gamma\hentail M N : (B_{12}, \ldots, B_{1l} \, | \, \overline{B_2} \, | \ \cdots \, | \,
     \overline{B_m} \, | \, o)}
-    \ \ 
-        \forall z \in \Gamma . \ord{z} > \ord{\overline{B_1}}
+    \ \
+        \forall z \in \Gamma . \ord{z} > \ord{B_{11}}
 $$
 where $\Delta$ is an homogeneously-typed alphabet, $\Sigma$ is a set of homogeneously-typed constants, and $\sigma$ denotes a variable list permutation.
 \end{definition}
 
+The main differences with the rules of the (non-homogeneous) safe lambda calculus are:
+\begin{itemize}
+\item the contexts are stratified;
+\item all the types appearing in the rule are required to be homogeneous;
+\item type homogeneity constrains the order in which the variables are abstracted: in the \rulenamet{abs} rule, the entire lowest partition of the context must be abstracted at once.
+\end{itemize}
+
 \begin{lemma}[Basic properties]
-\label{lem:homogsafe_basic_prop} Suppose $\Gamma \hentail M : B$ is a
-valid judgment then
+\label{lem:homogsafe_basic_prop} Let $\Gamma \hentail M : B$ be a valid judgment then
 \begin{enumerate}[(i)]
 \item $B$ is homogeneous;
 \item every free variable of $M$ has order at least $\ord{B}$;
-\item $fv(M) \vdash M : B$,
+\item \emph{(Context reduction)} $fv(M) \hentail M : B$,
 \end{enumerate}
-where $fv(M) \subseteq \Gamma$ denotes the context constituted of the variables
-in $\Gamma$ occurring free in $M$.
+where $fv(M)$ denotes the context constituted of the free variables of $M$.
 \end{lemma}
 \begin{proof}
-(i) and (ii) are proved by an easy structural induction. (iii) is
-due to the fact that the weakening rule is the only rule which can
-introduce a variable not occurring freely in $M$ in the context of a
-typing judgement.
+(i) and (ii) are proved by an trivial induction. (iii) Variables in $\Gamma$ not occurring free
+in $M$ are necessarily introduced by the weakening rule. The derivation of
+$fv(M) \hentail M : A$ can be obtained by removing all the unnecessary
+application of the weakening rule from the derivation tree of $\Gamma \hentail M : A$.
 \end{proof}
 
+
 \begin{proposition}
-Let $\Gamma \stentail M : T$ be a simply-typed term. Then
 $\Gamma \hentail M : T$ is a valid judgment if and only if there is a derivation tree for
 $\Gamma \sentail M : T$ in the safe lambda calculus (Def. \ref{def:safelambda}) such that all the types appearing in the derivation tree are homogeneously typed.
 \end{proposition}
-\notetoself{rewrite the proof that follows...}
+\proof
+\emph{If}: The proof is by a trivial structural induction on $\Gamma \sentail M : T$.
 
-\subsection{An alternative system of rules}
+\emph{Only if}: We proceed by induction and case analysis on the last rule used to derive $\Gamma \hentail M : T$.
 
+\qed
+\bigskip
 
-In this section, we will refine the formation rules
-given in the previous section. We say that $\Gamma \vdash M : A$ satisfies $P_i$ for $i \in \zset$ if the
-variables in $\Gamma$ all have orders at least $\ord{A}+i$. We introduce the notation $\Gamma \vdash^{i} M : A$ for $i \in
-\zset$ to mean that $\Gamma \vdash M : A$ is a valid judgment satisfying $P_i$.
-
-
-We remark that if $\Gamma \vdash M : A$ then the variables in $\Gamma$ with order
-strictly smaller than $M$ cannot occur freely in $M$ and therefore it is possible to restrict
-the context to a smaller number of variables:
-
-\begin{lemma}[Context reduction]
-\label{lem:restriction}
-
-If $\Gamma \vdash^i M : A$ then $\Gamma' \vdash^{0} M : A$
-where $$\Gamma' = \{ z \in \Gamma \ |
-\ \ord{z} \geq \ord{M} \} = \Gamma \setminus \{ z \in \Gamma \ | \ \ord{M} + i \leq \ord{z} < \ord{M} \}$$
-\end{lemma}
-\begin{proof}
-If $i\geq 0$ then the result is trivial. Suppose $i<0$. We proceed
-by structural induction and case analysis. We only give the details
-for the application cases $\rulename{app}$ and $\rulename{app^+}$:
-\begin{itemize}
-\item Case of the rule $\rulename{app}$:
-
-    \[ (\mathbf{app}) \
-    \rulef
-        {\Gamma\hentail M : (\overline{B_1} \, | \, \cdots \, | \, \overline{B_m} \, | \, o) \qquad
-            \Gamma\hentail N_1 : B_{11} \quad \cdots \quad \Gamma\hentail N_{l} :
-            B_{1l} \qquad l = |\overline{B_1}| }
-        { \Gamma\hentail M N_1
-            \cdots N_{l} : (\overline{B_2} \, | \, \cdots \, | \,
-            \overline{B_m} \, | \, o)}
-    \]
-
-    If the conclusion satisfies $P_i$ then, for all $z \in \Gamma$:
-    \begin{eqnarray*}
-    \ord{z} \geq 1 + \ord{\overline{B_2}} + i
-    &=& 1 + \ord{\overline{B_1}} + \ord{\overline{B_2}} - \ord{\overline{B_1}} + i \\
-    &=& \ord{M} + (\ord{\overline{B_2}} - \ord{\overline{B_1}} + i)
-    \end{eqnarray*}
-    Therefore the first premise satisfies $P_j$ where $j={\ord{\overline{B_2}} - \ord{\overline{B_1}} + i}$.
-    Hence by the induction hypothesis,
-    $$\Gamma' \vdash^{0} M : (\overline{B_1} \, | \, \cdots \, | \, \overline{B_m} \, | \, o)$$
-    where $\Gamma' = \Gamma \setminus \{ z \in \Gamma \ | \ \ord{M} + j \leq \ord{z} < \ord{M} \}$.
-
-
-    Similarly, for all $z \in \Sigma$:
-    \begin{eqnarray*}
-    \ord{z} \geq 1 + \ord{\overline{B_2}} + i
-    &=& \ord{\overline{B_1}} + (1+\ord{\overline{B_2}} - \ord{\overline{B_1}} + i) \\
-    &=& \ord{\overline{B_1}} + j+1
-    \end{eqnarray*}
-    Hence by the induction hypothesis:
-    $$\Gamma'' \vdash^0 N_k : B_{1k} \mbox{ for } k \in 1..l$$
-    where $\Gamma'' = \Gamma \setminus \{ z \in \Gamma \ | \ \ord{M} + j+1 \leq \ord{z} < \ord{M} \}$.
-
-    Furthermore, $\Gamma'' = \Gamma' \union \{ z \in \Gamma \ | \ \ord{M} + j = \ord{z}\}$ therefore
-    the weakening rule gives:
-    $$\Gamma'' \vdash^{-1} M : (\overline{B_1} \, | \, \cdots \, | \, \overline{B_m} \, | \, o)$$
-
-    Finally the $\rulename{app}$ rule gives:
-    $$\rulef{\Gamma'' \vdash^{-1} M : (\overline{B_1} \, | \, \cdots \, | \, \overline{B_m} \, | \, o)
-    \quad \Gamma'' \vdash^0 N_1 : B_{11} \quad \ldots \quad \Gamma'' \vdash^0 N_1 : B_{1l}
-    }
-        { \Gamma'' \vdash M N_1 \ldots N_l : (\overline{B_2} \, | \, \cdots \, | \,
-            \overline{B_m} \, | \, o)}
-    $$
-    such that for all $z\in \Gamma''$:
-    \begin{eqnarray*}
-    \ord{z} \geq \ord{\overline{B_1}}
-    &\geq& 1 + \ord{\overline{B_2}} = \ord{M N_1 \ldots N_l}
-    \end{eqnarray*}
-
-    Therefore:
-    $$\Gamma'' \vdash^0 M N_1 \ldots N_l : (\overline{B_2} \, | \, \cdots \, | \,
-            \overline{B_m} \, | \, o)$$
-
-\item $\rulename{app^+}$  The side-condition of the rule $\rulename{app^+}$ ensures that the first premise
- satisfies $P_0$. The conclusion of the rule has the same order as the first premise
- therefore the conclusion also satisfies $P_0$.
-\end{itemize}
-\end{proof}
-
-
-\begin{lemma}
-\label{lem:prooftree01only} If $\Gamma \vdash^{0} M : T$ or $\Gamma
-\vdash^{-1} M : T$ then there is a valid proof tree showing $\Gamma
-\vdash M : T$ such that all the judgments appearing in the proof
-tree satisfy either $P_0$ or $P_{-1}$.
-\end{lemma}
-
-
-\begin{proof}
-Since $P_{-1}$ implies $P_0$, w.l.o.g.\ we can assume that the
-judgment $\Gamma \vdash M : T$ satisfies $P_{-1}$. We show that
-there is a proof tree for $\Gamma \vdash M : T$ where all the nodes
-of the tree satisfy $P_0$ or $P_{-1}$. We proceed by structural
-induction and case analysis on the last rule used to show $\Gamma
-\vdash M : T$:
-\begin{itemize}
-\item Axiom $\rulename{const}$: the context is empty therefore the sequent satisfies $P_{-1}$.
-
-\item Axiom $\rulename{var}$: the context contains only the variable itself therefore the sequent satisfies $P_0$.
-
-\item Rule $\rulename{wk}$: The premise is $\Delta \vdash M : T$ with $\Delta \subset \Gamma$. Since
-$\Gamma \vdash M : T$ satisfies $P_{-1}$ and $\Delta \subset \Gamma$ the premise must also satisfy $P_{-1}$. We can conclude using the
-induction hypothesis.
-
-\item Rule $\rulename{perm}$: By the induction hypothesis.
-
-
-\item Rule $\rulename{abs}$: the second premise of the rule guarantees that the first
-premise satisfies $P_{-1}$.
-
-\item Rule $\rulename{app^+}$: The first premise has the same order as the
-conclusion of the rule therefore the first premise satisfies
-$P_0$. The side-condition of the rule $\rulename{app^+}$ ensures that all the other premises satisfy $P_0$.
-
-\item Rule $\rulename{app}$:
-
-$$ \rulename{app} \
-    \rulef{
-        { \Gamma \vdash M : (\overline{A} \, | B)
-        \qquad
-        \Gamma \vdash N_1 : A_1 \quad \cdots \quad \Gamma \vdash N_{l} : A_l \qquad l = |\overline{A}|
-        }
-    }
-    {
-        \Gamma \vdash^0 M N_1 \cdots N_{l} : B
-    }
-$$
-
-Applying lemma \ref{lem:restriction} to the first premise we obtain:
-\begin{equation}
- \Sigma \vdash^0 M : (\overline{A} \, | B) \label{eq:seq1}
-\end{equation}
-where $\Sigma = \{ z \in \Gamma \ | \ \ord{z} \geq \ord{(\overline{A} \, | B)} \} = \{ z \in \Gamma \ | \ \ord{z} \geq 1 + \ord{\overline{A}} \}.$
-
-Applying lemma \ref{lem:restriction} to each of the remaining
-premises gives  :
-$$ \Sigma' \vdash^0 N_i : A_i \quad \mbox{ for all } i \in 1..p$$
-where $\Sigma' = \{ z \in \Gamma \ | \ \ord{z} \geq \ord{A_i} =
-\ord{\overline{A}} \} \supseteq \Sigma.$
-
-If the inclusion $\Sigma \subseteq \Sigma'$ is strict then we apply the weakening rule to sequent (\ref{eq:seq1}):
-$$ \rulef{\Sigma \vdash^0 M : (\overline{A} \, | B)}{\Sigma' \vdash^{-1} M : (\overline{A} \, | B)} \rulename{wk} $$
-
-Finally, we obtain the following proof tree:
-$$  \rulef{
-        \rulef{
-            { \Sigma' \vdash^{-1} M : (\overline{A} \, | B)
-            \qquad
-            \Sigma' \vdash^0 N_1 : A_1 \quad \cdots \quad \Sigma' \vdash^0 N_{l} : A_l \qquad l = |\overline{A}|
-            }
-        }
-        {
-            \Sigma' \vdash^0 M N_1 \cdots N_{l} : B
-        } \rulename{app}
-    }
-    {
-         \Gamma \vdash^0 M N_1 \cdots N_{l} : B
-    } \rulename{wk}
-$$
-
-where the last weakening rules is applied only if the inclusion $\Sigma' \subseteq \Gamma$ is strict.
-
-We can now conclude by applying the induction hypothesis on the
-sequents $\Sigma' \vdash^{-1} M$, $\Sigma' \vdash^0 N_1$, \ldots,
-$\Sigma' \vdash^0 N_l$ .
-\end{itemize}
-\end{proof}
-
-\subsubsection{An alternative definition of the Homogeneous safe \texorpdfstring{$\lambda$}{lambda}-calculus}
-
-Using the observations that we have just made, we will now derive
-new rules for the safe $\lambda$-calculus with homogeneous type. We
-want a system of rules generating sequents that satisfy $P_0$. Also,
-it must be able to generate intermediate sequents that do not
-necessarily satisfy $P_0$ provided that they can be used to produce
-\emph{in fine} terms satisfying $P_0$.
-
-Because of the lemma \ref{lem:prooftree01only}, we know that the
-only necessary intermediate sequents are those that either satisfy
-$P_0$ or $P_{-1}$. Hence, we can assume by default that premises of
-the rules all satisfy $P_{-1}$ at least.
-
-First we define an additional rule expressing the fact that $P_0$
-implies $P_{-1}$:
-$$ \rulename{seq} \  \rulef{\Gamma \vdash^{0} M : A}{\Gamma \vdash^{-1} M : A} $$
-
-The weakening rule can be rewritten as follows:
-$$ \rulename{wk^{0}} \   \rulef{\Gamma \vdash^{0} M : A}{\Gamma , x : B \vdash^{0} M : A} \quad \ord{B} \geq \ord{A} $$
-$$ \rulename{wk^{-1}} \   \rulef{\Gamma \vdash^{-1} M : A}{\Gamma , x : B \vdash^{-1} M : A} \quad \ord{B} \geq \ord{A} -1$$
-
-Because of the context reduction lemma, any sequent satisfying $P_{-1}$ can be obtained
-by applying the weakening rule $\rulename{wk^{-1}}$ or the rule $\rulename{seq}$ to another sequent
-satisfying $P_0$. Therefore, with the exception of these two rules, we only need to use rules whose conclusion sequents satisfy $P_0$:
-\begin{itemize}
-\item For the rules $\rulename{perm}$, $\rulename{const}$ and $\rulename{var}$, only the tagging of the sequents
-changes:
-$$ \rulename{var} \   \rulef{}{x : A\vdash^{0} x : A}
-\qquad
-\rulename{\Sigma\mbox{\textbf{-const}}}  \  \rulef{}{\vdash^0 b : A} \ b:A \in \Sigma
-$$
-
-$$
-  \rulename{perm} \  \rulef{
-      { \Gamma \vdash^0 M:B \qquad \sigma(\Gamma)  } \hbox{ homogeneous}
-    }
-      { \sigma(\Gamma) \vdash^0 M : B }
-$$
-
-\item $\rulename{abs}$ The abstraction rule has a side condition
-expressing the fact that the premise satisfies $P_0$ or $P_{-1}$. Since this is always true for sequents
-generated by our new system of rules, we can drop the side condition:
-$$ \rulename{abs} \   \rulef{\Gamma | \overline{x} : \overline{A} \vdash^{-1} M : B}
-                                   {\Gamma  \vdash^{0} \lambda \overline{x} : \overline{A} . M : (\overline{A},B)}$$
-
-
-\item $\rulename{app}$ The application rule has the following form:
-$$ \rulename{app} \
-    \rulef{
-        { \Gamma \vdash^{-1} M : (\overline{A} \, | B)
-        \qquad
-        \Gamma \vdash^{-1} N_1 : A_1 \quad \cdots \quad \Gamma \vdash^{-1} N_{l} : A_l \qquad l = |\overline{A}|
-        }
-    }
-    {
-        \Gamma \vdash^0 M N_1 \cdots N_{l} : B
-    }
-$$
-
-Since the first premise satisfies $P_{-1}$, by property \ref{lem:homogsafe_basic_prop}(ii) we have:
-$$\forall z \in \Gamma : \ord{z} \geq 1 + \ord{\overline{A}} -1 = \ord{\overline{A}} = \ord{\overline{N}}$$
-Hence, all the sequents of the premises but the first must satisfy $P_0$. The rule (app) is therefore given by:
-$$ \rulename{app} \
-    \rulef{
-        { \Gamma \vdash^{-1} M : (\overline{A} \, | B)
-        \qquad
-        \Gamma \vdash^0 N_1 : A_1 \quad \cdots \quad \Gamma \vdash^0 N_{l} : A_l \qquad l = |\overline{A}|
-        }
-    }{
-        \Gamma \vdash^0 M N_1 \cdots N_{l} : B
-      }
-$$
-
-\item For the application rule $\rulename{app^+}$, the type of the sequent in the first premise has the same order
-as the type of the conclusion premise, and since the conclusion
-satisfies $P_0$, the first premise must also satisfy $P_0$. The
-side-condition implies that all the other sequents in the premise
-satisfy $P_0$. Moreover since the first premise satisfies $P_0$, the
-side-condition must hold. Hence the rule becomes:
-$$ \rulename{app^+} \
-    \rulef{
-        \Gamma \vdash^0 M : (\overline{B_1} \, | \, \cdots \, | \, \overline{B_m} \, | \, o) \qquad
-        \Gamma \vdash^0 N_1 : B_{11} \quad \cdots \quad \Gamma \vdash^0 N_{l} : B_{1l} \qquad l < |\overline{B_1}|
-    }
-    {
-        \Gamma \vdash^0 M N_1 \cdots N_{l} : (\overline{B} \, | \, \cdots \, | \, \overline{B_m} \, | \, o)
-    }
-$$
-where $\overline{B_1} = B_{11}, \ldots, B_{1l},\overline{B}$.
-Clearly, this rule can be equivalently stated as:
-$$ \rulef{\Gamma \vdash^0 M : A\rightarrow B
-                                        \qquad \Gamma \vdash^{0} N : A
-                                   }
-                                   {\Gamma  \vdash^{0} M N : B}$$
-\end{itemize}
-
-The full set of rules is given in table \ref{tab:homosafelmd_rules_refined}.
-
-\begin{table}[htbp]
-$$
-\rulename{const} \  \rulef{}{\vdash^0 b : A}\ b:A \in \Sigma
-\qquad
- \rulename{var} \   \rulef{}{x : A\vdash^{0} x : A} $$
-
-$$  \rulename{perm} \
-    \rulef{
-      { \Gamma \vdash^0 M:B \qquad \sigma(\Gamma)  } \hbox{ homogeneous}
-    }
-    { \sigma(\Gamma) \vdash^0 M : B
-    }
-\qquad
-\rulename{seq} \  \rulef{\Gamma \vdash^{0} M : A}{\Gamma \vdash^{-1} M : A}
-$$
-
-$$ \rulename{wk^{0}} \   \rulef{\Gamma \vdash^{0} M : A}{\Gamma , x : B \vdash^{0} M : A} \quad \ord{B} \geq \ord{A} $$
-
-$$ \rulename{wk^{-1}} \   \rulef{\Gamma \vdash^{-1} M : A}{\Gamma , x : B \vdash^{-1} M : A} \quad \ord{B} \geq \ord{A} -1$$
-
-
-$$ \rulename{app} \
-    \rulef
-        {   \Gamma \vdash^{-1} M : (\overline{A} \, | B)
-            \qquad
-            \Gamma \vdash^0 N_1 : A_1 \quad \cdots \quad \Gamma \vdash^0 N_{l} : A_l \qquad l = |\overline{A}|
-        }
-        {
-            \Gamma \vdash^0 M N_1 \cdots N_{l} : B
-        }
-$$
-
-$$ \rulename{app^+} \   \rulef{\Gamma \vdash^0 M : A\rightarrow B
-                                        \qquad \Gamma \vdash^{0} N : A
-                                   }
-                                   {\Gamma  \vdash^{0} M N : B}$$
-
-$$ \rulename{abs} \   \rulef{\Gamma| \overline{x} : \overline{A} \vdash^{-1} M : B}
-                                   {\Gamma  \vdash^{0} \lambda \overline{x} : \overline{A} . M : (\overline{A}|B)}$$
-
-
-where $\Gamma| \overline{x} : \overline{A}$ means that the lowest type-partition of the context is
-$\overline{x} : \overline{A}$.
-\caption{Alternative rules for the homogeneous safe lambda calculus}
-\label{tab:homosafelmd_rules_refined}
-\end{table}
-%%%
-
-
-
-\section{Safe \texorpdfstring{$\lambda$}{lambda}-calculus without the homogeneity constraint}
-\label{sec:safe_nonhomog}
-
-\subsection{Comparison with the homogeneous safe lambda calculus}
-\begin{itemize}
-\item all the types appearing in the rule are not required to be homogeneous (for instance
-it is possible to have $\ord{A_l} < \ord{B}$ in rule $\rulename{app}$) ;
-\item environments are not stratified, in particular in the context $\Gamma , \overline{x}:\overline{A}$, variables in $\overline{x}$ do not necessarily have the same order;
-\item in the abstraction rule, the side-condition imposes that at least all variables of the lowest order
-in the context are abstracted. Variables of greater order can also be
-abstracted together with the lowest order variables and, in contrast to
-the homogeneous safe lambda calculus, there is no constraint on the
-order in which these variables are abstracted;
-\end{itemize}
-
-\begin{example} \hfill
-\begin{enumerate}[(i)]
-\item Let $f,g:o\rightarrow o$, $x,y:o$, $\Gamma =
-g:o\rightarrow o$ and $\Gamma' = g:o\rightarrow o, y:o$. The term
-$(\lambda f x . x) g y $ is safe. One possible derivation is:
-$$ \rulef{
-        \rulef{
-            \rulef{
-                \rulef{\vdots}{\Gamma \vdash \lambda f x. x : ((o,o),o,o)}      \qquad \axiomf{\Gamma \vdash g : (o,o)} }
-            {\Gamma \vdash (\lambda f x. x) g} \rulename{app}
-        }
-        { \Gamma' \vdash (\lambda f x. x) g } \rulename{wk}
-        \qquad \axiomf{\Gamma' \vdash y : o}
-    }
-    { \Gamma' \vdash (\lambda f x. x) g y } \rulename{app}
-$$
-Here is another derivation of the same judgment:
-$$ \rulef{  \rulef{ \rulef{\vdots}{\Gamma \vdash \lambda f x. x} }{\Gamma' \vdash \lambda f x. x} \rulename{wk}    \qquad \rulef{}{\Gamma' \vdash g} \qquad \rulef{}{\Gamma' \vdash y}}
-    {\Gamma' \vdash (\lambda f x. x) g y } \rulename{app}$$
-
-\item
-For $x:o$, $f:(o,o)$ and $\varphi:((o,o),o)$ the term $$\sentail \lambda x f \varphi .
-\varphi : (o , (o, o) , ((o,o),o) , (o,o),o)$$ is
-a valid safe term that is not homogeneously typed. This example shows that the safe $\lambda$-calculus
-strictly contains the homogeneously-safe $\lambda$-calculus.
-
-\item For $x:o$, $g:(o,(o,o),o)$, the terms $\lambda g x . g x$ and
-$\lambda g x . g x (\lambda x . x)$ are both safe and not homogeneously typed.
-
-\item
-The following term is taken from \cite{serenistypesct05} (It is used as a counter-example to show that not all simply-typed terms are \emph{size-change terminating} \cite{jones01}):
-$$ E \equiv  (\lambda a . a (\lambda b . a (\lambda c d .d))) (\lambda e . e (\lambda f .f))$$
-where
-$a : \sigma \typear \mu \typear \mu$,
-$b : \tau \typear \tau$,
-$c : \tau \typear \tau$,
-$d : \mu$,
-$e : \sigma = (\tau \typear \tau) \typear \mu \typear \mu$,
-and $f : \tau$
-for some type variables $\tau$, $\mu$ and $\sigma$.
-
-
-The judgement $\sentail E : \mu \typear \mu$ is
-a valid judgment of the safe $\lambda$-calculus
-for any types $\mu, \tau$.
-
-It is a valid judgement of the \emph{homogeneous} safe $\lambda$-calculus if and only if $\ord{\tau} \geq
-\ord{\mu}-1$. (This condition implies the homogeneity of the types $\tau$ and $\mu$ and that the variables $a,b,c,d,e,f$ are
-homogeneously typed.)
-\end{enumerate}
-\end{example}
-
-\begin{lemma}[Context reduction]
-If $\Gamma \sentail M : B$ is a valid judgment then so is $fv(M) \sentail M : B$
-where $fv(M)$ denotes the context constituted of the free variables occurring in $M$.
-\end{lemma}
-\begin{proof}
-Suppose that some variable $x$ in $\Gamma$ does not occur free
-in $M$, then necessarily $x$ has been introduced in the context
-using the weakening rule. Hence $\Gamma\setminus \{ x \} \vdash M$
-must also be typable.
-\end{proof}
-
-
-\subsection{Particular case of homogeneously-safe lambda terms}
-
-In this section, we derive a new set of rules by enforcing the type-homogeneity restriction into the (non-homogenous) safe lambda calculus.
-
-We recall the definition of type-homogeneity from section \ref{sec:safe_homog}: a type $(A_1, \ldots A_n, o)$ is said to be homogeneous whenever $\ord{A_1} \geq \ord{A_2} \geq \ldots \geq \ord{A_n}$ and each of the $A_i$ is homogeneous.
-
-
-We say that $\Gamma \vdash M : A$ verifies $P_i$ for $i \in \zset$
-if all the variables in $\Gamma$ have order at least $\ord{A}+i$.
-Lemma \ref{lem:nonhomosafe_basic_prop} can then be restated as
-follows:
-\begin{lemma}[Context reduction]
-\label{lem:context_reduction} If $\Gamma \vdash M : A$ then the sequent $fv(M) \vdash M : A$ is valid and satisfies $P_0$.
-\end{lemma}
-
-
-We now show that a term-in-context is derivable in the homogeneous safe lambda calculus if and only if it is derivable with the rules of table \ref{tab:homosafelmd_rules_refined}.
-
-  We recall
-that in the system of rules of table
-\ref{tab:homosafelmd_rules_refined}, if the sequent $\Gamma
-\vdash^{i} M : A$ is valid for some $i \in \zset$ then all the
-variables in $\Gamma$ have orders at least $\ord{A}+i$.
-
-\begin{proposition}[Homogeneity restriction]
-\label{prop:nonhomogsafe_homog_restriction}
-Let $k \in \{ 0, -1 \}$. The sequent $\Gamma \vdash M : A$ is valid, homogeneously-safe and satisfies $P_k$
-if and only if the sequent $\Gamma \vdash^k M : A$ is valid in the system of rules of table \ref{tab:homosafelmd_rules_refined}.
-\end{proposition}
-
-\begin{proof}
-\emph{If}: An easy induction by case analysis on the last rule used to derive $\Gamma \vdash^0 M : A$.
-
-\emph{Only if}:
-Consider an homogeneously-safe term $\Gamma \vdash S : T$ satisfying $P_0$.
-We proceed by induction and case analysis on the last rule used to derive $\Gamma \vdash S : T$.
+%%%%%%%%%%%%%
 We only give the details for the application and abstraction
 case:
-\begin{itemize}
-\item \textbf{Abstraction.} We recall the abstraction rule:
+\begin{asparaitem}
+\item Abstraction: We recall the abstraction rule:
 $$ \rulename{abs} \quad  \rulef{\Gamma \union \overline{x} : \overline{A} \vdash M : B}
                                    {\Gamma  \vdash \lambda \overline{x} : \overline{A} . M : (\overline{A},B)} \qquad
                                    \forall y \in \Gamma : \ord{y} \geq \ord{\overline{A},B}$$
@@ -535,7 +107,7 @@ $$ \rulename{abs} \quad  \rulef{\Gamma \union \overline{x} : \overline{A} \vdash
 Type homogeneity requires that for all $i$: $\ord{x_i} = \ord{A_i} \geq
 \ord{B} -1$. Therefore the premise of the rule verifies $P_{-1}$. Using the induction hypothesis we have:
 \begin{equation}
-\Gamma \union \overline{x} : \overline{A} \vdash^{-1} M : B. \label{eq:prop:nonhomogsafe_homog_restriction:abs1}
+\Gamma , \overline{x} : \overline{A} \vdash^{-1} M : B. \label{eq:prop:nonhomogsafe_homog_restriction:abs1}
 \end{equation}
 
 We now partition the context $\Gamma$ according to the order of
@@ -572,9 +144,7 @@ We conclude by applying the abstraction rule of table
 $$ \rulename{abs} \quad  \rulef{\Gamma| \overline{x} : \overline{A} \vdash^{-1} M : B}
                                    {\Gamma  \vdash^{0} \lambda \overline{x} : \overline{A} . M : (\overline{A}|B)}$$
 
-
-
-\item \textbf{Application.} We recall the application rule:
+\item Application: We recall the application rule:
 $$ \rulename{app} \  \rulef{\Gamma \vdash M : (A,\ldots,A_l,B)
                                         \qquad \Gamma \vdash N_1 : A_1
                                         \quad \ldots \quad \Gamma \vdash N_l : A_l  }
@@ -582,7 +152,7 @@ $$ \rulename{app} \  \rulef{\Gamma \vdash M : (A,\ldots,A_l,B)
                                     \quad
                                    \forall y \in \Gamma : \ord{y} \geq \ord{B}$$
 
-The term in the conclusion is homogeneous safe therefore the term in the first premise must be of homogeneous \
+The term in the conclusion is homogeneously safe therefore the term in the first premise must be of homogeneous \
 type. This implies that $\ord{A_1} \geq \ldots \geq \ord{A_l}
 \geq \ord{B} - 1$.
 Furthermore, we can make the assumption that $\ord{A_1} = \ldots = \ord{A_l} = \ord{\overline{A}}$
@@ -678,7 +248,181 @@ $$ \rulef{\Sigma'  \vdash^{0} M N_1 \ldots N_l : B}
                                    {\Gamma  \vdash^{0} M N_1 \ldots N_l : B} \quad
                                    \rulename{wk^0}.
 $$
+\end{asparaitem}
+
+%%%%%%%%%%%%%%%%%%%%%
 
 
-\end{itemize}
-\end{proof}
+\begin{example} \hfill
+\begin{asparaenum}[(i)]
+\item The term $(\lambda f x . x) g y $ where $f,g:(o,o)$, $x,y:o$ is homogeneously safe. One possible derivation is:
+\begin{mathpar}
+\inferrule* [Left=\rulenamet{app}]
+    {\inferrule* [Left=\rulenamet{wk}]
+        {\inferrule* [Left=\rulenamet{app}]
+            {\inferrule* [Left=\rulenamet{wk}]
+                {\inferrule* [Left=\rulenamet{abs}]
+                  { \inferrule* [Left=\rulenamet{wk}]{
+                      \inferrule* [Left=\rulenamet{abs}]
+                        {\inferrule* [Left=\rulenamet{var}]{ }{x:o \hentail x : o}}
+                        {\hentail \lambda x. x : (o,o)}
+                    }
+                    {f:(o,o) \hentail \lambda x. x : (o,o)}
+                  }
+                  {\hentail \lambda f x. x : ((o,o),o,o)}
+                }
+                {g:(o,o) \hentail \lambda f x. x : ((o,o),o,o)}
+            \qquad
+             \inferrule* [Right=\rulenamet{var}] { }{g:(o,o) \hentail g : (o,o)} }
+            {g:(o,o) \hentail (\lambda f x. x) g : (o,o)}
+        }
+        { g:(o,o), y:o \hentail (\lambda f x. x) g : (o,o) }
+    \qquad
+    \inferrule* [Right=\rulenamet{wk}]
+        {\inferrule* [Right=\rulenamet{var}]{ }{y:o \hentail y:o}
+        }
+        {g:(o,o), y:o \hentail y : o}
+    }
+    { g:(o,o), y:o \hentail (\lambda f x. x) g y : o}
+\end{mathpar}
+
+\item For $x:o$, $g:(o,(o,o),o)$, the terms $\lambda g x . g x$ and
+$\lambda g x . g x (\lambda x . x)$ are both safe and not homogeneously typed. This shows that the safe $\lambda$-calculus strictly contains the homogeneous safe $\lambda$-calculus.
+
+\item For $x:o$, $f:(o,o)$ and $\varphi:((o,o),o)$ the term $$\sentail \lambda x f \varphi . \varphi : (o , (o, o) , ((o,o),o) , (o,o),o)$$ is a valid safe term that is not homogeneously typed.
+
+\item
+The following term is taken from \cite{serenistypesct05} (It is used as a counter-example to show that not all simply-typed terms are \emph{size-change terminating} \cite{jones01}):
+$$ E \equiv  (\lambda a . a (\lambda b . a (\lambda c d .d))) (\lambda e . e (\lambda f .f))$$
+where
+$a : \sigma \typear \mu \typear \mu$,
+$b : \tau \typear \tau$,
+$c : \tau \typear \tau$,
+$d : \mu$,
+$e : \sigma = (\tau \typear \tau) \typear \mu \typear \mu$,
+and $f : \tau$
+for some type variables $\tau$, $\mu$ and $\sigma$.
+
+The term $E$ is safe \ie $\sentail E : \mu \typear \mu$ is
+a valid judgment of the safe $\lambda$-calculus
+for any types $\mu, \tau$. It is \emph{homogeneously} safe
+(\ie $\hentail E : \mu \typear \mu$ is
+a valid judgement of the \emph{homogeneous} safe $\lambda$-calculus) if and only if $\ord{\tau} \geq \ord{\mu}-1$. (In particular, this condition implies that $\tau$, $\mu$ and the types of $a,b,c,d,e,f$ are homogeneous.)
+\end{asparaenum}
+\end{example}
+
+
+\subsection{An alternative system of rules}
+
+We say that $\Gamma \hentail M : A$ satisfies $P_i$ for $i \in \zset$ if
+all the variables in $\Gamma$ have order at least $\ord{A}+i$.
+
+\begin{lemma}
+\label{lem:prooftree01only} If $\Gamma \hentail M : T$ satisfies
+$P_0$ or $P_1$ then there is a derivation for $\Gamma \hentail M : T$ such that all the judgments appearing in the proof tree satisfy either $P_0$ or $P_{-1}$.
+\end{lemma}
+\proof
+We show by structural induction on the derivation tree of $\Gamma
+\hentail M : T$ that there is exists a derivation in which all the sequents satisfy $P_0$ or $P_{-1}$:
+\begin{asparaitem}
+\item \rulenamet{const} The context is empty therefore the sequent satisfies $P_{-1}$.
+
+\item \rulenamet{var} The context contains only the variable itself therefore the sequent satisfies $P_0$.
+
+\item \rulenamet{wk} The premise is $\Delta \hentail M : T$ with $\Delta \subset \Gamma$. Since $\Gamma \hentail M : T$ satisfies $P_{-1}$ and $\Delta \subset \Gamma$ the premise must also satisfy $P_{-1}$. We conclude using the I.H.
+
+\item \rulenamet{perm} It follows from the I.H.
+
+\item \rulenamet{abs} The side condition guarantees that the premise satisfies $P_{-1}$. The I.H.\ permits us to conclude.
+
+\item \rulenamet{app^+} The side-condition ensures that all the premises satisfy $P_0$. The I.H.\ permits us to conclude.
+
+\item \rulenamet{app} Let $T$ denote the type $\left(B_{11}, \ldots, B_{1l} \, | \, \overline{B_2} \, | \, \cdots \, | \, \overline{B_m} \, | \, o\right)$. Applying Lemma \ref{lem:homogsafe_basic_prop}(iii) to each of the premises of the rule gives $fv(N_0) \hentail N_0 : T$ and for $1 \leq i \leq l$,  $fv(N_i) \hentail N_i : B_{1i}$, which all satisfy $P_0$.
+
+Let $\Sigma = \Union_{i\in\{0..l\}} fv(N_i)$.
+Using the weakening rule we can form the sequent
+$fv(N_0) \hentail N_0 : T$. By  Lemma \ref{lem:homogsafe_basic_prop}(ii), the variables introduced that
+way have order greater than the order of the $B_{1j}$ which is $\ord{N_0}-1$ because of type homogeneity. Thus the sequent satisfies $P_{-1}$. Similarly, we can form the sequents $\Sigma \hentail N_i : B_{1i}$ which necessarily satisfy $P_0$.
+
+We then have the derivation:
+\begin{mathpar}
+\inferrule* [Left=\rulenamet{wk}]
+    {\inferrule* [Left=\rulenamet{app}]
+        { \Sigma \hentail N_0 : T \qquad \Sigma \hentail N_1 : B_{11} \  \ldots \  \Sigma \hentail N_l : B_{1l} }
+        {\Sigma \hentail N_0 N_1 \ldots N_l : B} }
+    {\Gamma \hentail N_0 N_1 \ldots N_l : B}
+\end{mathpar}
+(The weakening rules is applied only if the inclusion $\Sigma \subseteq \Gamma$ is strict.) Applying the I.H.\ on the sequents lying at the top of this derivation tree permits us to conclude. \qed
+\end{asparaitem}
+% end of proof
+\bigskip
+
+This observation allows us to refine the system of rules given in Def.\ \ref{dfn:homogsafelmd} into the system of Table \ref{tab:homosafelmd_rules_refined}.
+We use judgments of the form $\Gamma \hentail^0 M : T$
+and $\Gamma \hentail^1 M : T$.
+\begin{proposition}
+Let $0 \leq j \leq 1$. The judgment $\Gamma \hentail M : A$ is derivable and satisfies $P_j$ if and only if $fv(M) \hentail^j M : T$ is derivable with the rules of Table \ref{tab:homosafelmd_rules_refined}.
+\end{proposition}
+\proof
+Because of Lemma \ref{lem:prooftree01only}, we know that the only necessary intermediate sequents are those that either satisfy $P_0$ or $P_{-1}$. Thus the rules of the homogeneous safe lambda calculus can be specialized as follows:
+\begin{asparaitem}
+\item The new rule \rulenamet{seq} expresses the fact that $P_0$ implies $P_{-1}$;
+
+\item The weakening rule is constrained so that it produces only sequent verifying $P_0$ or $P_1$. Because of the context reduction lemma, any sequent satisfying $P_{-1}$ can be obtained by applying $\rulename{wk^{-1}}$ or $\rulename{seq}$ on some sequent satisfying $P_0$, therefore all the remaining rules need only to produce sequents satisfying $P_0$;
+
+\item The rules $\rulename{perm}$, $\rulename{const}$ and $\rulename{var}$ remain unchanged;
+
+\item $\rulename{abs}$ The side condition present in the original definition of the abstraction rule disappears as it is implied by the fact that the premise satisfies $P_{-1}$;
+
+\item $\rulename{app}$ The fact that the first premise satisfies $P_{-1}$ implies that all the other premises satisfy $P_0$;
+
+\item \rulenamet{app^+} The side-condition in the original rule is equivalent as saying that the first premise satisfies
+$P_0$. This in turn implies that the second premise also satisfies $P_0$.\qed
+\end{asparaitem}
+%% end of proof
+\bigskip
+
+Hence, by Lemma \ref{lem:homogsafe_basic_prop}, a term is homogeneously safe if and only if the sequent $fv(M) \hentail^0 M : T$ is derivable with the rules of Table \ref{tab:homosafelmd_rules_refined}.
+
+\begin{table}[htbp]
+$$
+\rulename{const} \  \rulef{}{\hentail^0 f : A}\ f:A \in \Sigma
+\qquad
+ \rulename{var} \   \rulef{}{x : A\hentail^{0} x : A} $$
+
+$$  \rulename{perm} \
+    \rulef{
+      { \Gamma \hentail^0 M:B \qquad \sigma(\Gamma)  } \hbox{ homogeneous}
+    }
+    { \sigma(\Gamma) \hentail^0 M : B
+    }
+\qquad
+\rulename{seq} \  \rulef{\Gamma \hentail^0 M : A}{\Gamma \hentail^{-1} M : A}
+$$
+
+$$ \rulename{wk^{0}} \   \rulef{\Gamma \hentail^0 M : A}{\Gamma , x : B \hentail^0 M : A} \ \ \ord{B} \geq \ord{A}
+\qquad \rulename{wk^{-1}} \   \rulef{\Gamma \hentail^{-1} M : A}{\Gamma , x : B \hentail^{-1} M : A} \ \ \ord{B} \geq \ord{A} -1$$
+
+
+$$ \rulename{app} \
+    \rulef
+        {   \Gamma \hentail^{-1} N_0 : \left(B_{11}, \ldots, B_{1l} \, | \, \overline{B_2} \, | \, \cdots \, | \, \overline{B_m} \, | \, o\right)
+            \quad
+            \Gamma \hentail^0 N_1 : B_{11} \quad \ldots \quad \Gamma \hentail^0 N_{l} : B_{1l}
+        }
+        {
+            \Gamma \hentail^0 N_0 N_1 \cdots N_{l} : \left( \overline{B_2} \, | \, \cdots \, | \, \overline{B_m} \, | \, o\right)
+        }
+$$
+
+$$ \rulename{app^+} \   \rulef{\Gamma \hentail^0 M : A\rightarrow B
+                                        \qquad \Gamma \hentail^0 N : A
+                                   }
+                                   {\Gamma  \hentail^0 M N : B}$$
+
+$$ \rulename{abs} \   \rulef{\Gamma| \overline{x} : \overline{A} \hentail^{-1} M : B}
+                                   {\Gamma  \hentail^0 \lambda \overline{x} : \overline{A} . M : (\overline{A}|B)}
+\ \mbox{($\overline{x} : \overline{A}$ is the lowest type-partition of the context)}                                   $$
+\caption{Alternative rules for the homogeneous safe lambda calculus.}
+\label{tab:homosafelmd_rules_refined}
+\end{table}

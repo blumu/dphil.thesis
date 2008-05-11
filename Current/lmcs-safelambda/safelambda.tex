@@ -379,8 +379,6 @@ set $S$. The subscripts in $\sentail$ and $\asentail$ stand for
 the \defname{homogeneous safe lambda calculus}.
 \end{inparaenum}
 \end{definition}
-An equivalent notion of homogeneous safe lambda calculus is given in
-de Miranda's thesis \cite{demirandathesis}.
 
 
 The safe lambda calculus deviates from the standard definition of
@@ -395,12 +393,9 @@ constraint on types. In particular, type-homogeneity, which was an
 assumption of the original definition of safe grammars \cite{KNU02},
 is not required here. Another difference is that we allow
 $\Xi$-constants to have
-arbitrary higher-order types.  % Thus our formulation
-% of the safe lambda calculus is more general than the one proposed in
-% the technical report \cite{safety-mirlong2004}. (It is possible to
-% reconcile the two definitions by adding the further constraint that
-% each type occurring in our rules is homogeneous and by restricting
-% constants to at most order 1.)
+arbitrary higher-order types.
+\bigskip
+
 
 \begin{example}[Kierstead terms]
 \label{ex:kierstead}
@@ -464,7 +459,9 @@ When restricted to the homogeneously-typed sub-system, the safe
 lambda calculus captures the original notion of safety due to Knapik
 \emph{et al.}~in the context of higher-order grammars:
 
-\begin{proposition} Let $G = \langle \Sigma, \mathcal{N}, \mathcal{R},
+\begin{proposition}
+\label{prop:safegram_safelmd}
+ Let $G = \langle \Sigma, \mathcal{N}, \mathcal{R},
   S \rangle$ be a grammar and let $e$ be an applicative term generated
   from the symbols in $\mathcal{N} \cup \Sigma \cup \makeset{z_1^{A_1},
     \cdots, z_m^{A_m}}$.  A rule $F z_1 \ldots z_m \rightarrow e$ in
@@ -472,7 +469,16 @@ lambda calculus captures the original notion of safety due to Knapik
   \sentail^{\Sigma \cup \mathcal{N}} e : o$ is a valid typing judgement
   of the \emph{homogeneous} safe lambda calculus.
 \end{proposition}
-See \cite{demirandathesis} for a proof.
+\proof
+We show by induction that \begin{asparaenum}
+\item  $z_1,\ldots, z_m \asentail t:A$ is a valid judgment of the homogeneous safe lambda calculus containing no abstraction if and only if in the Knapik sense, all the occurrences of unsafe subterms of $t$ are safe occurrences.
+\item $z_1,\ldots, z_m \sentail t:A$ is a valid judgment of the homogeneous safe lambda calculus containing no abstraction if and only if in the Knapik sense, all the occurrences of unsafe subterms of $t$ are safe occurrences, and all parameters occurring in $t$ have order greater than $\ord{t}$. \end{asparaenum}
+The constant and variable rule are trivial. For the application case: by definition, a term $t_0 \ldots t_n$ is Knapik-safe iff for all $0\leq i \leq n$, all the occurrences of unsafe subterms of $t_i$ are safe occurrences (in the Knapik sense), and for all $1\leq j \leq n$, the operands occurring in $t_j$ have order greater than $\ord{t_j}$. The \rulenamet{app_{as}} rule and the induction hypothesis permit us to conclude.
+
+Now since $e$ is an applicative term of \emph{ground type}, the previous result gives:
+$z_1,\ldots, z_m \sentail e:o$ is a valid judgment of the homogeneous safe lambda calculus iff
+all the occurrences of unsafe subterms of $e$ are safe occurrences, which is in turn equivalent to ``$F z_1 \ldots z_m \rightarrow e$ is safe'' by definition of Knapik-safety for grammar rules. \qed
+\bigskip
 
 \emph{In what sense is the safe lambda calculus safe?} It is an
 elementary fact that when performing $\beta$-reduction in the lambda
@@ -537,6 +543,9 @@ Note that $\lambda$-terms that `satisfy' the No-variable-capture
 Lemma are not necessarily safe. For instance the $\beta$-redex in
 $\lambda y^o z^o. (\lambda x^o .y) z$ can be contracted using
 capture-permitting substitution, even though the term is not safe.
+\bigskip
+
+\emph{Related work:} In \cite{demirandathesis}, de Miranda proposed a different notion of safe lambda calculus. This notion corresponds to (a less general version of) our notion of \emph{homogeneous} safe lambda calculus. It can be showed that for pure applicative terms (\ie with no lambda-abstraction) the two systems coincides. In particular the counterpart of Proposition \ref{prop:safegram_safelmd} is also shown in \cite{demirandathesis}. In the presence of lambda abstraction, however, our system is less restrictive. For instance the term $\lambda f:(o,o,o) x: o.  f x : (o,o)$ is typable in the homogeneous safe lambda calculus but not in the safe lambda calculus \emph{\`a la} de Miranda. One can show that the system given in \cite{demirandathesis} is in fact equivalent to the \emph{homogeneous long-safe lambda calculus} \ie the restriction of the system of Def.\ \ref{dfn:longsafe} to homogeneous types.
 
 \subsection*{Safe beta reduction}
 

@@ -116,7 +116,7 @@ We then show that the nice properties of the safe $\lambda$-calculus remain in t
  for constants and constructs of IA.
 Said equivalently, it is the system of rules of IA where the application and abstraction rules  have been restricted by the safety constraint as in the safe lambda calculus. Let us call this
 language \defname{strongly safe \ialgol}. The rules are formally given in
-Table \ref{tab:safeia_formrules}. The circled rules are those that
+Table \ref{tab:safeia_formrules}. The rules circled in the table are those that
 differ from their IA counterpart. Note that the IA rule $\rulename{new}$ is kept unchanged: it has no side-condition, contrary to the $\rulename{abs}$ rule. In other words, the calculus allows us to abstract variables of type \iavar\ without having to satisfy the safety constraint provided that the binder is a block-variable declaration.
 
 
@@ -191,22 +191,18 @@ $$ \rulename{mkvar} \ \rulef{\Gamma \vsafeentail M_1 : \iaexp \rightarrow \iacom
 
 It turns out that the definition of strongly safe \ialgol is needlessly
 restrictive. Indeed, the major benefit of the safety constraint is
-that it avoids variable renaming when performing substitution. To
-achieve this, the safety constraint restricts the occurrences of the
+that it avoids variable renaming when performing substitution, because of the
+way the safety constraint restricts the occurrences of the
 variables in a term. In the present setting of a language with
 imperative features, one can distinct two types of variables: The
 ``standard ones'' -- those that we abstract using
 $\lambda$-abstraction, for instance $x$ in the term $\lambda x . x$;
 and the ``imperative'' ones -- those that are used as identifiers for
 memory cells, also called block-allocated variables. We observe that
-for this second type of variables there is no gain in imposing any
-constraint since no substitution can ever occur for such variables
-when performing reduction! Inspired by this observation we can obtain a more general fragment of IA subsuming strongly safe \ialgol\ and incarnating the notion ``safety''
-more faithfully.
+there is no gain in imposing constraint on this second type of variables since no substitution can ever occur for such variables when reducing a term. This observation leads us to define a more general fragment of IA subsuming strongly safe \ialgol\ while preserving its good properties.
 
 We consider a new judgment of the form $\Gamma | \Gamma^{\ianew}
-\safeentail M : A$ - called a ``split term'' in \cite{abramsky:game-semantics-tutorial} - where the context is partitioned into two
-components: The first component contains standard lambda calculus
+\safeentail M : A$, called a \defname{split term} in \cite{abramsky:game-semantics-tutorial}, where the context is partitioned into two components: The first component contains standard lambda calculus
 variables; the second component contains block-allocated variable --
 abstracted by an occurrence of the \ianew\ construct. The component
 $\Gamma^{\ianew}$ contains variables of type \iavar\ only, while the
@@ -217,9 +213,7 @@ to abstract variables taken from the first component of the context;
 similarly the \ianew\ block construct must only be used to
 ``abstract'' variables from the block-variable context. The full
 system of rules is given in Table \ref{tab:safeia_formrules}. The
-rules that are circled correspond to those that differs from their
-counterpart in Table \ref{tab:verysafeia_formrules}; the differences
-being that:
+rules that are circled in the table correspond to those that differs from their counterpart in Table \ref{tab:verysafeia_formrules}. In particular:
 \begin{itemize}
 \item the rule $\rulename{abs}$ and $\rulename{new}$ can only
 abstract variables from their respective context component;
@@ -284,7 +278,7 @@ $$ \rulename{assign} \ \rulef{\Gamma| \Gamma^{\ianew} \safeentail M : \iavar \qu
 \begin{center}\ovalbox{$
 \rulename{new} \ \dps \rulef{\Gamma | \Gamma^{\ianew}, x :
 \iavar\ \safeentail M : A}
-    {\Gamma | \Gamma^{\ianew} \safeentail \texttt{new } x \texttt{ in } M : A} \quad A \in \{ \iacom, \iaexp\} $}\end{center}
+    {\Gamma | \Gamma^{\ianew} \safeentail \ianewin{x}\ M : A} \quad A \in \{ \iacom, \iaexp\} $}\end{center}
 
 $$ \rulename{mkvar} \ \rulef{\Gamma| \Gamma^{\ianew} \safeentail M_1 : \iaexp \rightarrow \iacom \quad \Gamma| \Gamma^{\ianew} \safeentail M_2 : \iaexp}
     {\Gamma| \Gamma^{\ianew} \safeentail \iamkvar\  M_1\ M_2\ : \iavar}$$
@@ -293,28 +287,40 @@ $$ \rulename{mkvar} \ \rulef{\Gamma| \Gamma^{\ianew} \safeentail M_1 : \iaexp \r
 \end{FramedTable}
 
 
-Split-terms with an empty block-variable context $\Gamma^\ianew$ are called \emph{semi-closed}. We define \defname{Safe IA} to be the set of semi-closed split-terms typable with the system of rules of Table \ref{tab:safeia_formrules}. For convenience we introduce the additional rule
+ Split-terms with an empty block-variable context $\Gamma^\ianew$ are called \defname{semi-closed}. We define \defname{Safe IA} to be the set of semi-closed split-terms typable with the system of rules of Table \ref{tab:safeia_formrules}. For convenience we introduce the additional rule
 $$ \rulef{\Gamma | \emptyset \safeentail M : A} {\Gamma \safeentail M : A}$$
-so that safe \ialgol is given by the set of terms-in-context $\Gamma \safeentail M : A$.
+so that safe \ialgol\ is given by the set of terms-in-context $\Gamma \safeentail M : A$.
 
 \begin{example}
-Clearly strongly safe \ialgol\ is a subset of safe \ialgol, the following example
-showing that the inclusion is strict:
-
-$$ \safeentail \lambda f:{(\iaexp \rightarrow \iacom) \rightarrow \iaexp} .\  \ianewin{i}\ f ( \lambda x . \iaassign\ i\ x ) : \iaexp$$
-$$ \mbox{ but } \not \vsafeentail \lambda f:{(\iaexp \rightarrow \iacom) \rightarrow \iaexp} .\ \ianewin{i}\ f ( \lambda x . \iaassign\ i\ x ) : \iaexp \ .$$
+Clearly strongly safe \ialgol\ is a subset of safe \ialgol\ and the following example shows that the inclusion is strict:
+$$ \safeentail \lambda f:{(\iaexp \rightarrow \iacom) \rightarrow \iaexp} .\  \ianewin{i}{f ( \lambda x . \iaassign\ i\ x )} : \iaexp$$
+$$ \mbox{ but } \not \vsafeentail \lambda f:{(\iaexp \rightarrow \iacom) \rightarrow \iaexp} .\ \ianewin{i}{f ( \lambda x . \iaassign\ i\ x )} : \iaexp \ .$$
 
 It is not strongly safe because the variables $i$ and $x$ are of the same order but only $x$ is abstracted by the lambda. It is safe because block-allocated variables such as $i$ are not constrained in safe \ialgol.
 \end{example}
 
+The notion of substitution naturally extends to Safe \ialgol: substitution is done inductively on the structure of the term. In the block-variable case, we have:
+\begin{align*}
+  (\ianewin{x}{M})\subst{y}{N} &= \ianewin{z}{M\subst{x}{z}\subst{y}{N}} & \mbox{if $x\neq y$, $z$ fresh in $M$;}\\
+  (\ianewin{x}{M})\subst{x}{N} &= \ianewin{x}{M}
+\end{align*}
+And for capture-permitting substitution:
+\begin{align*}
+  (\ianewin{x}{M})\captsubst{y}{N} &=   \ianewin{x}{M\captsubst{y}{N}} & \mbox{if $x\neq y$;}\\
+  (\ianewin{x}{M})\captsubst{x}{N} &=   \ianewin{x}{M}
+\end{align*}
+
+the substitution is pushed i
 
 \subsubsection{Properties}
-\notetoself{The good properties of the safe lambda calculus still hold, in particular
-safety is preserved by the small-step reduction and that no variable
-capture occurs when performing substitution on a safe term.
+It is straightforward to check that the all the good properties of the safe lambda calculus remain in the two languages above defined. In particular no variable capture occurs when performing substitution on a safe term.
+
+
+The proof is just an extension of Lemma \label{lem:nocapture}: the 
+
+\notetoself{
+safety is preserved by the small-step reduction and that .
 }
-
-
 The small-step reduction semantics of safe IA is defined similarly as in Sec.\ \ref{subsec:smallstep_ia} except that $\beta$-reduction is replaced by safe $\beta$-reduction.
 
 \begin{lemma}[Reduction preserves safety]

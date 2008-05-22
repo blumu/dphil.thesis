@@ -102,6 +102,34 @@ Performing the substitution capture-permitting causes a clash between the two un
 In fact, the same example shows that the game-semantic characterization of safe \pcf\ that we will give in Chapter \ref{chap:model} does not hold for safe $\mu$-\pcf.
 
 
+\subsection*{Expressive power}
+
+Despite the strong syntactic constraint imposed on the language, the presence of the Y combinator makes it Turing Complete. One way to prove it consist in showing that partial recursive functions can be computed in Safe \pcf. Instead we will show that 
+the \textsc{Queue} programming system is encodable in Safe \pcf.
+
+
+\subsection{The queue-halting problem}
+We fix a finite alphabet $\Sigma = \{ a_1, \ldots, a_p \}$. A \textsc{Queue} program is a finite sequence of instructions that manipulate a queue data-structure.
+A program $P$ is a sequence of $n$ instructions for some $n\in \nat$. For $1 \leq i \leq n$, $P i$ denotes the $i^{\sf th}$ instruction of the sequence $P$. There are four possible kinds of instruction: halting, enqueuing, dequeuing and branching. The set of instructions is formally defined as:
+$$ \mathcal{I} = \{ {\tt halt} \} \cup
+\{ {\tt enqueue \ } a \ | \ a \in \Sigma \}
+\cup \{ {\tt dequeue} \} \cup \{ {\tt goto\ } l {\tt\ if\ first =\ } a \ | \ l \in 1..n, a \in \Sigma \}
+ $$
+
+
+The operational semantics is described using a set of states $ \{ \eop \} \cup \{ 1,..,n \} \times \Sigma^* $. The state $\eop$ corresponds to the final state at which the program stops. A state of the form $(i,x) \in \{ 1,..,n \} \times \Sigma^*$ indicates that the queue's content is given by the sequence $x$ and that the next instruction to be executed by the machine is $P i$. The empty queue is denoted by $\epsilon$ and for any sequence $x \in \Sigma^*$, the first element of $x$ corresponds to the element that has been \emph{first} enqueued (i.e. the queue is fed at the right-end side and consumed at the left-end side). The rules defining the operational semantics are:
+\begin{eqnarray*}
+(i,x) \mbox{ with } P i = {\tt halt} &\longrightarrow& \eop \\
+(i,x) \mbox{ with } P i = {\tt enqueue\ } a &\longrightarrow& (i+1,x \cdot a) \\
+(i,\epsilon) \mbox{ with } P i = {\tt dequeue } &\longrightarrow& \eop \\
+(i,a \cdot x) \mbox{ with } P i = {\tt dequeue } &\longrightarrow& (i+1,x) \\
+(i,\epsilon) \mbox{ with } P i =  {\tt goto\ } l {\tt\ if\ first =\ } a &\longrightarrow& (i+1,\epsilon) \\
+(i,b \cdot x) \mbox{ with } a \neq b \mbox{ and } P i =  {\tt goto\ } l {\tt\ if\ first =\ } a &\longrightarrow& (i+1,b \cdot x) \\
+(i,a \cdot x) \mbox{ with } P i =  {\tt goto\ } l {\tt\ if\ first =\ } a &\longrightarrow& (l,a \cdot x)
+\end{eqnarray*}
+
+The \textsc{Queue} programming system is Turing Complete. This is because Post's Tag Systems can be simulated \cite{Minsky67} in \textsc{Queue}, and can simulate Turing machines \cite{Minsky64}. Consequently, the \textsc{Queue-Halting} problem (``Given a queue program, will it halt eventually?'') is undecidable.
+
 \section{Safe Idealized Algol}
 
 In this section we present two possible approaches to accommodate
@@ -186,7 +214,7 @@ $$ \rulename{mkvar} \ \rulef{\Gamma \vsafeentail M_1 : \iaexp \rightarrow \iacom
 \label{subsec:safeia_rules}
 
 It turns out that the definition of strongly safe \ialgol\ is needlessly
-restrictive. Indeed, we would like to identify a fragment of \ialgol\ 
+restrictive. Indeed, we would like to identify a fragment of \ialgol\
 which restricts the occurrences of the variables in a term
 so that the so-called ``No-variable-capture'' lemma holds, \ie it is no necessary to rename variables afresh when performing substitution. But in the present setting of a language with imperative features, one can distinguish two types of variables in a closed term: the ``standard ones'' -- those that are bound by $\lambda$-abstraction; and the ``imperative'' ones -- those that are used as identifiers for memory cells, also called block-allocated variables. We observe that we do not gain anything by imposing constraints on the second kind of variables since no term can ever by substituted for such variables when performing reduction. It is therefore possible to define a more general fragment of \ialgol\ subsuming strongly safe \ialgol\ while preserving its good properties.
 
@@ -205,7 +233,7 @@ rules that are circled in the table are those that differ from their counterpart
 \begin{itemize}
 \item the rule $\rulename{abs}$ and $\rulename{new}$ can only
 abstract variables from their respective context component;
-\item the side-condition in $\rulename{abs}$ constrains only 
+\item the side-condition in $\rulename{abs}$ constrains only
 variables from the first component of the context.
 \end{itemize}
 
@@ -291,7 +319,7 @@ For split safe \ialgol\ terms, only variables from the left context component ar
 If $\Gamma | \Gamma^{\ianew}
 \safeentail M : A$ then for all variable $z \in fv(M) \inter \Gamma$, $\ord{z} \geq \ord{A}$
 \end{lemma}
-(This is the counterpart of Lemma \ref{lem:ordfreevar} for the safe lambda calculus.) 
+(This is the counterpart of Lemma \ref{lem:ordfreevar} for the safe lambda calculus.)
 
 \subsection{Substitution}
 The notion of substitution naturally extends to Safe \ialgol: it is done inductively on the structure of the term; for the block-variable case this gives:
@@ -310,7 +338,7 @@ The key reason is that the block-allocation construct $\ianew$ does not increase
 \begin{align*}
 M_1 &\equiv \ianewin{x}{\iaseq\ (\iaassign\ x\ 1)\ ((\lambda y:\overline 0. \ianewin{x}{y})(\iaderef\ x))} \\
 M_2 &\equiv \lambda x:\overline 1. (\lambda y:\overline 1. (\ianewin{x}{y\ 0})) x\\
-M_3 &\equiv  \lambda f: \overline 2 . \ianewin{x}{(\lambda y:\overline 1. f (\lambda x:\overline 0. y))(\lambda z:\overline 0 . \iaderef\ \underline{x})} 
+M_3 &\equiv  \lambda f: \overline 2 . \ianewin{x}{(\lambda y:\overline 1. f (\lambda x:\overline 0. y))(\lambda z:\overline 0 . \iaderef\ \underline{x})}
 \end{align*}
 where $\overline 0$ is an abbreviation for \iaexp\ and for $n\in\nat$, $\overline{n+1}$ stands for the type $n \typear \iaexp$.
 
@@ -324,7 +352,7 @@ Performing the substitution without renaming variables afresh causes the variabl
 $$\ianewin{x}{\iaseq\ (\iaassign\ x\ 1)\ (\ianewin{x}{\iaderef\ x})}$$
 which is observationally equivalent to $0$ (since block-allocated variables are initialized with $0$). On the other hand the standard substitution gives:
 $$\ianewin{x}{\iaseq\ (\iaassign\ x\ 1)\ (\ianewin{z}{\iaderef\ x})}$$
-which is observationally equivalent to $1$. 
+which is observationally equivalent to $1$.
 
 \item For $M_2$, the capture permitting substitution gives
 $\lambda x:\overline 1. (\ianewin{x}{x\ 0})$ which is not even a valid \ialgol\ term;
@@ -341,7 +369,7 @@ This leads us to the following notion of substitution which performs variable re
 The \defname{semi-capture-permitting substitution} of the term-in-context $\Gamma | \Gamma^{\ianew}
 \entail N : A$ for $x$ in the term-in-context $\Gamma, x:A | \Gamma^{\ianew}
 \entail M : B$, written $\Gamma | \Gamma^{\ianew} \entail M\semicaptsubst{N}{x}$, is defined inductively on $M$ as follows:
-\begin{align*} 
+\begin{align*}
 x \semicaptsubst{N}{x} &= N \\
 y \semicaptsubst{N}{x} &= y & y\neq x;\\
 (\lambda x . M) \semicaptsubst{N}{x} &= \lambda x . M \\
@@ -357,7 +385,7 @@ It is now possible to state a weaker version of the \emph{No-variable capture le
 \label{lem:nocapture_safeia}
 Suppose that $\Gamma | \Gamma^{\ianew}
 \safeentail N : A$ and $\Gamma, x:A | \Gamma^{\ianew}
-\safeentail M : B$ are safe \ialgol\ terms then 
+\safeentail M : B$ are safe \ialgol\ terms then
 the substitution $M\subst{N}{x}$ can be performed semi-capture-permitting \emph{provided that the set of names for lambda-bound variables and block-allocated variables are disjoint.}
 In other words:
 $$ M\subst{N}{x} =_\alpha M\semicaptsubst{N}{x} \ .$$

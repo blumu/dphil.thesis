@@ -753,23 +753,22 @@ Consequently, P-pointers are superfluous in the game denotation of safe \pcf\ te
 Recall that \pcf' denotes the language obtained by extending \pcf\
 with the $\pcfcase_k$ construct (See \cite{Abr02}).
 The $\pcfcase_k$ construct is the obvious generalization of the
-conditional operator \pcfcond\ to $k$ branches instead of $2$. Clearly, all the results obtained so far concerning Safe \pcf\ also hold for \pcf'.
+conditional operator \pcfcond\ to $k\in\nat$ branches instead of $2$. We call safe \pcf' the corresponding extension of safe \pcf. Clearly, all the results obtained so far concerning safe \pcf\ also hold in safe \pcf'.
 
-The previous theorem leads to the following definability result for safe \pcf':
+The characterization theorem allows us to show the following definability result for safe \pcf':
 \begin{proposition}[Definability for safe \pcf' terms]
 \label{prop:safetydefinability} Let $\overline{A}=(A_1,\ldots, A_i)$
-and $B =(B_1, \ldots, B_l,o)$ be two PCF types for some $i,l\geq 0$
+and $B$ be two PCF types for some $i,l\geq 0$
 and $\sigma$ be a well-bracketed innocent P-i.j.\ strategy with
-finite view function defined on the game $!A_1 \otimes \ldots
-\otimes !A_i \lingamear (!B_1 \lingamear \ldots \lingamear !B_l
-\lingamear o) $. There exists an \emph{almost safe} PCF' term
+finite view function defined on the game $A_1 \times \ldots
+\times A_i \gamear B$. There exists an \emph{almost safe} PCF' term
 $\overline{x} : \overline{A} \asentail M : B$ in $\eta$-long normal
 form such that:
-$$ \sem{\overline{x} : \overline{A} \vdash M_\sigma : B} = \sigma $$
+$$ \sem{\overline{x} : \overline{A} \asentail M_\sigma : B} = \sigma $$
 and a safe closed PCF' term $\sentail M'_\sigma : (\overline{A},B)$ in $\eta$-long normal form such that:
-$$ \sem{\vdash M'_\sigma : (\overline{A},B)} \cong \sigma \ .$$
+$$ \sem{\sentail M'_\sigma : (\overline{A},B)} \cong \sigma \ .$$
 \end{proposition}
-\begin{proof}
+\proof
 By the standard definability result for PCF', there is a \emph{finite} term
 $\overline{x} : \overline{A} \vdash N : B$ such that
 $\sem{\overline{x} :\overline{A} \vdash N : B} = \sigma$. Take
@@ -777,12 +776,25 @@ $M_\sigma$ to be $\etalnf{\betanf{N}}^*$.  We have
 $\sem{\overline{x} : \overline{A} \vdash M_\sigma : B} =
 \sem{\overline{x} :\overline{A} \vdash N : B} = \sigma$ and by
 Theorem  \ref{thm:almostsafeincrejust_pcf}(ii), $M_\sigma$ is
-almost safe. For the second part we just need to take $M'_\sigma$ to be the closure $\lambda \overline{x}. M_\sigma$ of $M_\sigma$.
-\end{proof}
+almost safe. For the second part, take $M'_\sigma$ to be the closure $\lambda \overline{x}. M_\sigma$ of $M_\sigma$.
+\qed
+\smallskip
 
-This result shows that the game model of Safe \pcf\ is \defname{intentionally fully-abstract} (every compact strategy is definable \cite{abramsky94full}). Note however that the proof of this result is not constructive: we know that the term $M_\sigma$ exists but we do not have an algorithm to compute it.
-This is because we rely on dead code-elimination which is undecidable.
+Note that because the argument relies on dead code-elimination, which is undecidable, it does not constitutes a constructive proof: we know that the term $M_\sigma$ exists but we do not have an algorithm to compute it.
+ 
+This result shows that the game model of Safe \pcf\ is \defname{intentionally fully-abstract}: every \emphind{compact} strategies (\ie with finite view function) is definable \cite{abramsky94full}). The property that all denotations in the model are definable, including the recursive ones, is called \defname{universality}. Universality was shown for the game model of \pcf\ \cite{abramsky94full}. The ``trick'' used in the previous proof does not suffice to show universality for safe \pcf. One would need to be slightly more subtle to handle recursion. It is possible to perform dead-code elimination on the infinite term obtained by unfolding the Y-recursion, but the resulting term is a potentially infinite \pcf\ term, and it is not necessarily the unfolding of a ``finite'' \pcf\ term with Y combinators.
 
+One way around this problem would be to use a version of the Correspondence Theorem expressed over a finite syntax representation of the term as described in Sec.\ \ref{sec:finite_pcftrees}, and to perform dead-code elimination on this representation rather than on its unwinding. Although this question is of some interest it is not crucial to our understanding of the game model of safe \pcf, in particular definability will suffice to show full abstraction.
+
+\label{sec:finite_pcftrees}
+It is possible to use a different syntax representation of \pcf\ terms which is finite.   Infinite computation trees are replaced by \emph{finite} computation \emph{graphs}.
+To do that we replace Y-recursion by $\mu$-recursion: each subterm of the form $Y~M$ is replaced by $\mu f. M f$ for $f$ fresh. The computation graphs is then obtained in the standard way from the eta-long normal form of the term. as
+
+term of and each $\mu$-bound variable in the computation tree has its own binder as its first child.  have a children ``back-pointer'' child a in the computation tree, we can obtain a finite description of a \pcf\ term.
+
+
+It is possible to reformulate the Correspondence Theorem in this setting.
+ 
 
 \subsection{Compositionality of P-i.j.\ strategies}
 
@@ -796,22 +808,21 @@ $i\geq 1,l,k\geq 0$.
 
 We tackle the problem syntactically by appealing to the definability result: since $f$ and $g$ are compact innocent, there are two closed safe terms $M_f :(\overline{A},B)$ and $M_g :B \typear C$ in $\eta$-long nf denoted by $f$ and $g$ respectively.
 Composition can be syntactically formulated using the term
- $$ M_{f\fatcompos g} \equiv \lambda \overline{x} . M_g (M_f \overline{x})$$ for some fresh variables $\overline{x} : \overline{A}$,
+ $$ M_{f; g} \equiv \lambda \overline{x} . M_g (M_f \overline{x})$$ for some fresh variables $\overline{x} : \overline{A}$,
  whose denotation is clearly given by $\sem{M_f} ; \sem{M_g} = f; g$.
 
-Observe that the safety of $M_f$ and $M_g$ does not imply that of $M_{f\fatcompos g}$ as the following examples illustrates:
-
+Observe that the safety of $M_f$ and $M_g$ does not imply that of $M_{f; g}$ as the following examples illustrate:
 \begin{example}
 \begin{enumerate}[(i)]
 \item Take $A=o$, $B=(o,o)$, $C=(((o,o),o),o)$, the variables $x,u,v:o$,
 $y:B$ and $\varphi:((o,o),o)$ and the $\Sigma$-constant $a:o$.
 Take the two closed safe terms $M_f \equiv \lambda xv.x : A\typear
 B$ and  $M_g \equiv \lambda y \varphi. \varphi (\lambda u . y a)
-: B\typear C$. The eta-long beta-nf of $M_{f\fatcompos g}$ is $
+: B\typear C$. The eta-long beta-nf of $M_{f; g}$ is $
 \lambda x \varphi. \varphi (\underline{\lambda u . x})$ which is
 unsafe because of the underlined term.
 
-Consequently by Theorem \ref{thm:safeincrejust_lmd}(ii), the strategy $\sem{M_{f\fatcompos g}}=\sem{M_f}
+Consequently by Theorem \ref{thm:safeincrejust_lmd}(ii), the strategy $\sem{M_{f; g}}=\sem{M_f}
 ; \sem{M_g}$ is not P-i.j. This shows that P-i.j.\ strategies do not generally compose. The following diagram illustrates a play that is not P-i.j.:
 \begin{center}
 \begin{tikzpicture}[style={anchor=base}]
@@ -839,28 +850,23 @@ Consequently by Theorem \ref{thm:safeincrejust_lmd}(ii), the strategy $\sem{M_{f
 \item Another counter-example with $\ord{B} = \ord{C}$:
  Let $A=o$, $B=C=(((o,o),o),o)$ and let $x:A$, $y:B$, $u:o$, $v,\varphi:((o,o),o)$
 and $g:(o,o)$ be variables and  $a:o$ be a $\Sigma$-constant. Take the two closed safe terms $M_f \equiv \lambda x v.x$ and $M_g \equiv \lambda y \varphi. \varphi (\lambda u . y (\lambda g. a))$.
-The $\eta\beta$-nf of $M_{f\fatcompos g}$ is $\lambda x \varphi. \varphi (\underline{\lambda u . x})$ which is unsafe because of the underlined term, so
+The $\eta\beta$-nf of $M_{f; g}$ is $\lambda x \varphi. \varphi (\underline{\lambda u . x})$ which is unsafe because of the underlined term, so
 $f; g$ is not P-i.j.
 \end{enumerate}
 \end{example}
 
 
-The term $M_f$ and $M_g$, being in $\eta$-nf, are of the following forms:
-\begin{eqnarray}
-\sentail M_f &\equiv& \lambda x_1^{A_1} \ldots x_i^{A_i} \varphi_1^{B_1} \ldots \varphi_l^{B_l} . N_f^o \label{eq_Mf}\\
-\sentail M_g &\equiv& \lambda y^{ (B_1, \ldots, B_l,o)} \phi_1^{C_1} \ldots \phi_k^{C_k} . N_g^o \label{eq_Mg}
-\end{eqnarray}
-for some distinct variables $x_1, \ldots, x_i$, $y$, $\varphi_1, \dots \varphi_l$, $\phi_1, \dots \phi_k$ and $\eta$-normal terms $N_f$ and $N_g$:
+Since $M_f$ and $M_g$ are in $\eta$-nf, they can be written:
 \begin{eqnarray*}
-x_1:A, \ldots, x_i:A_i, \varphi_1:B_1, \dots, \varphi_l:B_l &\sentail& N_f :o \\
-y: (B_1, \ldots, B_l,o), \phi_1:C_1, \dots, \phi_l:C_l &\sentail& N_g :o
+\sentail M_f &\equiv& \lambda x_1:{A_1} \ldots x_i:A_i\ \varphi_1:B_1 \ldots \varphi_l:B_l . N_f \\
+\sentail M_g &\equiv& \lambda y:(B_1, \ldots, B_l,o)\ \phi_1:C_1 \ldots \phi_k:C_k . N_g 
 \end{eqnarray*}
-
-Substituting Eq.\ \ref{eq_Mf} and \ref{eq_Mg} in $M_{f;g}$ gives:
+for some safe ground-type terms $N_f$ and $N_g$ in $\eta$-nf.
+Substituting these two equations in $M_{f;g}$ gives:
 \begin{align}
 f; g &= \sem{\lambda \overline{x} . (\lambda \phi_1\ldots \phi_k . N_g) [(M_f \overline{x}) / y]} \nonumber \\
 &= \sem{\lambda \overline{x} \phi_1 \dots \phi_k. N_g [(M_f  \overline{x}) / y]}
-& \mbox{(the $x_j$'s and $\phi_j$'s are disjoint).} \label{eq_fcompg}
+& \mbox{(the $x_j$'s and $\phi_j$'s can be chosen to be disjoint).} \label{eq_fcompg}
 \end{align}
 
 Thus by Theorem \ref{thm:almostsafeincrejust_pcf},
@@ -905,8 +911,8 @@ P-i.j.
 \smallskip
 
 Note that this condition is not necessary: Take $A=o$, $B=(o,o)$,
-$C=(o,o)$ and consider the two safe terms $M_f \equiv \lambda x^A u^o.u$
-and $M_g \equiv \lambda y^B . y a$ for  some constant $a:o$. Then we have $M_{f\fatcompos g} =_\beta \lambda x . a$ which is safe hence $f;g$ is P-i.j.\ although $\ord{A} < \ord{B}$.
+$C=(o,o)$ and consider the two safe terms $M_f \equiv \lambda x:A u:o.u$
+and $M_g \equiv \lambda y:B . y a$ for  some constant $a:o$. Then we have $M_{f; g} =_\beta \lambda x . a$ which is safe hence $f;g$ is P-i.j.\ although $\ord{A} < \ord{B}$.
 
 \begin{remark}
 The strategy from this restricted class are called \emphind{closed P-incremental strategies}. They will be studied in depth in Sec.\ \ref{sec:closedpij}.
@@ -918,18 +924,15 @@ The strategy from this restricted class are called \emphind{closed P-incremental
 
 
 \subsection{Towards a fully abstract game model}
+In chapter \ref{chap:gamesem} we have presented the well-known result that the standard game models of PCF is fully abstract 
+\cite{abramsky94full,hylandong_pcf,ni,Nickau:lfcs94}. This means that two \pcf\ terms are obsevationaly equivalent if and only they have the same denotations. Since safe \pcf\ is a fragment of \pcf\, this statement also holds for safe \pcf\ terms: two safe \pcf\ terms are observationaly equivalent \emph{with respect to \pcf\ contexts} (not necessarily safe) if and only if they have the same game denotation.
 
-Since safe \pcf\ is a fragment of \pcf, the standard fully abstract game models of PCF \cite{abramsky94full,hylandong_pcf,ni,Nickau:lfcs94} are also fully
-abstract for safe PCF. One may ask, however,
-whether there exists a fully abstract model with respect to safe
-context only. Such model may be obtain by considering
-P-incrementally justified strategies. It is reasonable to think
-that O-moves also needs to be constrained by a symmetrical
+A natural question to ask is whether there exists a fully abstract model with \emph{respect to safe contexts} only. Since safe \pcf\ terms are denoted by 
+P-incrementally justified strategies, it is reasonable to think
+that O-moves also need to be constrained by a symmetrical
 notion of ``O-incremental justification'' corresponding to the requirement
-that contexts are safe. This question will be addressed in Chapter
+that contexts are safe. The question of full-abstraction of safe \pcf\ will be addressed in Chapter
 \ref{chap:model}.
-
-
 
 
 \section{Safe Idealized Algol}

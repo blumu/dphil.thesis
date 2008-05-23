@@ -51,16 +51,16 @@ We extend the notion of \emph{almost safety} (Sec.\ \ref{sec:almostsafety}) to \
 
 The Substitution Lemma and No-variable-capture Lemma shown for the safe lambda calculus naturally extends to safe \pcf. The small-step semantics of safe \pcf\ is obtained from the one of \pcf\ by replacing $\beta$-reduction by safe $\beta$-reduction (Def.\ \ref{dfn:safereduction}) in the definition of the relation $\rightarrow$.  The Subject Reduction Lemma from the safe lambda calculus implies that the relation $\rightarrow$ preserves safety: Suppose that $M \rightarrow N$, then $\Gamma \sentail M:T$ implies $\Gamma \sentail N:T$. It also preserves almost-safety. Finally, a term is safe if and only if its eta-long normal form is safe.
 
-\subsection*{Remark concerning recursion}
+\subsection{Remark concerning recursion}
 There are many ways to introduce recursion in the syntax of a programming language.
 In its usual presentation, \pcf\ introduces recursion by mean of a set of constants $Y_A$, $A$ ranging over \pcf\ types, incarnating the $Y$-combinator of the lambda calculus. Its syntax is given by the rule \rulenamet{rec} of table \ref{tab:safepcf}. For instance, the addition function can be represented by the \pcf\ term:
-$$ plus \equiv Y (\lambda p\; x\; y. \pcfcond\ x\;y\;(p\ (\pcfpred\ x)\ (\pcfsucc\ y))) \ .$$
+$$ \userop{plus} \equiv Y (\lambda p\; x\; y. \pcfcond\ x\;y\;(p\ (\pcfpred\ x)\ (\pcfsucc\ y))) \ .$$
 Equivalently, we can introduce recursion using the ``least upper bound'' abstractor $\mu$ given by the formation rule
 $$ \rulename{\mu} \rulef{\Gamma, f: A \entail M : A}{\Gamma \entail  \mu f. M: A}$$
 where the semantics of $\mu$ is given by the rule:
 $ \mu f. M \rightarrow M[(\mu f. M)/f]$.
 Using this construct, the addition function can be defined as:
-$$ plus \equiv \mu p . \lambda x y. \pcfcond\ x\;y\;(p\ (\pcfpred\ x)\ (\pcfsucc\ y)) \ .$$
+$$ \userop{plus} \equiv \mu p . \lambda x y. \pcfcond\ x\;y\;(p\ (\pcfpred\ x)\ (\pcfsucc\ y)) \ .$$
 
 Clearly in the context of \pcf, these two definitions are interchangeable:
 $\mu f.M:A$ is equivalent to $Y_A (\lambda f . M)$,
@@ -101,16 +101,39 @@ Performing the substitution capture-permitting causes a clash between the two un
 
 In fact, the same example shows that the game-semantic characterization of safe \pcf\ that we will give in Chapter \ref{chap:model} does not hold for safe $\mu$-\pcf.
 
+\subsection{Syntactic sugar}
 
-\subsection*{Expressive power}
+The integer addition function is definable in safe \pcf\ by the term  \userop{Plus} from the previous section. Equality on integer is also definable by:
+\begin{align*}
+\userop{Eq} = Y \lambda f:\iaexp\typear\iaexp\typear\iaexp\, x:\iaexp\,  y:\iaexp .\  & \pcfcond\ a \\
+&\qquad (\pcfcond\ b\ 1\ 0) \\
+&\qquad (\pcfcond\ b\ 0\ (f\ (\pcfpred\ a)\ (\pcfpred\ b) ))
+\end{align*}
 
-Despite the strong syntactic constraint imposed on the language, the presence of the Y combinator makes it Turing Complete. One way to prove it consist in showing that partial recursive functions can be computed in Safe \pcf. Instead we will show that 
+
+We will use the standard syntactical sugar constructs: For any terms $M$, $N_1$ and $N_2$ of type \iaexp\ we write ``$N_1 = N_2$'' for ``$\userop{Eq}\ N_1\ N_2$''
+ and ``$\sugif M\,\sugthen N_1\,\sugelse N_2$'' for ``$\pcfcond\,M\,N_1\,N_2$''.
+ We will also use the construct 
+ \begin{align*}
+    &   \sugmatch  M\, \sugwith \\
+    &    \qquad\  a_1 \rightarrow N_1 \\   
+    &    \qquad|\, \ldots \\
+    &    \qquad|\, a_q \rightarrow N_q 
+ \end{align*}
+ for distinct integers $a_1,\ldots a_q$, $q\geq 1$,
+ as syntactic sugar for ``$\pcfcase_m\ M\ N'_1 \ldots N'_m$'' where
+ $m =1+\max_{1\leq i\leq q} a_i$ and for $1\leq j\leq m$, $N'_j\equiv N_i$ if $j = a_i$ for some $1\leq i\leq q$  and $N'_j\equiv\Omega$ otherwise.
+
+
+\subsection{Expressive power}
+
+Despite the strong syntactic constraint imposed on the language, the presence of the Y combinator makes the language Turing Complete. One way to prove it is to show that partial recursive functions are computable in safe \pcf. Instead we will show that
 the \textsc{Queue} programming system is encodable in Safe \pcf.
 
 
-\subsection{The queue-halting problem}
+\subsubsection*{The \textsc{Queue}  programming system}
 We fix a finite alphabet $\Sigma = \{ a_1, \ldots, a_p \}$. A \textsc{Queue} program is a finite sequence of instructions that manipulate a queue data-structure.
-A program $P$ is a sequence of $n$ instructions for some $n\in \nat$. For $1 \leq i \leq n$, $P i$ denotes the $i^{\sf th}$ instruction of the sequence $P$. There are four possible kinds of instruction: halting, enqueuing, dequeuing and branching. The set of instructions is formally defined as:
+A program $P$ is a sequence of $n$ instructions for some $n\in \nat$. For $1 \leq i \leq n$, $P\,i$ denotes the $i^{\sf th}$ instruction of the sequence $P$. There are four kinds of instruction: halting, enqueuing, dequeuing and branching. The set of instructions is given by:
 $$ \mathcal{I} = \{ {\tt halt} \} \cup
 \{ {\tt enqueue \ } a \ | \ a \in \Sigma \}
 \cup \{ {\tt dequeue} \} \cup \{ {\tt goto\ } l {\tt\ if\ first =\ } a \ | \ l \in 1..n, a \in \Sigma \}

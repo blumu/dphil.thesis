@@ -24,9 +24,7 @@ form $Y N$ with $Y^n N_n$. We have $\sem{M} = \Union_{n\in\omega}
 
 \subsubsection{Computation tree}
 
-In this section we define the notion of computation tree for \pcf\ terms.
-
-We first extend the inductive definition of computation tree for simply-typed term (Def.\ \ref{dfn:comptree}) to $\pcf_1$ terms by adding the new case:
+In order to define the notion of computation tree for \pcf\ terms, we first extend the inductive definition of computation tree for simply-typed term (Def.\ \ref{dfn:comptree}) to $\pcf_1$ terms by adding the new case:
 $$\tau(\Omega_{(A_1, \ldots, A_n, o)}) =  \lambda x_1:A_1 \ldots x_n:A_n . \bot$$
 where $\bot$ is a special constant representing the non-terminating computation of ground type $\Omega_o$.
 
@@ -50,8 +48,13 @@ $(\tau(M_n))_{n\in\omega}$ is a chain. We can therefore define the
 \defname{computation tree} of a \pcf\ term $M$ to be the least upper-bound of
 the chain of computation trees of its approximants:
 $$\tau(M) = \Union_{n\in\omega}(\tau(M_n))_{n\in\omega}.$$
-In other words, we construct the computation tree by expanding
-ad infinitum any subterm of the form $Y M$.
+In other words, we construct the computation tree by expanding ad infinitum any subterm of the form $Y M$.
+Thus for a term of the form $Y_A F$ with $A=(A_1,\ldots,A_n,o)$, the computation tree is the unique (up to alpha-conversion) infinite tree
+that is solution of the equation:
+\begin{equation}
+\tau(Y_A F) = \lambda \overline{x}: \overline{A} . \tau(F)\ \tau(Y_A F)\ \tau(x_1) \ldots \tau(x_n) \label{eq:pcfcomptree}
+\end{equation}
+where $\overline{x} = x_1 \ldots x_n$ are fresh variables.
 
 We will write $(CT, \sqsubseteq)$ to denote the set of computation
 trees of \pcf\ terms ordered by the approximation ordering $\sqsubseteq$ defined
@@ -59,11 +62,8 @@ above. Clearly $(CT, \sqsubseteq)$ is also a complete partial order.
 \bigskip
 
 \begin{example}
-Take  $M = Y (\lambda f x. f x)$ where $f:(o,o)$ and $x:o$. Its
-computation tree $\tau(M)$, represented below, is a tree
-representation of the $\eta$-normal form of the infinite term
-$(\lambda f x. f x) ((\lambda f x. f x) ((\lambda f x. f x)  (
-\ldots$.
+Take  $M = Y (\lambda f x. f x)$ where $f:(o,o)$ and $x:o$. Its computation tree $\tau(M)$, is the tree
+representation of the $\eta$-normal form of the infinite term $(\lambda f x. f x) ((\lambda f x. f x) ((\lambda f x. f x)  ( \ldots$. It is the unique (up to alpha conversion) solution of the following equation on trees:
 $$\tau(M) =
 \begin{tikzpicture}[level distance=7mm,inner ysep=0.5mm,baseline=(root.base)]
 \node (root) {$\lambda y$}
@@ -134,6 +134,7 @@ $$
 The node labelled $5$ has, like any other node, children
 value-leaves which are not represented on the diagram above for
 simplicity.
+
 
 \subsubsection{Traversal}
 
@@ -303,7 +304,7 @@ we have:
 &= \Union_{n\in\omega} \travset(\tau(M_n))^{\filter \theroot} & (M_n \mbox{ is a $\pcf_1$ term}) \\
 &= \travset(\Union_{n\in\omega} \tau(M_n) )^{\filter \theroot} & (\mbox{by continuity of $\travset(\_)^{\filter \theroot}$, lemma \ref{lem:travred_continuous}}) \\
 &= \travset(\tau(M))^{\filter \theroot} & (\mbox{by definition of } \tau(M)) \\
-&= \travset(M)^{\filter \theroot} & (\mbox{abbreviation}). 
+&= \travset(M)^{\filter \theroot} & (\mbox{abbreviation}).
 \qed
 \end{align*}
 %end of proof
@@ -396,7 +397,7 @@ play is represented below:
 \begin{example}[Conditional]
 \hfill
 
-\pdfsyncstop 
+\pdfsyncstop
 \piccaption[Computation tree of $\lambda x y . \pcfcond\ 1\ x\ y$]{The computation tree of the term $\lambda x y . \pcfcond\ 1\ x\ y$.\label{tree:conditional}}
 \parpic[l]{
 \begin{tikzpicture}[level distance=7mm,inner ysep=0.5mm,baseline=(root.base)]
@@ -474,6 +475,40 @@ is a play of the standard semantics that is obtained by hiding the internal move
 \end{tikzpicture}
 \end{center}
 \end{example}
+
+
+\subsubsection{Finite representation of the computation tree}
+\label{sec:finite_pcftree}
+Due to the presence of the Y combinator, computation trees of \pcf\ terms are potentially infinite.  
+Instead it is possible to give an equivalent finite presentation of the syntax of the term using computation \emph{graphs}. We briefly describe here how can this be achieved.
+
+\newcommand\genlambda{\lambda\kern -0.7ex\lambda}
+
+The idea is to replace Y-recursion by $\mu$-recursion: each subterm of the form $Y_A~M$ is replaced by $\mu f. M f$ for $f$ fresh. The computation graphs is then obtained from the eta-long normal form of the term.
+The abstraction nodes are generalized to take into account $\mu$ binders: an abstraction node is of the form $\genlambda \overline{x}$
+where $\overline{x}$ is a list of $\mu$-bound and $\lambda$-bound variables where the $\mu$-bound variables are in parenthesis to distinguish them from $\lambda$-bound variables.
+
+The computation graph of $Y_A (\lambda f :A. M)$ for
+$A=(A_1,\ldots, A_n,o)$ is then obtained from the syntax representation of $\genlambda (f) x_1 \ldots x_n. \elnf{M}$ by adding a child edge going from each occurrence of the recursion variable $f$ in $\elnf{M}$ to the root $\genlambda (f) x_1 \ldots x_n$.
+
+
+This presentation also accounts for ground type recursion, for instance the computation graph of the \iawhile\ operator of Idealized Algol defined as $\iawhile\ C\ \iado\ I \equiv Y( \lambda f. \pcfcond\ C\ \iaskip\ (\iaseq\ I f))$ is given by the graph of $\genlambda (f) . \pcfcond\ C\ \iaskip\ (\iaseq\ I f)$.
+
+
+The order of a generalized abstraction node is still defined as the order of the term represented by the subtree rooted at this node. In other word, the order of $\genlambda\overline x$ is defined as the order of $\genlambda\overline y$ where $\overline{y}$ is the sublist of $\overline x$  obtained by removing all the recursion variables (those in parenthesis).
+
+Bound variables in a generalized abstraction node $\genlambda \overline{x}$ are numbered as follows: the $i^{th}$ $\lambda$-bound variable in $\overline{x}$ is denoted by $i$ and the $i^{th}$ recursion variable is denoted by $(i)$. The links in a justified sequence of nodes are labelled accordingly.
+
+The notion of traversal can be modified accordingly: 
+All the traversal rules are kept unmodified. The recursion variables in the $\lambda$-nodes are ignored by the rules since such variables are numbered differently from standard variables. In particular, the \rulenamet{Var} rules only applies to non-recursion variables. We only need to add a rule to handle recursion variable: whenever a traversal meets a recursion variable $f$ in the subgraph $\tau(F)$ then instead of acting as if it was a free variable, the traversal jumps to the root of the graph. (Thus with this notion of traversal, a traversal can visit the root multiple times.)
+\begin{center}
+\parbox{0.8\textwidth}{
+\rulenamet{Var_{rec}}
+If  \Pstr[0.6cm]{t' \cdot (n){n} \cdot (l){\genlambda \overline x} \ldots (f-l,50:{(i)}){f_i}} is a traversal for some \emph{recursion} variable $f_i$ bound by $\genlambda\overline x$ then so is \Pstr[0.6cm]{ t' \cdot (n){n} \cdot (l){\genlambda\overline x}  \ldots (f-l,50:{(i)}){f_i} \cdot (letai-f){\genlambda \overline x}}.
+}
+\end{center}
+
+The definition of the mapping $\psi$ from nodes to moves remains consistent with this notion of computation tree, and it can be shown that the game-semantic correspondence still holds.
 
 \subsection{Idealized algol}
 

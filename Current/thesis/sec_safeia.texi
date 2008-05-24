@@ -103,7 +103,7 @@ In fact, the same example shows that the game-semantic characterization of safe 
 
 \subsection{Syntactic sugar}
 
-The integer addition function is definable in safe \pcf\ by the term  \userop{Plus} from the previous section. Equality on integer is also definable by:
+The integer addition function is definable in safe \pcf\ by the term  \userop{Plus} from the previous section. For any integer $k\in\nat$ and term $M:\pcfexp$ we write $M + k$ as syntactic sugar for $\userop{Plus} M\, k$. Equality on integer is also definable by:
 \begin{align*}
 \userop{Eq} = Y \lambda f:\iaexp\typear\iaexp\typear\iaexp\, x:\iaexp\,  y:\iaexp .\  & \pcfcond\ a \\
 &\qquad (\pcfcond\ b\ 1\ 0) \\
@@ -113,45 +113,120 @@ The integer addition function is definable in safe \pcf\ by the term  \userop{Pl
 
 We will use the standard syntactical sugar constructs: For any terms $M$, $N_1$ and $N_2$ of type \iaexp\ we write ``$N_1 = N_2$'' for ``$\userop{Eq}\ N_1\ N_2$''
  and ``$\sugif M\,\sugthen N_1\,\sugelse N_2$'' for ``$\pcfcond\,M\,N_1\,N_2$''.
- We will also use the construct 
+ We will also use the construct
  \begin{align*}
     &   \sugmatch  M\, \sugwith \\
-    &    \qquad\  a_1 \rightarrow N_1 \\   
+    &    \qquad\  a_1 \rightarrow N_1 \\
     &    \qquad|\, \ldots \\
-    &    \qquad|\, a_q \rightarrow N_q 
+    &    \qquad|\, a_q \rightarrow N_q \\
+    &    \qquad|\, \_ \rightarrow R
  \end{align*}
  for distinct integers $a_1,\ldots a_q$, $q\geq 1$,
  as syntactic sugar for ``$\pcfcase_m\ M\ N'_1 \ldots N'_m$'' where
- $m =1+\max_{1\leq i\leq q} a_i$ and for $1\leq j\leq m$, $N'_j\equiv N_i$ if $j = a_i$ for some $1\leq i\leq q$  and $N'_j\equiv\Omega$ otherwise.
+ $m =1+\max_{1\leq i\leq q} a_i$ and for $1\leq j\leq m$, $N'_j\equiv N_i$ if $j = a_i$ for some $1\leq i\leq q$  and $N'_j\equiv R$ otherwise. Recall (Sec.\ \ref{sec:pcfdefinability}) that $\pcfcase_m$ is itself syntactic sugar for nested conditionals.
 
+\subsection{Expressivity}
 
-\subsection{Expressive power}
+In the lambda calculus, the safety condition significantly limits the expressivity of the language. The conditional over Church numerals, for instance, is not definable in the safe lambda calculus. In safe \pcf\, since the arithmetic constructs are built in the language, the conditional operator comes for free. In fact, despite the strong syntactic constraint imposed on the language, the presence of recursion gives safe \pcf\ the computational power of a full-fledged Turing complete language.
 
-Despite the strong syntactic constraint imposed on the language, the presence of the Y combinator makes the language Turing Complete. One way to prove it is to show that partial recursive functions are computable in safe \pcf. Instead we will show that
-the \textsc{Queue} programming system is encodable in Safe \pcf.
-
+We first show that termination of safe \pcf\ term is not decidable by a reduction from the \textsc{Queue-Halting} problem.
 
 \subsubsection*{The \textsc{Queue}  programming system}
-We fix a finite alphabet $\Sigma = \{ a_1, \ldots, a_p \}$. A \textsc{Queue} program is a finite sequence of instructions that manipulate a queue data-structure.
-A program $P$ is a sequence of $n$ instructions for some $n\in \nat$. For $1 \leq i \leq n$, $P\,i$ denotes the $i^{\sf th}$ instruction of the sequence $P$. There are four kinds of instruction: halting, enqueuing, dequeuing and branching. The set of instructions is given by:
+We fix a finite alphabet $\Sigma = \{ a_1, \ldots, a_p \}$. A \textsc{Queue} program is a finite sequence of instructions that manipulate a FIFO (First In First Out) queue data-structure.
+A program $P$ is a sequence of $n$ instructions for some $n\in \nat$. For $1 \leq i \leq n$ we write $P.i$ to denote the $i^{\sf th}$ instruction of $P$. There are four kinds of instruction: halting, enqueuing, dequeuing and branching. The set of instructions is given by:
 $$ \mathcal{I} = \{ {\tt halt} \} \cup
 \{ {\tt enqueue \ } a \ | \ a \in \Sigma \}
 \cup \{ {\tt dequeue} \} \cup \{ {\tt goto\ } l {\tt\ if\ first =\ } a \ | \ l \in 1..n, a \in \Sigma \}
  $$
 
 
-The operational semantics is described using a set of states $ \{ \eop \} \cup \{ 1,..,n \} \times \Sigma^* $. The state $\eop$ corresponds to the final state at which the program stops. A state of the form $(i,x) \in \{ 1,..,n \} \times \Sigma^*$ indicates that the queue's content is given by the sequence $x$ and that the next instruction to be executed by the machine is $P i$. The empty queue is denoted by $\epsilon$ and for any sequence $x \in \Sigma^*$, the first element of $x$ corresponds to the element that has been \emph{first} enqueued (i.e. the queue is fed at the right-end side and consumed at the left-end side). The rules defining the operational semantics are:
+The operational semantics is described using a set of states $ \{ {\sf halted} \} \cup \{ 1,..,n \} \times \Sigma^* $. The end-of-program state ${\sf halted}$ corresponds to the final state reach when the program terminates. A state of the form $(i,x) \in \{ 1,..,n \} \times \Sigma^*$ indicates that the queue's content is given by the sequence $x$ and that the next instruction to be executed by the machine is $P.i$. The empty queue is represented by the empty sequence $\epsilon$, and for any sequence $x \in \Sigma^*$, the first element of $x$ corresponds to the element that has been \emph{first} enqueued (\ie the queue is fed at the right-end side and consumed at the left-end side). The operational semantics is defined by the following rules:
 \begin{eqnarray*}
-(i,x) \mbox{ with } P i = {\tt halt} &\longrightarrow& \eop \\
-(i,x) \mbox{ with } P i = {\tt enqueue\ } a &\longrightarrow& (i+1,x \cdot a) \\
-(i,\epsilon) \mbox{ with } P i = {\tt dequeue } &\longrightarrow& \eop \\
-(i,a \cdot x) \mbox{ with } P i = {\tt dequeue } &\longrightarrow& (i+1,x) \\
-(i,\epsilon) \mbox{ with } P i =  {\tt goto\ } l {\tt\ if\ first =\ } a &\longrightarrow& (i+1,\epsilon) \\
-(i,b \cdot x) \mbox{ with } a \neq b \mbox{ and } P i =  {\tt goto\ } l {\tt\ if\ first =\ } a &\longrightarrow& (i+1,b \cdot x) \\
-(i,a \cdot x) \mbox{ with } P i =  {\tt goto\ } l {\tt\ if\ first =\ } a &\longrightarrow& (l,a \cdot x)
+(i,x) \mbox{ with } P.i = {\tt halt} &\rightarrow& {\sf halted} \\
+(i,x) \mbox{ with } P.i = {\tt enqueue\ } a &\rightarrow& (i+1,x \cdot a) \\
+(i,\epsilon) \mbox{ with } P.i = {\tt dequeue } &\rightarrow& {\sf halted} \\
+(i,a \cdot x) \mbox{ with } P.i = {\tt dequeue } &\rightarrow& (i+1,x) \\
+(i,\epsilon) \mbox{ with } P.i =  {\tt goto\ } l {\tt\ if\ first =\ } a &\rightarrow& (i+1,\epsilon) \\
+(i,b \cdot x) \mbox{ with } a \neq b \mbox{ and } P.i =  {\tt goto\ } l {\tt\ if\ first =\ } a &\rightarrow& (i+1,b \cdot x) \\
+(i,a \cdot x) \mbox{ with } P.i =  {\tt goto\ } l {\tt\ if\ first =\ } a &\rightarrow& (l,a \cdot x)
 \end{eqnarray*}
+We write $\rightarrow^*$ to denote the reflexive transitive closure of $\rightarrow$.
 
-The \textsc{Queue} programming system is Turing Complete. This is because Post's Tag Systems can be simulated \cite{Minsky67} in \textsc{Queue}, and can simulate Turing machines \cite{Minsky64}. Consequently, the \textsc{Queue-Halting} problem (``Given a queue program, will it halt eventually?'') is undecidable.
+The \textsc{Queue-Halting} problem  (``Given a \textsc{Queue} program, will it halt eventually?'') is undecidable. This is because Post's Tag Systems, which are Turing complete\cite{Minsky64}, can be simulated \cite{Minsky67} in \textsc{Queue}.
+
+
+\subsubsection*{Encoding \textsc{Queue-Halting} in safe \pcf}
+
+Given a \textsc{Queue} program $P$ with $n$ instructions, we construct a safe \pcf\ term $\sentail M_P : \pcfexp$ that simulates $P$ in the sense that $P \Downarrow$ if and only if $M_P \rightarrow^* {\sf halted}$.
+
+We fix a distinguished element $\bot$ denoting the end of the queue. Let $\Sigma^\bot = \Sigma \cup \{ \bot \}$. The queue content $s \in \Sigma^*$ is identified with the infinite sequence $s \bot^\omega \in \Sigma^\omega$. We assume that an injective encoding function $\Sigma^\bot \longrightarrow \nat$ is given. For instance take $\encode{\bot} = 0$ and $\encode{a_k} = k$ for $1 \leq k \leq p$.
+%\begin{eqnarray*}
+%\encode{\_} : \Sigma^\bot &\longrightarrow& \{0..p\} \\
+% \bot &\mapsto& 0 \\
+% a_k &\mapsto& k \ , \mbox{for } 1 \leq k \leq p \ .
+%\end{eqnarray*}
+
+We say that a $\pcf$ term $M$ \emph{computes} the queue content $s$ if and only if $M\, k \eval \encode{s_k}$ for all $k\in \nat$.
+For any queue-content $s \in \Sigma^*$ we define the safe \pcf\ term
+\begin{eqnarray*}
+\sentail \encode{s} \equiv \lambda i:\pcfexp . \sugmatch  i\, \sugwith
+               0 \rightarrow \encode{ s_0 }
+\ | \ldots  |\ n \rightarrow \encode{ s_{|s|-1} }\ |\ \_\ \rightarrow \encode{\bot}
+: \pcfexp\typear\pcfexp
+\end{eqnarray*}
+which clearly computes $s$. The length $|s|$ of the queue can then by computed by the term
+\begin{align*}
+\sentail \userop{length}  \equiv &\ Y( \lambda f:\pcfexp\typear(\pcfexp\typear\pcfexp)\typear\pcfexp\ k:\pcfexp\ x:\pcfexp\typear\pcfexp\ . \\
+&\qquad\qquad  \sugif x\, k = \encode{\bot} \sugthen k\ \sugelse f\, (k+1)\, x) \ 0 : (\pcfexp\typear\pcfexp)\typear\pcfexp
+\end{align*}
+verifying $\userop{length}\ \encode{s} \eval |s|$ for all $s\in\Sigma^*$.
+
+Each instruction $c$ of $\mathcal{I}$ is encoded into a unique natural number $\encode{c}$ by some function $\mathcal{I} \rightarrow \nat$. For instance we can use the following injection: for $1 \leq i \leq p, 1 \leq l \leq n$,
+\begin{center}
+\begin{tabular}{c|c|c|c|c}
+$c \in \mathcal{I}$ & {\tt halt} & {\tt dequeue } & {\tt enqueue} $a_i$ &  {\tt goto} l {\tt if first=} $a_i$ \\ \hline
+$\encode{ c } \in \nat$ & $0$ & $1$ & $1+i$ & $1+p + n.l +i$ \\
+\end{tabular}
+\end{center}
+
+The \textsc{Queue} program $P$ is then represented by the safe \pcf\ term:
+\begin{equation*}
+\sentail \encode{P} \equiv \lambda i :\pcfexp .  \sugmatch i\, \sugwith
+   0 \rightarrow \encode{ P.0 }
+  \ | \ldots \ |\ n \rightarrow \encode{ P.n }  |\ \_ \rightarrow \encode{\tt halt} : \pcfexp\typear\pcfexp
+\end{equation*}
+so that for all $i\in\nat$, $\encode{P}\, i$ evaluates to the encoding of the $i^{th}$ instruction of $P$. The following term defines an interpreter for \textsc{Queue}-programs given in ``compiled'' form $\encode{P}$:
+\begin{align*}
+\sentail \userop{Sim} \equiv & Y ( \lambda f : (\pcfexp,(\pcfexp,\pcfexp),\pcfexp)\ i:\pcfexp \ x:(\pcfexp,\pcfexp) . \\
+& \sugmatch\ \encode{P}\, i\ \sugwith\\
+& \begin{array}{lcl}
+\ \ \encode{\tt halt }&\rightarrow& 0 \\
+|\ \encode{\tt dequeue} &\rightarrow& f (i+1) (\lambda j:\pcfexp . x (j+1) ) \\
+|\ \encode{{\tt enqueue}\ a_1}  &\rightarrow& f (i+1) ( \lambda j:\pcfexp . \sugif j = \userop{length}\ x\, \sugthen \encode{a_1}\ \sugelse x\, j ) \\
+ \ldots \\
+|\ \encode{{\tt enqueue}\ a_p} &\rightarrow& f (i+1) ( \lambda j:\pcfexp . \sugif j = \userop{length}\ x\, \sugthen \encode{a_p}\ \sugelse x\, j ) \\
+|\ \encode{ {\tt goto\ } l {\tt\ if\ first=\ } a_1 } &\rightarrow&
+\sugif \userop{length}\ x = 0\ \sugthen f\, (i+1)\, x \\
+&&\sugelse\sugif\encode{a_1} = x\, 0\ \sugthen f\, l\, x \\
+&&\sugelse\ f\, (i+1)\, x \\
+ \ldots \\
+|\ \encode{{\tt goto\ } l {\tt\ if\ first=\ } a_p} &\rightarrow&
+\sugif \userop{length}\ x = 0\ \sugthen f\, (i+1)\, x \\
+&&\sugelse\sugif\encode{a_p} = x\, 0\ \sugthen f\, l\, x \\
+&&\sugelse f\, (i+1)\, x
+\end{array}
+ \\
+& )\ 0\ \encode{\epsilon} : \pcfexp
+\end{align*}
+
+Clearly the term $\userop{Sim}$ is safe and simulates the \textsc{Queue} program $P$ in the sense that $\userop{Sim} \eval$ if and only if $P \rightarrow^* {\sf halted}$. Hence
+\begin{theorem}
+  The \textsc{Halting} problem for (the 2nd order fragment of) safe \pcf\ is undecidable.
+\end{theorem}
+Since the \textsc{Halting} is reducible to the observational equivalence problem, this also implies that observational equivalence for the 2nd-order fragment of safe $\pcf$ (with $Y_1$ recursion and unbounded base types) is undecidable. This result is in fact not surprising: it is not difficult to see that the partial recursive functions are computable in the order $2$ fragment of safe \pcf, and hence safe \pcf\ is Turing complete. (This can also be proved by simulating Turing machines in safe \pcf\ using an encoding similar to the one used above.)
+
+The reason why these encoding work is because unsafety only appears at order $3$ in \pcf, and the 2nd order fragment of \pcf\ is already Turing complete.
+
 
 \section{Safe Idealized Algol}
 
@@ -422,3 +497,9 @@ The small-step reduction semantics of safe IA is defined similarly as in Sec.\ \
 $M \rightarrow N$, where $\rightarrow$ denotes the small-step reduction of safe \ialgol, then $N$ is also a safe term.
 \end{lemma}
 The proof is by an easy induction.
+
+
+
+\section{Conclusion}
+
+\notetoself{conclusion of the chapter on safe lambda calculus} 

@@ -603,6 +603,233 @@ Since the next move is determined by the P-view, an innocent strategy induces a 
 rise to an innocent strategy, however. A sufficient condition is given in
 \cite{hylandong_pcf}.
 
+
+\subsection{On the necessity of justification pointers}
+\label{subsec:pointer_necessary}
+
+For any legal justified sequence of moves $s$, we write $?(s)$ for
+the subsequence of $s$ obtained by keeping only the unanswered
+questions in $s$. It is easy to check that if $s$ satisfies
+alternation then $?(s)$ also satisfies alternation.
+
+\begin{lemma}
+  If $s\cdot q$ is a legal position (\ie justified sequence satisfying visibility and alternation) satisfying well-bracketing where $q$ is a non-initial question then $q$ points in $?(s)$.
+\end{lemma}
+\begin{proof}
+    By induction on the length of $s \cdot q$. The base case $s=\epsilon$ is trivial.
+    Let $s = s\cdot q$, where $q$ is not initial.
+
+    Suppose $q$ is a P-move. We prove that $q$ cannot point to an O-question that has been answered.
+    Suppose that an O-move $q'$ occurs before $q$ and is answered by the move $a$ also occurring before $q$.
+    Then we have $s = s_1 \cdot q'^O \cdot s_2 \cdot a^P \cdot s_3 \cdot q^P$ where $a$ is justified by $q'$.
+    $a$ is not in the P-view $\pview{s_{<q}}$. Indeed this would imply that some O-move occurring in $s_3$ points to $a$, but this is impossible
+    since answer moves are not enablers. Hence the move $a$ must be situated underneath an O-to-P link. Let us note $m$ the origin of this link,
+    the P-view of $s$ has the following form: $\pview{s} = \pview{s_1\cdot q'^O \cdot s_2 \cdot a^P \ldots m^O} \ldots q^P$ where $m$ is an O-move pointing before $a$.
+
+    If $m$ is an answer move then it must point to the last unanswered move -- that is to say the last move in $?(s_{<m})$.
+    If $m$ is a question move then it is not initial since there is a link going from $m$. Therefore by the induction hypothesis, $m$ must point
+    to a move in $?(s_{<m})$.
+
+    Since $s$ is well bracketed, all the questions in the segment $q'\ldots a$ are answered.
+    Therefore since $m$ points to an unanswered question occurring before $a$, $m$ must
+    point to a move occurring strictly before $q'$. Consequently $q'$ does not occur in the P-view $\pview{s}$.
+    By visibility, $q$ must point in the P-view $\pview{s}$ therefore $q$ does not point to $q'$.
+
+    A similar argument holds if $q$ is an O-move.
+\end{proof}
+
+This means that in a well-bracketed legal position $s\cdot m$ where
+$m$ is not initial, $m$'s justifier is a question occurring in
+$?(s)$. Also if $m$ is an answer then its justifier is precisely the
+\emph{last} question in $?(s)$. Furthermore, if $m$ is a P-move then
+by visibility it should point to an unanswered question in
+$\pview{m}$ therefore it should also point in $?(\pview{m})$.
+Similarly, if $m$ is a non initial O-move then it points in
+$?(\oview{m})$.
+
+\begin{lemma}
+\label{lem:views_and_questionmarkfilter} Let $s$ be a legal
+well-bracketed position.
+\begin{enumerate}[(i)]
+\item If $s=\epsilon$ or if the last move in $s$ is not a P-answer then $?(\pview{s}) = \pview{?(s)}$;
+\item If $s=\epsilon$ or if the last move in $s$ is not an O-answer then $?(\oview{s}) = \oview{?(s)}$.
+\end{enumerate}
+\end{lemma}
+\begin{proof}
+(i) By induction on the length of $s$. The base case is trivial.
+Step case: suppose that $s \cdot m$ is a legal well-bracketed position.
+
+If $m$ is an initial O-question then $?(\pview{s \cdot m}) = ?(m) = m = \pview{?(s) \cdot m} = \pview{?(s \cdot m)}$.
+
+If $m$ is a non initial O-question then
+$s \cdot m^O = s' \cdot q^P \cdot s'' \cdot m^O$ where $m$ is justified by $q$.
+We have $?(\pview{s}) = ?(\pview{s'} \cdot q \cdot  m) = ?(\pview{s'}) \cdot q \cdot m$.
+If $s'$ is not empty then its last move must be an O-move (by alternation), therefore by the induction hypothesis
+$?(\pview{s'})= ?(\pview{?(s')})$.
+By the previous lemma, the move $m$ must point in $?(s)$ therefore we have
+$?(s \cdot m) = ?(s') \cdot q^P \cdot u \cdot m^O$ for some sequence $u$. And therefore
+$\pview{?(s \cdot m)} = \pview{?(s')} \cdot q^P \cdot m^O$.
+
+If $m$ is an O-answer then $s \cdot m = s' \cdot q^P \cdot s'' \cdot m^O$ where $m$ is justified by $q$.
+Then $?(\pview{s\cdot m}) = ?(\pview{s'} q a) = ?(\pview{s'})$.
+Moreover since $s$ is well-bracketed, we have $?(s) = ?(s')$.
+Again the induction hypothesis permits us to conclude.
+
+If $m$ is a P-question then $\pview{s \cdot m} = \pview{s} \cdot m$
+and $?(\pview{s \cdot m}) = ?(\pview{s}) \cdot m$. Moreover
+$\pview{?(s \cdot m)} = \pview{?(s) \cdot m} = \pview{?(s)} \cdot
+m$. By alternation if $s$ is not empty it must end with an O-move
+and the induction hypothesis permits us to conclude.
+
+
+(ii) The argument is similar to (i).
+\end{proof}
+
+Note that in (i) and (ii), it is important that $s$
+does not end with a P-answer. For instance consider the legal
+position
+    $$\Pstr{s = (q0){q_0^O} \  (q1-q0){q_1^P} \ (q2-q1){q_2^O} \  (q3-q2){q_3^P} \ (q4-q1){q_4^O}
+    (a-q4){a^P} }$$
+ ending with a P-answer. We have $\pview{?(s)} =
+\pview{q_0 \cdot q_1 \cdot q_2 \cdot q_3} = q_0 \cdot q_1 \cdot q_2
+\cdot q_3$ but $?(\pview{s}) = ?(q_0 \cdot q_1 \cdot q_4 \cdot a) =
+q_0 \cdot q_1 \cdot q_4$.
+\bigskip
+
+
+By the previous remark and lemma we obtain the following corollary:
+\begin{corollary}
+\label{cor:pendingview}
+Let $s \cdot m$ be a legal well-bracketed position.
+\begin{enumerate}
+\item If $m$ is a P-move then it points in $?(\pview{s}) = \pview{?(s)}$;
+\item if $m$ is a non initial O-move then it points in $?(\oview{s}) = \oview{?(s)}$.
+\end{enumerate}
+
+\end{corollary}
+
+
+
+The height of a move $m$ is the length of the longest sequence of moves
+$m \ldots m_h$ in $M$ such that $m \vdash m_2 \vdash \ldots \vdash m_h$.
+The order of a move $m$ written $\ord{M}$ is defined to be its height minus two.
+The order of an arena $\langle M, \lambda, \vdash \rangle$ is $\max_{m \in M} \ord{m}$.
+
+We make the assumption that each question move in the arena enables at least one answer move. Consequently, moves of order $0$ can only enable answer moves.
+
+\begin{lemma}[Pointers are superfluous up to order 2]
+\label{lem:ptr_superfluous_atorder2} Let $A$ be an arena of order at
+most 2. Let $s$ be a justified sequence of moves in the arena $A$
+satisfying
+ alternation, visibility, well-openedness and well-bracketing then
+the pointers of the sequence $s$ can be reconstructed uniquely from
+the underlying sequence of moves.
+\end{lemma}
+
+\begin{proof}
+Let $A$ be an arena of order $2$ at most.
+The case where $A$ is a DAG with multiple roots can be reduced to the single root case as follows:
+since the justified sequence that we consider are well-opened, the first move in $s$ denoted by $m_0$ is the only initial move in the sequence.
+$m_0$ must be the root of some sub-arena $A'$ of $A$. Hence we just need to consider the arena $A'$ instead of $A$ and treat $s$ as a play
+of $A'$ instead of $A$. We now assume that $A$ has a single root denoted by $q_0$.
+
+Let $s$ be a legal well-bracketed position in $L_A$.
+Note that since $A$ is of order $2$ at most, all the moves in $s$ except $q_0$ are of order $1$ at most.
+
+We prove by induction on the length of $s$ that $?(s)$
+corresponds to one of the case 0, A, B, C or D shown on the table below, and that the pointers in
+$s$ can be recovered uniquely.
+
+Let $L$ denote the language $L = \{\ p q \ | \ q_0 \vdash p \vdash q
+\wedge \ord{p}=1 \wedge \ord{q} = 0 \}$.
+\begin{center}
+\begin{tabular}{c|c|l|l}
+Case & $\lambda_{OP}(m)$ & $?(s) \in$ & where... \\ \hline
+0 & O & $\{ \epsilon \}$ \\
+A & P & $q_0$ \\
+B & O & $q_0 \cdot L^* \cdot p$     & $q_0 \vdash p \quad \wedge\quad  \ord{p}=1$ \\ % $j \in I_1$ \\
+C & P & $q_0 \cdot L^* \cdot p q$ & $q_0 \vdash p \vdash q \quad \wedge\quad  \ord{p}=1 \quad \wedge\quad  \ord{q} = 0$ \\ % $j \in I_1$ \\
+D & O & $q_0 \cdot L^* \cdot q$      & $q_0 \vdash q \quad \wedge\quad  \ord{q} = 0$ \\ % $i \in I_0$
+\end{tabular}
+\end{center}
+
+
+\noindent \textbf{Base cases:}
+If $s$ is the empty sequence $\epsilon$ then there is no pointer to
+recover and $s$ corresponds to case 0.
+If $s$ is a singleton then it must be the initial question $q_0$, therefore
+there is no pointer to recover. This corresponds to case A.
+
+\noindent \textbf{Step case:}
+If $s = u \cdot m$ for some non empty legal well-bracketed position $u$ and move $m \in M_A$
+then by the induction hypothesis the pointers in $u$ can all be recovered and $u$ corresponds to one of the
+cases 0, A, B, C or D.
+We proceed by case analysis:
+\begin{asparadesc}
+\item[case 0] $?(u) = \epsilon$. By corollary \ref{cor:pendingview}, $m$ points in $\pview{?(u)} = \epsilon$.
+                Hence this case is impossible.
+
+\item[case A] $?(u) = q_0$ and the last move $m$ is played by P.
+    By corollary \ref{cor:pendingview}, $m$ points to $q_0$.
+
+    If $m$ is an answer to the initial question $q_0$ then
+    $s$ is a complete play and $?(s) = \epsilon$, which corresponds to case 0.
+
+    If $m$ is a first order question then $?(s)= q_0 p$ and it is O's turn to play after $s$ therefore $s$ falls into category B.
+
+    If $m$ is an order 0 question then $s$ falls into category D.
+
+\item[case B] $?(u) \in q_0 \cdot L^* \cdot p$ where $\ord{p} = 1$ and $m$ is an O-move.
+
+By corollary \ref{cor:pendingview}, $m$ points in $\pview{?(u)} = q_0 p$. Since $m$ is an O-move it can only point to $p$.
+
+If $m$ is an answer to $p$ then $?(s) = ?(u \cdot m) \in q_0 \cdot L^*$ which is covered by case A and C.
+If $m$ is an order 0 question pointing to $p$ then we have $?(s) = ?(u) \cdot m \in q_0 \cdot L^* \cdot p m$ and $s$ falls into category C.
+
+
+\item[case C] $?(u) \in q_0 \cdot L^* \cdot p q$ where $\ord{p} = 1$, $\ord{q} = 0$, $q_0$ justifies $p$, $p$ justifies $q$
+                 and $m$ is played by $P$.
+
+Suppose that $m$ is an answer, then the well-bracketing condition imposes
+$q$ to be answered first. The move $m$ therefore points to $q$ and we have $?(s) = ?(u \cdot m) \in  q_0 \cdot L^* \cdot p$. This corresponds to case B.
+
+Suppose that $m$ is a question. $m$ is a P-move therefore is cannot be justified by $p$.
+It cannot be justified by $q$ either because $q$ is an order $0$ question and therefore enables answer moves only.
+Similarly $m$ is not justified by any move in $L^*$.
+Hence $m$ must point to the initial question $q_0$.
+There are two sub-cases, either $m$ is an order $0$ move and then $s$ falls into category D
+or $m$ is an order $1$ move and $s$ falls into category B.
+
+
+\item[case D] $?(u) \in q_0 \cdot L^* \cdot q$ where $\ord{q} = 0$ and $m$ is played by $O$.
+
+Again by corollary \ref{cor:pendingview}, $m$ points in $\oview{?(u)} = q_0 q$. Since $m$ is a P-move it can only point to $q$.
+Since $q$ is of order 0, it only enables answer moves therefore $m$ is an answer to $q$.
+Hence $?(s) = ?(u\cdot m) \in q_0 \cdot L^* $ and $s$ falls either into category A or C.
+
+\end{asparadesc}
+
+This completes the induction.
+\end{proof}
+
+
+As Lemma \ref{lem:ptr_superfluous_atorder2} shows, for game of order 2,
+the plays of a  strategy are entirely determined by underlying
+pointer-less sequence of moves. At level 3, however, eliminating pointers causes ambiguity.
+Take for instance the game $((\nat^1
+\typear \nat^2) \typear \nat^3) \typear \nat^4$ where the superscripts identify the game components. Take the sequence of moves $s = q^4 q^3 q^2 q^3 q^2 q^1$ where the superscripts indicate
+the component of the game in which each move is played. What are the possible plays
+whose underlying sequence of moves is $s$? The visibility condition imposes a unique way
+to assign pointers to the first five moves of $s$:
+$$s = \Pstr[0.4cm]{ (q4){q^4}\ (q3-q4){q^3}\ (q2-q3){q^2}\
+(q3b-q4){q^3}\ (q2b-q3b){q^2}\ (q1){q^1} }$$ But there is
+an ambiguity for the last move: it is either justified by the first
+or the second occurrence of $q^2$. The visibility condition does not
+eliminate this ambiguity since both occurrences of $q^2$ appear in
+the P-view at that point ($\pview{s} = s$). These two possibilities correspond to two
+different strategies for the player P.
+
+
 \subsection{Categorical interpretation}
 
 In this section we recall some results about the categorical
@@ -762,231 +989,6 @@ category is written $\bf C/\lesssim$ where $\bf C$ ranges over $\{
 \mathcal{C}_i, \mathcal{C}_i, \mathcal{C}_b, \mathcal{C}_{ib} \}$.
 
 The full abstraction of the game semantic model of \pcf\ will be stated in the quotiented category $\mathcal{C}_{ib}/\lesssim$ rather than  $\mathcal{C}_{ib}$.
-
-\subsection{On the necessity of justification pointers}
-\label{subsec:pointer_necessary}
-
-For any legal justified sequence of moves $s$, we write $?(s)$ for
-the subsequence of $s$ obtained by keeping only the unanswered
-questions in $s$. It is easy to check that if $s$ satisfies
-alternation then $?(s)$ also satisfies alternation.
-
-\begin{lemma}
-  If $s\cdot q$ is a legal position (\ie justified sequence satisfying visibility and alternation) satisfying well-bracketing where $q$ is a non-initial question then $q$ points in $?(s)$.
-\end{lemma}
-\begin{proof}
-    By induction on the length of $s \cdot q$. The base case $s=\epsilon$ is trivial.
-    Let $s = s\cdot q$, where $q$ is not initial.
-
-    Suppose $q$ is a P-move. We prove that $q$ cannot point to an O-question that has been answered.
-    Suppose that an O-move $q'$ occurs before $q$ and is answered by the move $a$ also occurring before $q$.
-    Then we have $s = s_1 \cdot q'^O \cdot s_2 \cdot a^P \cdot s_3 \cdot q^P$ where $a$ is justified by $q'$.
-    $a$ is not in the P-view $\pview{s_{<q}}$. Indeed this would imply that some O-move occurring in $s_3$ points to $a$, but this is impossible
-    since answer moves are not enablers. Hence the move $a$ must be situated underneath an O-to-P link. Let us note $m$ the origin of this link,
-    the P-view of $s$ has the following form: $\pview{s} = \pview{s_1\cdot q'^O \cdot s_2 \cdot a^P \ldots m^O} \ldots q^P$ where $m$ is an O-move pointing before $a$.
-
-    If $m$ is an answer move then it must point to the last unanswered move -- that is to say the last move in $?(s_{<m})$.
-    If $m$ is a question move then it is not initial since there is a link going from $m$. Therefore by the induction hypothesis, $m$ must point
-    to a move in $?(s_{<m})$.
-
-    Since $s$ is well bracketed, all the questions in the segment $q'\ldots a$ are answered.
-    Therefore since $m$ points to an unanswered question occurring before $a$, $m$ must
-    point to a move occurring strictly before $q'$. Consequently $q'$ does not occur in the P-view $\pview{s}$.
-    By visibility, $q$ must point in the P-view $\pview{s}$ therefore $q$ does not point to $q'$.
-
-    A similar argument holds if $q$ is an O-move.
-\end{proof}
-
-This means that in a well-bracketed legal position $s\cdot m$ where
-$m$ is not initial, $m$'s justifier is a question occurring in
-$?(s)$. Also if $m$ is an answer then its justifier is precisely the
-\emph{last} question in $?(s)$. Furthermore, if $m$ is a P-move then
-by visibility it should point to an unanswered question in
-$\pview{m}$ therefore it should also point in $?(\pview{m})$.
-Similarly, if $m$ is a non initial O-move then it points in
-$?(\oview{m})$.
-
-\begin{lemma}
-\label{lem:views_and_questionmarkfilter} Let $s$ be a legal
-well-bracketed position.
-\begin{enumerate}[(i)]
-\item If $s=\epsilon$ or if the last move in $s$ is not a P-answer then $?(\pview{s}) = \pview{?(s)}$;
-\item If $s=\epsilon$ or if the last move in $s$ is not an O-answer then $?(\oview{s}) = \oview{?(s)}$.
-\end{enumerate}
-\end{lemma}
-\begin{proof}
-(i) By induction on the length of $s$. The base case is trivial.
-Step case: suppose that $s \cdot m$ is a legal well-bracketed position.
-
-If $m$ is an initial O-question then $?(\pview{s \cdot m}) = ?(m) = m = \pview{?(s) \cdot m} = \pview{?(s \cdot m)}$.
-
-If $m$ is a non initial O-question then
-$s \cdot m^O = s' \cdot q^P \cdot s'' \cdot m^O$ where $m$ is justified by $q$.
-We have $?(\pview{s}) = ?(\pview{s'} \cdot q \cdot  m) = ?(\pview{s'}) \cdot q \cdot m$.
-If $s'$ is not empty then its last move must be an O-move (by alternation), therefore by the induction hypothesis
-$?(\pview{s'})= ?(\pview{?(s')})$.
-By the previous lemma, the move $m$ must point in $?(s)$ therefore we have
-$?(s \cdot m) = ?(s') \cdot q^P \cdot u \cdot m^O$ for some sequence $u$. And therefore
-$\pview{?(s \cdot m)} = \pview{?(s')} \cdot q^P \cdot m^O$.
-
-If $m$ is an O-answer then $s \cdot m = s' \cdot q^P \cdot s'' \cdot m^O$ where $m$ is justified by $q$.
-Then $?(\pview{s\cdot m}) = ?(\pview{s'} q a) = ?(\pview{s'})$.
-Moreover since $s$ is well-bracketed, we have $?(s) = ?(s')$.
-Again the induction hypothesis permits us to conclude.
-
-If $m$ is a P-question then $\pview{s \cdot m} = \pview{s} \cdot m$
-and $?(\pview{s \cdot m}) = ?(\pview{s}) \cdot m$. Moreover
-$\pview{?(s \cdot m)} = \pview{?(s) \cdot m} = \pview{?(s)} \cdot
-m$. By alternation if $s$ is not empty it must end with an O-move
-and the induction hypothesis permits us to conclude.
-
-
-(ii) The argument is similar to (i).
-\end{proof}
-
-Note that in (i) and (ii), it is important that $s$
-does not end with a P-answer. For instance consider the legal
-position
-    $$\Pstr{s = (q0){q_0^O} \  (q1-q0){q_1^P} \ (q2-q1){q_2^O} \  (q3-q2){q_3^P} \ (q4-q1){q_4^O}
-    (a-q4){a^P} }$$
- ending with a P-answer. We have $\pview{?(s)} =
-\pview{q_0 \cdot q_1 \cdot q_2 \cdot q_3} = q_0 \cdot q_1 \cdot q_2
-\cdot q_3$ but $?(\pview{s}) = ?(q_0 \cdot q_1 \cdot q_4 \cdot a) =
-q_0 \cdot q_1 \cdot q_4$.
-
-
-\vspace{10pt}
-By the previous remark and lemma we obtain the following corollary:
-\begin{corollary}
-\label{cor:pendingview}
-Let $s \cdot m$ be a legal well-bracketed position.
-\begin{enumerate}
-\item If $m$ is a P-move then it points in $?(\pview{s}) = \pview{?(s)}$;
-\item if $m$ is a non initial O-move then it points in $?(\oview{s}) = \oview{?(s)}$.
-\end{enumerate}
-
-\end{corollary}
-
-
-
-The height of a move $m$ is the length of the longest sequence of moves
-$m \ldots m_h$ in $M$ such that $m \vdash m_2 \vdash \ldots \vdash m_h$.
-The order of a move $m$ written $\ord{M}$ is defined to be its height minus two.
-The order of an arena $\langle M, \lambda, \vdash \rangle$ is $\max_{m \in M} \ord{m}$.
-
-We make the assumption that each question move in the arena enables at least one answer move. Consequently, moves of order $0$ can only enable answer moves.
-
-\begin{lemma}[Pointers are superfluous up to order 2]
-\label{lem:ptr_superfluous_atorder2} Let $A$ be an arena of order at
-most 2. Let $s$ be a justified sequence of moves in the arena $A$
-satisfying
- alternation, visibility, well-openedness and well-bracketing then
-the pointers of the sequence $s$ can be reconstructed uniquely from
-the underlying sequence of moves.
-\end{lemma}
-
-\begin{proof}
-Let $A$ be an arena of order $2$ at most.
-The case where $A$ is a DAG with multiple roots can be reduced to the single root case as follows:
-since the justified sequence that we consider are well-opened, the first move in $s$ denoted by $m_0$ is the only initial move in the sequence.
-$m_0$ must be the root of some sub-arena $A'$ of $A$. Hence we just need to consider the arena $A'$ instead of $A$ and treat $s$ as a play
-of $A'$ instead of $A$. We now assume that $A$ has a single root denoted by $q_0$.
-
-Let $s$ be a legal well-bracketed position in $L_A$.
-Note that since $A$ is of order $2$ at most, all the moves in $s$ except $q_0$ are of order $1$ at most.
-
-We prove by induction on the length of $s$ that $?(s)$
-corresponds to one of the case 0, A, B, C or D shown on the table below, and that the pointers in
-$s$ can be recovered uniquely.
-
-Let $L$ denote the language $L = \{\ p q \ | \ q_0 \vdash p \vdash q
-\wedge \ord{p}=1 \wedge \ord{q} = 0 \}$.
-\begin{center}
-\begin{tabular}{c|c|l|l}
-Case & $\lambda_{OP}(m)$ & $?(s) \in$ & where... \\ \hline
-0 & O & $\{ \epsilon \}$ \\
-A & P & $q_0$ \\
-B & O & $q_0 \cdot L^* \cdot p$     & $q_0 \vdash p \quad \wedge\quad  \ord{p}=1$ \\ % $j \in I_1$ \\
-C & P & $q_0 \cdot L^* \cdot p q$ & $q_0 \vdash p \vdash q \quad \wedge\quad  \ord{p}=1 \quad \wedge\quad  \ord{q} = 0$ \\ % $j \in I_1$ \\
-D & O & $q_0 \cdot L^* \cdot q$      & $q_0 \vdash q \quad \wedge\quad  \ord{q} = 0$ \\ % $i \in I_0$
-\end{tabular}
-\end{center}
-
-
-\noindent \textbf{Base cases:}
-If $s$ is the empty sequence $\epsilon$ then there is no pointer to
-recover and $s$ corresponds to case 0.
-If $s$ is a singleton then it must be the initial question $q_0$, therefore
-there is no pointer to recover. This corresponds to case A.
-
-\noindent \textbf{Step case:}
-If $s = u \cdot m$ for some non empty legal well-bracketed position $u$ and move $m \in M_A$
-then by the induction hypothesis the pointers in $u$ can all be recovered and $u$ corresponds to one of the
-cases 0, A, B, C or D.
-We proceed by case analysis:
-\begin{asparadesc}
-\item[case 0] $?(u) = \epsilon$. By corollary \ref{cor:pendingview}, $m$ points in $\pview{?(u)} = \epsilon$.
-                Hence this case is impossible.
-
-\item[case A] $?(u) = q_0$ and the last move $m$ is played by P.
-    By corollary \ref{cor:pendingview}, $m$ points to $q_0$.
-
-    If $m$ is an answer to the initial question $q_0$ then
-    $s$ is a complete play and $?(s) = \epsilon$, which corresponds to case 0.
-
-    If $m$ is a first order question then $?(s)= q_0 p$ and it is O's turn to play after $s$ therefore $s$ falls into category B.
-
-    If $m$ is an order 0 question then $s$ falls into category D.
-
-\item[case B] $?(u) \in q_0 \cdot L^* \cdot p$ where $\ord{p} = 1$ and $m$ is an O-move.
-
-By corollary \ref{cor:pendingview}, $m$ points in $\pview{?(u)} = q_0 p$. Since $m$ is an O-move it can only point to $p$.
-
-If $m$ is an answer to $p$ then $?(s) = ?(u \cdot m) \in q_0 \cdot L^*$ which is covered by case A and C.
-If $m$ is an order 0 question pointing to $p$ then we have $?(s) = ?(u) \cdot m \in q_0 \cdot L^* \cdot p m$ and $s$ falls into category C.
-
-
-\item[case C] $?(u) \in q_0 \cdot L^* \cdot p q$ where $\ord{p} = 1$, $\ord{q} = 0$, $q_0$ justifies $p$, $p$ justifies $q$
-                 and $m$ is played by $P$.
-
-Suppose that $m$ is an answer, then the well-bracketing condition imposes
-$q$ to be answered first. The move $m$ therefore points to $q$ and we have $?(s) = ?(u \cdot m) \in  q_0 \cdot L^* \cdot p$. This corresponds to case B.
-
-Suppose that $m$ is a question. $m$ is a P-move therefore is cannot be justified by $p$.
-It cannot be justified by $q$ either because $q$ is an order $0$ question and therefore enables answer moves only.
-Similarly $m$ is not justified by any move in $L^*$.
-Hence $m$ must point to the initial question $q_0$.
-There are two sub-cases, either $m$ is an order $0$ move and then $s$ falls into category D
-or $m$ is an order $1$ move and $s$ falls into category B.
-
-
-\item[case D] $?(u) \in q_0 \cdot L^* \cdot q$ where $\ord{q} = 0$ and $m$ is played by $O$.
-
-Again by corollary \ref{cor:pendingview}, $m$ points in $\oview{?(u)} = q_0 q$. Since $m$ is a P-move it can only point to $q$.
-Since $q$ is of order 0, it only enables answer moves therefore $m$ is an answer to $q$.
-Hence $?(s) = ?(u\cdot m) \in q_0 \cdot L^* $ and $s$ falls either into category A or C.
-
-\end{asparadesc}
-
-This completes the induction.
-\end{proof}
-
-
-As Lemma \ref{lem:ptr_superfluous_atorder2} shows, for game of order 2,
-the plays of a  strategy are entirely determined by underlying
-pointer-less sequence of moves. At level 3, however, eliminating pointers causes ambiguity.
-Take for instance the game $((\nat^1
-\typear \nat^2) \typear \nat^3) \typear \nat^4$ where the superscripts identify the game components. Take the sequence of moves $s = q^4 q^3 q^2 q^3 q^2 q^1$ where the superscripts indicate
-the component of the game in which each move is played. What are the possible plays
-whose underlying sequence of moves is $s$? The visibility condition imposes a unique way
-to assign pointers to the first five moves of $s$:
-$$s = \Pstr[0.4cm]{ (q4){q^4}\ (q3-q4){q^3}\ (q2-q3){q^2}\
-(q3b-q4){q^3}\ (q2b-q3b){q^2}\ (q1){q^1} }$$ But there is
-an ambiguity for the last move: it is either justified by the first
-or the second occurrence of $q^2$. The visibility condition does not
-eliminate this ambiguity since both occurrences of $q^2$ appear in
-the P-view at that point ($\pview{s} = s$). These two possibilities correspond to two
-different strategies for the player P.
 
 
 \subsection{The fully abstract game model of \pcf}
@@ -1151,7 +1153,7 @@ the fact that the category of games is cpo-enriched.
 Since all the strategies that we have given are innocent and
 well-bracketed, the game model of \pcf\ can be interpreted in any of
 the four categories $\mathcal{C}$, $\mathcal{C}_i$, $\mathcal{C}_b$,
-$\mathcal{C}_{ib}$.
+$\mathcal{C}_{ib}$. The category $\mathcal{C}_{ib}$ is refered as the \defname{intentional game model} of \pcf.
 
 
 \subsubsection{Observational preorder}
@@ -1162,12 +1164,11 @@ replacing the hole by the term $M$. $C[M]$ is well-formed provided
 that $M$ has the appropriate type. Note that this substitution is done capture-permitting, as opposed to the capture-avoiding
 substitution used to compute beta-redex in the lambda calculus (denoted $M[N/x]$ for any two terms $M$ and $N$).
 
-\begin{definition}[Observational preorder]
+\begin{definition}
 The \defname{observational preorder} is a relation $\obspre$ on terms defined as follows: for any two closed terms $M$ and $N$ of the same type,
 \begin{eqnarray*}
 M \obspre N &\iff& \parbox{10cm}{for all context $C[-]$ such that
-                $C[M]$ and $C[N]$ are well-formed closed term of type \iaexp,
-                    $C[M] \eval$ implies $C[N] \eval$}
+                $C[M]$ and $C[N]$ are well-formed closed \pcf\ term of type \iaexp, $C[M] \eval$ implies $C[N] \eval$.}
 \end{eqnarray*}
 The reflexive closure of $\obspre$, denoted $\obseq$, is called the \defname{observational equivalence} relation.
 \end{definition}
@@ -1328,20 +1329,20 @@ First we need to make sure that $\mathcal{C}_{ib}/\lesssim_{ib}$ is a
 model of \pcf. $\mathcal{C}_{ib}/\lesssim_{ib}$ is a posset-enriched
 cartesian closed category. The game semantics of the basic types and
 constants of \pcf\ can be transposed from $\mathcal{C}_{ib}$ to
-$\mathcal{C}_{ib}/\lesssim_{ib}$. Unfortunately it is not known
+$\mathcal{C}_{ib}/\lesssim_{ib}$. Although it is not known
 whether $\mathcal{C}_{ib}/\lesssim_{ib}$ is enriched over the
-category of CPOs. However it can be proved that it is a rational
-category \citep{abramsky94full} and this suffices to ensure that
-$\mathcal{C}_{ib}/\lesssim_{ib}$ is indeed a model of \pcf. The full
-abstraction of the game model then follows from proposition
+category of CPOs, it can be proved that it verifies a condition called \emph{rationality} \citep{abramsky94full} and this suffices to ensure that
+$\mathcal{C}_{ib}/\lesssim_{ib}$ is indeed a model of \pcf. This category will
+be referred as the \defname{extensional game model} of \pcf. The full abstraction of the game model then follows from proposition
 \ref{prop:ineqsoundness} and \ref{prop:definability}:
 \begin{theorem}[Full abstraction \cite{abramsky94full,hylandong_pcf,Nickau:lfcs94}]
 Let $M$ and $N$ be two closed \pcf\ terms.
-$$\sem{M} \precsim_{ib} \sem{N} \ \iff \ M \obspre N$$
-where $\precsim_{ib}$ denotes the intrinsic preorder of the category $\mathcal{C}_{ib}$.
+$$\sem{M} \lesssim_{ib} \sem{N} \ \iff \ M \obspre N$$
+where $\lesssim_{ib}$ denotes the intrinsic preorder of the category $\mathcal{C}_{ib}$.
 \end{theorem}
 
 \subsection{The fully abstract game model of Idealized Algol (\ialgol)}
+\label{sec:ia_gamemodel}
 
 We now describe the fully abstract game model of \ialgol\ introduced in \cite{abramsky99full}.
 
@@ -1354,7 +1355,7 @@ was written in it in order to be able to return it when it is read,
 and this can only be done by looking at the whole history of moves,
 not only those present in the P-view. We therefore restrict our attention to the categories $\mathcal{C}$ and $\mathcal{C}_b$.
 
-\subsubsection{Base types}
+\subsubsection*{Base types}
 
 The type \iacom\ is modeled by the flat game with a single initial question \iarun\ and a single answer
 \iadone. The idea is that O can request the execution of a command by playing \iarun, P then executes the command
@@ -1379,8 +1380,7 @@ N} \times exp}$ illustrated below:
 \end{tikzpicture}
 \end{center}
 
-\subsubsection{Constants}
-\label{sec:iaconst_gamedenotation}
+\subsubsection*{Modelling the constants}
 
 \begin{asparaitem}
 \item The constant \iaskip\ is interpreted by the strategy $\{ \epsilon, \iarun \cdot \iadone \}$.
@@ -1453,31 +1453,21 @@ $$ \sem{\Gamma \vdash \ianewin{x}{M} : A} =
 \end{asparaitem}
 
 
-\subsubsection{Inequational soundness}
+\subsubsection*{Full abstraction}
 
-The inequational soundness result can be also proved for \ialgol.
+The inequational soundness result can also be proved for \ialgol.
 Proving soundness of the evaluation requires a bit more work than in
-the \pcf\ case because the store needs to be made explicit. Also, we
-need to define an appropriate notion of \emph{computable term} that
+the \pcf\ case because the store needs to be made explicit. Also, one
+needs to define an appropriate notion of \emph{computable term} that
 takes into account the presence of stores in the evaluation
-semantics. It is possible to prove that the model is computational
-adequate. The inequational soundness then follows from evaluation
-soundness and computational adequacy.
-
-%\begin{lemma}[Soundness for IA terms] Let $\Gamma \vdash M : A$ be an IA term and a $\Gamma$ store $s$.
-%If $s,M \eval s',V$ then the plays of $\sem{s,M} : I \multimap A
-%\otimes !\Gamma$ which begin with a move of $A$ are identical to
-%those of $\sem{s',V}$.
-%\end{lemma}
-
+semantics. It is also possible to prove that the model is computational
+adequate. This implies:
 \begin{proposition}[\cite{abramsky94full}]
 \label{prop:ia_ineqsoundness} The game model of \ialgol\ is inequationally sound.
 \end{proposition}
 
-\subsubsection{Definability}
 
-The proof of definability is based on a factoring argument: strategies in
-$\mathcal{G}_b$ can all be obtained by composing the non-innocent strategy $cell$ with an innocent strategy.
+There is a factorization result saying that the strategies in $\mathcal{G}_b$ can all be obtained by composing the non-innocent strategy $cell$ with an innocent strategy.
 The strategy $cell$ can therefore be viewed as a generic non-innocent strategy. Using this factorization argument,
 it is possible to prove the definability result:
 \begin{proposition}[Definability]
@@ -1485,14 +1475,12 @@ it is possible to prove the definability result:
 strategy $\sigma$ on a game $A$ denoting a \ialgol\ type, there exists an \ialgol-term $M$ such that $\sem{M} = \sigma$.
 \end{proposition}
 
-\subsubsection{Full abstraction}
 
-Full abstraction for the model $\mathcal{C}_b$ is a consequence of proposition
-\ref{prop:ia_ineqsoundness} and \ref{prop:ia_definability}:
+Full abstraction for the model $\mathcal{C}_b$ is then a consequence of inequational soundness and definability:
 \begin{theorem}[Full abstraction]
 Let $M$ and $N$ be two closed IA-terms.
-$$\sem{M} \precsim_b \sem{N} \ \iff \ M \obspre N$$
-where $\precsim_b$ denotes the intrinsic preorder of the category
+$$\sem{M} \lesssim_b \sem{N} \ \iff \ M \obspre N$$
+where $\lesssim_b$ denotes the intrinsic preorder of the category
 $\mathcal{C}_b$.
 \end{theorem}
 

@@ -29,9 +29,7 @@ traversals are just (concrete representations of) the
 
 
 
-Since the safety condition is a syntactic constraint, it can seem
-difficult to give a characterization in term of game
-semantics, as game models are by essence syntax-independent. This is where the the Correspondence Theorem comes to the rescue and help us to reason syntactically about the game denotation of a term. This ultimately permits us to give a precise game-semantic characterization of the safety restriction.
+Since the safety condition is a syntactic constraint, it seems difficult to give a characterization in term of game semantics, as game models are by essence syntax-independent. This is where the the Correspondence Theorem comes to the rescue and help us to reason syntactically about the game denotation of a term. This ultimately permits us to give a precise game-semantic characterization of the safety restriction.
 
 One of the main results of this chapter (Proposition
 \ref{prop:safe_Pptr_recoverable}) states that pointers in a play of
@@ -46,11 +44,11 @@ incremental-binding and P-incremental justification (proposition \ref{prop:Nher_
 
 The third section of this chapter is concerned only with the safe $\lambda$-calculus without interpreted constants. In the following sections we extend the result by taking into account the interpreted constants of \pcf\ and \ialgol. We show that safe \pcf\ and safe \ialgol\ terms are denoted by P-incrementally justified strategies.
 
-Some of the results presented in this chapter were first published in TLCA \cite{blumong:safelambdacalculus}. The present chapter reproduced those results here with complete proof and generalized them to the languages \pcf\ and \ialgol.
+Some of the results presented in this chapter were first published in TLCA \cite{blumong:safelambdacalculus}. They are reproduced here with complete proofs and generalized to the languages \pcf\ and \ialgol.
 
 \section{P-incrementally justified strategies}
 
-In the game-semantic literature, some authors use the term ``order of a question move'' to refer to the length of the path in the arena to the initial move that hereditarily enables it. For the purpose of studying the safety restriction, however, it will be convenient instead to call it the \defname{level} of the node, and reserve the term ``order'' to refer to another quantity: The \defname{order of a move} $m$, written $\ord{m}$, is defined as the length of the path from $m$ to its furthest leaf in the arena minus 1. Thus the order of an arena can be defined in term of move-order: it is precisely the greatest order of its initial moves.
+In the game-semantic literature, some authors use the term ``order of a question move'' to refer to the length of the path in the arena to the initial move that hereditarily enables it. For the purpose of studying the safety restriction, however, it will be convenient instead to call it the \defname{level} of the node, and reserve the term ``order'' to refer to another quantity: The \defname{order of a move} $m$, written $\ord{m}$, is defined as the length of the path from $m$ to its furthest leaf in the arena minus~1. Thus the order of an arena can be defined in term of move-order: it is precisely the greatest order of its initial moves.
 
 
 \begin{definition}
@@ -102,59 +100,77 @@ P-view.}
 
 
 
-\section{Incremental binding}
+\section{Dead code elimination}
 
-In this section, we assume that we work in the general setting of an applied simply-typed lambda calculus extended with new
-interpreted constants (but not recursion) and verifying the following prerequisites:
-\begin{asparaitem}[-]
-\item Terms of the language are denoted by sequents of the form
-$\Gamma \entail M : T$.
-\item The language has a properly defined fully-abstract game-semantic model where each term-in-context $\Gamma \entail M : T$ is denoted by a strategy $\sem{\Gamma \entail M : T}$;
-
-\item A notion of safety is defined for the language by way of a system of rules producing sequents of the form $\Gamma \sentail M : T$ such that the restriction of the language to the safe pure simply-typed
-fragment coincides with the definition of the safe lambda calculus;
-
-\item A safe term-in-context $\Gamma \sentail M : T$ verifies the basic property $\forall z \in \Gamma . \ord{z} \geq \ord{T}$;
-
-\item The small-step reduction semantics of the language preserves safety;
-
-\item Well-behaved (see Def.\
-\ref{def:wellbehaved_traversal}) traversal rules are defined to take into account the constants of the language;
-
-\item These constant traversal rules model the behaviour of the constants in such a way that the game-semantic correspondence (Theorem \ref{thm:correspondence}) holds for that language.
-\end{asparaitem}
+We recall that the $\beta$-normal form of a term of an applied lambda calculus is the (possibly infinite) term obtained by reducing all the $\beta$-redexes. Because of the presence of interpreted constants, a $\beta$-normal form is not necessarily normal with respect to the small-step semantics. For instance in \pcf, the term $\pcfcond\, 0\, M\, N$ is $\beta$-normal but it reduces in one step to $M$.
 \smallskip
 
-The results of the two previous chapters shows that the recursion-free fragments of \pcf\ and \ialgol\ fit in this setting. For the rest of this section we fix a term $\Gamma \entail M : T$
+We say that a subterm $N$ of $M : (A_1, \ldots, A_n,o)$ is \defname{dead code} if for any context $C[-]$ such that $C[M]$ is of ground type, any reduction sequence starting from $C[M]$ does not involve a reduction of the subterm $N$ \ie for any reduction sequence $C[M] \equiv T_0 \redar T_1 \redar \ldots \redar T_k$, there is no $j\in \{0.. k-1\}$ such that $T_j = C'[N]$ and $T_{j+1} = C'[N']$ for some evaluation context $C'[-]$ and term $N'$.
+
+\begin{example}
+  The subterm $N$ in $\pcfcond\, 0\, M\, N$ is dead-code.
+\end{example}
+
+The dead code elimination problem is the converse of the \defname{reachability problem}: given a term $M$ containing a subterm $N$ of $M$, is there a context $C[-]$ such that $C[M]$ is of ground type, and a reduction sequence $C[M] \equiv T_0 \redar T_1 \redar \ldots \redar T_j \equiv E[N]$ for some evaluation context $E[-]$.
+The reachibility problem is clearly not trivial. In fact for \pcf\ it is not decidable since \pcf\ is Turing-complete and the halting problem for \pcf\ can be encoded into a reachability problem.\footnote{When restricted to the finitary fragment, however, reachibility is decidable. Luke Ong recently announced a proof of this result based on the theory of traversals.}
+
+
+Let $M$ be a term in eta-long normal form. Occurrences of a variables that are in the dead code of $M$ are called \defname{dead occurrences}.  Given a term $M$, we define $M^*$ as the term obtained from the (possibly infinite) $\eta$-long normal form of $M$ by substituting all subterms of the form  $x N_1 \dots N_k$ where $x:(B_1,\ldots, B_k, o)$ is a dead variable occurrence by the constant $\bot$ of type $o$. This process is called \defname{dead variable elimination}. We write $\tau(M)^*$ to denote the equivalent transformation on the computation tree of $M$.
+
+Clearly we have:
+\begin{equation}
+\travset(M^*) \subseteq \travset(M) \label{eqn:reachable_in_deadcodefree_imp_reachable}
+\end{equation}
+
+\subsection*{Reachibility by traversals}
+
+By the Correspondence Theorem, it is easy to show that if a node in the computation tree is not \emphind{reachable} by any traversal then the corresponding variable occurrence is a dead occurrence. Hence:
+\begin{lemma}
+  If $x$ is a variable node in $\tau(M)^*$ then the corresponding node in $\tau(M)$ is reachable by some traversal.
+\end{lemma}
+However the converse does not hold. This is because the Correspondence Theorem applies to the \emph{intentional} innocent game model where the Opponent is not restricted to play deterministically, let alone innocently. Thus in this model, the strategy denotation accounts for contexts $C[\_]$ that are not part of the language considered, whereas in the definition of dead-code elimination, the context ranges over term of the language only. Hence a variable node may be reachable by a traversal (as defined in Chapter \ref{chap:concrete_gamesem}) but not reachable with the operational semantics of the language.
+
+\begin{example}
+Consider the simply-typed lambda calculus and take the term $M \equiv \lambda \varphi:(o,o)\,x:o\, y:o\, z:o. \varphi x (\varphi y z)$. The node corresponding to the occurrence $y$ is reachable by the traversal $\lambda \varphi x y z \cdot \varphi \cdot \lambda \cdot \varphi \cdot \lambda \cdot y$ but there is no simply-typed context $C[\_]$ such that the evaluation of $C[M]$ leads to the evaluation of $y$.
+\end{example}
+
+The two notions of reachability can be reconciliated by adding a constraint in the rules of Table \ref{tab:trav_rules} corresponding to O-innocence: whenever a lambda node is visited, it is uniquely determined by the O-view of the traversal a that point.
+
+\section{Incremental binding}
+In this section, we work in the general setting of an applied simply-typed lambda calculus extended with a stock of interpreted constants $\Sigma$ (but without recursion), whose terms are of the form $\Gamma \entail M : T$. We consider its safe fragment, as defined in Sec\ \ref{sec:safe_appliedlambda}, whose terms are written $\Gamma \entail M : T$.
+
+We assume that the language has a fully-abstract game-semantic model.
+For each term-in-context $\Gamma \entail M : T$ we write $\sem{\Gamma \entail M : T}$ to denote its the strategy denotation in the intensional model. We further assume that there are \emph{well-behaved} (see Def.\ \ref{def:wellbehaved_traversal}) traversal rules modeling the behaviour of the constants in such a way that the game-semantic correspondence (Theorem \ref{thm:correspondence}) holds for that language.
+
+For the rest of this section we fix a term $\Gamma \entail M : T$
 of this unspecified language.
-
-
-\subsection*{Definition}
-
-
-Recall from the definition of computation trees (Chapter
-\ref{chap:concrete_gamesem}) that a variable node $n$ labelled $x$ is said
-to be \emph{bound} by a node $m$ if $m$ is the closest node in the
-path from $n$ to the root such that $m$ is labelled $\lambda
-\overline{\xi}$ with $x\in \overline{\xi}$. Thus a binder node
-always occurs in the path from the bound node to the root. We now
-introduce a class of computation trees in which the binder node is
-uniquely determined by the nodes' orders.
+\bigskip
 
 \emph{Notations:} We call \defname{path} any sequence of nodes such
 that for any two consecutive nodes $a \cdot b$ in the sequence, $a$
 is the parent of $b$. We write $[n_1,n_2]$ to denote, if it exists,
 the unique path going from node $n_1$ to node $n_2$ equipped with
 the justification pointers induced by the enabling relation $\vdash$
-(each node of the tree has a unique enabler in the path to the root
+(A node has a unique enabler in the path to the root
 thus for each occurrence in $[n_1,n_2]$ there is at most one
 occurrence of its enabler in $[n_1,n_2]$). We write $]n_1,n_2]$ for
-the sub-sequence of $[n_1,n_2]$ obtained by removing $n_1$ as welle
-as all the associated pointers.
+the sub-sequence of $[n_1,n_2]$ obtained by removing $n_1$ together with
+all the associated pointers.
 
-We recall that $\theroot$ denotes the root of the computation tree
-$\tau(M)$ and $N^{\theroot\vdash}$ denotes the subset of $N$
+The symbol $\theroot$ is used to denote the root of the computation tree
+$\tau(M)$, and $N^{\theroot\vdash}$ denotes the subset of $N$
 consisting of nodes that are hereditarily enabled by $\theroot$.
+\smallskip
+
+\subsection*{Definition}
+
+Recall from the definition of computation trees (Chapter
+\ref{chap:concrete_gamesem}) that a variable node $n$ labelled $x$ is said
+to be \emph{bound} by a node $m$ if $m$ is the closest node in the
+path from $n$ to the root such that $m$ is labelled $\lambda
+\overline{\xi}$ with $x\in \overline{\xi}$. Thus the binder node
+always occurs in the path from the variable node that it binds to the root. We now introduce a class of computation trees in which the binder node is
+uniquely determined by the nodes' orders.
 
 
 
@@ -184,26 +200,27 @@ order strictly greater than $\ord{x}$.
 
 \item A computation tree is said to be
 \defname{$A$-incrementally-bound}, also abbreviated $A$-i.b., if all
-the variable nodes from $A$ are $A$-incrementally-bound, and we say
-that a node (resp.\ a tree) is
+the variable nodes from $A$ are $A$-incrementally-bound
+
+\item  A node (resp.\ a tree) is
 \defname{incrementally-bound} if it is
-\defname{$N$-incrementally-bound} where $N$ is the entire set of nodes of the computation tree.
+\defname{$(N\setminus N^{\Sigma\vdash})$-incrementally-bound} where $N$ is the entire set of nodes of the computation tree and $N^{\Sigma\vdash}$ is the set of nodes hereditarily justified by a constant node.
 \end{enumerate}
 \end{definition}
 
-Clearly for any two sets of nodes $A$ and $B$ verifying $A\subseteq
+\begin{remark}
+\begin{enumerate}[1.]
+\item  Clearly for any two sets of nodes $A$ and $B$ verifying $A\subseteq
 B$, $B$-incremental-binding implies
 $A$-incremental-binding.
 
-
-\smallskip
-
-Let $\closure{M}$ denote the function that converts $M$ into the
+\item  Let $\closure{M}$ denote the function that converts $M$ into the
 closed term obtained from $M$ by abstracting all its free variables
 (in order of appearance in the term).
 Clearly, $\tau(M)$ and $\tau(\closure{M})$ are isomorphic and the enabling relation $\vdash$ is defined identically
 on these two trees (since free variable nodes are enabled by the root), therefore $\tau(M)$ is $A$-i.b.\ if and only if $\tau(\closure{M})$ is.
-\smallskip
+\end{enumerate}
+\end{remark}
 
 \subsection*{Safety and incremental binding}
 We recall that a term is \emphind{almost safe} if it can be written $\lambda x_1 \ldots x_n . N_0 \ldots N_p$ for some $n,p \geq 0$ where $N_i$ is safe for all $0\leq i \leq p$. It is an \emphind{almost safe application} if further $n=0$.
@@ -227,19 +244,19 @@ Since $M$ is almost safe, by Lemma \ref{lem:almostsafe_iff_etalnf_almostsafe} th
 $\eta$-long normal form of the closure of $M$ is safe.
 Hence the underlying term represented by the abstract syntax tree $\tau(\closure{M})$ is a safe term.
 
-In a safe applied $\lambda$-calculus, the variables in the context with
-the the lowest order must be all abstracted at once when using the
+In a safe applied $\lambda$-calculus, the $\Gamma$-variables with
+the the lowest order must be all abstracted at once when applying the
 abstraction rule. Since the computation tree merges consecutive
-abstractions into a single node, any variable $x$ occurring free in
-the subtree rooted at a $\lambda$-node $\lambda \overline{\xi}$
+abstractions into a single node, any $\Gamma$-variable $x$ occurring free in
+the subtree rooted at a $\lambda$-node $\lambda \overline{\xi} \not\in N^{\Sigma\vdash}$
 different from the root must have order greater or equal to
 $\ord{\lambda \overline{\xi}}$. Conversely, if a lambda node
 $\lambda \overline{\xi}$ binds a variable node $x$ then
 its order is $1+\max_{z\in\overline{\xi}} \ord{z} > \ord{x}$.
 
-Let $x$ be a variable node in $\tau(\closure{M})$.
+Let $x$ be a $\Gamma$-variable node in $\tau(\closure{M})$.
 Its enabler necessarily occurs in the path to the root, therefore, according to the previous observation,
-$x$ must be bound by the first $\lambda$-node occurring in $[\theroot,x]$
+$x$ must be bound by the first $\lambda$-node occurring in $[\theroot,x]\setminus N^{\Sigma\vdash}$
 with order strictly greater than $\ord{x}$. Hence $\tau$ is incrementally-bound.
 
 (ii) We first show the result for closed term. Let $\entail M :T$ be a closed term such that $\tau(M)$ is incrementally-bound. We assume that $M$ is already in $\eta$-long normal form. We prove by induction that $M$ is safe. The
@@ -260,7 +277,7 @@ abstract the variables $\overline{\eta_1}$ using the rule
 \rulenamet{abs}, which shows that $N_i$ is safe.
 Since all the $N_i$s are safe and the term $N_1 \ldots N_p : o$ is of order $0$, by the rule \rulenamet{app} we have that $N_1 \ldots N_p$ is safe \ie $\overline{\xi} \sentail N_1 \ldots N_p :o$. The rule \rulenamet{abs} then gives us $\sentail \lambda \overline{\xi} . N_1 \ldots N_p$.
 
-Now if $M$ is open, by the preceding case we have that $\closure{M}$ is safe. But clearly by ``pealing-off'' abstractions from a safe term we obtain an almost safe term, thus $M$ is almost safe.
+Now if $M$ is open, by the preceding case we have that $\closure{M}$ is safe. But by ``pealing-off'' abstractions from a safe term we obtain an almost safe term, thus $M$ is almost safe.
 \qed
 % end of proof
 \smallskip
@@ -272,11 +289,11 @@ trees. But $\lambda x y .x$ is safe and $\lambda y . x$ is
 only almost safe.
 \smallskip
 
-In the second part of this proposition a slightly stronger result holds if the term is $\beta$-normal and does not contain any interpreted constant:
+For the second part of this proposition a slightly stronger result holds if the term is $\beta$-normal and does not contain any interpreted constant:
 \begin{corollary}
 \label{cor:incrbind_imp_safe_betanf}
 Let $M$ be a $\beta$-normal term containing no interpreted constant.
-If all the input variables are incrementally-bound then
+If all the \emph{input variables} are incrementally-bound then
  the $\eta$-long normal form of $M$ is almost safe, and safe if further $M$ is closed.
 \end{corollary}
 This is simply because in the computation tree of such terms all the variable nodes are input-variables.
@@ -295,9 +312,9 @@ incrementally-bound. \qed
 
 Note that this corollary  cannot be generalized to
 $A$-incremental-binding for any set of node $A$. Take for instance
-the eta-normal term $M = \lambda u^{o} v^{((o,o),o)} . (\lambda x^o
+the term $M = \lambda u^{o} v^{((o,o),o)} . (\lambda x^o
 . v (\lambda z^o . x)) u$ which beta-reduces to $N = \lambda u v . v
-(\lambda z . u)$. The computation trees are:
+(\lambda z . u)$. Their computation tree are represented below:
 \begin{center}
 \begin{tikzpicture}[level distance=7mm,inner ysep=0.5mm,inner xsep=0.5mm,sibling distance=10mm]
 \path
@@ -341,10 +358,10 @@ child{
 ;
 \end{tikzpicture}
 \end{center}
-and if we take $A$ to be the set of nodes that are hereditarily enabled by
-the root (underlined in the above figure) then $\tau(M)$
+If we take $A$ to be the set of nodes that are hereditarily enabled by
+the root (underlined in the figure above) then $\tau(M)$
 is $A$-incrementally-bound but $\tau(N)$ is not.
-\bigskip
+
 
 \subsection*{Incremental justification and incremental binding}
 
@@ -368,8 +385,7 @@ input-variable nodes of the computation tree $\tau(\Gamma \vdash
 M : T)$ are $N^{\theroot\vdash}$-incrementally-bound.
 \end{enumerate}
 \end{proposition}
-
-\begin{proof}
+\proof
 \noindent (i) Take a term $M$ in $\beta$-nf.
 W.l.o.g\ we can assume that $M$ is a closed term since the incremental-binding property is conserved when taking the closure of a term and since the denotation of the closure is isomorphic to the denotation of the term.
 
@@ -433,12 +449,39 @@ strictly greater than $\ord{x}$. By the path-P-view correspondence
 as: $m$ is the last $\lambda$-node in $[\theroot,x[\  \inter\
 N^{\theroot \vdash}$ with order strictly greater than $\ord{x}$.
 Hence $\tau(M)$ is $N^{\vdash \theroot}$-incrementally-bound.
-\end{proof}
+\qed
+%%%
+\smallskip
+
+
+
+For terms containing no dead-code, Prop.\ \ref{prop:Nher_incrbound_iff_incrjustified} gives:
+
+\begin{corollary}[for terms with no dead-code] \
+\label{cor:Nher_incrbound_iff_incrjustified} Let $\Gamma \entail
+M : A$ be a $\beta$-normal term.
+\begin{enumerate}[(i)]
+\item  If $\tau(\Gamma \vdash M : A)$ is incrementally-bound then $\sem{\Gamma \vdash M : A}$ is P-incrementally justified;
+\item  if $\sem{\Gamma \vdash M : A}$ is P-incrementally justified
+then $\tau(\Gamma \vdash M : A)^*$ is incrementally-bound.
+\end{enumerate}
+\end{corollary}
+\proof
+(i) If $\tau(M)$ is incrementally bound then in particular it is $N^{\vdash \theroot}$-incrementally bound therefore by Proposition \ref{prop:Nher_incrbound_iff_incrjustified}(i), the denotation of $M$ is P-incrementally justified.
+
+\noindent (ii) Suppose that $\sem{M}$ is P-incrementally justified.
+Let $x$ be a variable node in $\tau(M)^*$ that is not hereditarily justified by a constant node. By definition of $\tau(M)^*$, $x$ is reachable in $\tau(M)^*$ which implies by Eq.\ \ref{eqn:reachable_in_deadcodefree_imp_reachable} that it is also reachable in $\tau(M)$. Since $M$ is $\beta$-normal, by lemma \ref{lem:betanorm_enabling}, variable nodes are either hereditarily enabled by the root or by a constant in $N_\Sigma$. By assumption $x$ is not in her.\ just.\ by $N_\Sigma$ therefore
+it is a reachable input-variable node of $\tau(M)$. Hence by Prop.\ \ref{prop:Nher_incrbound_iff_incrjustified}(ii), $x$ is $N^{\vdash \theroot}$-incrementally bound in $\tau(M)$.
+Again since $M$ is in $\beta$-nf we have $N^{\vdash \theroot} = N\setminus\ N^{\filter \Sigma}$. This shows that $\tau(M)^*$ is incrementally-bound.
+\qed
+%%%
+
+
+
 
 \section{Safe lambda calculus}
 
-We now consider the special case of the pure (\ie without interpreted constants) safe $\lambda$-calculus. For any simply-type term $\Gamma \stentail M : T$ we write $\sem{\Gamma \stentail M : T}$  to refer to the game denotation of $\Gamma \stentail M : T$ in which the Opponent is not restricted to play deterministically (let alone innocently). In other words, the game denotation accounts for contexts that are not simply-typed terms. This allows us to make use of the Correspondence Theorem with respect to the traversal rules defined in Table \ref{tab:trav_rules}.
-With this definition of traversals, the notion of \emph{reachability} for simply-typed terms gets simplified:
+We now consider the special case of the pure (\ie without interpreted constants) safe $\lambda$-calculus. For any simply-type term $\Gamma \stentail M : T$ we write $\sem{\Gamma \stentail M : T}$  to refer to the innocent game denotation of $\Gamma \stentail M : T$.
 \begin{lemma}
   \label{lem:st_allnodes_reachable}
   For simply-typed lambda term in $\beta$-normal form,
@@ -447,25 +490,17 @@ With this definition of traversals, the notion of \emph{reachability} for simply
 \proof Since $M$ is in $\beta$-normal form, its computation tree has no application node and therefore all the variable nodes are hereditarily justified by the root. Hence each variable node can be reached by the traversal consisting of the path from the root to that node: the rule \rulenamet{Lam} and \rulenamet{InputVar} permit us to visit the variable nodes and lambda nodes respectively.\qed
 \smallskip
 
-Observe that if we restrict the rules of Table \ref{tab:trav_rules} to make it correspond to the ``standard'' game model where the Opponent is required to play innocently then this result does not hold anymore. For instance in the term $\lambda \varphi x y z. \varphi x (\varphi y z)$ the node corresponding to the occurrence $y$ would not be reachable.
 
-\begin{corollary}[of Proposition \ref{prop:Nher_incrbound_iff_incrjustified}]
-\label{cor:Nher_incrbound_iff_incrjustified_lmd}
+\begin{proposition}
+\label{prop:Nher_incrbound_iff_incrjustified_lmd}
   Let $\Gamma \stentail M : T$ be a pure
    (\ie with no interpreted constants) simply-typed term in $\beta$-normal form.
    Then $\sem{\Gamma \stentail M : T}$ is P-incrementally justified
    if and only if the computation tree $\tau(M)$ is incrementally-bound.
-\end{corollary}
-\proof We first observe that all the variable nodes are
-input-variable nodes. Indeed, let $x$ be a variable node of
-$\tau(M)$. Since $M$ is $\beta$-normal, by lemma
-\ref{lem:betanorm_enabling}, $x$ is either hereditarily enabled by
-the root or by a constant in $N_\Sigma$. But the pure simply-typed
-$\lambda$-calculus does not have constants thus $N_\Sigma =
-\emptyset$ and $x$ is hereditarily enabled by the root, \ie it is an
-input-variable node. Consequently, incremental-binding coincides
-with $N^{\vdash \theroot}$-incremental-binding.
-Finally, by Lemma \ref{lem:st_allnodes_reachable}, all the variable nodes are reachable. Hence the result follows from Proposition \ref{prop:Nher_incrbound_iff_incrjustified}.
+\end{proposition}
+\proof
+By Lemma \ref{lem:st_allnodes_reachable}, all the variable nodes are reachable
+in a $\beta$-normal term. Hence the result follows from Corollary \ref{cor:Nher_incrbound_iff_incrjustified}.
 \qed
 \smallskip
 
@@ -488,8 +523,8 @@ figure on the right represents its computation tree with the
 node orders given as superscripts.  The node $x$ is not
 incrementally-bound because the node $x$ of order $0$ is not
 bound by the order 1 node $\lambda y$. Therefore $\tau(f
-(\lambda y .x))$ is not incrementally-bound and by Corollary
-\ref{cor:Nher_incrbound_iff_incrjustified_lmd}, $\sem{\Gamma
+(\lambda y .x))$ is not incrementally-bound and by Proposition
+\ref{prop:Nher_incrbound_iff_incrjustified_lmd}, $\sem{\Gamma
 \stentail f (\lambda y .x) : o}$ is not P-incrementally
 justified. Similarly we can check that $\sem{\lambda y. x}$ is
 P-i.j.\ while $\sem{f (\lambda y .x)}$ is not.
@@ -508,7 +543,7 @@ compositional property. In Chapter \ref{chap:model} we will identify a sufficien
 P-incrementally justified strategies. \smallskip
 
 
-Putting Corollary \ref{cor:Nher_incrbound_iff_incrjustified_lmd} and
+Putting Proposition \ref{prop:Nher_incrbound_iff_incrjustified_lmd} and
 Proposition \ref{prop:incrbound_iff_etanf_safe} together gives us a
 game-semantic characterization of safety. This result was first presented in TLCA2007, \cite[Theorem 3(ii)]{blumong:safelambdacalculus}:
 \begin{theorem}[Characterization Theorem for the Safe Lambda Calculus]
@@ -526,23 +561,27 @@ almost safe, and safe if further $M$ is closed.
 \ref{lem:safered_preserve_safety}, its $\beta$-normal form $M'$ is
 also safe, by Proposition \ref{prop:incrbound_iff_etanf_safe}(i),
 $\tau(M')$ is incrementally-bound and by Proposition
-\ref{cor:Nher_incrbound_iff_incrjustified_lmd}, $\sem{M'}$ is
+\ref{prop:Nher_incrbound_iff_incrjustified_lmd}, $\sem{M'}$ is
 incrementally justified. The soundness of the game model
 gives $\sem{M} = \sem{M'}$.  (ii) is a consequence of Lemma
-\ref{lem:safered_preserve_safety}, Corollary
-\ref{cor:Nher_incrbound_iff_incrjustified_lmd} and
-Proposition \ref{prop:incrbound_iff_etanf_safe}(ii) and soundness of the game model.
+\ref{lem:safered_preserve_safety}, Proposition
+\ref{prop:Nher_incrbound_iff_incrjustified_lmd} and
+\ref{prop:incrbound_iff_etanf_safe}(ii) and soundness of the game model.
 \qed
 \smallskip
 
 In particular, a term has a P-incrementally justified denotation if and only its eta-long beta-normal form is almost safe.
 
-\smallskip
 
-\begin{remark}
-  It is important here to underline the fact that the game denotation used here is not the standard one in the sense that the context is not constrained to play deterministically, let alone innocently. In the standard model, the second part of the theorem does not hold. Take for instance the eta-long beta-normal term $M \equiv \lambda \varphi:(o,o)~ y:o . \varphi (\lambda x:o. x) (\varphi (\lambda x:o .\underline{y}) (\lambda x.x))$. It is clearly unsafe but its denotation is P-i.j. Indeed, there is only two \emph{simply-typed terms} inhabiting the type $(o,o)$: $\pi_1 \equiv \lambda x_1 x_2 . x_1$ and $\pi_i \equiv \lambda x_1 x_2 . x_2$. But since we have $M~\pi_1 =_\beta \pi_2$ and $M~\pi_2 =_\beta \pi_2$, the term $M$ is in fact observationally equivalent to $\pi_2$ which is clearly P-i.j.
 
-  Using ``dead-code elimination'', it is possible to obtain a version of the theorem that holds for the standard game denotation. This will be illustrated in the next section when dealing with Safe \pcf.
+\begin{remark} The second part of the theorem crucially relies on the fact that
+the intentional game denotation does not require the Opponent to play innocently.
+Take for instance the eta-long beta-normal term
+$$M \equiv \lambda \varphi:(o,o)~ y:o .\ \varphi (\lambda x:o. x) (\varphi (\lambda x:o .\underline{y}) (\lambda x.x)) \ .$$
+It is clearly unsafe and indeed its denotation in the intentional model is not P-i.j.\ because in the traversal $t = \lambda \varphi y \cdot \varphi^1 \cdot\lambda\cdot\varphi^2\cdot \lambda x \cdot y$, the last node is not incrementally justified. However this traversal is not ``O-innocent'' because
+we have $\oview{t_{\prefixof \varphi^1}} = \oview{t_{\prefixof \varphi^2}}$
+but the node visited after $\varphi^1$ and $\varphi^2$ differ.
+If we remove all such sequences then the game denotation becomes P-i.j.\ (although $M$ is unsafe). This is because there is only two \emph{simply-typed terms} inhabiting the type $(o,o)$: $\pi_1 \equiv \lambda x_1 x_2 . x_1$ and $\pi_i \equiv \lambda x_1 x_2 . x_2$, and we have $M\,\pi_1 =_\beta \pi_2$ and $M\,\pi_2 =_\beta \pi_2$. Hence $M$ is in fact observationally equivalent to $\pi_2$ which is clearly P-i.j.
 \end{remark}
 
 
@@ -587,104 +626,9 @@ where $M_2$ denotes the unsafe Kierstead term.}
 
 
 \section{Safe PCF}
-We now extend the game-semantic characterization to Safe
-\pcf.
+We now extend the game-semantic characterization to Safe \pcf.
 
-\emph{Conventions:} We recall that the $\beta$-normal form of a \pcf\ term is the possibly infinite term obtained by reducing all the $\beta$-redexes. A $\beta$-normal form is therefore not necessarily normal with respect to the full system of rules of \pcf\ (\eg the term $\pcfcond\, 0\, M\, N$ is $\beta$-normal although it reduces in one step to $M$).
-
-
-\subsection{Dead code elimination}
-
-In the context of the simply-typed lambda calculus, we have shown
-the correspondence between safety and P-incremental justification
-(Theorem \ref{thm:safeincrejust_lmd}). It is easy to see that
-that the first part of this theorem still holds for Safe \pcf.
-The second part, however, does not hold anymore: Indeed, take the
-closed \pcf\ term $M = \lambda f x y. f (\lambda z. \pcfcond
-(\pcfsucc\ x) y z )$ where $x,y,z:o$ and $f:((o,o),o)$. $M$ is in
-normal form (the conditional operator cannot be reduced since the value of $x$ is
-undetermined). The $\eta$-long form $\beta$-normal form of
-$M$ is therefore $M$ itself which is unsafe. But clearly we have
-$M$ has the same denotation as the safe term $\lambda f x y. f (\lambda z. z)$, which is is P-incrementally justified by (i).
-
-Such counter-example arises because the conditional operator of
-\pcf\ permits us to construct terms in normal form that contain
-``dead code'' \ie some subterm that will never be evaluated
-for any value of M's parameters. In the example above, the dead code
-consists of the subterm $y$. In general, if the dead code part of
-the computation tree contains a variable that is not incrementally
-bound then the resulting term will be unsafe even if the rest of the
-tree is incrementally bound. In our example, it was possible
-to turn $M$ into the equivalent safe term $\lambda f x y. f (\lambda
-z. z)$ by eliminating the dead code from $M$. We now show how this process can be generalized to any \pcf\ term that has a P-incrementally
-justified denotation.
-\smallskip
-
-We say that a subterm $N$ of $M : (A_1, \ldots, A_n,o)$ is \defname{dead code} if for any context $C[-]$ such that $C[M]$ is of ground type, any reduction sequence starting from $C[M]$ does not involve a reduction of the subterm $N$ \ie for any reduction sequence $C[M] \equiv T_0 \redar T_1 \redar \ldots \redar T_k$, there is no $j\in \{0.. k-1\}$ such that $T_j = C'[N]$ and $T_{j+1} = C'[N']$ for some evaluation context $C'[-]$ and term $N'$.
-
-The dead code elimination problem is the converse of the \defname{reachability problem}: given a term $M$ containing a subterm $N$ of $M$, is there a context $C[-]$ such that $C[M]$ is of ground type, and a reduction sequence $C[M] \equiv T_0 \redar T_1 \redar \ldots \redar T_j \equiv E[N]$ for some evaluation context $E[-]$.
-The reachibility problem is clearly not trivial. In fact is not decidable since \pcf\ is Turing-complete and the halting problem for \pcf\ can be encoded into a reachability problem.\footnote{When restricted to the finitary fragment, however, reachibility is decidable. Luke Ong recently announced a proof of this result based on the theory of traversals.}
-
-
-Let $M$ be a \pcf\ term in eta-long normal form. Occurrences of a variables that are in the dead code of $M$ are called \defname{dead occurrences}. By a game semantic argument, it is easy to show that an occurrence of $x$ is dead just if if the corresponding node in the computation tree is not \emphind{reachable} by any traversal.
-
-Given a term \pcf\ $M$, we define $M^*$ as the term obtained from the (possibly infinite) $\eta$-long normal form of $M$ by substituting all
-subterms of the form  $x N_1 \dots N_k$ for some dead variable
-occurrence $x:(B_1,\ldots, B_k, o)$ by the constant $\bot$ of type $o$. This process is called \defname{dead variable elimination}. We write $\tau(M)^*$ to denote the equivalent transformation on the computation tree of $M$.
-Clearly we have:
-\begin{equation}
-\travset(M^*) \subseteq \travset(M) \label{eqn:reachable_in_deadcodefree_imp_reachable}
-\end{equation}
-
-\subsection{Game characterization}
-
-In \pcf, the correspondence between incremental binding and P-incremental justification showed in Prop.\ \ref{prop:Nher_incrbound_iff_incrjustified} becomes:
-\begin{corollary}[Corollary of Prop.\ \ref{prop:Nher_incrbound_iff_incrjustified}] \
-\label{cor:Nher_incrbound_iff_incrjustified_pcf} Let $\Gamma \vdash
-M : A$ be a PCF term in $\beta$-normal form.
-\begin{enumerate}[(i)]
-\item  If $\tau(\Gamma \vdash M : A)$ is incrementally-bound then $\sem{\Gamma \vdash M : A}$ is P-incrementally justified;
-\item  if $\sem{\Gamma \vdash M : A}$ is P-incrementally justified
-then $\tau(\Gamma \vdash M : A)^*$ is incrementally-bound.
-\end{enumerate}
-\end{corollary}
-\begin{proof}
-(i) If $\tau(M)$ is incrementally bound then in particular it is $N^{\vdash \theroot}$-incrementally bound therefore by Proposition \ref{prop:Nher_incrbound_iff_incrjustified}(i), the denotation of $M$ is P-incrementally justified.
-
-\noindent (ii) Suppose that $\sem{M}$ is P-incrementally justified.
-Let $x$ be a variable node in $\tau(M)^*$. By definition of $\tau(M)^*$, $x$ is reachable in $\tau(M)^*$.
-Hence there exists a traversal of $\tau(M)^*$ of the form $t \cdot x$.
-By Eq.\ \ref{eqn:reachable_in_deadcodefree_imp_reachable}, $t \cdot x$ is also a traversal of $\tau(M)$ therefore
-$x$ is also reachable in $\tau(M)$.
-
-We observe that all the variable nodes are input-variable nodes. Indeed, since $M$ is $\beta$-normal, by lemma
-\ref{lem:betanorm_enabling}, variable node are either hereditarily enabled by
-the root or by a constant in $N_\Sigma$. But since the constants of \pcf\ are of order $1$ at most, they cannot hereditarily justify any variable node, thus variable nodes are necessarily hereditarily enabled by the root.
-
-
-Thus $x$ is a reachable input-variable node of $\tau(M)$ and by Prop.\ \ref{prop:Nher_incrbound_iff_incrjustified}(ii)
-it is $N^{\vdash \theroot}$-incrementally bound in $\tau(M)$:
-$x$ points to the last lambda node in $\pview{t} \filter N^{\theroot\vdash}$ with order greater than $\ord{x}$.
-By the Path-View correspondence (Prop.\ \ref{prop:pviewtrav_is_path}) we have:
-\begin{align*}
-\pview{t} \filter N^{\theroot\vdash} & = [\theroot,x[ \ \filter N^{\theroot\vdash} & (\mbox{by Prop.\ \ref{prop:pviewtrav_is_path}})
-\end{align*}
-Since $M$ is in $\beta$-nf, the nodes that are \emph{not} hereditarily
-enabled by the root are precisely the nodes hereditarily enabled by
-$N_\Sigma$ thus $[\theroot,x[ \ \filter N^{\theroot \vdash} = [\theroot,x[\ \setminus\
-N^{\filter \Sigma}$. Since \pcf\ constants are of order $1$ at
-most we have $N^{\filter \Sigma} = N_{\Sigma} \union N^c_{\Sigma}$
-where $N^c_{\Sigma}$ is the set of children nodes of $N_{\Sigma}$.
-Hence $x$ points to the last lambda node of greater order in $[\theroot,x[\ \setminus\
-N_\Sigma \setminus N^c_\Sigma$
-But $N_\Sigma$ does not contain any lambda node, and
-$N^c_\Sigma$ is constituted of order-$0$ lambda-nodes only therefore
-$x$ points to the last lambda node in $[\theroot,x[$ with order strictly greater than $\ord{x}$.
-This shows that $\tau(M)^*$ is incrementally-bound.
-\end{proof}
-
-
-We have already established the correspondence between almost safety and incremental binding in the general setting of an applied simply-typed lambda calculus without recursion (Proposition \ref{prop:incrbound_iff_etanf_safe}). $\pcf_1$ can be cast into this setting by considering $\bot_A$ as ordinary constants: in the computation tree of a $\pcf_1$ term,  ubterms of the form $\Omega_A$ are represented by the single constant node $\bot_A$. In full \pcf, however, a difficulty arises as computation trees are potentially infinite due to the presence of the Y combinator. Nevertheless the result still holds:
+We have already established the correspondence between almost safety and incremental binding in the general setting of an applied simply-typed lambda calculus without recursion (Proposition \ref{prop:incrbound_iff_etanf_safe}). $\pcf_1$ can be cast into this setting by considering $\bot_A$ as ordinary constants: in the computation tree of a $\pcf_1$ term,  subterms of the form $\Omega_A$ are represented by the single constant node $\bot_A$. In full \pcf, however, a difficulty arises as computation trees are potentially infinite due to the presence of the Y combinator. Nevertheless the result still holds:
 \begin{proposition}[Almost safety and incrementally-binding]
 \label{prop:incrbound_iff_etanf_safe_pcf} Let $\Gamma \vdash M : A$
 be a PCF term.
@@ -731,25 +675,59 @@ Hence we obtain the following characterization of almost safety by P-incremental
 \noindent(i)
 Let $M$ be an almost safe term and $M^{\infty}$ be the $\beta$-normal form of $M$. Since almost-safety is preserved by the small-step reduction of PCF, $M^\infty$ is also almost-safe
 and by Proposition \ref{prop:incrbound_iff_etanf_safe_pcf}, $\tau(M^{\infty})$ is incrementally-bound.
-By Corollary \ref{cor:Nher_incrbound_iff_incrjustified_pcf}(i),
+By Corollary \ref{cor:Nher_incrbound_iff_incrjustified}(i),
 $\sem{M^{\infty}}$ is P-incrementally justified and by soundness of the game denotation, $\sem{M^{\infty}} = \sem{M}$, thus $\sem{M}$ is P-incrementally justified.
 
 \noindent(ii) Let $M$ be \pcf\ term with a P-incrementally
 justified denotation. By Corollary
-\ref{cor:Nher_incrbound_iff_incrjustified_pcf}(ii),
+\ref{cor:Nher_incrbound_iff_incrjustified}(ii),
 $\tau(\betanf{M})^* = \tau(\etalnf{\betanf{M}}^*)$ is
 incrementally-bound. Hence by Proposition
 \ref{prop:incrbound_iff_etanf_safe_pcf}(ii),
-if $M$ is closed then $\etalnf{\etalnf{\betanf{M}}^*} = \etalnf{\betanf{M}}^*$ is safe, and if $M$ is open then $\etalnf{\etalnf{\betanf{M}}^*} = \etalnf{\betanf{M}}^*$ is
-almost safe.
+$\etalnf{\betanf{M}}^*$ is safe if $M$ is closed and almost safe if $M$ is open.
 \qed
 %end of proof
 \smallskip
 
 Consequently, P-pointers are superfluous in the game denotation of safe \pcf\ terms \ie pointers emanating from P-moves are uniquely recoverable.
 
+\begin{example}[Counter-example]
+The use of dead-code elimination in the second part of the theorem is crucial.
+Take for instance the closed \pcf\ term:
+$$M \equiv \lambda f:((\pcfexp,\pcfexp),\pcfexp)\, x:\pcfexp\, y:\pcfexp. f (\lambda z : \pcfexp. \pcfcond (\pcfsucc\ x) y z ) \ .$$ This term is in $\beta$-normal form (the conditional operator cannot be reduced since the value of $x$ is undetermined). The $\eta$-long $\beta$-normal form of $M$ is therefore $M$ itself which is unsafe. But since $\pcfsucc\ x$ will always evaluate to a positive integer, the first branch of the conditional  operator will never be evaluated. Hence $M$ is observationally equivalent to the safe term $N \equiv \lambda f x y. f (\lambda z. z)$ which by the Full Abstraction theorem implies that they have the same denotation. But since $N$ is safe, by the first part of the theorem, we have that $\sem{M}$ is P-incrementally justified.
 
-\subsection{Definability}
+Such counter-example arises because the conditional operator of
+\pcf\ permits us to construct beta-normal terms containing
+``dead code'' \ie some subterm that will never be evaluated
+for any value of M's parameters. In the example above, the dead code
+consists of the subterm $y$. In general, if the dead code part of
+the computation tree contains a variable that is not incrementally
+bound then the resulting term will be unsafe even if the rest of the
+tree is incrementally bound. In our example, it is possible
+to turn $M$ into the equivalent safe term $N$ by eliminating the dead code from $M$.
+\end{example}
+
+
+\section{Safe Idealized Algol}
+
+Clearly, the argument used in the previous section for safe \pcf\ can be reused for safe \ialgol\ (as defined in Sec.\ \ref{subsec:safeia_rules}). Hence we have:
+\begin{theorem}[Characterization Theorem for Safe \ialgol]
+\label{thm:almostsafeincrejust_ia} Let $\Gamma \entail M : A$ be a \ialgol\ term. Then:
+\begin{enumerate}[(i)]
+\item If $M$ is almost safe then $\sem{\Gamma \entail M : A}$ is P-incrementally justified.
+\item If $\sem{\Gamma \entail M : A}$ is
+  P-incrementally justified then $\etalnf{\betanf{M}}^*$ is
+  almost safe  if $M$ is open, and safe if $M$ is closed.
+\end{enumerate}
+\end{theorem}
+
+This shows that P-pointers are superfluous for safe \ialgol\ terms. Since unsafety only appears at order $3$, this theorem implies the well-known result that pointers are uniquely recoverable for $\ialgol_2$ terms. This suggests potential applications in Algorithmic Game Semantics: In \cite{ghicamccusker00}, Ghica and McCusker were able to show that the game denotation of $\ialgol_2$ terms can be characterized by (extended) regular expressions which subsequently led them to derive a decision procedure for observational equivalence in the considered fragment. Can a similar thing be achieved for higher-order fragment of safe \ialgol? We will investigate this question in the next chapter.
+
+
+\section{Towards a fully abstract game model}
+
+
+\subsection{Definability for safe \pcf}
 Recall (Sec.\ \ref{sec:pcfdefinability}) that \pcf' denotes the language obtained by extending \pcf\ with the $\pcfcase_k$ construct.
 The $\pcfcase_k$ construct is the obvious generalization of the
 conditional operator \pcfcond\ to $k\in\nat$ branches instead of $2$. We call safe \pcf' the corresponding extension of safe \pcf. Clearly, all the results obtained so far concerning safe \pcf\ also hold in safe \pcf'.
@@ -781,14 +759,14 @@ almost safe. For the second part, take $M'_\sigma$ to be the closure $\lambda \o
 
 Note that because the argument relies on dead code-elimination, which is undecidable, it does not constitutes a constructive proof: we know that the term $M_\sigma$ exists but we do not have an algorithm to compute it.
 
-This result shows that the game model of Safe \pcf\ is \defname{intentionally fully-abstract}: every \emphind{compact} strategies (\ie with finite view function) is definable \cite{abramsky94full}). 
+This result shows that the game model of Safe \pcf\ is \defname{intentionally fully-abstract}: every \emphind{compact} strategies (\ie with finite view function) is definable \cite{abramsky94full}).
 The property that all denotations in the model are definable, including the recursive ones, is called \defname{universality}. Universality was shown for the game model of \pcf\ \cite{abramsky94full}. The ``trick'' used in the previous proof does not suffice to show universality for safe \pcf. One would need to be slightly more subtle to handle recursion. It is possible to perform dead-code elimination on the infinite term obtained by unfolding the Y-recursion, but the resulting term is a potentially infinite \pcf\ term, and it is not necessarily the unfolding of a ``finite'' \pcf\ term with Y combinators.
 
-One way around this problem would be to use a version of the Correspondence Theorem expressed over a finite syntax representation of the term (as described in remark \ref{rem:finite_pcftree}) and to perform dead-code elimination on this representation rather than on its unwinding. 
+One way around this problem would be to use a version of the Correspondence Theorem expressed over a finite syntax representation of the term (as described in remark \ref{rem:finite_pcftree}) and to perform dead-code elimination on this representation rather than on its unwinding.
 
 
 
-\subsection{Compositionality of P-i.j.\ strategies}
+\subsection{Compositionality of safe PCF denotations}
 
 In the next chapter we will give an in depth account of P-i.j.\ strategies. In particular we will give a semantic argument showing that when suitably restricted, P-i.j.\ strategies compose. We show here essentially the safe result using a syntactic argument that relies on the definability result from the previous section. The advantage is that the proof is much simpler that the one given in the next chapter. The disadvantage is that it is slightly less general as it only works for strategies that are denotations of compact \pcf\ terms (\ie the compact innocent ones) whereas the proof in the next chapter works in the general case.
 
@@ -899,7 +877,7 @@ P-i.j.
 \qed
 \bigskip
 
-Strategies verifying this condition are called \emphind{closed P-incremental strategies}. They will be studied in depth in Sec.\ \ref{sec:closedpij}.
+Strategies verifying this condition are \emphind{closed P-incremental strategies}. This property will be studied in depth in Sec.\ \ref{sec:closedpij}.
 
 \begin{remark}\hfill
 \begin{enumerate}
@@ -916,31 +894,7 @@ if $A\typear B$ and $B \typear C$ are homogeneous simple types and $\ord{A} \geq
 \end{enumerate}
 \end{remark}
 
-\section{Safe Idealized Algol}
-
-We now consider Safe \ialgol\ as defined in Sec.\  \ref{subsec:safeia_rules}. We observe that the only particularity of \pcf\ that was used in the argument of the previous section is the fact that the constants of the language are of order $1$ at most. This is not the case anymore in \ialgol\ because of the presence of the bad-variable construct \iamkvar. But if we consider safe \ialgol-$\{\iamkvar\}$ - the fragment of safe Idealized Algol obtained by removing the bad-variable construct - then the entire argument can be carried on. In particular the Characterization Theorem \ref{thm:almostsafeincrejust_pcf} holds as well as the definability result (Proposition \ref{prop:safetydefinability}).
-
-
-In safe \ialgol, the presence of the \iamkvar\ construct makes things slightly more complicated. Since $\iamkvar$ is an order-2 constant, the proof of the second part of Corollary \ref{cor:Nher_incrbound_iff_incrjustified_pcf}(ii) cannot be reused. In fact  the result does not hold. Here is a counter-example: Take the term beta-normal term
-\begin{equation}\iamkvar\ (\lambda x. f(\lambda y . \underline{x}))\ 0 : ((\iaexp\typear\iaexp)\typear\iacom)\typear\iacom^\omega \times \iaexp  \ . \label{eq_mkvarcounterex}
-\end{equation}
-There is clearly no dead-code in this term. Moreover the variable $x$ is not incrementally-bound. Nevertheless its denotation is P-i.j.
-
-The same example shows that the second part of the Characterization Theorem does not hold in safe \ialgol, so we only have:
-\begin{theorem}
-\label{thm:almostsafeincrejust_ia} If $\Gamma \entail M : A$ is an almost safe \ialgol\ term then $\sem{\Gamma \entail M : A}$ is P-incrementally justified.
-\end{theorem}
-
-This shows that P-pointers are superfluous for safe \ialgol\ terms. Since unsafety only appears at order $3$, this theorem implies the well-known result that pointers are uniquely recoverable for $\ialgol_2$ terms. This suggests potential applications in Algorithmic Game Semantics: In \cite{ghicamccusker00}, Ghica and McCusker were able to show that the game denotation of $\ialgol_2$ terms can be characterized by (extended) regular expressions which subsequently led them to derive a decision procedure for observational equivalence in the considered fragment. Can a similar thing be achieved for higher-order fragment of safe \ialgol? We will investigate this question in the next chapter.
-\bigskip
-
-Take the unsafe term in \ref{eq_mkvarcounterex}. It is easy to see that it is essentially the only term in beta-nf having this denotation. Since safety is preserved by beta-normalization, this shows that the definability result does not hold for safe \ialgol.
-
-\section{Conclusion and remarks}
-\notetoself{Conclusion of Chapter 5}
-
-
-\subsection*{Towards a fully abstract game model}
+\subsection{Full abstraction}
 In chapter \ref{chap:gamesem} we have presented the well-known result that the standard game models of PCF is fully abstract
 \cite{abramsky94full,hylandong_pcf,ni,Nickau:lfcs94}. This means that two \pcf\ terms are obsevationaly equivalent if and only they have the same denotations. Since safe \pcf\ is a fragment of \pcf\, this statement also holds for safe \pcf\ terms: two safe \pcf\ terms are observationaly equivalent \emph{with respect to \pcf\ contexts} (not necessarily safe) if and only if they have the same game denotation.
 
@@ -953,5 +907,6 @@ that contexts are safe.
 The definability that we have obtained for safe \pcf\ is a first step towards full-abstraction. This problem will be studied in Chapter \ref{chap:model}.
 
 
-
+\section{Conclusion and remarks}
+\notetoself{Conclusion of Chapter 5}
 

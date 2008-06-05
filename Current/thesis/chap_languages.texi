@@ -45,6 +45,21 @@ $$
 \label{tab:pcf_formrules}
 \end{table}
 
+
+\begin{example}
+The integer addition function is definable in \pcf\ by:
+$$ \userop{plus} \equiv Y (\lambda p\; x\; y. \pcfcond\ x\;y\;(p\ (\pcfpred\ x)\ (\pcfsucc\ y))) $$
+so that for terms $M$ and $N$, if $M\eval m$ and $N\eval n$, $m,n\in\nat$ then $\userop{plus}\, M\, N \eval m+n$.
+
+Equality on integer is also definable by:
+\begin{align*}
+\userop{Eq} = Y ( \lambda f:\iaexp\typear\iaexp\typear\iaexp\, x:\iaexp\,  y:\iaexp .\  & \pcfcond\ a \\
+&\qquad (\pcfcond\ b\ 1\ 0) \\
+&\qquad (\pcfcond\ b\ 0\ (f\ (\pcfpred\ a)\ (\pcfpred\ b) )) )
+\end{align*}
+so that $\userop{Eq}\, M\, N \eval 1$ if $M$ and $N$ evaluate to the same value, and $\userop{Eq}\, M\, N \eval 0$ otherwise.
+\end{example}
+
 \subsection{Operational semantics of \pcf}
 
 We now give the operational semantics of the language using a big-step style
@@ -74,9 +89,34 @@ $$\rulef{M (\mathrm{Y} M) \eval V }{\texttt{Y} M \eval V}$$
 \end{table}
 
 
+\subsection{Case constructs}
+We will consider a conservative extension of \pcf\ denoted $\pcf_c$.
+This language adds a family of $k$-ary conditionals formed with the rule:
+$$
+\rulename{case} \rulef{\Gamma \vdash M : \iaexp \qquad \Gamma \vdash N_1 : \iaexp\quad \ldots\quad \Gamma \vdash N_k : \iaexp }{\Gamma \vdash \pcfcase_k\, M\, N_1\, N_2 \ldots N_k : \iaexp}
+$$
+Its operational semantics is given by the rule:
+$$ \rulef{M \eval i \quad N_{i+1} \eval V}{\pcfcase_k\ N\ N_1\ N_2\ \ldots\ N_k\ \eval V}\ i \in \{0, \ldots,k-1\}.$$
 
 
-
+\subsection{Syntactic sugar}
+For any integer $k\in\nat$ and term $M:\pcfexp$ we write ``$M + k$'' as syntactic sugar for ``$\userop{Plus}\, M\, k$''.
+For any terms $M$, $N_1$ and $N_2$ of type \iaexp\ we write ``$N_1 = N_2$'' for ``$\userop{Eq}\ N_1\ N_2$'',
+``$N_1 \neq N_2$'' for ``$\pcfcond\,(\userop{Eq}\ N_2\ N_2)\, 1\, 0$'',
+ and ``$\sugif M\,\sugthen N_1\,\sugelse N_2$'' for ``$\pcfcond\,M\,N_2\,N_1$''.
+ We will also use the construct
+ \begin{align*}
+    &   \sugmatch  M\, \sugwith \\
+    &    \qquad\  a_1 \rightarrow N_1 \\
+    &    \qquad|\, \ldots \\
+    &    \qquad|\, a_q \rightarrow N_q \\
+    &    \qquad|\, \_ \rightarrow R
+ \end{align*}
+ for distinct integers $a_1,\ldots a_q$, $q\geq 1$,
+ as syntactic sugar for ``$\pcfcase_m\ M\ N'_1 \ldots N'_m$'' where
+ $m =1+\max_{1\leq i\leq q} a_i$ and for $1\leq j\leq m$, $N'_j\equiv N_i$ if $j = a_i$ for some $1\leq i\leq q$  and $N'_j\equiv R$ otherwise.
+ 
+  
 \section{Idealized Algol}
 
 Idealized Algol, \ialgol\ for short, is \pcf\ extended with imperative features.
@@ -116,23 +156,26 @@ is a closed term.
 
 \begin{table}[htbp]
 $$ \rulef{\Gamma \vdash M : \iacom \quad \Gamma \vdash N :A}
-    {\Gamma \vdash \iaseq_A \ M\ N\ : A} \quad A \in \{ \iacom, \iaexp\}$$
+    {\Gamma \vdash \iaseq_A\, M\, N : A} \quad A \in \{ \iacom, \iaexp\}$$
 
 $$ \rulef{\Gamma \vdash M : \iavar\ \quad \Gamma \vdash N : \iaexp}
-    {\Gamma \vdash \iaassign\ M\ N\ : \iacom}
+    {\Gamma \vdash \iaassign\, M\, N\ : \iacom}
 \qquad
  \rulef{\Gamma \vdash M : \iavar}
-    {\Gamma \vdash \iaderef\ M\ : \iaexp}$$
+    {\Gamma \vdash \iaderef\, M : \iaexp}$$
 
-$$ \rulef{\Gamma, x : \iavar\ \vdash M : A}
+$$ \rulef{\Gamma, x : \iavar \vdash M : A}
     {\Gamma \vdash \texttt{new } x \texttt{ in } M} \quad A \in \{ \iacom, \iaexp\}$$
 
 $$ \rulef{\Gamma \vdash M_1 : \iaexp \rightarrow \iacom \quad \Gamma \vdash M_2 : \iaexp}
-    {\Gamma \vdash \iamkvar\  M_1\ M_2\ : \iavar}$$
+    {\Gamma \vdash \iamkvar\, M_1\, M_2 : \iavar}$$
 
-\caption{Formation rules for IA terms}
+\caption{Formation rules for \ialgol.}
 \label{tab:ia_formrules}
 \end{table}
+
+We will also use the standard ML-like syntactic sugar: $X:=v$ for $\iaassign\, X\, v$,
+$!X$ for $\iaderef\, X$, and $M;N$ for $\iaseq\, M\, N$.
 
 
 \subsection{Finitary fragments of Idealized algol}

@@ -24,7 +24,8 @@ lambda calculus augmented with constants from $\Xi$. In the
 following we will use new subscripts for each type system that we
 introduce. For simplicity we write $(A_1, \cdots, A_n, B)$ to mean
 $A_1 \typear \cdots \typear A_n \typear B$, where $B$ is not
-necessarily ground.
+necessarily ground. It will be convenient to use the following abbreviation for types: $0$ for the base type $o$, and
+for $k\geq 0$: $(k+1) = k \typear o$.
 
 \begin{definition}
 \label{def:safelambda}
@@ -57,11 +58,13 @@ $$
 the \defname{homogeneous safe lambda calculus}.
 \end{inparaenum}
 \end{definition}
-We give a brief account of the homogeneity constraint in Sec.\ \ref{sec:safe_homog}.
+We give a brief account of the homogeneous safe lambda calculus in Sec.\ \ref{sec:safe_homog}.
+\smallskip
 
 The safe lambda calculus deviates from the standard definition of
 the simply-typed lambda calculus in a number of ways. First the rules $\rulename{app}$ and $\rulename{abs}$ respectively can perform multiple applications and abstract several variables at once. (Of course this feature alone does not alter expressivity.) Crucially,
-the side conditions in the application rule and abstraction rule require the variables in the typing context to have orders no smaller than that of the term being formed.  We do not impose any constraint on types. In particular, type-homogeneity, which was an
+the side conditions in the application rule and abstraction rule require the variables in the typing context to have orders no smaller than that of the term being formed.
+Safe terms can be applied together using the rule $\rulename{app_{as}}$, but the resulting term is only ``almost-safe'', it can then be turned into  a safe term using the abstraction rule. We do not impose any constraint on types. In particular, type-homogeneity, which was an
 assumption of the original definition of safe grammars \cite{KNU02}, is not required here. Another difference is that we allow $\Xi$-constants to have
 arbitrary higher-order types.
 
@@ -100,16 +103,30 @@ is safe as the following proof tree shows:
 \end{mathpar}
 \end{example}
 
+\begin{example}
+The term
+$ f:(1,1,o) \asappentail (\lambda \varphi \theta . \varphi (\lambda x . x)) (f (\lambda x .x)) \equiv M : 3$ 
+is almost safe but $ \sentail \lambda f. M :((1,1,o),3) $ is safe.
+\end{example}
+
+
 It is easy to see that valid typing judgements of the safe lambda
 calculus satisfy the following simple invariant:
-\begin{lemma}
+\begin{lemma}[Basic property]
 \label{lem:ordfreevar}
 If $\Gamma \sentail M : A$ then every variable in $\Gamma$ occurring
 free in $M$ has order at least $\ord(M)$.
 \end{lemma}
+When a term is unsafe, we may highlight the source of its unsafety by underlining one of its subterm and some free occurrence of a variable in that subterm that does not verify the condition of the previous Lemma. (Sometimes we only underline the variable.) For instance the term $\lambda f . f (\lambda x . f (\underline{\lambda y .\underline{x}}))$ is unsafe because the subterm $\lambda y .x$ has order greater that the order of the variable $x$ occurring free in it.
+\smallskip
 
-The converse of this lemma is not true: consider the simply-typed term $\lambda y z. (\lambda x . y ) z$ with $x,y,z:o$. This term is closed therefore it trivially satisfies the condition in the conclusion of the previous lemma, but it is not safe because the variable $y$ is not abstracted by the abstraction $\lambda x$.
-Even for applicative term the converse does not hold: for instance the unsafe term $ f:((o,o),o), g:(o,o), y:o \stentail f (\underline{g \underline{y}}) : o$ verifies the condition of the lemma.
+
+Observe that the converse of the previous lemma does not hold: take the simply-typed term $\lambda y z. (\lambda x . y ) z$ with $x,y,z:o$. This term is closed therefore it trivially satisfies the condition in the conclusion of the previous lemma, but it is not safe because the variable $y$ is not abstracted by the ``$\lambda x$'' abstraction.
+Even for applicative term the converse does not hold: for instance the unsafe term $f:2, g:1, y:o \stentail f (\underline{g \underline{y}}) : o$ verifies the condition of the lemma.
+\smallskip
+
+
+
 
 When restricted to the homogeneously-typed sub-system, the safe lambda calculus captures the original notion of safety due to Knapik \emph{et al.}~in the context of higher-order grammars (Def.\ \ref{def:safegrammar}):
 
@@ -216,10 +233,10 @@ Consequently, in the safe lambda calculus, substitution can be implemented using
   In order to contract the $\beta$-redex in the term
 \[f:(o,o,o),x:o
   \stentail (\lambda \varphi^{(o,o)} x^o . \varphi \, x) (\underline{f \,
-    x}) : (o,o)\] one should rename the bound variable $x$ to a fresh name to
-  prevent the capture of the free occurrence of $x$ in the underlined term during substitution. Consequently, by the previous lemma,
-  the term is not safe (because $\ord{x} = 0 < 1
-  = \ord{f x}$).
+    \underline{x}}) : (o,o)\] one should rename the bound variable $x$ to a fresh name to
+  prevent the capture of the free occurrence of $x$ in the underlined subterm during substitution. Consequently, by the previous lemma,
+  the term is not safe. And indeed the basic property of the safe lambda calculus is not verified because $\ord{x} = 0 < 1
+  = \ord{f x}$.
 \end{example}
 
 Note that $\lambda$-terms that `satisfy' the No-variable-capture

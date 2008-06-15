@@ -1891,7 +1891,7 @@ differ because the former reduces $\beta$-redex one at a time whereas the latter
 
 Clearly, the inequational soundness of the \pcf\ game model implies that of the safe \pcf\ game model. This is because a safe term is denoted by the same strategy in $\mathcal{I}_{ib}$ and $\mathcal{C}_{ib}$ and because the big-step evaluation semantics of the two languages coincide.
 
-We have seen in Chapter \ref{chap:syntactic_gamesem} that the definability result for \pcf\ implies that of of safe \pcf: every compact closed P-i.j.\ strategy is the denotation of some safe \pcf\ term (Prop.\ \ref{prop:safetydefinability}). Full abstraction then falls out easily from  definability and soundness as in the \pcf\ case \cite{abramsky94full}:
+We have seen in Chapter \ref{chap:syntactic_gamesem} that the definability result for \pcf\ implies that of safe \pcf: every compact closed P-i.j.\ strategy is the denotation of some safe \pcf\ term (Prop.\ \ref{prop:safetydefinability}). Full abstraction then falls out easily from  definability and soundness as in the \pcf\ case \cite{abramsky94full}:
 \begin{theorem}[Full abstraction of safe \pcf]
 For any closed safe \pcf\ terms $M$ and $N$ of the same type,
 $$ \sem{M}_{\mathcal{I}} \intrpre_{\mathcal{I}_{ib}} \sem{N}_{\mathcal{I}}\ \iff\ M \obspre_s  N \ .$$
@@ -1924,7 +1924,7 @@ We can therefore obtain a strategy $\tau^*$ that is P-i.j.\ modulo $In(\sem{!var
 
 \begin{remark}
 In the previous proof, we mentioned that it is possible for $cell ; \tau$ to be P-i.j\ although $\tau$ is not even
-P-i.j.\ modulo $In(\sem{!var})$. Here is an example illustrating this. Take the \ialgol\ term:
+P-i.j.\ modulo $In(\sem{!var})$. Here is an example illustrating this fact. Take the \ialgol\ term:
 \begin{align*}
  x:\iavar & \entail \lambda f\, y. \iaseq (\iaassign\, x\, 0) (\pcfcond\, (\iaderef x) 0
 (f (\lambda z.\underline{y}))) \equiv M \\
@@ -1977,9 +1977,14 @@ Since $q$ is a non-initial O-move, we necessarily have $\level{q} = 2$.
 Let $q'$ denote the P-move preceding $q$ in $s$.
 Suppose that $\level{q'} =1$ then $q'$ is justified by an occurrence of the initial $A$-move $q_0$. Since $A$ is well-opened, $s$ contains only one occurrence of $q_0$ and therefore we have $\oview{s} = q_0 \cdot q' \cdot q$. Thus by O-visibility, $q$ necessarily points to $q'$ therefore $\ord{q'} > \ord{q}$, thus since $q'$ is the only P-move occurring in the O-view, it is also the only P-move with order greater than $\ord{q}$.
 Otherwise we have $\level{q'} = 3$. Thus $\ord{q'} \leq \ord{A} -\level{q'} = 0$ and $q'$ is justified by some O-move $q''$ of level $2$.  We have $\oview{s} = \oview{s_{\prefixof q''}} \cdot q' \cdot q$. Thus we can conclude using the I.H.\ on $s_{\prefixof q''}$ on the fact that $\ord{q'} = 0 < \ord{q}$.
-
 Hence $s$ is necessarily O-i.j.\qed
+\smallskip
 
+This lemma does not hold anymore at order $4$. For instance
+the identity strategy $id_A : A\typear A$ on the order-$3$ game $A = \sem{((o^3\typear o^2)\typear o^1)\typear o^0}$ contains the following play which is not O-i.j.:
+$$ \Pstr[17pt]{(q0){q_0} (qp0-q0){q'_0} (qp1-qp0){q'_1}
+(q1-q0){q_1} (q2-q1){q_2} (qp2-qp1){q'_2} (qp12-qp0){q'_1} (q12-q0){q_1} (q22-q12){q_2} (qp22-qp12){q'_2} (qp3-qp2){\underline{q'_3}} } $$
+where we write $m'$ to denote moves from the left copy of $A$.
 
 
 \begin{lemma}
@@ -2005,33 +2010,44 @@ $u \filter (A \typear o)$ is O-i.j.
 If we regard $\sigma : A$ as the denotation of some closed term
 $\vdash M:A$ and $\mu$ as the denotation of some context $x:A \vdash C[x]:o$ then what the previous lemma
 says is that plays that are not O-i.j.\ are not relevant to the observational equivalence problem for safe terms.
-This suggests that we can eliminate them from the game denotation. The following Lemma guarantees that doing so
+This suggests that we can eliminate them from the game denotation. The following Lemma (which is the counterpart of \cite[Lemma 3.6.2]{Harmer2005} for O-visibility) guarantees that doing so
 does not break compositionality:
 \begin{lemma}
 \label{lem:oij_decomp}
 Let $\sigma : A\rightarrow B$ and $\tau : A\rightarrow B$ be closed P-i.j.\ strategies and suppose
 that $u\in \sigma \| \tau$ such that for all external O-moves $o$ of $u$, we have that $u_{\prefixof o} \filter A,C$ satisfies
 O-incremental justification. Then, for any generalized O-move $m$ of $u$ in component $X$, we have that
-$u_{\prefixof m} \filter X$ satisfies O-incremental justification
-\end{lemma}
-\todo{Proof forthcoming! }
+$u_{\prefixof m} \filter X$ satisfies O-incremental justification. \end{lemma}
+\proof
+\newcommand\lastPq[1]{\uparrow_{#1}\kern -0.2ex}
+For any sequence of moves $s$ and move $q$ we write $\lastPq{q}(s)$ to denote the last P-question in $s$ with order strictly greater than $\ord{q}$ if it exists, and an undefined value otherwise.
 
-This Lemma can be restated equivalently as:
-\begin{eqnarray}
-     \forall \sigma, \tau\ \mbox{closed P-i.j.}: \mathcal{O}(\sigma) ; \mathcal{O}(\tau) \supseteq \mathcal{O}(\sigma ; \tau)
+Suppose $m$ is an external O-move. If $m$ is initial then there is nothing to prove, otherwise it points to $\lastPq{m}(\oview{u_{\prefixof m}\filter A,C})$ in component $X$.
+
+\todo{Proof forthcoming! }
+\qed
+\smallskip
+
+This lemma says that the O-i.j.\ plays of the composite come from the interaction of O-i.j.\ plays from the individual strategies. This can be viewed as the dual of the compositionality result for closed P-i.j.\ strategies. This duality becomes more apparent when restating the previous lemma more succinctly as:
+\begin{equation}
+     \forall \sigma, \tau\ \mbox{closed P-i.j.}: \mathcal{O}(\sigma ; \tau) \subseteq \mathcal{O}(\sigma) ; \mathcal{O}(\tau) 
      \label{eqn:oijdecomp_1}
-\end{eqnarray}
-which is equivalent to
-\begin{eqnarray}
-    \forall \sigma, \tau\ \mbox{closed P-i.j.}: \mathcal{O}( \mathcal{O}(\sigma) ; \mathcal{O}(\tau) ) = \mathcal{O}(\sigma ; \tau)
-    \label{eqn:oijdecomp_2}
-\end{eqnarray}
-(Clearly Eq.~\ref{eqn:oijdecomp_1} implies the right-to-left inclusion in Eq.~\ref{eqn:oijdecomp_2}. The converse inclusion holds because $\mathcal{O}(\sigma) ; \mathcal{O}(\tau) \subseteq \sigma;\tau$.) In other words, this lemma states that O-i.j plays cannot be obtained from the interaction of plays that are not O-i.j. In some sense it is the dual of compositionality of closed P-i.j.\ strategies. This duality can be revealed by reformulating compositionality as follows:
-\begin{eqnarray}
+\end{equation}
+and reformulating compositionality as:
+\begin{equation}
      \forall \sigma, \tau\ \mbox{closed P-i.j.}: \, \mathcal{P}(\sigma) ; \mathcal{P}(\tau) \subseteq \mathcal{P}(\sigma ; \tau)
      \label{eqn:pijcomp_1}
-\end{eqnarray}
+\end{equation}
 where $\mathcal{P}(\sigma)$ denotes the largest even-length-prefix-closed subset of $\sigma$ consisting of closed P-i.j.\ plays.
+\bigskip
+
+Furthermore we have:
+\begin{equation}
+    \forall \sigma, \tau\ \mbox{closed P-i.j.}: \mathcal{O}(\sigma ; \tau) = \mathcal{O}( \mathcal{O}(\sigma) ; \mathcal{O}(\tau) ) \ .
+    \label{eqn:oijdecomp_2}
+\end{equation}
+(By monotonicity, applying $\mathcal{O}(\cdot)$ to both sides of Eq.~\ref{eqn:oijdecomp_1} gives the left-to-right inclusion. Furthermore because $\sigma;\tau \supseteq \mathcal{O}(\sigma) ; \mathcal{O}(\tau)$, by monotonicity of $\mathcal{O}(\cdot)$ we obtain the right-to-left inclusion.)
+\smallskip
 
 \subsubsection*{The category of incremental strategies}
 We say that a strategy $\sigma$ is \defname{incremental} if it is closed P-incrementally justified and O-incrementally justified, thus $\sigma = \mathcal{P}(\sigma)$ and $\sigma = \mathcal{O}(\sigma)$.

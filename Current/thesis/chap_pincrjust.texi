@@ -1,14 +1,15 @@
 This chapter aims to formally define what is a model of the safe lambda calculus and its various extensions.
 We present a categorical interpretation of the safe lambda calculus in the same vein as the characterization of the lambda calculus by Cartesian Closed Categories.
 We then provide such a model by means of game semantics and show that it is fully-abstract when observational equivalence is defined with respect to safe contexts.
-We conclude the chapter by examining the model from an Algorithmic game semantics point of view: we consider the problem of observational equivalence for finitary fragments of safe \ialgol\ and show that up to order $3$, the complexity of deciding observational equivalence is essentially the same as for unrestricted \ialgol\ terms.
+We conclude the chapter by examining the model from an Algorithmic game semantic point of view: we consider the problem of observational equivalence for finitary fragments of safe \ialgol\ and show that up to order $3$, the complexity of deciding observational equivalence is essentially the same as for unrestricted \ialgol\ terms.
 We then give a version of the complete play Characterization Theorem for safe terms: we show that two safe terms are observationally equivalent if and only if
 the sets of complete O-incrementally justified plays of the denotations are equal. This result leads us to conjecture that observational equivalence is decidable for safe $\ialgol_4$.
- 
+
 \section{Categorical model}
 
-It is well-known \cite{lambek1986ccc} that any extensional model of the simply-typed lambda calculus is a Cartesian-Closed Category (CCC) (a category with a terminal object, finite product and exponential). \emph{What is the categorical interpretation of the safe lambda calculus?}
-This section introduces \emph{incremental closed categories} and shows that they provide a sound model of the safe lambda calculus.
+It is well-known \cite{lambek1986ccc} that cartesian closed categories (a category with a terminal object, finite product and exponential), CCCs for short, capture the notion of model of typed lambda calculi: any extensional model of the simply-typed lambda calculus is a CCC. Conversely, any CCC induces a typed-lambda calculus.
+\emph{What is the categorical interpretation of the safe lambda calculus?}
+This section introduces \emph{incremental closed categories} and shows that they capture models of safe lambda calculi.
 
 \subsection{Safe lambda calculus with product}
 \label{sec:safelmd_product}
@@ -18,90 +19,106 @@ The type grammar is given by:
 $$
 T ::= \ B\ | \ T \rightarrow T | \ T \times T
 $$
-for some set $B$ of base types, and the typing system is extended with three rules corresponding to pairing, first projection and second projection (respectively
-$\rulename{\times}$, $\rulename{\pi_1}$ and $\rulename{\pi_2}$ in
-Def.\ \ref{def:safecalc_withprod}). For the abstraction and application rules, we could keep the same definition as in Chapter \ref{chap:safelambda}. This would guarantee that the basic property of the safe-lambda calculus is verified (free variables have order greater than the term itself) and in turn implies the No-variable-renaming Lemma. Although this definition conveys the syntactic notion of safety, it does not have desirable semantic properties. For instance take the following two simply-typed terms:
+for some set $B$ of base types. The typing system of the safe lambda calculus is then extended with three rules corresponding to pairing, first projection and second projection (respectively
+$\rulename{\times}$, $\rulename{\pi_1}$ and $\rulename{\pi_2}$ in Table \ref{tab:safelmb_product}). Although this suffices to add product to the safe lambda calculus, we will impose a further restriction. Indeed, consider the following examples:
 \begin{align*}
  x:(o\typear o)\times o &\stentail \lambda z^o.\, (\pi_2 x) : (o\typear (o\typear o)) \equiv M_1\\
- x_1:(o\typear o), x_2:o &\stentail \lambda z^o.\, x_2 : (o\typear (o\typear o)) \equiv M_2
+ x_1:(o\typear o), x_2:o &\sentail \lambda z^o.\, \underline{x_2} : (o\typear (o\typear o)) \equiv M_2 \ .
 \end{align*}
-In the categorical model of the simply-typed lambda calculus, these two terms are denoted by the same morphism. However the first term would be considered safe and the second one unsafe!
+Although these are two equivalent beta-normal terms, only $M_2$ is safe. Indeed, the side condition of the abstraction rule only requires that the \emph{variables} in the context have order greater that the order of the term, therefore $M_2$ is unsafe because of the variable $x_2$. In $M_1$, however, $x_1$ and $x_2$ are combined into a single variable, this has the effect of increasing the order of the variable and therefore the side-condition holds.
 
-
-One way to overcome this problem is to impose that for any context-variable of type $A \times B$ we have $\ord A = \ord B$. Another solution is to forbid the use of variables of product type and only allow product types for terms created with the pairing rule. But these two approaches are too restrictive.
-
-The right approach consists in modifying slightly the side-condition of the application and abstraction rules: instead of requiring that all variables in the context have order greater than the order of the term, we require that the order
-of \emph{any prime sub-type of any variable} in the context has
-order greater that that of the term, where the set $Pr(A)$ of
-\defname{prime sub-types} of a type $A$ is given by:
+In the categorical model of the simply-typed lambda calculus, a term-in-context $\Gamma \entail M :T$ is modeled by a morphism $\sem{\Gamma}\typear \sem{T}$ where the context $\Gamma$ is identified with the product of the types of the variables in the context \ie if the context variables are $X_1, \cdots,  X_n$ then $\Gamma$ is identified with $X_1\times \cdots\times X_n$. Thus two contexts $x:A, y:B$ and $xy:A\times B$ will be denoted by the same object in the category. Because variables in the context can be ``combined'', there is no way to tell just by looking a the type $\Gamma$ which subtypes come from which variable.
+Consequently the basic property of the safe lambda calculus -- that all the variables in the context have order greater that the order of the term -- cannot be expressed 
+in the standard categorical model. For this reason we modify slightly the side-condition of the abstraction and application rules to enforce a property stronger than the usual basic property of the safe lambda calculus: instead of requiring that all variables in the context have order greater than the order of the term, we require that the order of \emph{any prime sub-type of any variable} in the context has order greater than that of the term, where the set of
+\defname{prime sub-types} of a type $A$, written $Pr(A)$, is given by:
 \begin{align*}
 Pr(B) &= \{ B \} & \mbox{ if $B$ is a base type,}\\
 Pr(A\rightarrow B) &= \{ A\rightarrow B \} \\
 Pr(A\times B) &= Pr(A) \union Pr(B) \ .
 \end{align*}
-Then for any finite typed alphabet $\Gamma$ and type $B$, we define the \defname{safety predicate} $SC(\Gamma ; B)$ as
-$$SC(\Gamma ; B) \quad \defeq \quad  \forall x:A\; \in \Gamma . \forall A' \in Pr(A) . \ord A' \geq \ord B$$
-where $Pr(A)$ denotes the set of prime sub-types of $A$.
+We then define the relation $\geq$ on types as follows:
+$$A \geq B \quad \defeq \quad  \forall A' \in Pr(A) . \ord A' \geq \ord B \ .$$
+Thus for any context $\Gamma$ and type $B$ we have:
+$$\Gamma \geq B  \iff \forall x:A\; \in \Gamma . \forall A' \in Pr(A) . \ord A' \geq \ord B \ .$$
+We now replace the side-condition in the abstraction and application rules by ``$\Gamma \geq B$'' where $B$ denotes the type of the term being formed and $\Gamma$ its context. 
 
-We can now replace the side-condition in the abstraction and application rules by $SC(\Gamma ; B)$ where $B$ is the type of the term being formed and $\Gamma$ its context.
-
-This change partly fixes the problem: the terms $M_1$ are $M_2$ are now both considered unsafe, but unfortunately we still do not capture adequately the notion of safety. Take the two simply-typed terms:
-\begin{align*}
- x:(o\typear o)\times o &\stentail \lambda z^o.\, (\pi_1 x) : (o\typear (o\typear o)) \equiv N_1\\
- x_1:(o\typear o), x_2:o &\stentail \lambda z^o.\, x_1 : (o\typear (o\typear o)) \equiv N_2 \ .
-\end{align*}
-Again, these terms are denoted by the same morphism in the categorical model. But
-with our modified calculus $N_1$ is unsafe whereas $N_2$ is safe. (This is because in $N_1$, the variable $x$ has to be introduced first in the derivation tree, whereas in $N_2$, $x_1$ has to be introduced first but $x_2$ can be added to the context at the end of the derivation using the weakening rule.)
-
-We therefore need to change the system to be able to type terms like $N_2$. This is done using a new kind of weakening rule that alters the type of a context-variable instead of extending the context with new variables:
-$$
-\rulename{wk^\times} \ \rulef{\Gamma, x:A \sentail s : T}{\Gamma, x:A\times B \sentail s\subst{(\pi_1 x)}{x} : T}
-$$
-This rule, which is semantically equivalent to the weakening rule, allows us to type the term $N_1$.
-
-We can now give the full system of rules of the safe calculus with product:
 \begin{definition}
 \label{def:safecalc_withprod}
- The \defname{safe lambda calculus with product}, or safe $\Lambda^{\rightarrow}_\times$ for short, is given
-by induction over the following rules (the framed parts show the differences with the safe lambda calculus):
+ The \defname{safe lambda calculus with product}, or safe $\Lambda^{\rightarrow}_\times$ for short, over a typed-alphabet $\Xi$ of constants is given
+by induction over the rules of Table \ref{tab:safelmb_product}. The differences with the rules of the safe lambda calculus without product are framed.
+\end{definition}
+
+\begin{table}[htbp]
 $$ \rulename{var} \ \rulef{}{x : A\sentail x : A} \qquad
+\rulename{const} \ \rulef{}{\sentail f : A}~f \in \Xi \qquad
 \rulename{wk} \ \rulef{\Gamma \sentail s : A}{\Delta \sentail s : A}
 \quad \Gamma \subset \Delta
 $$
+
 \begin{center}
-\framebox{
-\begin{Bcenter}
-$\dps \rulename{\times} \ \rulef{\Gamma \sentail s : A \qquad \Gamma \sentail t : B}
+\framebox{$ \dps \rulename{\times} \ \rulef{\Gamma \sentail s : A \qquad \Gamma \sentail t : B}
 {\Gamma \sentail \langle s, t \rangle : A \times B}
 \qquad \rulename{\pi_1} \ \rulef{\Gamma \sentail s : A \times B}
 {\Gamma \sentail \pi_1 s : A} \qquad
- \rulename{\pi_2} \ \rulef{\Gamma \sentail s : A \times B}
-{\Gamma \sentail \pi_2 s : B}$
-\\[10pt]
-$\rulename{wk^\times} \ \rulef{\Gamma, x:A \sentail s : T}{\Gamma, x:A\times B \sentail s\subst{(\pi_1 x)}{x} : T}$
-\end{Bcenter}
-}
+ \rulename{\pi_2} \ \rulef{\Gamma \sentail s : A \times B}{\Gamma \sentail \pi_2 s : B}$}
 \end{center}
+
 $$ \rulename{app_{as}} \ \rulef{\Gamma \sentail s : (A_1, \ldots , A_n,B)
 \quad \Gamma \sentail t_1 : A_1 \quad \ldots
 \quad \Gamma \sentail t_n : A_n} {\Gamma \asappentail s~t_1 \ldots t_n : B} $$
 
 $$ \rulename{app} \ \rulef{\Gamma \sentail s : (A_1, \ldots , A_n,B)
 \quad \Gamma \sentail t_1 : A_1 \quad \ldots
-\quad \Gamma \sentail t_n : A_n} {\Gamma \sentail s~t_1 \ldots t_n : B} \quad \ \framebox{$SC(\Gamma ; B)$}$$
+\quad \Gamma \sentail t_n : A_n} {\Gamma \sentail s~t_1 \ldots t_n : B} \quad \framebox{$\Gamma \geq B$}
+$$
 
 $$ \rulename{abs_{as}} \ \rulef{\Gamma, x_1 : A_1, \ldots, x_n : A_n
   \asappentail s : B} {\Gamma \sentail \lambda x_1 \ldots x_n . s :
-  (A_1, \ldots ,A_n,B)} \ \framebox{$SC(\Gamma ; (A_1, \ldots ,A_n,B) )$}
+  (A_1, \ldots ,A_n,B)} \quad \framebox{$\Gamma \geq (A_1, \ldots ,A_n,B)$}
 $$
 $$ \rulename{abs} \ \rulef{\Gamma, x_1 : A_1, \ldots, x_n : A_n
   \sentail s : B} {\Gamma \sentail \lambda x_1 \ldots x_n . s :
-  (A_1, \ldots ,A_n,B)} \ \framebox{$SC(\Gamma ; (A_1, \ldots ,A_n,B) )$}
+  (A_1, \ldots ,A_n,B)} \quad \framebox{$\Gamma \geq (A_1, \ldots ,A_n,B)$}
 $$
-\end{definition}
-\begin{example}
-The terms $M_1$, $M_2$ are unsafe and the terms $N_1$ and $N_2$ are safe.
+\caption{The safe lambda calculus with product.}
+\label{tab:safelmb_product}
+\end{table}
+
+\begin{example} 
+The terms $M_1$ and $M_2$ given above are both unsafe.
 \end{example}
+
+It is easy to see that the basic property of the safe lambda calculus still holds -- the free variables of a term have order greater than the order of the term itself -- and therefore all the basic results showed in Chapter \ref{chap:safelambda} also hold (No-variable-capture lemma, safety preserved by safe $\beta$ reduction,~...).
+
+We call \defname{typed-calculus} any applied simply-typed lambda calculus with product with a stock of constants and function symbols together with an operational semantics for function symbols given by means of a set of reduction rules. We define the \defname{safe fragment} of a typed-calculus as the system obtained by replacing the abstraction and application
+rules by the rules \rulenamet{app} \rulenamet{app_{as}}, \rulenamet{abs} and \rulenamet{abs_{as}} from the definition above.
+A language that is the safe fragment of some typed-lambda calculus is called a \defname{safe typed-calculus}.
+
+The \defname{long safe fragment} of a type-calculus is is the subclass of the safe fragment consisting of terms that are
+ typable without using the rules \rulenamet{app_{as}} or \rulenamet{abs_{as}}. (See definition \ref{dfn:longsafe}.)
+
+\paragraph{Alternative definition}
+
+Our definition of the safe lambda calculus with product conveys the syntactic notion of safety appropriately but it is not semantically consistent in the sense that there exists pairs of terms 
+that are denoted by the same morphism in the categorical model of the simply-typed lambda calculus but such that one is safe and the other unsafe. For instance the two simply-typed terms:
+\begin{align*}
+ x:(o\typear o)\times o &\stentail \lambda z^o.\, (\pi_1 x) : (o\typear (o\typear o)) \equiv N_1\\
+ x_1:(o\typear o), x_2:o &\sentail \lambda z^o.\, x_1 : (o\typear (o\typear o)) \equiv N_2
+\end{align*}
+are denoted by the same morphism in the categorical model, but $N_1$ is unsafe whereas $N_2$ is safe. (This is because in $N_1$, the variable $x$ has to be introduced first in the derivation tree, whereas in $N_2$, $x_1$ has to be introduced first but $x_2$ can be added to the context at the end of the derivation using the weakening rule.)
+
+We could define an alternative notion of safe lambda calculus with product where this mismatch does not happen. One way is to impose that for any context-variable of type $A \times B$ the equality $\ord A = \ord B$ holds. Another solution is to forbid the use of variables of product type and only allow product types for terms created with the pairing rule. But these two approaches are rather restrictive. A better approach consists in changing the system to allow the formation of terms like $N_2$. This can be done by adding a new kind of weakening rule that alters the type of context-variables rather than adding new variables to the context:
+$$
+\rulename{wk^\times} \ \rulef{\Gamma, x:A \sentail s : C}{\Gamma, x:A\times B \sentail s\subst{(\pi_1 x)}{x} : C}
+$$
+Semantically, this rules is equivalent to the weakening rule because in the categorical model of the simply-typed lambda calculus, if $s$ is denoted by a morphism $\sem{s} : \Gamma\times A \typear C$  then the terms $\Gamma, x:A\times B \sentail s\subst{(\pi_1 x)}{x} : C$  and $\Gamma, x:A, y:B \sentail s\subst{(\pi_1 x)}{x} : C$ are both denoted by
+the morphism $\langle id_{\Gamma}, \pi_1 \rangle ; \sem{s}$.
+
+\begin{example}
+With the addition of this rule to the system, both $N_1$ and $N_2$ are typable.
+\end{example}
+Again it is easy to see that the basic property of the safe lambda calculus still holds and therefore all the basic results showed in Chapter \ref{chap:safelambda} also hold.
+Moreover, any term that is typable with these rules is equivalent to some term typable with the rules of the safe lambda calculus with product. Thus any model of the safe lambda calculus with product is also a model of this calculus.
 
 \subsection{Incremental closed category}
 
@@ -187,7 +204,7 @@ is in $\cathom{\mathbf{I}}$;
 An \defname{incremental closed category}, ICC for short, is a category that is isomorphic to some sub-ICC of a CCC.
 \end{definition}
 
-Let $\mathbf{C}$ be a CCC. The \defname{canonical sub-ICC} of $\mathbf{C}$ is the subcategory $\mathbf{I}$ obtained by keeping only the morphisms that are incremental modulo weakening \ie for any objects $A$, $B$:
+Let $\mathbf{C}$ be a CCC. The \defname{canonical sub-ICC} of $\mathbf{C}$, written $subICC(\mathbf{C})$, is the subcategory $\mathbf{I}$ obtained by keeping only the morphisms that are incremental modulo weakening \ie for any objects $A$, $B$:
 \begin{align*}
 \mathbf{I}(A,B) &= \mathbf{C}(A,B) & \mbox{if } \dro(A)\geq\ord(B);\\
 \mathbf{I}(A,B) &= \emptyset & \mbox{if $\dro(A)<\ord(B)$ and $A$ is not a product;} \\
@@ -249,45 +266,46 @@ An ICC is \defname{rational} if it is isomorphic to a sub-ICC $\mathbf I$ of a r
 \end{definition}
 
 
-\subsection{Interpretation}
+\subsection{Categorical semantics}
 
-It is well-known \cite{lambek1986ccc} that any CCC provides a model of the simply-typed lambda calculus that is sound with respect to $\beta\eta$-equality: If $M=_{\beta\eta}N$ then $M$ and $N$ are denoted by the same morphism in the category. We show here that ICCs provide a sound model of the safe lambda calculus.
+Consider a typed-lambda calculus extended with a set of constants and function symbols together with a set of reduction rules giving the operational interpretation of these functions.
+A \defname{model} of a type-lambda calculus in a cartesian closed category is specified by giving:
+\begin{compactitem}
+  \item For every ground type $T$ an object $\sem{T}$ of the category. This suffices to interpret any simple type $T$ as an object $\sem{T}$ using products and exponentials;
+  \item for every constant $k$ of type $T$ a morphism $\sem{K}$ of type $\sem{T}$;
+  \item for every function symbol $f$ of type $A_1 \times \cdots \times A_n \rightarrow B$,  a morphism $\sem{f}$ of type $\sem{A_1}\times \cdots \times \sem{A_n} \typear \sem{B}$.
+\end{compactitem}
+It is then possible to specify the interpretation of any term-in-context $\Gamma \vdash M : T$ by induction on
+the structure of the term \cite{CroleRL:catt}. The \defname{model} is said to be sound if whenever $M$ reduces to $N$ with the small-step semantics of the language then $M$ and $N$ have the same denotation in the model.
 
-\begin{proposition}[Model of the safe lambda calculus]
+\begin{proposition}[Models of safe typed lambda calculus]
 \label{prop:incrementalcat_model_safelambda}
-An ICC provides a sound model (with respect to $=_{\beta\eta}$) of the
-safe lambda calculus with product.
+Let $\mathcal{L}$ be a type-lambda calculus. Suppose that a CCC $\mathbf{C}$ provides a sound model of $\mathcal{L}$, then the canonical sub-ICC $\mathbf{I}$  of $\mathbf{C}$ provides a sound model of the safe fragment of $\mathcal{L}$.
 \end{proposition}
 \proof
-Let $\mathbf{I}$ be an ICC. By definition, it is isomorphic to some subcategory of a CCC $\mathbf{C}$. The interpretation $\sem{\cdot}$ of the safe lambda calculus with product in $\mathbf{I}$ is induced by the standard interpretation in the CCC:
+The interpretation $\sem{\cdot}$ of the safe lambda calculus with product in $\mathbf{I}$ is induced by the standard interpretation in the CCC:
 Ground types are interpreted as objects of the category, this suffices to interpret any simple type $T$ as an object $\sem{T}$ using products and exponentials. A closed term of type $T$ is interpreted by a morphism $I \typear \sem{T}$, and an opened term of type $T$ is interpreted by a morphism from the denotation of the type of its free variables to $\sem{T}$.
 
-Since we work modulo $\eta$ equivalence, we just need to show how to model
-terms that are in $\eta$-long normal form. Thus we do not have to consider the rules \rulenamet{app_{as}} or \rulenamet{abs_{as}} because they are not required to type $\eta$-long normal terms.
+We show that for any safe term $M$, its denotation $\sem{M}_{\mathbf{C}}$ in $\mathbf{C}$ is also a morphism of the subcategory
+$\mathbf{I}$. Since the model $\mathbf{C}$ is sound, $M$ has the same denotation as its eta-long normal form therefore we can assume w.l.o.g.\ that $M$ is eta-long normal.
+ We show the result by induction on the structure of  $M$. We do not have to consider the rules \rulenamet{app_{as}} or \rulenamet{abs_{as}} because they are not required to type $\eta$-long normal terms. The \rulenamet{var} axiom is interpreted by the identity morphisms which all belong to the ICC.
+The rules \rulenamet{\times}, \rulenamet{\pi_1} and \rulenamet{\pi_2} are interpreted by pairing and projections.
+The weakening rule \rulenamet{wk} is interpreted by composition with the projection morphism $\pi_1$.
+For the rule \rulenamet{app}, the term formed is of ground type (since we work with eta-long normal form) so we have $\sem{s\,t_1\ldots t_n : o} = \langle \sem{s}, \sem{t_1}, \ldots, \sem{t_n}\rangle \fatcompos ev_{(A_1\times\ldots\times A_n),o}$ so we can conclude using the I.H.\ on the fact that the evaluation map $ev_{(A_1\times\ldots\times A_n),o}$ belongs to the ICC.
+Rule \rulenamet{abs}: let $f:\Gamma \times (A_1\times\ldots\times A_n)\typear T$ be  the denotation of the premise. The term formed is denoted by the curried morphism $\Lambda(f): \Gamma \typear T^{(A_1\times\ldots\times A_n)}$. The side condition ensures that this morphism is incremental closed and therefore it belongs to the ICC.
 
-The \rulenamet{var} axiom is interpreted by the identity morphisms.
-The rules \rulenamet{\times}, \rulenamet{\pi_1} and \rulenamet{\pi_2}
-are interpreted by pairing and projections.
-The weakening rules \rulenamet{wk} and \rulenamet{wk^\times} are interpreted by composition with the projection morphism $\pi_1$.
-For the rule \rulenamet{app}, the term formed is of ground type (since we work with eta-long normal form) so we take $\sem{s\,t_1\ldots t_n : o} = \langle \sem{s}, \sem{t_1}, \ldots, \sem{t_n}\rangle \fatcompos ev_{(A_1\times\ldots\times A_n),o}$.
-Rule \rulenamet{abs}: let $f:\Gamma \times (A_1\times\ldots\times A_n)\typear T$ be  the denotation of the premise. The term formed is denoted by the curried morphism $\Lambda(f): \Gamma \typear T^{(A_1\times\ldots\times A_n)}$. The side condition ensures that this morphism exists since the category is incremental closed.
-
-This interpretation coincides with the CCC interpretation:
-for all safe term $M$, $\sem{M}_{\mathbf{C}} = \sem{M}_{\mathbf{I}}$.
-Thus the soundness of the ICC model follows from that of the CCC model.
+Hence for any safe term $M$, we can define its interpretation $\sem{M}_{\mathbf{I}}$ in $\mathbf{I}$ to be its interpretation in $\mathbf{C}$:
+$\sem{M}_{\mathbf{I}} \defeq \sem{M}_{\mathbf{C}}$. The soundness of the ICC model follows from that of the CCC model.
 \qed
 \bigskip
 
-Similarly we have:
-\begin{proposition}[Model of safe \pcf]
-\label{prop:incrementalcat_model_safepcf}
-A rational ICC provides a sound model (with respect to $=_{\beta\eta}$)
-of safe \pcf.
-\end{proposition}
-The interpretation of safe \pcf\ in a ICC coincides with its interpretation in the corresponding CCC \cite{abramsky94full}:
+\begin{example}[Model of safe \pcf]
+In \cite{abramsky94full} it is shown that any rational CCC in which we have fixed an interpretation for base types, constants and function symbols of \pcf\ provides a sound model of \pcf.
+Therefore any rational ICC provides a sound model of safe \pcf.
+The interpretation of safe \pcf\ in the ICC coincides with its interpretation in the corresponding CCC \cite{abramsky94full}:
 each constant and first-order function of \pcf\ of type $T$ is interpreted by some morphism $c:I\typear \sem{T}$, and because the category is rational, the Y-combinator $Y_A$ for any object $A$ can be interpreted by the morphism $\Theta_A^\triangledown : I \typear A^{A^A}$ where
 $$\Theta_A = \sem{F:(A\typear A)\typear A \entail \lambda f:A\typear A. f(F f) : (A\typear A)\typear A} \ . $$
-
+\end{example}
 
 
 \subsection{Quotiented category}
@@ -339,13 +357,30 @@ $\quotient{\mathbf C}{\lesssim}$.
 
 \subsection{The internal language of incremental closed categories}
 
-By a well-known result by Lambek, the simply-typed lambda calculus is the language of cartesian closed categories \cite{lambek1986ccc}: for any cartesian closed category $\mathbf{C}$ one can construct a typed lambda calculus $L(\mathbf{C})$ called the \emphind{internal language} of the CCC; and any typed lambda calculus $\mathcal{L}$ can be interpreted as a CCC $\sem{\mathcal{L}}$. Furthermore these two transformations establish an equivalence of categories which means that their composites are isomorphic to the identity functors:
-$$  \mathbf{C} \cong \sem{L(\mathbf{C})}, \qquad  \mathcal{L} \cong L(\sem{\mathcal{L}}) \ .$$
+By a well-known result by Lambek, the simply-typed lambda calculus is the language of cartesian closed categories \cite{lambek1986ccc}: for any cartesian closed category $\mathbf{C}$ one can construct a typed lambda calculus $L(\mathbf{C})$ called the \defname{internal language} of the CCC; and for any typed lambda calculus $\mathcal{L}$ we can construct a CCC $Cl(\mathcal{L})$ that soundly interprets $\mathcal{L}$. This category is called the CCC \defname{generated} by $\mathcal{L}$ or also the \defname{canonical classifying category} of $\mathcal{L}$ \cite{CroleRL:catt}.
+Furthermore these two transformations establish an equivalence of categories which means that their composites are naturally isomorphic to the identity functors:
+\begin{equation}
+  \mathbf{C} \cong Cl(L(\mathbf{C})), \qquad  \mathcal{L} \cong L(Cl(\mathcal{L})) \ . \label{eq:equivalence_ccc_lmdcalc}
+\end{equation}
 
-Does a similar correspondence hold between ICCs and the safe lambda calculus? We have already shown that the safe lambda calculus can be interpreted in any incremental category.
+\emph{Does a similar correspondence hold between ICCs and safe typed lambda calculi?}
+Following \cite{lambek1986ccc}, it is possible to adapt the notion of \emph{internal language} to ICCs. Given an ICC $\mathbf{I}$, the formation rules of the internal language $L(\mathbf{I})$ of
+ $\mathbf{I}$ can be defined similarly to \cite{lambek1986ccc} but because the evaluation maps in an ICC are incremental and because an ICC is closed by incremental currying only, the abstraction and application rules are restricted accordingly: there is a side-condition imposing that the context variables have order greater than the order of the term being formed. Hence the terms that can be formed in this language are precisely the \emph{long-safe} terms of of the internal language of the CCC:
+$$L(\mathbf{I})  \defeq \mbox{long-safe}(L(\mathbf{C}))$$
+where $\mbox{long-safe}(\mathcal{L})$ denotes the long-safe fragment of a typed-lambda calculus $\mathcal{L}$.
+
+Conversely, let $\mathcal{L}$ be a typed-lambda calculus, we define the \emphind{canonical classifying category} of the long-safe fragment of $\mathcal{L}$, written $Cl(\mbox{long-safe}(\mathcal{L}))$, as the canonical sub ICCs of the canonical classifying category of $\mathcal{L}$:
+$$ Cl(\mbox{long-safe}(\mathcal{L})) \defeq subICC(Cl(\mathcal{L}))\ . $$
+Combining the last two equations with Eq.\ \ref{eq:equivalence_ccc_lmdcalc} gives for any ICC $\mathbf{I}$ and long-safe language $\mathcal{L}$:
+\begin{equation}
+  \mathbf{I} \cong Cl(L(\mathbf{I})), \qquad  \mathcal{L} \cong L(Cl(\mathcal{L})) \ . \label{eq:equivalence_icc_safelmdcalc}
+\end{equation}
 
 
-Let $\mathbf{I}$ be an ICC. By definition it is isomorphic to a subcategory $\Pi(\mathbf{I})$ of some CCC $\mathbf{C}$ for some injective functor $\Pi : \mathbf{I} \rightarrow \mathbf{C}$. We define the language $LI(\mathbf{I})$ \emph{induced} by $\mathbf{I}$ as the sub-language of the typed-lambda calculus $L(\mathbf{C})$ consisting of the terms whose denotations in $\mathbf{C} \cong \sem{L(\mathbf{C})}$ are also in $\Pi(\mathbf{I})$:
+
+\paragraph{Intrinsically safe fragment}
+
+Let $\mathbf{I}$ be an ICC. By definition it is isomorphic to a subcategory $\Pi(\mathbf{I})$ of some CCC $\mathbf{C}$ for some injective functor $\Pi : \mathbf{I} \rightarrow \mathbf{C}$. We define the language $LI(\mathbf{I})$ as the the intrinsically safe fragment of $L(\mathbf{C})$ \ie the language consisting of the terms whose denotations in $\mathbf{C} \cong Cl(L(\mathbf{C}))$ are also in $\Pi(\mathbf{I})$:
 $$ LI(\mathbf{I}) \defeq \{\ t \in L(\mathbf{C}) \ | \ \sem{t} \in \cathom{\Pi(\mathbf{I})} \} \ .$$
 This definition implies $\sem{LI(\mathbf{I})} = \Pi(\mathbf{I}) \cong I$.
 This language verifies the basic property of the safe lambda calculus:
@@ -358,9 +393,7 @@ The functor $\sem{\cdot} : \mathcal{L} \rightarrow \mathbf{C}$ defined in
 in $\mathbf{C}(A_1\times\ldots\times A_n,B)$. Take $\mathcal{L}$ to be $LI(\mathbf{I})$, then by definition $M$ is denoted by an incremental morphism therefore $\dro(A_1\times\ldots\times A_n) \geq \ord{B}$. We then have for $1\leq i \leq n$:
  $$\ord{A_i} \geq \dro{A_i} \geq \dro(A_1\times\ldots\times A_n) \geq \ord{B} \ \qed$$
 
-The language $LI(\mathbf{I})$, however, is \emph{not} the safe fragment of the internal language of $\mathbf{C}$. Indeed, since safety is only preserved by $\beta$-reduction but not by $\beta$-equality, it is possible to have an unsafe term $U$ in $L(\mathbf{C})$ whose beta-nf $\betanf{U}$ is safe. The denotation of $\betanf{U}$ is therefore an incremental morphism and thus it belongs to $LI(\mathbf{I})$. But by soundness of the model $\mathbf{C}$, $U$ and $\betanf{U}$ have the same denotation, therefore they both belong to $LI(\mathbf{I})$.
-
-Following \cite{lambek1986ccc}, it is possible to adapt the notion of \emph{internal language} to ICCs . The formation rules of the internal language needs to be modified to take into account the fact that the evaluation and curry morphisms are restricted in an ICC. The resulting system of rules correspond precisely to the safe fragment of the internal language of the CCC containing the ICC. We omit the details which are straightforward.
+The language $LI(\mathbf{I})$, however, is \emph{not} the safe fragment of the internal language of $\mathbf{C}$. Indeed, since safety is only preserved by $\beta$-reduction but not by $\beta$-equality, it is possible to have an unsafe term $U$ in $L(\mathbf{C})$ with a safe beta-nf $\betanf{U}$. Since $\betanf{U}$ is safe, its denotation is an incremental morphism and therefore it belongs to $LI(\mathbf{I})$. But by soundness of the model $\mathbf{C}$, $U$ and $\betanf{U}$ have the same denotation, therefore they both belong to $LI(\mathbf{I})$.
 
 \section{The game model}
 
@@ -1588,7 +1621,7 @@ the \defname{extensional category} $\quotient{\mathcal{I}}{\intrpre_{\mathcal I}
 
 \subsubsection*{Interpretation}
 By Prop.\ \ref{prop:incrementalcat_model_safelambda},
-we have that the ICCs $\mathcal{I}$ and $\quotient{\mathcal{I}}{\intrpre_{\mathcal I}}$ both provide a model of the safe lambda calculus, and by Prop.\ \ref{prop:incrementalcat_model_safepcf}, the rational ICCs $\mathcal{I}_{ib}$ and $\quotient{\mathcal{I}_{ib}}{\lesssim_{{\mathcal I}_{ib}}}$ of innocent well-bracketed closed P-i.j.\ strategies both provide a model of safe \pcf.
+we have that the ICCs $\mathcal{I}$ and $\quotient{\mathcal{I}}{\intrpre_{\mathcal I}}$ both provide a model of the safe lambda calculus, and the rational ICCs $\mathcal{I}_{ib}$ and $\quotient{\mathcal{I}_{ib}}{\lesssim_{{\mathcal I}_{ib}}}$ of innocent well-bracketed closed P-i.j.\ strategies both provide a model of safe \pcf.
 
 
 \section{Interpretation in the standard game model}
@@ -1618,8 +1651,6 @@ This result is not surprising since we already know by Proposition \ref{prop:inc
 
     \item \rulenamet{\times}, \rulenamet{\pi_1} and \rulenamet{\pi_2}: The result follows from the I.H.\ and Proposition \ref{prop:pij_pairing_projection}.
 
-    \item \rulenamet{wk^\times} This case is similar to \rulenamet{wk}.
-
     \item \rulenamet{app_{as}} Suppose that $\Gamma \asappentail t_0 t_1 \ldots t_n : B$
 with $\Gamma \sentail t_0 : (A_1,\ldots,A_n,B)$ and $\Gamma \sentail t_i : A_i$ for $i \in\{ 1..n\}$. By the I.H., for $i \in \{0..n\}$ the strategy
  $\sem{t_i}$ is closed P-i.j. We then have $\sem{t_0 t_1 \ldots t_n} = \langle \sem{ t_0}, \sem{t_1}, \ldots, \sem{t_n} \rangle \fatsemi ev^n$
@@ -1631,7 +1662,7 @@ with $\Gamma \sentail t_0 : (A_1,\ldots,A_n,B)$ and $\Gamma \sentail t_i : A_i$ 
 
     \item \rulenamet{app} Terms formed with this rule can also be formed with the rule \rulenamet{app_{as}}, therefore by the previous case
     the denotation of the term formed is P-i.j. By the side-condition of the
-    rule, all the prime nodes in $\ord{\Gamma}$ have order greater than the order of the term, therefore by
+    rule, all the prime sub-types of $\Gamma$ have order greater than the order of the term, therefore by
     by Lemma \ref{lem:closedpij_singleBinitmove}(ii), $\sem{ \Gamma \sentail t_0 t_1 \ldots t_n : B}$ is \emph{closed} P-i.j.
 
 
@@ -2097,7 +2128,7 @@ Clearly $\gamma$ belongs to the P-view in component $Y$ therefore we can apply t
 Let $b_0$ be the last $\pomove_X$-move occurring underneath the arc $\alpha$-$\beta$ such that $b_0 \in \oview{u_{\prefixof m}\filter X}$.
 
 Then the sequence $u_{\prefixof b_0}$ is of the form:
-$$ u_{\prefixof b_0} =  \pstr[17pt]{ 
+$$ u_{\prefixof b_0} =  \pstr[17pt]{
 \nd{[(}(o2){\opmove_X} \nd{\cdots}(p2-o2){\stk{\pomove_X}{b_k}} \txt{)^* (\pmove_Y \omove_Y)^+]^*} \nd{(}(o){\opmove_X} \nd{\cdots}(p-o){\stk{\pomove_X}{b_0}} \txt{)^+} } \ .
 $$
 where $b_k$ for $k\in\nat$ denotes the last move of each sequence of arcs $\opmove_X$-$\pomove_X$ (\ie $k$ is incremented each time the
@@ -2105,7 +2136,7 @@ subexpression in $[\cdots]$ is iterated by the Kleene-star).
 Let us write $\theta_k$ to denote the subsequence of nodes consisting of the sequence of $\opmove_X$-$\pomove_X$ arcs initiated by $b_k$ (without the moves lying underneath the arcs).
 
 By definition of the O-view, the moves in $\theta_k$ for $k\geq0$ are precisely the B-moves that appear in the O-view $\oview{u_{\prefixof m}\filter X}$.
- 
+
 Now take any $b_k$ occurring underneath the arc $\alpha$-$\beta$ and such that $b_k \in \oview{u_{\prefixof m}\filter X}$.
 We show that all the $\pomove_X$-moves in $\theta_k$ have order
 smaller than $\ord_X m = \ord_Y m$.

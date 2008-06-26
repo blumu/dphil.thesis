@@ -113,16 +113,17 @@
 %%% Version of the package relying on PSTRICKS
 
 % If the postscript prologue file does not exist then it needs to be created.
-\IfFileExists{pstring.pro}{\writeprologuefilefalse}{\writeprologuefiletrue}
-
-\ifwriteprologuefile
-  \newwrite\prologuefile
-  \immediate\openout\prologuefile=pstring.pro
-  \newlinechar = `\^^J
-  \immediate\write\prologuefile{\percentchar }
-  \immediate\write\prologuefile{\percentchar PostScript prologue for pstring.sty.}
-  \immediate\write\prologuefile{\percentchar For distribution, see pstring.^^J}
-\fi
+\AtBeginDocument{%
+\IfFileExists{pstring.pro}{\writeprologuefilefalse}{\writeprologuefiletrue}%
+\ifwriteprologuefile%
+  \newwrite\prologuefile%
+  \immediate\openout\prologuefile=pstring.pro%
+  \newlinechar = `\^^J%
+  \immediate\write\prologuefile{\percentchar }%
+  \immediate\write\prologuefile{\percentchar PostScript prologue for pstring.sty.}%
+  \immediate\write\prologuefile{\percentchar For distribution, see pstring.^^J}%
+\fi%
+}
 
 
 % Calling the following macro with \pstr@def{PROCNAME}<PSCODE> will:
@@ -133,10 +134,12 @@
 % but as a drawback the postscript code would be copied for each use of the procedure and the
 % resulting ps file would be huge.
 \def\pstr@def#1<#2>{%
+\AtBeginDocument{%
     \ifwriteprologuefile%
         % Add the code to the postscript prologue  file
-        \immediate\write\prologuefile{/#1 { #2 } def}
-    \fi
+        \immediate\write\prologuefile{/#1 { #2 } def}%
+    \fi%
+}%
     % prologue present: just dump the name of the postscript command (the code being already defined in the .pro file)
     \@namedef{#1}{#1 }
 }
@@ -186,10 +189,12 @@ curveto
 /VPutPos { { VPutLines } HPutCurve } def>
 
 
-\ifwriteprologuefile
-  \immediate\write\prologuefile{^^J\percentchar END pstring.pro^^J}
-  \immediate\closeout\prologuefile
-\fi
+\AtBeginDocument{%
+\ifwriteprologuefile%
+  \immediate\write\prologuefile{^^J\percentchar END pstring.pro^^J}%
+  \immediate\closeout\prologuefile%
+\fi%
+}
 
 
 
@@ -702,7 +707,9 @@ curveto
 Change log:
 -----------
 Version 0.3.5 - 26 June 2008:
--Solve an incompatibility with the latest version of latexdaemon (in the \openout command opening the prologue file, the spaces around the = sign are now removed).
+-Solve an incompatibility with the latest version of LatexDaemon:
+   *in the \openout command opening the prologue file, the spaces around the = sign are now removed.
+   *the .pro prolog file is now written at `\begin{document}`
 
 Version 0.3.4 - 29 April 2008:
 - add the command \pstrPGFbrace to simulate the \underbrace TeX command in PGF mode.

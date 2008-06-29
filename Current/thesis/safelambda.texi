@@ -19,19 +19,16 @@ convenience, we shall omit the superscript from $\sentail^\Xi$
 whenever the set of constants $\Xi$ is clear from the context. The
 subscript in $\vdash_\$^\Xi$ specifies which type system we are
 using to form the judgment: we use the subscript `st' to refer to
-the traditional system of rules of the Church-style simply-typed
-lambda calculus augmented with constants from $\Xi$. In the
-following we will use new subscripts for each type system that we
-introduce. For simplicity we write $(A_1, \cdots, A_n, B)$ to mean
+the Curry-style simply typed lambda calculus augmented with constants from $\Xi$. In the following we will use new subscripts for each type system that we introduce. We write $(A_1, \cdots, A_n, B)$ to mean
 $A_1 \typear \cdots \typear A_n \typear B$, where $B$ is not
-necessarily ground. It will be convenient to use the following abbreviation for types: $0$ for the base type $o$, and
-for $k\geq 0$: $(k+1) = k \typear o$.
+necessarily ground. We fix an atomic type symbol $o$ and for any natural number $n\in\nat$ we use \emph{type} notation $n$ to refer to the type $n_o$
+defined in Sec.\ \ref{sec:simpletype} ($0\equiv o$ and $(k+1) \equiv k \typear o$ for $k\geq 0$).
 
-\begin{definition}
+\begin{definition} \hfill
 \label{def:safelambda}
-\begin{inparaenum}[(i)]
+\begin{enumerate}[(i)]
 \item The \defname[safe!lambda calculus]{safe lambda calculus} is a sub-system of the
-  simply-typed lambda calculus. It is defined as the set of judgments of the form $\Gamma \sentail M : A$ that are derivable from the following Church-style system of rules:
+  simply typed lambda calculus. It is defined as the set of judgments of the form $\Gamma \sentail M : A$ that are derivable from the following system of rules:
 $$ \rulename{var} \ \rulef{}{x : A\sentail x : A} \qquad
 \rulename{const} \ \rulef{}{\sentail f : A}~f \in \Xi \qquad
 \rulename{wk} \ \rulef{\Gamma \sentail s : A}{\Delta \sentail s : A} \quad
@@ -51,18 +48,27 @@ $$ \rulename{abs} \ \rulef{\Gamma, x_1 : A_1, \ldots, x_n : A_n
 $$
 \smallskip
 
-\noindent where $\ord{\Gamma}$ denotes the set $\{ \ord{y} : y \in \Gamma \}$ and for $S\subseteq \nat$, $u\in\nat$, ``$S \geq u$'' means that $u$ is a lower-bound of $S$. Terms typed with the entailment ``$\sentail$'' are the safe terms and those typed with $\asentail$ are the ``almost safe'' terms.
+\noindent where $\ord{\Gamma}$ denotes the set $\{ \ord{y} : y \in \Gamma \}$ and for $S\subseteq \nat$, $u\in\nat$, ``$S \geq u$'' means that $u$ is a lower-bound of $S$. 
 
-\noindent \item The sub-system that is defined by the same rules in
+\item We say that a term $M$ is \defname{safe} if it is typable in the safe lambda calculus \ie $\Gamma \sentail M : T$ for some context $\Gamma$ and type $T$. Otherwise it is said to be \defname{unsafe}.
+    
+A term is \defname{almost safe} if  $\Gamma \asentail M : T$ for some $\Gamma, T$.
+
+\item A \emph{term-in-context} $\Gamma \stentail M : T$ of the simply typed lambda calculus is said to be \emph{safe} if $\Gamma \sentail M : T$
+    is also typable in the safe lambda calculus.
+
+\item The sub-system that is defined by the same rules in
 (i), such that all types that occur in them are homogeneous (Sec.\ \ref{sec:safetygrammar}), is called
 the \defname{homogeneous safe lambda calculus}.
-\end{inparaenum}
+\end{enumerate}
 \end{definition}
 We give a brief account of the homogeneous safe lambda calculus in Sec.\ \ref{sec:safe_homog}.
 \smallskip
 
+
+
 The safe lambda calculus deviates from the standard definition of
-the simply-typed lambda calculus in a number of ways. First the rules $\rulename{app}$ and $\rulename{abs}$ respectively can perform multiple applications and abstract several variables at once. (Of course this feature alone does not alter expressivity.) Crucially,
+the simply typed lambda calculus in a number of ways. First the rules $\rulename{app}$ and $\rulename{abs}$ respectively can perform multiple applications and abstract several variables at once. (Of course this feature alone does not alter expressivity.) Crucially,
 the side conditions in the application rule and abstraction rule require the variables in the typing context to have orders no smaller than that of the term being formed.
 Safe terms can be applied together using the rule $\rulename{app_{as}}$, but the resulting term is only ``almost-safe'', it can then be turned into  a safe term using the abstraction rule. We do not impose any constraint on types. In particular, type-homogeneity, which was an
 assumption of the original definition of safe grammars \cite{KNU02}, is not required here. Another difference is that we allow $\Xi$-constants to have
@@ -269,14 +275,20 @@ The application cases (\rulenamet{app_{as}} and \rulenamet{app}) are treated sim
 For the second part: clearly types are preserved by substitution therefore so is type homogeneity.
 \end{proof}
 
-
 \begin{remark}
-This result extends immediately to simultaneous substitution:
+\begin{enumerate}[(i)]
+\item  This result extends immediately to simultaneous substitution:
 If $\Gamma, x_1 :A_1, \ldots x_n : A_n  \sentail M : B$
 and $\Gamma \sentail N_k : A_k$ for $1\leq k\leq n$ then $\Gamma \sentail
 M[N_1/x_1, \ldots, N_n/x_n] : B$.
-\end{remark}
 
+\item Observe that the \emph{type} substitution lemma of the simply typed lambda calculus does not hold in the safe lambda calculus. This is because type substitution allows one to change the order of the variables occurring in the term. For instance take
+    the term $M \equiv \lambda f y. f (\lambda x.y)$. Its principal type in the lambda calculus is $A \equiv ((\alpha\typear\beta)\typear\gamma)\typear\beta\typear\gamma$ for some atomic types $\alpha$, $\beta$ and $\gamma$.
+    Although the judgement $\stentail M : A$ is not safe (because then $\ord y = \ord x$), the judgment
+    $\stentail M : A\subst{\beta}{\beta\typear\beta}$ is safe. And further the judgment $\stentail M : A\subst{\beta}{\beta\typear\beta}\subst{\alpha}{\alpha\typear\alpha}$
+    is not safe.
+\end{enumerate}
+\end{remark}
 
 It is desirable to have an appropriate notion of reduction for our
 calculus. However the standard $\beta$-reduction rule is not
@@ -291,7 +303,7 @@ simultaneous contraction of ``consecutive'' $\beta$-redexes. In
 order to define this notion of reduction we first introduce the
 corresponding notion of redex.
 
-In the simply-typed lambda calculus a redex is a term of the form
+In the simply typed lambda calculus a redex is a term of the form
 $(\lambda x . M) N$. In the safe lambda calculus, a redex is a
 succession of several standard redexes:
 
@@ -349,10 +361,9 @@ redexes as follows:
   \{ \ (\lambda \overline{x}  . M) N_1 \ldots N_l \mapsto M\subst{N_1 \ldots N_n}{\overline{x}} N_{n+1} \ldots N_l
   \mbox{, for $n\leq l$} \} \ .
 \end{eqnarray*}
-where $M\subst{R_1 \ldots R_k}{z_1 \ldots z_k}$ denotes the simultaneous substitution in $M$ of $R_1$,\ldots,$R_k$ for $z_1, \ldots, z_k$.  The
-\defname[safe!$\beta$-reduction]{safe $\beta$-reduction}, written $\betasred$, is the
-compatible closure of the relation $\beta_s$ with respect to the
-formation rules of the safe lambda calculus.
+where $M\subst{R_1 \ldots R_k}{z_1 \ldots z_k}$ denotes the simultaneous substitution in $M$ of $R_i$ for $z_i$ for $1\leq i \leq k$.  The
+\defname[safe!$\beta$-reduction]{safe $\beta$-reduction}, written $\betasred$, is the compatible closure of the relation $\beta_s$ with respect to the
+formation rules of the safe lambda calculus. The relation $\betasconv$ is defined as the reflexive, symmetric, transitive closure of $\betasred$.
 \end{definition}
 
 \begin{lemma} The safe reduction relation $\betasred$:
@@ -366,7 +377,7 @@ formation rules of the safe lambda calculus.
 \proof
 (i) Immediate from the definition: safe $\beta$-reduction is just a multi-step $\beta$-reduction.
 (ii) This is because $\betasred \subset \betaredtr$ and, $\betared$ is
-strongly normalizing in the simply-typed $\lambda$-calculus. (iii) Clearly, a
+strongly normalizing in the simply typed $\lambda$-calculus. (iii) Clearly, a
 safe term has a safe beta-redex iff it has a beta-redex therefore the set
 of $\beta_s$-normal forms is equal to the set of $\beta_s$-normal
 forms. Hence, the unicity of $\beta$-normal form implies the unicity
@@ -386,7 +397,7 @@ safe-redex $(\lambda x_1 \ldots x_n . M) N_1
   \ldots N_l $ with $x_1 : B_1, \ldots, x_n: B_n$
 and $M$ of type $C$.  W.l.o.g we can assume that the last rule used
 to form the term $s$ is \rulenamet{app} (and not the weakening rule
-\rulenamet{wk}), thus  we have $\Gamma = fv(s)$, and since $s$ is
+\rulenamet{wk}), thus  we have $\Gamma = \freevarset(s)$, and since $s$ is
 safe, Lemma \ref{lem:ordfreevar} gives us $\ord{A} \leq
 \ord{\Gamma}$.
 
@@ -479,8 +490,8 @@ On the other hand,  $\eta$-reduction preserves long-safety:
   Suppose $\Gamma \lsentail \lambda \varphi . s \varphi :A$. If $s$ is an  abstraction then by construction of the safe term $\lambda \varphi . s \varphi$, $s$ is necessarily safe.  If $s = N_0 \ldots N_p$ with
   $p\geq 1$ then again, since $\lambda \varphi . N_0 \ldots N_p
   \varphi$ is safe, each of the $N_i$ is safe for $0 \leq i \leq p$
-  and for any $z\in fv(\lambda \varphi . s \varphi)$, $\ord{z} \geq
-  \ord{\lambda \varphi . s \varphi} = \ord{s}$. Since  $\varphi$ does not occur free in $s$ we have $fv(s) = fv(\lambda \varphi . s \varphi)$, thus we can use the application rule to form $fv(s) \lsentail N_0 \ldots N_p : A$. The weakening rules permits us to conclude $\Gamma \lsentail s :A$. \qed
+  and for any $z\in \freevarset(\lambda \varphi . s \varphi)$, $\ord{z} \geq
+  \ord{\lambda \varphi . s \varphi} = \ord{s}$. Since  $\varphi$ does not occur free in $s$ we have $\freevarset(s) = \freevarset(\lambda \varphi . s \varphi)$, thus we can use the application rule to form $\freevarset(s) \lsentail N_0 \ldots N_p : A$. The weakening rules permits us to conclude $\Gamma \lsentail s :A$. \qed
 \smallskip
 
 \begin{lemma}[Long-safety is preserved by $\eta$-long expansion]
@@ -562,12 +573,12 @@ f^{(o,(o,o),o,o)} g^{((o,o),o,o,o),o)} . g(\lambda y^{(o,o)} x^o
 We show the result by induction on the structure of $M$.
 The base cases and weakening case are trivial.
 Abstraction: $M$ has the form $\lambda \overline y . M_0 \ldots M_p$ for some safe terms $M_k$, $0\leq k \leq p$, $p\geq 0$.
-By the subject reduction lemma we have $fv(M) \sentail M:(A_1,\ldots,A_l,o)$. The $\eta$-long expansion of $M$
+By the subject reduction lemma we have $\freevarset(M) \sentail M:(A_1,\ldots,A_l,o)$. The $\eta$-long expansion of $M$
 is $\lambda \overline y x_1 .. x_l . \elnf{M} \elnf{x_1} \dots \elnf{x_l}$ for some variables
 $x_1:A_1, \ldots, x_l:A_l$ fresh in $M$.
 Let $k$ range in $\{1..l\}$. By Lemma \ref{lem:longsafe_imp_elnf_longsafe} and \ref{lem:longsafe_imp_safe}, each $\elnf{x_k}$ is safe, and by the I.H.\ $\elnf{M}$ is also safe. Therefore by $\rulename{app_{as}}$, so is $\elnf{M} \elnf{x_1} \ldots \elnf{x_l}$.
 By Lemma \ref{lem:ordfreevar}, all the free variables of $M$ have order greater than $\ord{(A_1,\ldots,A_l,o)}$, hence we can use the abstraction rule to form the judgment
-$ fv(M) \sentail \lambda \overline y x_1 .. x_l . \elnf{M} \elnf{x_1} \ldots \elnf{x_l} : (A_1,\ldots,A_l,o)$ and the weakening rule permits us to conclude.
+$ \freevarset(M) \sentail \lambda \overline y x_1 .. x_l . \elnf{M} \elnf{x_1} \ldots \elnf{x_l} : (A_1,\ldots,A_l,o)$ and the weakening rule permits us to conclude.
 The application case is treated identically.
 
 
@@ -692,7 +703,7 @@ This results follows immediately from the definition of the rules.
 The rule \rulenamet{abs_{as}} is nothing less than the standard abstraction rule of the lambda calculus. As soon as the context and the type of the term being formed respect the safety condition (\ie all the context variables have order greater that the order of the type), the term can be marked as safe. This is done using the rule \rulenamet{\rho}. Together with the rule \rulenamet{\delta'} this implies that the closure of an almost safe term is always safe:
 \begin{lemma}
   \label{lem:closealmostsafe_is_safe}
-  If $fv(M) \asappentail M : T$ then $\sentail \closure{M} : T$.
+  If $\freevarset(M) \asappentail M : T$ then $\sentail \closure{M} : T$.
 \end{lemma}
 
 
@@ -738,25 +749,24 @@ The second case is when the redex is $N_1 \ldots N_q$ for some $1 \leq q\leq m$.
 
 \section{Parameterized safe lambda calculus}
 
-Let $Types$ be the set of simple types generated by the grammar $A
-\, ::= \, o \; | \; A \typear A$. We call \defname{type-ranking function}, or just ranking function, any function
-${\sf rank} : Types \funto (L, \leq)$ for some set $L$ and preorder $\leq$ verifying the condition:
+Let $\mathbb{T}$ denote the set of simple types over a set of atomic types $\mathbb{A}$. We call \defname{type-ranking function}, or just ranking function, any function
+${\sf rank} : \mathbb{T} \funto (L, \leq)$ for some set $L$ and preorder $\leq$ verifying the condition:
  $${\sf rank}(B) \leq {\sf rank}(A\typear B) \ .$$
 
 \begin{example}
 The followings are type-ranking functions:
 \begin{itemize}
-\item ${\sf ord} : Types \funto (\nat,\leq)$ with $\ord{o} = 0$
-and $\ord{A \typear B} = \max(\ord{A}+1, \ord{B})$;
-\item ${\sf height} : Types \funto (\nat,\leq)$ with
+\item $\ord : \mathbb{T} \funto (\nat,\leq)$ with $\ord{a} = 0$
+for any atomic type $a\in \mathbb{A}$, and $\ord{A \typear B} = \max(\ord{A}+1, \ord{B})$;
+\item ${\sf height} : \mathbb{T} \funto (\nat,\leq)$ with
 $\slheight{A \typear B} = 1 + \max(\slheight{A}, \slheight{B})$ and
 $\slheight{o} = 0$ ;
-\item ${\sf arity} : Types \funto (\nat,\leq)$ with $\arity{o} = 0$
+\item ${\sf arity} : \mathbb{T} \funto (\nat,\leq)$ with $\arity{o} = 0$
 and $\arity{A_1, \cdots, A_n} = n$;
-\item ${\sf size} : Types \funto (\nat,\leq)$ with ${\sf size}(o) = 0$
+\item ${\sf size} : \mathbb{T} \funto (\nat,\leq)$ with ${\sf size}(o) = 0$
 and ${\sf size}(A \typear B) = {\sf size}(A) + {\sf size}(B)$.
 \end{itemize}
-The product of two type-ranking function is also a type-ranking function with respect to the lexicographic ordering. For instance ${\sf order} \times {\sf arity} : Types \funto (\nat \times \nat,\leq)$ is a type-ranking function.
+The product of two type-ranking function is also a type-ranking function with respect to the lexicographic ordering. For instance ${\sf order} \times {\sf arity} : \mathbb{T} \funto (\nat \times \nat,\leq)$ is a type-ranking function.
 \end{example}
 
 \emph{Question: We have defined the safe lambda calculus with respect to the type-ordering function $\ord$. Does it make sense to define a version of the safe lambda calculus parameterized over a ranking function different from $\ord$?}

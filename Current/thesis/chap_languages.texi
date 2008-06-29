@@ -3,31 +3,24 @@
 The Programming language for Computable Functions, \pcf\ for short, is a simple programming language introduced in a classical paper by Plotkin ``LCF considered as a programming language''
 (\cite{DBLP:journals/tcs/Plotkin77}). \pcf\ is based on LCF, the
 Logic of Computable Functions devised by Dana Scott in
-\cite{scott_lcf}. It is a simply-typed lambda calculus extended with
+\cite{scott_lcf}. It is a simply typed lambda calculus extended with
 arithmetic operators, conditional and recursion.
 
 \subsection{The syntax of \pcf}
-\pcf\ is a simply-typed $\lambda$-calculus extended with integer arithmetics, conditional and recursion.
-The set of types is given by the following grammar:
-$$ T ::= \iaexp\ |\ T \rightarrow T$$
-where the base type \iaexp\ represents the set of integers.
-
-Terms of \pcf\ can be concisely given by the grammar:
+\pcf\ is a simply typed $\lambda$-calculus extended with integer arithmetics, conditional and recursion. 
+Terms are given by the grammar:
 \begin{eqnarray*}
- M ::= x\ |\ \lambda x :A . M \ |\ M M \ |\ \\
+ M ::= x\ |\ \lambda x:A. M \ |\ M M \ |\ \\
 \ |\ n \ |\ \pcfsucc\  M \ |\  \pcfpred\  M \\
 \ |\ \pcfcond\  M M M \ |\ \texttt{Y}_A\ M
 \end{eqnarray*}
 where $x$ ranges over a set of countably many variables, $n$
 represents an integer constant ranging over the set of natural numbers,
-\pcfsucc\ represents the successor function on integer, \pcfpred the predecessor,
-\pcfcond\ the conditional (\ie if-then-else branching) and
+\pcfsucc\ represents the successor function on integer, \pcfpred the predecessor, \pcfcond\ the conditional (\ie if-then-else branching) and
 $Y_A : (A\rightarrow A)\rightarrow A$ for any type $A$ is the recursion
-combinator.
+combinator. 
 
-Instead of defining \pcf\ terms using the grammar given above, we will use term-in-context
-given by judgements of the form $\Gamma \vdash M : A$ and defined by induction over the rules
-of table \ref{tab:pcf_formrules}.
+The set of types is $\mathbb{T}_\iaexp$, the simple types over the atomic type $\iaexp$ representing natural numbers. The language is formally given by terms-in-context of the form $\Gamma \entail M : A$ defined by induction over the rules of table \ref{tab:pcf_formrules}.
 \begin{table}[htbp]
 $$ \rulename{var} \rulef{}{x_1:A_1, x_2:A_2, \ldots x_n : A_n  \vdash x_i : A_i}\ i \in 1..n$$
 $$ \rulename{app} \rulef{\Gamma \vdash M : A\rightarrow B \qquad \Gamma \vdash N:A}{\Gamma \vdash M\ N : B}
@@ -38,7 +31,7 @@ $$ \rulename{const} \rulef{}{\Gamma \vdash n :\iaexp}
 \qquad \rulename{pred} \rulef{\Gamma \vdash M:\iaexp }{\Gamma \vdash \pcfpred\ M:\iaexp}$$
 
 $$
-\rulename{cond} \rulef{\Gamma \vdash M : \iaexp \qquad \Gamma \vdash N_1 : \iaexp \qquad \Gamma \vdash N_2 : \iaexp }{\Gamma \vdash \pcfcond\ M\ N_1\ N_2}
+\rulename{cond} \rulef{\Gamma \vdash M : \iaexp \quad \Gamma \vdash N_1 : \iaexp \quad \Gamma \vdash N_2 : \iaexp }{\Gamma \vdash \pcfcond\ M\ N_1\ N_2 : \iaexp}
 \qquad  \rulename{rec} \rulef{\Gamma \vdash M : A\rightarrow A }{ \Gamma \vdash Y_A M : A}$$
 
 \caption{Formation rules for \pcf\ terms.}
@@ -115,36 +108,26 @@ For any terms $M$, $N_1$ and $N_2$ of type \iaexp\ we write ``$N_1 = N_2$'' for 
  for distinct integers $a_1,\ldots a_q$, $q\geq 1$,
  as syntactic sugar for ``$\pcfcase_m\ M\ N'_1 \ldots N'_m$'' where
  $m =1+\max_{1\leq i\leq q} a_i$ and for $1\leq j\leq m$, $N'_j\equiv N_i$ if $j = a_i$ for some $1\leq i\leq q$  and $N'_j\equiv R$ otherwise.
- 
-  
+
+
 \section{Idealized Algol}
 
-Idealized Algol, \ialgol\ for short, is \pcf\ extended with imperative features.
-It was introduced by J.C.~Reynold in \cite{Reynolds81}. It adds imperative features such as local
-variables and sequential composition. On top of the base type \iaexp, it has
-two new types: \iacom\ for commands and \iavar\ for
-variables. There is a constant \iaskip\ of type \iacom\
-which corresponds to the command that does nothing.
+Idealized Algol, \ialgol\ for short, is an extension of \pcf\ with imperative features that was introduced by J.C.~Reynold in \cite{Reynolds81}. It adds imperative features such as local variables and sequential composition.
+Its types is given by the simple types over the basis
+ $\{ \iacom, \iaexp, \iavar \}$ where \iacom\ denotes the type of commands and \iavar\ the type of local variables. 
+ 
+The most basic command is given by the constant \iaskip\ of type \iacom\
+which performs no computation. Commands can be composed using the sequential composition operator $\iaseq_A$ for any base type $A$. 
+The sequential composition of two terms $N_0 : \iacom$ and $N_1:A$ is given by the term $M = \iaseq_A N_0 N_1 : \iacom$ which is interpreted operationally as follows: $N_0$ is evaluated first and if it terminates then the term $N_1$ is evaluated. In the case where $A = \iaexp$, the result of the evaluation of $N_1$ is returned; otherwise $A = \iacom$ and the command $N_1$ is just evaluated after $N_0$ and the expression yields no result.
+Terms formed with the operator $\iaseq_\iaexp$ are called \emphind{active expressions}.
 
-Commands can be composed using the sequential composition operator
-$\iaseq_A$ for any base type $A$. Take two terms $N_0 : \iacom$ and $N_1:A$, their sequential composition is given by the term $M = \iaseq_A N_0 N_1 : \iacom$ which is interpreted operationally as follows:
-$N_0$ is evaluated first and if it terminates then the term $N_1$ is evaluated.
-In the case where $A = \iaexp$, the result of the evaluation of $N_1$ is returned.
-Otherwise, if $A = \iacom$, the command $N_1$ is just evaluated after $N_0$ and the expression yields no result.
-Terms formed with the operator $\iaseq_\iaexp$ are called \emphind{active expressions}
+Local variables are declared using the \ianew\ operator, their content is modified using \iaassign\ and retrieved using \iaderef. Operationally, these variables behave like memory cells.
 
-Local variables can be declared using the \ianew\ operator, their content is modified
-using \iaassign\ and retrieved using \iaderef. Operationally, these variables behave like memory cells.
+In addition to these local variables, \ialgol\ features the so called ``\emphind{bad variable construct}'' \iamkvar.
+This operator can be used to construct a special variable by specifying custom assignment and dereferencing functions.
+It takes two arguments: the first one, the acceptor, is the function that is responsible of affecting a value to the variable. The second one is an expression that returns the value hold by the variable. This mechanism is similar to the ``set/get'' object programming paradigm used by C++ programmers.  An example of such variable is the term $\iamkvar\ (\lambda v.\iaskip)\ 0$. Variables created that way are called ``bad variables'' because they do not necessarily behave like a memory cell: reading the content of the variable does not necessarily gives you the last value that was written. For instance reading from the variable defined above always yield $0$ whichever value was written to it previously.
 
-In addition \ialgol\ has the so called ``\emphind{bad variable construct}'' \iamkvar.
-This operator lets the programmer create a special kind of variable by letting him
-specify custom assignment and dereferencing functions.
-It takes two arguments. The first one, the acceptor, is the function that is responsible of affecting a value
-to the variable. The second one is an expression that returns the value hold by the variable. This mechanism is similar to the ``set/get'' object programming paradigm used by C++ programmers.
-Variables created that way are called ``bad variables'' because they do not necessarily behave like a memory cell: reading the content of the variable does not necessarily gives you the last value that was written.
-For instance reading from the variable $\iamkvar\ (\lambda v.\iaskip)\ 0$ will always return $0$ whatever has been written into it previously.
-
-Although this addition to the language may seem a little bit artificial, its presence makes a difference from a semantic point of view.\footnote{McCusker showed in \cite{mccusker2001} that the standard game model of \ialgol\ is only equationally fully abstract for the language without bad variables, whereas it is inequationally fully abstract for full \ialgol.}
+This addition to the language may seem a little bit artificial but its presence has semantic importance.\footnote{McCusker showed in \cite{mccusker2001} that the standard game model of \ialgol\ is only equationally fully abstract for the language without bad variables, whereas it is inequationally fully abstract for full \ialgol.}
 
 
 \subsection{The syntax of \ialgol}
@@ -182,8 +165,7 @@ $!X$ for $\iaderef\, X$, and $M;N$ for $\iaseq\, M\, N$.
 \label{subsec:iafragments}
 We introduce some commonly used fragments of the language \ialgol. Firstly, \defname{Finitary
 Idealized Algol} denotes the recursion-free sub-fragment of \ialgol\
-over finite ground types (\ie  $\nat$ is replaced by the set $0..max$ for some
-fixed value $max$).
+over finite ground types (\ie  $\nat$ is replaced by the set $\{0..max\}$ for some fixed natural number $max$).
 
 \begin{definition}[$i$th order \ialgol\ term]
 A term $\Gamma \vdash M:T$ of finitary Idealized algol is an $i$th-order term if any sequent $\Gamma' \vdash N:A$ appearing in the typing derivation of $M$ is such that $\ord{A} \leq i$ and all the variables in $\Gamma'$ are of order strictly less than $i$.

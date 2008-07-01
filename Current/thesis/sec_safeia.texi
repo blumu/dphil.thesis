@@ -22,7 +22,7 @@ $ \rulename{app} \ \rulef{\Gamma \sentail s : (A_1, \ldots , A_n,B)
 \ord{\Gamma}$
  \\[12pt]
 $ \rulename{abs_{as}} \ \rulef{\Gamma, x_1 : A_1, \ldots, x_n : A_n
-  \asappentail s : B} {\Gamma \sentail \lambda x_1 \ldots x_n . s :
+  \asappentail s : B} {\Gamma \sentail \lambda x_1^{A_1} \ldots x_n^{A_n} . s :
   (A_1, \ldots ,A_n,B)} \quad \ord{(A_1, \ldots ,A_n,B)} \leq
 \ord{\Gamma}$
  \\[12pt]
@@ -61,32 +61,32 @@ There are many ways to introduce recursion in the syntax of a programming langua
 In the presentation of \pcf\ given in Sec.\ \ref{sec:pcf}, recursion is introduced by mean of a set of constants $Y_A$, $A$ ranging over \pcf\ types, incarnating the $Y$-combinator of the lambda calculus. Its syntax is given by the rule \rulenamet{rec} of table \ref{tab:safepcf}. For instance, the addition function can be represented by the \pcf\ term:
 $$ \userop{plus} \equiv Y (\lambda p\; x\; y. \pcfcond\ x\;y\;(p\ (\pcfpred\ x)\ (\pcfsucc\ y))) \ .$$
 Equivalently, we can introduce recursion using the ``least upper bound abstractor'' $\mu$ given by the formation rule
-$$ \rulename{\mu} \rulef{\Gamma, f: A \entail M : A}{\Gamma \entail  \mu f. M: A}$$
+$$ \rulename{\mu} \rulef{\Gamma, f: A \entail M : A}{\Gamma \entail  \mu f^A. M: A}$$
 where the semantics of $\mu$ is given by the rule:
-$ \mu f. M \rightarrow M[(\mu f. M)/f]$.
+$ \mu f^A. M \rightarrow M[(\mu f^A. M)/f]$.
 Using this construct, the addition function can be defined as:
-$$ \userop{plus} \equiv \mu p . \lambda x y. \pcfcond\ x\;y\;(p\ (\pcfpred\ x)\ (\pcfsucc\ y)) \ .$$
+$$ \userop{plus} \equiv \mu p^{(\iaexp\typear\iaexp)\typear\iaexp} . \lambda x^\iaexp y^\iaexp. \pcfcond\ x\;y\;(p\ (\pcfpred\ x)\ (\pcfsucc\ y)) \ .$$
 
 Clearly in the context of \pcf, these two definitions are interchangeable:
-$\mu f.M:A$ is equivalent to $Y_A (\lambda f . M)$,
-and $Y_A F : A$ is eta-equivalent to $Y_A (\lambda f. F f)$ for some fresh variable $f:A$, which is equivalent to $\mu f. F f$.
+$\mu f^A.M$ is equivalent to $Y_A (\lambda f^A . M)$,
+and $Y_A F$ is eta-equivalent to $Y_A (\lambda f^A. F f)$ for some fresh variable $f$, which is equivalent to $\mu f^A. F f$.
 
 In the context of safe \pcf, however, the distinction is important.
 Indeed, let us call safe $\mu$-\pcf\ the calculus obtain by replacing the rule \rulenamet{rec} by \rulenamet{\mu} in Table \ref{tab:safepcf}. It turns out that safe \pcf\ is strictly contained in safe $\mu$-\pcf.
 Indeed, compare the two ways of defining a recursive term:
 \begin{mathpar}
-\inferrule*[Left=\rulenamet{rec}]{\inferrule*[Left=\rulenamet{abs}]{\Gamma, f: A \sentail M : A}{\Gamma\sentail \lambda f. M : A\typear A}}{\Gamma \sentail Y_A (\lambda f . M)}
+\inferrule*[Left=\rulenamet{rec}]{\inferrule*[Left=\rulenamet{abs}]{\Gamma, f: A \sentail M : A}{\Gamma\sentail \lambda f^A. M : A\typear A}}{\Gamma \sentail Y_A (\lambda f^A . M)}
 \hspace{2cm}
-\inferrule* [Left=\rulenamet{\mu}]{\Gamma, f: A \sentail M : A}{\Gamma \sentail  \mu f. M: A}
+\inferrule* [Left=\rulenamet{\mu}]{\Gamma, f: A \sentail M : A}{\Gamma \sentail  \mu f^A. M: A}
 \end{mathpar}
 Both derivations start with the premise $\Gamma, f: A \sentail M : A$ which implies that $\ord{\Gamma} \geq \ord{A}$. In the left derivation, before applying the $Y$ combinator, we need first to abstract the variable $f$. This is done using the abstraction rule whose side-conditions gives $\ord{\Gamma} > \ord{A}$. The right derivation, however, only imposes the condition $\ord{\Gamma} \geq \ord{A}$.
 
 In fact, the safe $\mu$-\pcf\ does not really deserve its name, because
 it does not verifies the No-variable-capture lemma!
 For instance for any types $A$ and $B$ with $\ord{A}\geq\ord{B}$, the term
-$$ \lambda f:A \typear B\; a:A. (\lambda x:B.(\mu f:B.x))(f a)$$
+$$ \lambda f^{A \typear B}\; a^A. (\lambda x^B.(\mu f^B.x))(f a)$$
 is a safe $\mu$-\pcf\ term that $\beta$-reduces to
-$$ \lambda f:A \typear B\; a:A. (\mu f:B.x)[f a/x] \ .$$
+$$ \lambda f^{A \typear B}\; a^A. (\mu f^B.x)[f a/x] \ .$$
 At this point it would not be sound to push the substitution under the $\mu$ without first renaming the variables afresh as it would cause the variable $f$ to be captured by $\mu f$.
 Hence the definition that we really want for safe \pcf\ is the one based on the Y-combinator.
 
@@ -96,12 +96,12 @@ Observe that if we were able to distinguish variables that are bound by $\lambda
 
 Unfortunately, this argument cannot be generalized: there are safe $\mu$-\pcf\ terms that, when reduced using capture-permitting substitution, cause clashes between $\lambda$-bound variables. Take for instance:
 \begin{align*}
- M &\equiv \lambda g:3\; h:3\; x:1 . g ( \mu F:3. N(F,g,h,x))\\
- N(F,g,h,x) &\equiv x ( h ( \lambda x:1 . F (\lambda z:0.z)))
+ M &\equiv \lambda g^3\; h^3\; x^1 . g ( \mu F^3. N(F,g,h,x))\\
+ N(F,g,h,x) &\equiv x ( h ( \lambda x^1 . F (\lambda z^0.z)))
 \end{align*}
 where $0$ denotes the type $o$ and $n+1$ denotes $n \typear o$, for $n\in\nat$.
 The safe $\mu$-\pcf\ term $M$ reduces to:
-$$ \lambda g:3\; h:3\; x:1 . g (x ( h ( \lambda \underline{x}:1 . F (\lambda z:0.z))))[N(F,g,h,\underline{x})/F] \ .$$
+$$ \lambda g^3\; h^3\; x^1 . g (x ( h ( \lambda \underline{x}^1 . F (\lambda z^0.z))))[N(F,g,h,\underline{x})/F] \ .$$
 Performing the substitution capture-permitting causes a clash between the two underlined variables.
 
 In fact, the same example shows that the game-semantic characterization of safe \pcf\ that we will give in Chapter \ref{chap:model} does not hold for safe $\mu$-\pcf.
@@ -150,14 +150,14 @@ We fix a distinguished element $\bot$ denoting the end of the queue. Let $\Sigma
 We say that a $\pcf$ term $M$ \emph{computes} the queue content $s$ if and only if $M\, k \eval \encode{s_k}$ for all $k\in \nat$.
 For any queue-content $s \in \Sigma^*$ we define the safe \pcf\ term
 \begin{eqnarray*}
-\sentail \encode{s} \equiv \lambda i:\pcfexp . \sugmatch  i\, \sugwith
+\sentail \encode{s} \equiv \lambda i^\pcfexp . \sugmatch  i\, \sugwith
                0 \rightarrow \encode{ s_0 }
 \ | \ldots  |\ n \rightarrow \encode{ s_{|s|-1} }\ |\ \_\ \rightarrow \encode{\bot}
 : \pcfexp\typear\pcfexp
 \end{eqnarray*}
 which clearly computes $s$. The length $|s|$ of the queue can then by computed by the term
 \begin{align*}
-\sentail \userop{length}  \equiv &\ Y( \lambda f:\pcfexp\typear(\pcfexp\typear\pcfexp)\typear\pcfexp\ k:\pcfexp\ x:\pcfexp\typear\pcfexp\ . \\
+\sentail \userop{length}  \equiv &\ Y( \lambda f^{\pcfexp\typear(\pcfexp\typear\pcfexp)\typear\pcfexp}\, k^\pcfexp\ x^{\pcfexp\typear\pcfexp}\ . \\
 &\qquad\qquad  \sugif x\, k = \encode{\bot} \sugthen k\ \sugelse f\, (k+1)\, x) \ 0 : (\pcfexp\typear\pcfexp)\typear\pcfexp
 \end{align*}
 verifying $\userop{length}\ \encode{s} \eval |s|$ for all $s\in\Sigma^*$.
@@ -172,20 +172,20 @@ $\encode{ c } \in \nat$ & $0$ & $1$ & $1+i$ & $1+p + n.l +i$ \\
 
 The \textsc{Queue} program $P$ is then represented by the safe \pcf\ term:
 \begin{equation*}
-\sentail \encode{P} \equiv \lambda i :\pcfexp .  \sugmatch i\, \sugwith
+\sentail \encode{P} \equiv \lambda i^\pcfexp .  \sugmatch i\, \sugwith
    0 \rightarrow \encode{ P.0 }
   \ | \ldots \ |\ n \rightarrow \encode{ P.n }  |\ \_ \rightarrow \encode{\tt halt} : \pcfexp\typear\pcfexp
 \end{equation*}
 so that for all $i\in\nat$, $\encode{P}\, i$ evaluates to the encoding of the $i^{th}$ instruction of $P$. The following term defines an interpreter for \textsc{Queue}-programs given in ``compiled'' form $\encode{P}$:
 \begin{align*}
-\sentail \userop{Sim} \equiv & Y ( \lambda f : (\pcfexp,(\pcfexp,\pcfexp),\pcfexp)\ i:\pcfexp \ x:(\pcfexp,\pcfexp) . \\
+\sentail \userop{Sim} \equiv & Y ( \lambda f ^{(\pcfexp,(\pcfexp,\pcfexp),\pcfexp)}\ i^\pcfexp \ x^{(\pcfexp,\pcfexp)} . \\
 & \sugmatch\ \encode{P}\, i\ \sugwith\\
 & \begin{array}{lcl}
 \ \ \encode{\tt halt }&\rightarrow& 0 \\
-|\ \encode{\tt dequeue} &\rightarrow& f (i+1) (\lambda j:\pcfexp . x (j+1) ) \\
-|\ \encode{{\tt enqueue}\ a_1}  &\rightarrow& f (i+1) ( \lambda j:\pcfexp . \sugif j = \userop{length}\ x\, \sugthen \encode{a_1}\ \sugelse x\, j ) \\
+|\ \encode{\tt dequeue} &\rightarrow& f (i+1) (\lambda j^\pcfexp . x (j+1) ) \\
+|\ \encode{{\tt enqueue}\ a_1}  &\rightarrow& f (i+1) ( \lambda j^\pcfexp . \sugif j = \userop{length}\ x\, \sugthen \encode{a_1}\ \sugelse x\, j ) \\
  \ldots \\
-|\ \encode{{\tt enqueue}\ a_p} &\rightarrow& f (i+1) ( \lambda j:\pcfexp . \sugif j = \userop{length}\ x\, \sugthen \encode{a_p}\ \sugelse x\, j ) \\
+|\ \encode{{\tt enqueue}\ a_p} &\rightarrow& f (i+1) ( \lambda j^\pcfexp . \sugif j = \userop{length}\ x\, \sugthen \encode{a_p}\ \sugelse x\, j ) \\
 |\ \encode{ {\tt goto\ } l {\tt\ if\ first=\ } a_1 } &\rightarrow&
 \sugif \userop{length}\ x = 0\ \sugthen f\, (i+1)\, x \\
 &&\sugelse\sugif\encode{a_1} = x\, 0\ \sugthen f\, l\, x \\
@@ -250,7 +250,7 @@ $ \rulename{abs_{as}} \ \rulef{\Gamma, x_1 : A_1, \ldots, x_n : A_n
 \ord{\Gamma}$
  \\[12pt]
 $ \rulename{abs} \ \rulef{\Gamma, x_1 : A_1, \ldots, x_n : A_n
-  \vsafeentail s : B} {\Gamma \vsafeentail \lambda x_1 \ldots x_n . s :
+  \vsafeentail s : B} {\Gamma \vsafeentail \lambda x_1^{A_1} \ldots x_n^{A_n} . s :
   (A_1, \ldots ,A_n,B)} \quad \ord{(A_1, \ldots ,A_n,B)} \leq
 \ord{\Gamma}$
 \end{Bcenter}
@@ -349,7 +349,7 @@ $$ \rulename{app} \ \rulef{\Gamma | \Xi \safeentail s : (A_1,\ldots,A_n,B) \quad
 \begin{Bcenter}
  $\rulename{abs_{as}} \ \dps  \rulef{\dps \Gamma, x_1 : A_1, \ldots, x_n : A_n | \Xi \asappentail s : B} {\Gamma | \Xi \safeentail \lambda x_1 \ldots x_n . s : (A_1, \ldots ,A_n,B)} \ord{(A_1, \ldots ,A_n,B)} \leq \ord{\Gamma}$
 \\[12pt]
- $\rulename{abs} \ \dps  \rulef{\dps \Gamma, x_1 : A_1, \ldots, x_n : A_n | \Xi \safeentail s : B} {\Gamma | \Xi \safeentail \lambda x_1 \ldots x_n . s : (A_1, \ldots ,A_n,B)} \ord{(A_1, \ldots ,A_n,B)} \leq \ord{\Gamma}$
+ $\rulename{abs} \ \dps  \rulef{\dps \Gamma, x_1 : A_1, \ldots, x_n : A_n | \Xi \safeentail s : B} {\Gamma | \Xi \safeentail \lambda x_1^{A_1} \ldots x_n^{A_n} . s : (A_1, \ldots ,A_n,B)} \ord{(A_1, \ldots ,A_n,B)} \leq \ord{\Gamma}$
 \end{Bcenter}
 }
 \end{center}
@@ -384,7 +384,7 @@ $
     {\Gamma | \Xi \safeentail \ianewin{x}\ M : A} \quad A \in \{ \iacom, \iaexp\} $
 \\[12pt]
 $ \rulename{mkvar} \ \rulef{\Gamma| x:\iaexp, \Xi \safeentail M_1 : \iaexp \rightarrow \iacom \quad \Gamma, \Xi \safeentail M_2 : \iaexp}
-    {\Gamma| \Xi \safeentail \iamkvar\ (\lambda x:\iaexp .M_1)\ M_2\ : \iavar}$
+    {\Gamma| \Xi \safeentail \iamkvar\ (\lambda x^\iaexp .M_1)\ M_2\ : \iavar}$
 \end{Bcenter}
 }\end{center}
 
@@ -399,8 +399,8 @@ so that safe \ialgol\ is given by the set of terms-in-context $\Gamma \safeentai
 
 \begin{example}
 Clearly strongly safe \ialgol\ is a subset of safe \ialgol\ and the following example shows that the inclusion is strict:
-$$ \safeentail \lambda f:{(\iaexp \rightarrow \iacom) \rightarrow \iaexp} .\  \ianewin{i}{f ( \lambda x . \iaassign\ i\ x )} : \iaexp$$
-$$ \mbox{ but } \not \vsafeentail \lambda f:{(\iaexp \rightarrow \iacom) \rightarrow \iaexp} .\ \ianewin{i}{f ( \lambda x . \iaassign\ i\ x )} : \iaexp \ .$$
+$$ \safeentail \lambda f^{(\iaexp\typear\iacom)\typear\iaexp} .\  \ianewin{i}{f ( \lambda x^\iaexp . \iaassign\ i\ x )} : \iaexp$$
+$$ \mbox{ but } \not \vsafeentail \lambda f^{(\iaexp\typear\iacom)\typear\iaexp} .\ \ianewin{i}{f ( \lambda x^\iaexp . \iaassign\ i\ x )} : \iaexp \ .$$
 
 It is not strongly safe because the variables $i$ and $x$ are of the same order but only $x$ is abstracted by the lambda. It is safe because unsafe occurrences of  block-allocated variables such as $i$ are tolerated in safe \ialgol.
 \end{example}
@@ -434,11 +434,11 @@ And for capture-permitting substitution:
 \emph{In which sense are the two calculi above-defined ``safe''?} In the lambda calculus, the term ``safety'' refers to the fact that substitution can be performed \emph{capture-permitting}. Unfortunately, in the presence of block-allocation constructs, this lemma does not hold anymore.
 The key reason is that the block-allocation construct $\ianew$ does not increase the order of the term that is being formed contrary to the traditional $\lambda$-abstraction, and such property is crucially used in the proof of the No-variable-capture lemma in the safe lambda calculus. The following examples illustrate this. Consider the terms:
 \begin{align*}
-M_1 &\equiv \ianewin{x}{\iaseq\ (\iaassign\ x\ 1)\ ((\lambda y:\overline 0. \ianewin{x}{y})(\iaderef\ x))} \\
-M_2 &\equiv \lambda x:\overline 1. (\lambda y:\overline 1. (\ianewin{x}{y\ 0})) x\\
-M_3 &\equiv  \lambda f: \overline 2 . \ianewin{x}{(\lambda y:\overline 1. f (\lambda x:\overline 0. y))(\lambda z:\overline 0 . \iaderef\ \underline{x})}
+M_1 &\equiv \ianewin{x}{\iaseq\ (\iaassign\ x\ 1)\ ((\lambda y^0. \ianewin{x}{y})(\iaderef\ x))} \\
+M_2 &\equiv \lambda x^1. (\lambda y^1. (\ianewin{x}{y\ 0})) x\\
+M_3 &\equiv  \lambda f^2 . \ianewin{x}{(\lambda y^1. f (\lambda x^0. y))(\lambda z^0 . \iaderef\ \underline{x})}
 \end{align*}
-where $\overline 0$ is an abbreviation for \iaexp\ and for $n\in\nat$, $\overline{n+1}$ stands for the type $n \typear \iaexp$.
+where the type $n$ is an abbreviation for $n_\iaexp$ for $n\in\nat$.
 
 Clearly, the \ialgol\ terms $M_1$ and $M_2$ are both strongly safe, and therefore also safe. $M_3$, however, is safe but not \emph{strongly} safe because the underlined occurrence of $x$ is not abstracted together with $z$.
 Theses examples shows that it is \emph{not} ``safe'' to use capture-permitting substitution in (strongly-) safe \ialgol. The term $M_1$ gives an example where a block-variable is captured by another block-declaration; in $M_2$ a block-variable is captured by a lambda-abstraction; and in $M_3$ a lambda-bound variable is captured by a block-variable declaration:
@@ -453,10 +453,10 @@ $$\ianewin{x}{\iaseq\ (\iaassign\ x\ 1)\ (\ianewin{z}{\iaderef\ x})}$$
 which is observationally equivalent to $1$.
 
 \item For $M_2$, the capture permitting substitution gives
-$\lambda x:\overline 1. (\ianewin{x}{x\ 0})$ which is not even a valid \ialgol\ term;
+$\lambda x^1. (\ianewin{x}{x\ 0})$ which is not even a valid \ialgol\ term;
 
 \item Finally for $M_3$, capture permitting substitution gives
-$\lambda f: \overline 2 . \ianewin{x}{\lambda y:\overline 1. f (\lambda x:\overline 0. (\lambda z:\overline 0 . \iaderef\ x))}$
+$\lambda f^2 . \ianewin{x}{\lambda y^1. f (\lambda x^0. (\lambda z^0 . \iaderef\ x))}$
 which is also not a valid \ialgol\ term.
 \end{enumerate}
 
@@ -471,14 +471,14 @@ The \defname{semi-capture-permitting substitution} of the term-in-context $\Gamm
 \begin{align*}
 x \semicaptsubst{N}{x} &= N \\
 y \semicaptsubst{N}{x} &= y & y\neq x;\\
-(\lambda x . M) \semicaptsubst{N}{x} &= \lambda x . M \\
-(\lambda y . M) \semicaptsubst{N}{x} &= \lambda y . M\semicaptsubst{N}{x} & \mbox{where $y \not = x$;} \\
+(\lambda x^\tau . M) \semicaptsubst{N}{x} &= \lambda x^\tau . M \\
+(\lambda y^\tau . M) \semicaptsubst{N}{x} &= \lambda y^\tau . M\semicaptsubst{N}{x} & \mbox{where $y \not = x$;} \\
 (\ianewin{x}{M})\semicaptsubst{N}{x} &=   \ianewin{x}{M} \\
 (\ianewin{y}{M})\semicaptsubst{N}{x} &= \ianewin{z}{M\semicaptsubst{z}{y}\semicaptsubst{N}{x}} & \mbox{if $x\neq y$, $z$ fresh;} \\
-(\iamkvar\ (\lambda x. M_1) M_2)\semicaptsubst{N}{x} &=
-  \iamkvar\ (\lambda x. M_1) M_2\semicaptsubst{N}{x} \\
-(\iamkvar\ (\lambda y. M_1) M_2)\semicaptsubst{N}{x} &=
-  \iamkvar\ (\lambda z. M_1\semicaptsubst{z}{y}\semicaptsubst{N}{x}) M_2\semicaptsubst{N}{x}
+(\iamkvar\, (\lambda x^\tau. M_1)\, M_2)\semicaptsubst{N}{x} &=
+  \iamkvar\, (\lambda x^\tau. M_1)\, M_2\semicaptsubst{N}{x} \\
+(\iamkvar\, (\lambda y^\tau. M_1)\, M_2)\semicaptsubst{N}{x} &=
+  \iamkvar\, (\lambda z^\tau. M_1\semicaptsubst{z}{y}\semicaptsubst{N}{x})\, M_2\semicaptsubst{N}{x}
   & \mbox{if $x\neq y$, $z$ fresh.}
 \end{align*}
 The other constants and application cases are defined inductively in the standard way.

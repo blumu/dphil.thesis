@@ -24,49 +24,43 @@ $A_1 \typear \cdots \typear A_n \typear B$, where $B$ is not
 necessarily ground. We fix an atomic type symbol $o$ and for any natural number $n\in\nat$ we use \emph{type} notation $n$ to refer to the type $n_o$
 defined in Sec.\ \ref{sec:simpletype} ($0\equiv o$ and $(k+1) \equiv k \typear o$ for $k\geq 0$).
 
-\begin{definition} \hfill
+\begin{definition}[The safe lambda calculus] \hfill
+\index{safe!lambda calculus}
 \label{def:safelambda}
 \begin{enumerate}[(i)]
-\item The \defname[safe!lambda calculus]{safe lambda calculus} is a sub-system of the
-  simply typed lambda calculus. It is defined as the set of judgments of the form $\Gamma \sentail M : A$ that are derivable from the following system of rules:
+\item The \defname[safe!lambda calculus {\it \`a la} Curry]{safe lambda calculus} {\it \`a la} Curry is a sub-system of the simply typed lambda calculus {\it \`a la} Curry. It is defined as the set of judgments of the form $\Gamma \sentail M : A$ that are derivable from the system of rules of Table \ref{tab:safelambda_curry}.
+
+\item The \defname[safe!lambda calculus {\it \`a la} Church]{safe lambda calculus} {\it \`a la} Church is the typing system obtained by adding type annotations in the $\lambda$-binders in the abstraction rule of the safe lambda calculus {\it \`a la} Curry (see Sec.\ \ref{sec:lambda_alachurch}).
+
+\item The sub-systems defined by the same rules in
+(i) and (ii), such that all types that occur in them are homogeneous (Sec.\ \ref{sec:safetygrammar}), are called the \defname[homogeneous!safe lambda calculus]{homogeneous safe lambda calculus} {\it \`a la} Curry and {\it \`a la} Church respectively.
+\end{enumerate}
+\end{definition}
+
+\begin{table}[htnp]
 $$ \rulename{var} \ \rulef{}{x : A\sentail x : A} \qquad
 \rulename{const} \ \rulef{}{\sentail f : A}~f \in \Xi \qquad
-\rulename{wk} \ \rulef{\Gamma \sentail s : A}{\Delta \sentail s : A} \quad
+\rulename{wk} \ \rulef{\Gamma \sentail M : A}{\Delta \sentail M : A} \quad
 \Gamma \subset \Delta$$
 
-$$ \rulename{app_{as}} \ \rulef{\Gamma \sentail s : (A_1, \ldots , A_n,B)
-\quad \Gamma \sentail t_1 : A_1 \quad \ldots
-\quad \Gamma \sentail t_n : A_n} {\Gamma \asappentail s~t_1 \ldots t_n : B} $$
+$$ \rulename{app_{as}} \ \rulef{\Gamma \sentail M : (A_1, \ldots , A_n,B)
+\quad \Gamma \sentail N_1 : A_1 \quad \ldots
+\quad \Gamma \sentail N_n : A_n} {\Gamma \asappentail M\, N_1 \ldots N_n : B} $$
 
-$$ \rulename{app} \ \rulef{\Gamma \sentail s : (A_1, \ldots , A_n,B)
-\quad \Gamma \sentail t_1 : A_1 \quad \ldots
-\quad \Gamma \sentail t_n : A_n} {\Gamma \sentail s~t_1 \ldots t_n : B} \quad \ord\Gamma \geq \ord B$$
+$$ \rulename{app} \ \rulef{\Gamma \sentail M : (A_1, \ldots , A_n,B)
+\quad \Gamma \sentail N_1 : A_1 \quad \ldots
+\quad \Gamma \sentail N_n : A_n} {\Gamma \sentail M\, N_1 \ldots N_n : B} \quad \ord\Gamma \geq \ord B$$
 
 $$ \rulename{abs} \ \rulef{\Gamma, x_1 : A_1, \ldots, x_n : A_n
-  \asappentail s : B} {\Gamma \sentail \lambda x_1 \ldots x_n . s :
+  \asappentail M : B} {\Gamma \sentail \lambda x_1 \ldots x_n . M :
   (A_1, \ldots ,A_n,B)} \quad \ord\Gamma \geq \ord{(A_1, \ldots ,A_n,B)}
 $$
 \smallskip
 
-\noindent where $\ord{\Gamma}$ denotes the set $\{ \ord{y} : y \in \Gamma \}$ and for $S\subseteq \nat$, $u\in\nat$, ``$S \geq u$'' means that $u$ is a lower-bound of $S$. 
-
-\item We say that a term $M$ is \defname{safe} if it is typable in the safe lambda calculus \ie $\Gamma \sentail M : T$ for some context $\Gamma$ and type $T$. Otherwise it is said to be \defname{unsafe}.
-    
-A term is \defname{almost safe} if  $\Gamma \asentail M : T$ for some $\Gamma, T$.
-
-\item A \emph{term-in-context} $\Gamma \stentail M : T$ of the simply typed lambda calculus is said to be \emph{safe} if $\Gamma \sentail M : T$
-    is also typable in the safe lambda calculus.
-
-\item The sub-system that is defined by the same rules in
-(i), such that all types that occur in them are homogeneous (Sec.\ \ref{sec:safetygrammar}), is called
-the \defname{homogeneous safe lambda calculus}.
-\end{enumerate}
-\end{definition}
-We give a brief account of the homogeneous safe lambda calculus in Sec.\ \ref{sec:safe_homog}.
-\smallskip
-
-
-
+\noindent where $\ord{\Gamma}$ denotes the set $\{ \ord{y} : y \in \Gamma \}$ and for $S\subseteq \nat$, $u\in\nat$, ``$S \geq u$'' means that $u$ is a lower-bound of $S$.
+\caption{The safe lambda calculus {\it \`a la} Curry.}
+\label{tab:safelambda_curry}
+\end{table}
 The safe lambda calculus deviates from the standard definition of
 the simply typed lambda calculus in a number of ways. First the rules $\rulename{app}$ and $\rulename{abs}$ respectively can perform multiple applications and abstract several variables at once. (Of course this feature alone does not alter expressivity.) Crucially,
 the side conditions in the application rule and abstraction rule require the variables in the typing context to have orders no smaller than that of the term being formed.
@@ -74,45 +68,76 @@ Safe terms can be applied together using the rule $\rulename{app_{as}}$, but the
 assumption of the original definition of safe grammars \cite{KNU02}, is not required here. Another difference is that we allow $\Xi$-constants to have
 arbitrary higher-order types.
 
+\begin{definition}[Safe terms] \hfill
+\begin{enumerate}[(i)]
+\item An \emph{untyped} term $M \in \Lambda$ is \defname{safe} if the judgment $\Gamma \sentail M : T$ is derivable in the safe lambda calculus {\it \`a la} Curry for some context $\Gamma$ and type $T$. Otherwise it is said to be \defname{unsafe}. A term is \defname{almost safe} if  $\Gamma \asentail M : T$ for some $\Gamma, T$.
+    
+\item A \emph{type-annotated} term $M \in \Lambda_{\mathbb{T}}$ is \defname{safe} if the judgment $\Gamma \sentail M : T$ is derivable in the safe lambda calculus {\it \`a la} Church for some context $\Gamma$ and type $T$. Otherwise it is said to be \defname{unsafe}.
+    It is \defname{almost safe} if $\Gamma \asentail M : T$ for some $\Gamma, T$.
+
+\item An \emph{untyped} term $M \in \Lambda$ is \index{safe!universally}\defname{universally safe}
+if all its valid type annotations are safe \ie for any $M' \in \Lambda_{\mathbb{T}}$, context $\Gamma$ and type $A$ such that $\Gamma \chentail M' : A$ and $|M'|\equiv M$, $M'$ is safe. It is \defname{universally unsafe} if all its valid type annotations are unsafe.
+
+\item A \emph{term-in-context} $\Gamma \stentail M : T$ of the Curry-style (resp.\ $\Gamma \chentail M : T$ of the Church-style) simply typed lambda calculus is said to be \emph{safe} if $\Gamma \sentail M : T$
+    is also typable in the Curry-style (resp.\ Church-style) safe lambda calculus.
+\end{enumerate}
+\end{definition}
+
+%We give a brief account of the homogeneous safe lambda calculus in Sec.\ \ref{sec:safe_homog}.
+
+\begin{convention}
+To avoid cumbersome notations, we will use sequents of the form $\Gamma \sentail M : A$ to refer to judgments of both versions of the safe lambda calculus (Curry and Church).
+When we specify that $M$ is an untyped term in $\Lambda$ then it is understood that the judgement refers to a term-in-context typed in the Curry-style safe lambda calculus.
+If $M$ ranges over annotated terms in $\Lambda_{\mathbb{T}}$ then it refers to a term-in-context typed in the Church-style safe lambda calculus.
+When the domain of $M$ is not specified then it means that the current argument (resp.\ definition, lemma or proposition) is valid in both systems.
+\end{convention}
+
+
+
 \begin{example}[Kierstead terms]
 \label{ex:kierstead}
-Consider the terms $M_1 \equiv \lambda f . f (\lambda x . f (\lambda y . y
-))$ and $M_2 \equiv \lambda f . f (\lambda x . f (\lambda y .x ))$ where
-$x,y:o$, $f:\tau$ and $\tau=((o,o),o)$. The term $M_2$ is not safe because in the
-subterm $f (\lambda y . x)$, the free variable $x$ has order $0$ which
-is smaller than $\ord{(\lambda y . x)} = 1$.  On the other hand, $M_1$
+Consider the annotated terms $M_1 \equiv \lambda f^2 . f (\lambda x^o . f (\lambda y^o . y
+))$ and $M_2 \equiv \lambda f^2 . f (\lambda x^o . f (\lambda y^o .x ))$. $M_2$ is unsafe because in the
+subterm $f (\lambda y^o . x)$, the free variable $x$ has order $0$ which
+is smaller than $\ord{(\lambda y^o . x)} = 1$.  On the other hand, $M_1$
 is safe as the following proof tree shows:
 \begin{mathpar}
 \inferrule* [Left=\rulenamet{abs}]
     {\inferrule* [Left=\rulenamet{app}]
-        {\inferrule* [Left=\rulenamet{var}]{ }{f:\tau \sentail f:\tau}
+        {\inferrule* [Left=\rulenamet{var}]{ }{f:2 \sentail f:2}
          \qquad
          \inferrule* [Right=\rulenamet{abs}]
              {\inferrule* [Right=\rulenamet{app}]
                 {\inferrule* [Left=\rulenamet{wk}]
-                    {\inferrule*[Left=\rulenamet{var}]{ }{f:\tau \sentail f:\tau}}
-                    {f:\tau, x:o \sentail f:\tau}
+                    {\inferrule*[Left=\rulenamet{var}]{ }{f:2 \sentail f:2}}
+                    {f:2, x:o \sentail f:2}
                  \qquad
                  \inferrule* [Right=\rulenamet{wk}]
                     {\inferrule* [Right=\rulenamet{abs}]
                             {\inferrule* [Right=\rulenamet{var}]{ }{y:o \sentail y:o}}
-                            {y:o \sentail \lambda y . y :(o,o)}}
-                    {f:\tau , x:o \sentail \lambda y .y:(o,o) }
+                            {y:o \sentail \lambda y^o . y :1_o}}
+                    {f:2 , x:o \sentail \lambda y^o .y:1_o }
                 }
-                {f:\tau, x:o \sentail f (\lambda y .y ) :o}
+                {f:2, x:o \sentail f (\lambda y^o .y ) :o}
             }
-            { f:\tau  \sentail \lambda x . f (\lambda y .y ):(o,o)}
+            { f:2  \sentail \lambda x^o . f (\lambda y^o .y ):(o,o)}
        }
-       { f:\tau \sentail f (\lambda x . f (\lambda y .y )) :o}
+       { f:2 \sentail f (\lambda x^o . f (\lambda y^o .y )) :o}
   }
-  {\sentail M_1 \equiv \lambda f . f (\lambda x . f (\lambda y .y )) :\tau\typear o}
+  {\sentail M_1 \equiv \lambda f^2 . f (\lambda x^o . f (\lambda y^o .y )) :3}
 \end{mathpar}
+
+Now let us look at the untyped terms underlying $M_1$ and $M_2$:
+the terms $|M_1| \equiv \lambda f . f (\lambda x . f (\lambda y . y
+))$ and $|M_2| \equiv \lambda f . f (\lambda x . f (\lambda y .x ))$ both have for principal type $\alpha_3 \equiv ((\alpha\typear\alpha)\typear\alpha)\typear\alpha$.
+Consequently, any typing derivation for $|M_1|$ and $|M_2|$ in the simply-typed lambda calculus
+will assign the same type $\alpha$ to the occurrences of the variables $x$ and $y$. Hence $|M_1|$ is \emph{universally} safe and $|M_2|$ is \emph{universally} unsafe.
 \end{example}
 
 \begin{example}
-The term
-$ f:(1,1,o) \asappentail (\lambda \varphi \theta . \varphi (\lambda x . x)) (f (\lambda x .x)) \equiv M : 3$
-is almost safe but $ \sentail \lambda f. M :((1,1,o),3) $ is safe.
+The term-in-context
+$ f:(1,1,o) \asappentail (\lambda \varphi^2 \theta^3 . \varphi (\lambda x^o . x)) (f (\lambda x^o .x)) \equiv M : 3$ is almost safe. Abstracting $f$ produces the safe term-in-context $ \sentail \lambda f^{(1,1,o)}. M :((1,1,o),3)$.
+
 \end{example}
 
 
@@ -120,15 +145,14 @@ It is easy to see that valid typing judgements of the safe lambda
 calculus satisfy the following simple invariant:
 \begin{lemma}[Basic property]
 \label{lem:ordfreevar}
-If $\Gamma \sentail M : A$ then every variable in $\Gamma$ occurring
-free in $M$ has order at least $\ord(M)$.
+If $\Gamma \sentail M : A$ is a valid jugment of the Curry or Church-like safe lambda calculus then every variable in $\Gamma$ occurring free in $M$ has order at least $\ord(M)$.
 \end{lemma}
-When a term is unsafe, we may highlight the source of its unsafety by underlining one of its subterm and some free occurrence of a variable in that subterm that does not verify the condition of the previous Lemma. (Sometimes we only underline the variable.) For instance the term $\lambda f . f (\lambda x . f (\underline{\lambda y .\underline{x}}))$ is unsafe because the subterm $\lambda y .x$ has order greater that the order of the variable $x$ occurring free in it.
+When a term is unsafe, we will sometimes highlight the source of its unsafety by underlining one of its subterm as well as some free occurrence of a variable in that subterm that does not verify the condition of the previous Lemma. (We sometimes just underline the variable.) For instance the term $\lambda f^2 . f (\lambda x^o . f (\underline{\lambda y^o .\underline{x}}))$ is unsafe because the subterm $\lambda y^o .x$ has order greater that the order of the variable $x$ occurring free in it.
 \smallskip
 
 
-Observe that the converse of the previous lemma does not hold: take the simply-typed term $\lambda y z. (\lambda x . y ) z$ with $x,y,z:o$. This term is closed therefore it trivially satisfies the condition in the conclusion of the previous lemma, but it is not safe because the variable $y$ is not abstracted by the ``$\lambda x$'' abstraction.
-Even for applicative term the converse does not hold: for instance the unsafe term $f:2, g:1, y:o \stentail f (\underline{g \underline{y}}) : o$ verifies the condition of the lemma.
+Observe that the converse of the previous lemma does not hold: take the annotated term $\lambda y^o z^o. (\lambda x^o . y ) z$. Since it is closed, it trivially satisfies the condition in the conclusion of the previous lemma, but it is not safe because the variable $y$ is not abstracted by the ``$\lambda x$'' abstraction.
+Even for applicative term the converse does not hold: for instance the unsafe term-in-context $f:2, g:1, y:o \stentail f (\underline{g \underline{y}}) : o$ verifies the condition of the lemma.
 \smallskip
 
 
@@ -144,13 +168,14 @@ Let $G = \langle \Sigma, \mathcal{N}, \mathcal{R},
     \cdots, z_m^{A_m}}$.  A rule $F z_1 \ldots z_m \rightarrow e$ in
   $\mathcal{R}$ is safe (in the original sense of Knapik \emph{et al.}) if and only if $ z_1 : A_1, \cdots, z_m : A_m
   \sentail^{\Sigma \cup \mathcal{N}} e : o$ is a valid typing judgement
-  of the \emph{homogeneous} safe lambda calculus.
+  of the \emph{homogeneous} (Curry or Church-style) safe lambda calculus.
 \end{proposition}
 \proof
+First we observe that since $e$ is an applicative term, the distinction between Curry and Church-style lambda calculus does not matter.
 We show by induction that \begin{asparaenum}
 \item  $z_1,\ldots, z_m \asappentail t:A$ is a valid judgment of the homogeneous safe lambda calculus containing no abstraction if and only if in the Knapik sense, all the occurrences of unsafe subterms of $t$ are safe occurrences.
 \item $z_1,\ldots, z_m \sentail t:A$ is a valid judgment of the homogeneous safe lambda calculus containing no abstraction if and only if in the Knapik sense, all the occurrences of unsafe subterms of $t$ are safe occurrences, and all parameters occurring in $t$ have order greater than $\ord{t}$. \end{asparaenum}
-The constant and variable rule are trivial. For the application case: by definition, a term $t_0 \ldots t_n$ is Knapik-safe iff for all $0\leq i \leq n$, all the occurrences of unsafe subterms of $t_i$ are safe occurrences (in the Knapik sense), and for all $1\leq j \leq n$, the operands occurring in $t_j$ have order greater than $\ord{t_j}$. The \rulenamet{app_{as}} rule and the induction hypothesis permit us to conclude.
+The constant and variable rules are trivial. For the application case: by definition, a term $t_0 \ldots t_n$ is Knapik-safe iff for all $0\leq i \leq n$, all the occurrences of unsafe subterms of $t_i$ are safe occurrences (in the Knapik sense), and for all $1\leq j \leq n$, the operands occurring in $t_j$ have order greater than $\ord{t_j}$. The \rulenamet{app_{as}} rule and the induction hypothesis permit us to conclude.
 
 Now since $e$ is an applicative term of \emph{ground type}, the previous result gives:
 $z_1,\ldots, z_m \sentail e:o$ is a valid judgment of the homogeneous safe lambda calculus iff
@@ -236,17 +261,17 @@ Consequently, in the safe lambda calculus, substitution can be implemented using
 \end{remark}
 
 \begin{example}
-  In order to contract the $\beta$-redex in the term
+  In order to contract the $\beta$-redex in
 \[f:(o,o,o),x:o
-  \stentail (\lambda \varphi^{(o,o)} x^o . \varphi \, x) (\underline{f \,
+  \chentail (\lambda \varphi^{(o,o)} x^o . \varphi \, x) (\underline{f \,
     \underline{x}}) : (o,o)\] one should rename the bound variable $x$ to a fresh name to
   prevent the capture of the free occurrence of $x$ in the underlined subterm during substitution. Consequently, by the previous lemma,
   the term is not safe. And indeed the basic property of the safe lambda calculus is not verified because $\ord{x} = 0 < 1
   = \ord{f x}$.
 \end{example}
 
-Note that $\lambda$-terms that `satisfy' the No-variable-capture
-Lemma are not necessarily safe. For instance the $\beta$-redex in
+Note that $\lambda$-terms that do not require variable-capture
+when being reduced are not necessarily safe. For instance the $\beta$-redex in
 $\lambda y^o z^o. (\lambda x^o .y) z$ can be contracted using
 capture-permitting substitution, even though the term is not safe.
 
@@ -271,34 +296,32 @@ It is trivial for the base cases (variable and constant) and for weakening.
 Abstraction case: by definition of safety, $M$ has the form $\lambda \overline{y}. M_0 M_1 \ldots M_p$ for some safe terms $M_k$, $0\leq k \leq p$, $p\geq 0$. By the induction hypothesis, $M_k\subst{N}{x}$ is safe for all $k$.
 The rules $\rulename{app_{as}}$ and $\rulename{abs}$ permit us to conclude.
 The application cases (\rulenamet{app_{as}} and \rulenamet{app}) are treated similarly.
-
-For the second part: clearly types are preserved by substitution therefore so is type homogeneity.
+Finally since term substitution preserves types, in particular it preserves type homogeneity.
 \end{proof}
 
 \begin{remark}
 \begin{enumerate}[(i)]
-\item  This result extends immediately to simultaneous substitution:
+\item  This result naturally extends to simultaneous substitution:
 If $\Gamma, x_1 :A_1, \ldots x_n : A_n  \sentail M : B$
 and $\Gamma \sentail N_k : A_k$ for $1\leq k\leq n$ then $\Gamma \sentail
 M[N_1/x_1, \ldots, N_n/x_n] : B$.
 
-\item Observe that the \emph{type} substitution lemma of the simply typed lambda calculus does not hold in the safe lambda calculus. This is because type substitution allows one to change the order of the variables occurring in the term. For instance take
-    the term $M \equiv \lambda f y. f (\lambda x.y)$. Its principal type in the lambda calculus is $A \equiv ((\alpha\typear\beta)\typear\gamma)\typear\beta\typear\gamma$ for some atomic types $\alpha$, $\beta$ and $\gamma$.
-    Although the judgement $\stentail M : A$ is not safe (because then $\ord y = \ord x$), the judgment
-    $\stentail M : A\subst{\beta}{\beta\typear\beta}$ is safe. And further the judgment $\stentail M : A\subst{\beta}{\beta\typear\beta}\subst{\alpha}{\alpha\typear\alpha}$
-    is not safe.
+\item Observe that the \emph{type} substitution lemma of the simply typed lambda calculus does not hold in the safe lambda calculus. This is because type substitution allows one to alter the order of the variables occurring in the term. For instance take
+    $M \equiv \lambda f y. f (\lambda x.y)$. Its principal type in the lambda calculus is $A \equiv ((\alpha\typear\beta)\typear\gamma)\typear\beta\typear\gamma$ for some atomic types $\alpha$, $\beta$ and $\gamma$.
+    The judgement $\stentail M : A$ is not safe (because then $\ord y = \ord x$), the judgment
+    $\stentail M : A\subst{\beta}{\beta\typear\beta}$ is safe, and the judgment $\stentail M : A\subst{\beta}{\beta\typear\beta}\subst{\alpha}{\alpha\typear\alpha}$
+    is unsafe.
 \end{enumerate}
 \end{remark}
 
 It is desirable to have an appropriate notion of reduction for our
 calculus. However the standard $\beta$-reduction rule is not
 adequate. Indeed, safety is not preserved by $\beta$-reduction as
-the following example shows. Suppose that $w,x,y,z : o$ and $f :
-(o,o,o) \in \Sigma$ then the safe term $(\lambda x y . f x y) z w$
-$\beta$-reduces to $(\underline{\lambda y . f z y}) w$, which is
+the following example shows: The safe term $\lambda f^{(o,o,o)} z^o w^o. (\lambda x^o y^o . f x y) z w$
+$\beta$-reduces to $\lambda f^{(o,o,o)} z^o w^o. (\underline{\lambda y^o . f z y}) w$, which is
 unsafe since the underlined order-1 subterm contains a free
 occurrence of the ground-type $z$. However if we perform one more
-reduction we obtain the safe term $f z w$. This suggests
+reduction we obtain the safe term $\lambda f^{(o,o,o)} z^o w^o. f z w$. This suggests
 simultaneous contraction of ``consecutive'' $\beta$-redexes. In
 order to define this notion of reduction we first introduce the
 corresponding notion of redex.
@@ -310,9 +333,9 @@ succession of several standard redexes:
 \begin{definition}
 Let $l\geq 1$ and $n\geq 1$. We use the abbreviations $\overline{x}$
 and $\overline{x}:\overline{A}$  for $x_1 \ldots x_n$ and $x_1:A_1,
-\ldots, x_n : A_n$ respectively. A \defname[safe!redex]{safe redex} is a safe
-term of the form $(\lambda \overline{x} . M) N_1 \ldots N_l$ such
+\ldots, x_n : A_n$ respectively. In the Curry-style safe lambda calculus, a \defname[safe!redex]{safe redex} is a safe term of the form $(\lambda \overline{x} . M) N_1 \ldots N_l$ such
 that $M$ is safe and $N_i$ is safe for $1\leq i\leq n$.
+The notion of redex in the Church-style safe lambda calculus is defined similarly.
 \end{definition}
 For instance, in the case $n<l$, a safe redex has a derivation tree of the following form:
 \begin{mathpar}
@@ -338,11 +361,11 @@ For instance, in the case $n<l$, a safe redex has a derivation tree of the follo
   }
   {\Gamma \sentail (\lambda \overline{x} . M) N_1 \ldots N_l : B}
 \end{mathpar}
-\smallskip
+%\smallskip
 
 \begin{example}
-The term $(\lambda f . ((\lambda g h . h) a) ) a a$ for some
-constant $a:o \rightarrow o$ and variables $x : o$, $f,g,h:o \rightarrow o$ is as safe redex of type $o \rightarrow o$.
+The term $(\lambda f . ((\lambda g h . h) a) )\, a\, a$ for some
+constant $a:o \rightarrow o$ and variables $f,g,h:o \rightarrow o$ is a safe redex of type $o \rightarrow o$.
 This example shows that for a safe redex $(\lambda x_1 \ldots x_n . M) N_1 \ldots N_l$ we can have $l>n$.
 \end{example}
 
@@ -386,18 +409,18 @@ of $\beta_s$-normal form. (iv) is a consequence of 1 and 2.
 
 \begin{lemma}[Subject Reduction]
 \label{lem:safered_preserve_safety}
-Suppose that $s \betasred t$. Then
-$\Gamma \sentail s :A$ implies $\Gamma \sentail t :A$.
+Suppose that $M_1 \betasred M_2$. Then
+$\Gamma \sentail M_1 :A$ implies $\Gamma \sentail M_2 :A$.
 \end{lemma}
 
 \proof
   It suffices to show that the relation $\beta_s$ preserves safety.
-Suppose that $s\ \beta_s\ t$ where $s$ is the
+Suppose that $M_1\ \beta_s\ M_2$ where $M_1$ is the
 safe-redex $(\lambda x_1 \ldots x_n . M) N_1
   \ldots N_l $ with $x_1 : B_1, \ldots, x_n: B_n$
 and $M$ of type $C$.  W.l.o.g we can assume that the last rule used
-to form the term $s$ is \rulenamet{app} (and not the weakening rule
-\rulenamet{wk}), thus  we have $\Gamma = \freevarset(s)$, and since $s$ is
+to form the term $M_1$ is \rulenamet{app} (and not the weakening rule
+\rulenamet{wk}), thus  we have $\Gamma = \freevarset(M_1)$, and since $M_1$ is
 safe, Lemma \ref{lem:ordfreevar} gives us $\ord{A} \leq
 \ord{\Gamma}$.
 
@@ -407,20 +430,19 @@ x_{l+1}:B_{l+1}, \ldots x_n :B_{n}\sentail M\subst{\overline{N}}{x_1
 \ldots x_l} : C$. And since we have $\ord{A} \leq \ord{\Gamma}$, we
 can use the \rulenamet{abs} rule to form the safe term $\Gamma
 \sentail \lambda x_{l+1} \ldots x_n . M\subst{\overline{N}}{x_1
-\ldots x_l} \equiv t : A$.
+\ldots x_l} \equiv M_2 : A$.
 
 Suppose $n \leq l$. The Substitution Lemma gives $\Gamma \sentail
-M\subst{N_1 \ldots N_n}{\overline{x}} : C$. If $n<l$ then we further apply the rule \rulenamet{app_{as}} to apply the $l-n$ remaining parameters to form the sequent $\Gamma \sentail t :A$.
+M\subst{N_1 \ldots N_n}{\overline{x}} : C$. If $n<l$ then we further apply the rule \rulenamet{app_{as}} to apply the $l-n$ remaining parameters to form the sequent $\Gamma \sentail M_2 :A$.
 \qed
 \smallskip
 
 \begin{remark}
-$\betasred$ \emph{does not} preserves ``unsafety'': Take any safe term $S$ and unsafe term $U$ of the same type $\tau$, then the term $(\lambda x:\tau y:\tau . y) U S :\tau$ is also unsafe but it $\beta_s$-reduces to $S$ which is safe.
+$\betasred$ \emph{does not} preserve ``unsafety'': Take any safe annotated-term $S$ and unsafe annotated-term $U$ of the same type $\tau$, then the term $(\lambda x^\tau y^\tau . y)\, U\, S :\tau$ is unsafe but it $\beta_s$-reduces to $S$ which is safe.
 \end{remark}
 
 \subsection{Eta-long expansion}
-
-The $\eta$-long normal form (or simply $\eta$-long form) of a term
+We now restrict our attention to the Church-style (safe) lambda calculus. Since terms are annotated, their type as well as the types of their subterms are uniquely determined. The $\eta$-long normal form (or simply $\eta$-long form) of an annotated term
 % (also called \emph{long reduced form}, \emph{$\eta$-normal form} and
 % \emph{extensional form} in the literature
 % \cite{DBLP:journals/tcs/JensenP76,DBLP:journals/tcs/Huet75,huet76})
@@ -428,13 +450,12 @@ is obtained by hereditarily $\eta$-expanding the body of every
 lambda abstraction as well as every subterm occurring in an
 \emph{operand position} (\ie occurring as the second argument of
 some occurrence of the binary application operator). Formally the
-\defname[eta-long normal form]{$\eta$-long form}, written $\elnf{t}$, of a term $t:
-(A_1,\ldots,A_n,o)$ with $n \geq 0$ is defined by cases according to
-the syntactic shape of $t$:
+\defname[eta-long normal form]{$\eta$-long form}, written $\elnf{M}$, of an annotated term $M$ of type $(A_1,\ldots,A_n,o)$ with $n \geq 0$ is defined by cases according to
+the syntactic shape of $M$:
 \begin{eqnarray*}
-  \elnf{\lambda x . s } &=& \lambda x . \elnf{s} \\
-  \elnf{x s_1 \ldots s_m } &=& \lambda \overline{\varphi} . x \elnf{s_1}\ldots \elnf{s_m} \elnf{\varphi_1} \ldots \elnf{\varphi_n} \\
-  \elnf{(\lambda x . s) s_1 \ldots s_p } &=& \lambda \overline{\varphi} . (\lambda x . \elnf{s}) \elnf{s_1} \ldots \elnf{s_p} \elnf{\varphi_1} \ldots \elnf{\varphi_n}
+  \elnf{\lambda x^\tau . N } &\equiv& \lambda x^\tau . \elnf{N} \\
+  \elnf{x N_1 \ldots N_m } &\equiv& \lambda \overline{\varphi}^{\overline{A}} . x \elnf{N_1}\ldots \elnf{N_m} \elnf{\varphi_1} \ldots \elnf{\varphi_n} \\
+  \elnf{(\lambda x^\tau . N) N_1 \ldots N_p } &\equiv& \lambda \overline{\varphi}^{\overline{A}} . (\lambda x^\tau . \elnf{N}) \elnf{N_1} \ldots \elnf{N_p} \elnf{\varphi_1} \ldots \elnf{\varphi_n}
 \end{eqnarray*}
 where $m \geq 0$, $p\geq 1$, $x$ is either a variable or constant, $\overline{\varphi} = \varphi_1 \ldots \varphi_n$ and each $\varphi_i : A_i$ is a fresh variable.
 
@@ -446,21 +467,21 @@ where $m \geq 0$, $p\geq 1$, $x$ is either a variable or constant, $\overline{\v
 
 \begin{definition}
 \label{dfn:longsafe}
-We say that a safe term is \defname{long-safe} just if it is typable without using the rule \rulenamet{app_{as}} from Def.~\ref{def:safelambda}.
+We say that a safe annotated term is \defname{long-safe} just if it is typable in the Church-like safe lambda calculus without using the rule \rulenamet{app_{as}} from Def.~\ref{def:safelambda}.
 The set of long-safe terms is therefore given by the following system of rules:
   $$ \rulename{var_l} \ \rulef{}{x : A\lsentail x : A} \qquad
 \rulename{const_l} \ \rulef{}{\lsentail f : A}\quad f \in \Xi \qquad
-\rulename{wk_l} \ \rulef{\Gamma \lsentail s : A}{\Delta \lsentail s : A}\quad
+\rulename{wk_l} \ \rulef{\Gamma \lsentail M : A}{\Delta \lsentail M : A}\quad
 \Gamma \subset \Delta$$
 
-$$ \rulename{app_l} \ \rulef{\Gamma \lsentail s : (A_1,\ldots,A_n,B)
+$$ \rulename{app_l} \ \rulef{\Gamma \lsentail M : (A_1,\ldots,A_n,B)
 \quad
-  \Gamma \lsentail t_1 : A_1 \quad \ldots \quad \Gamma \lsentail t_n : A_n
-} {\Gamma \lsentail s t_1 \ldots t_n : B} \quad
+  \Gamma \lsentail N_1 : A_1 \quad \ldots \quad \Gamma \lsentail N_n : A_n
+} {\Gamma \lsentail M N_1 \ldots N_n : B} \quad
 \ord\Gamma \geq \ord B$$
 
 $$ \rulename{abs_l} \ \rulef{\Gamma, x_1 : A_1, \ldots, x_n : A_n
-  \lsentail s : B} {\Gamma \lsentail \lambda x_1 \ldots x_n . s :
+  \lsentail M : B} {\Gamma \lsentail \lambda x_1^{A_1} \ldots x_n^{A_n} . M :
   (A_1, \ldots ,A_n,B)} \quad
 \ord\Gamma\geq \ord{(A_1, \ldots ,A_n,B)} $$
 \smallskip
@@ -469,7 +490,7 @@ where the subscript in $\lsentail$ stands for ``long''.
 The terminology ``long-safe'' is deliberately suggestive of a forthcoming lemma. Note that long-safe terms are not necessarily in $\eta$-long normal form.
 \begin{lemma}
 \label{lem:longsafe_imp_safe}
-If a term is long-safe then it is safe.
+If an annotated term is long-safe then it is safe.
 \end{lemma}
 \smallskip
 
@@ -483,20 +504,20 @@ On the other hand,  $\eta$-reduction preserves long-safety:
 
 \begin{lemma}[$\eta$-reduction of one variable preserves long-safety]
 \label{lem:etared_preserve_longsafety}
-  $\Gamma \lsentail \lambda \varphi . s \varphi :A $ with $\varphi$ not
-  occurring free in $s$ implies $\Gamma \lsentail s :A$.
+  $\Gamma \lsentail \lambda \varphi^\tau . M\, \varphi :A $ with $\varphi$ not
+  occurring free in $M$ implies $\Gamma \lsentail M :A$.
 \end{lemma}
 \proof
-  Suppose $\Gamma \lsentail \lambda \varphi . s \varphi :A$. If $s$ is an  abstraction then by construction of the safe term $\lambda \varphi . s \varphi$, $s$ is necessarily safe.  If $s = N_0 \ldots N_p$ with
-  $p\geq 1$ then again, since $\lambda \varphi . N_0 \ldots N_p
+  Suppose $\Gamma \lsentail \lambda \varphi^\tau . M\, \varphi :A$. If $s$ is an  abstraction then by construction the annotated-term $s$ is necessarily safe.  If $M \equiv N_0 \ldots N_p$ with
+  $p\geq 1$ then again, since $\lambda \varphi^\tau . N_0 \ldots N_p
   \varphi$ is safe, each of the $N_i$ is safe for $0 \leq i \leq p$
-  and for any $z\in \freevarset(\lambda \varphi . s \varphi)$, $\ord{z} \geq
-  \ord{\lambda \varphi . s \varphi} = \ord{s}$. Since  $\varphi$ does not occur free in $s$ we have $\freevarset(s) = \freevarset(\lambda \varphi . s \varphi)$, thus we can use the application rule to form $\freevarset(s) \lsentail N_0 \ldots N_p : A$. The weakening rules permits us to conclude $\Gamma \lsentail s :A$. \qed
+  and for any $z\in \freevarset(\lambda \varphi^\tau . M\, \varphi)$, $\ord{z} \geq
+  \ord{\lambda \varphi^\tau . M\, \varphi} = \ord{s}$. Since  $\varphi$ does not occur free in $M$ we have $\freevarset(M) = \freevarset(\lambda \varphi^\tau . M\, \varphi)$, thus we can use the application rule to form $\freevarset(M) \lsentail N_0 \ldots N_p : A$. The weakening rules permits us to conclude $\Gamma \lsentail M :A$. \qed
 \smallskip
 
 \begin{lemma}[Long-safety is preserved by $\eta$-long expansion]
 \label{lem:longsafe_imp_elnf_longsafe}
-$\Gamma \lsentail s :A$ then $\Gamma \lsentail \elnf{s} :A$.
+$\Gamma \lsentail M :A$ then $\Gamma \lsentail \elnf{M} :A$.
 \end{lemma}
 \proof
  First we observe that for any variable or constant $x:A$ we have $x:A \lsentail \elnf{x} :A$. We show this by induction on $\ord{x}$.
@@ -506,7 +527,7 @@ Step case: $x:A$ with $A=(A_1, \ldots, A_n,o)$ and $n>0$. Let $\varphi_i:A_i$ be
 Since $\ord{A_i} < \ord{x}$ the induction hypothesis gives $\varphi_i :A_i \lsentail \elnf{\varphi_i} : A_i$. Using \rulenamet{wk_l} we obtain $x:A, \overline{\varphi} : \overline{A}
   \lsentail \elnf{\varphi_i} :A_i$.  The application rule gives $x :A, \overline{\varphi} : \overline{A} \lsentail x \elnf{\varphi_1} \ldots \elnf{\varphi_n}
   : o$ and the abstraction rule gives $ x :A \lsentail \lambda
-  \overline{\varphi} . x \elnf{\varphi_1} \ldots \elnf{\varphi_n} =
+  \overline{\varphi} . x \elnf{\varphi_1} \ldots \elnf{\varphi_n} \equiv
   \elnf{x} :A$.
 
 
@@ -514,28 +535,23 @@ We now prove the lemma by induction on $s$.
 The base case is covered by the previous observation.
 \emph{Step case:}
 \begin{compactitem}
-\item $s = x s_1 \ldots s_m$ with $x: (B_1, \ldots, B_m, A)$, $A = (A_1, \ldots, A_n, o)$ for some $m\geq 0$, $n>0$ and $s_i : B_i$ for $1 \leq i \leq
-  m$.  Let $\varphi_i: A_i$ be fresh variables for $1\leq i \leq
+\item $M \equiv x N_1 \ldots N_m$ with $x: (B_1, \ldots, B_m, A)$, $A = (A_1, \ldots, A_n, o)$ for some $m\geq 0$, $n>0$ and $N_i : B_i$ for $1 \leq i \leq m$.  Let $\varphi_i: A_i$ be fresh variables for $1\leq i \leq
   n$. By the previous observation we have $\varphi_i :A_i \lsentail \elnf{\varphi_i} :A_i$, the weakening rule then gives us $\Gamma , \overline{\varphi} : \overline{A}
   \lsentail \elnf{\varphi_i} : A_i$.  Since the judgement
-  $\Gamma \lsentail x s_1 \ldots s_m : A$ is formed using the \rulenamet{app_l} rule, each $s_j$ must be long-safe for $1\leq j \leq m$, thus by the induction hypothesis we have $\Gamma \lsentail \elnf{s_j} : B_j$ and by weakening we get $\Gamma, \overline{\varphi} :\overline{A} \lsentail \elnf{s_j} : B_j$.  The \rulenamet{app_l}
-  rule then gives $\Gamma, \overline{\varphi} :\overline{A} \lsentail x \elnf{s_1} \ldots \elnf{s_m} \elnf{\varphi_1} \ldots \elnf{\varphi_n} : o$. Finally
+  $\Gamma \lsentail x N_1 \ldots N_m : A$ is formed using the \rulenamet{app_l} rule, each $N_j$ must be long-safe for $1\leq j \leq m$, thus by the induction hypothesis we have $\Gamma \lsentail \elnf{N_j} : B_j$ and by weakening we get $\Gamma, \overline{\varphi} :\overline{A} \lsentail \elnf{N_j} : B_j$.  The \rulenamet{app_l}
+  rule then gives $\Gamma, \overline{\varphi} :\overline{A} \lsentail x \elnf{N_1} \ldots \elnf{N_m} \elnf{\varphi_1} \ldots \elnf{\varphi_n} : o$. Finally
   the \rulenamet{abs_l} rule gives $\Gamma \lsentail \lambda \overline{\varphi} . x
-  \elnf{s_1} \ldots \elnf{s_m} \elnf{\varphi_1} \ldots
-  \elnf{\varphi_n} = \elnf{s} : A$, the side-condition of \rulenamet{abs_l} being verified since $\ord{\elnf{s}} = \ord{s}$.
+  \elnf{N_1} \ldots \elnf{N_m} \elnf{\varphi_1} \ldots
+  \elnf{\varphi_n} \equiv \elnf{M} : A$, the side-condition of \rulenamet{abs_l} being verified since $\ord{\elnf{M}} = \ord{M}$.
 
 
-\item $s = t s_0 \ldots s_m$ where $t$ is an abstraction.
-For some fresh variables $\varphi_1$, \ldots, $\varphi_n$
-we have $\elnf{s} = \lambda \overline{\varphi}. \elnf{t} \elnf{s_0} \ldots \elnf{s_m} \elnf{\varphi_1}
-  \ldots \elnf{\varphi_n}$. Again, using the induction hypothesis we can easily derive $\Gamma \lsentail
- \lambda \overline{\varphi}. \elnf{t} \elnf{s_0} \ldots \elnf{s_m} \elnf{\varphi_1} \ldots \elnf{\varphi_n} : A$.
+\item $M \equiv N_0 \ldots N_m$ where $m\geq 1$ and $N_0$ is an abstraction.
+We have $\elnf{M} \equiv \lambda \overline{\varphi}. \elnf{N_0} \ldots \elnf{N_m} \elnf{\varphi_1}
+  \ldots \elnf{\varphi_n}$ for some fresh variables $\varphi_1$, \ldots, $\varphi_n$. Again, using the induction hypothesis we can easily derive $\elnf{s} : A$.
 
-\item $s = \lambda \overline{\eta} . t $ where
-$\overline{\eta} : \overline{B}$ and $t:C$ is not an abstraction. The induction hypothesis gives $\Gamma,
-  \overline{\eta} : \overline{B} \lsentail \elnf{t} : C$ and using
-\rulenamet{abs_l} we get $\Gamma \lsentail \lambda \overline{\eta} . \elnf{t} = \elnf{s} : A$.  \qed
+\item $M \equiv \lambda \overline{\eta}^{\overline{B}} . N$ where $A=(\overline{B},C)$ and $N$ is not an abstraction. The induction hypothesis gives $\Gamma, \overline{\eta} : \overline{B} \lsentail \elnf{N} : C$ and using \rulenamet{abs_l} we get $\Gamma \lsentail \lambda \overline{\eta} . \elnf{N} \equiv \elnf{M} : A$.  \qed
 \end{compactitem}
+\smallskip
 
 \begin{remark}\hfill
 \begin{enumerate}
@@ -566,10 +582,10 @@ f^{(o,(o,o),o,o)} g^{((o,o),o,o,o),o)} . g(\lambda y^{(o,o)} x^o
 
 \begin{lemma}
   \label{lem:safe_iff_etalong_lsafe}
-  A simply-typed term is safe if and only if its $\eta$-long normal form is long-safe.
+  An annotated simply-typed term is safe if and only if its $\eta$-long normal form is long-safe.
 \end{lemma}
 \proof Let $\Gamma \stentail M : T$. We want to show that we have $\Gamma \sentail M : T$ if and only if $\Gamma \lsentail \elnf{M} : T$.
-`Only if': Take a safe term $\Gamma \sentail M:(A_1,\ldots,A_l,o)$.
+(Only if) Take a safe term $\Gamma \sentail M:(A_1,\ldots,A_l,o)$.
 We show the result by induction on the structure of $M$.
 The base cases and weakening case are trivial.
 Abstraction: $M$ has the form $\lambda \overline y . M_0 \ldots M_p$ for some safe terms $M_k$, $0\leq k \leq p$, $p\geq 0$.
@@ -582,40 +598,40 @@ $ \freevarset(M) \sentail \lambda \overline y x_1 .. x_l . \elnf{M} \elnf{x_1} \
 The application case is treated identically.
 
 
- For the `if' part we proceed by
+(If) We proceed by
 induction on the structure of the simply-typed term $\Gamma
 \stentail M : T$: The variable, constant and weakening cases are
-trivial. Suppose that $M$ is an application of the form $x s_1
-\ldots s_m : A$ for $m\geq 1$. Its $\eta$-long normal form is of the
-form $x \elnf{s_1} \ldots \elnf{s_m} \elnf{\varphi_1} \ldots
+trivial. Suppose that $M$ is an application of the form $x N_1
+\ldots N_m : A$ for $m\geq 1$. Its $\eta$-long normal form is of the
+form $x \elnf{N_1} \ldots \elnf{N_m} \elnf{\varphi_1} \ldots
 \elnf{\varphi_m}: o$ for some fresh variables $\varphi_1$, \ldots
 $\varphi_m$. By assumption this term is long-safe term therefore we
 have $\ord{A}\leq\ord{\Gamma}$ and for $1\leq i \leq m$,
-$\elnf{s_i}$ is also long-safe. By the induction hypothesis this
-implies that the $s_i$ are all safe. We can then form the judgment
-$\Gamma \sentail x s_1 \ldots s_m : A$ using the rules
+$\elnf{N_i}$ is also long-safe. By the induction hypothesis this
+implies that the $N_i$ are all safe. We can then form the judgment
+$\Gamma \sentail x N_1 \ldots N_m : A$ using the rules
 $\rulename{var}$ and $\rulename{app}$ (this is allowed since we have
-$\ord{A}\leq\ord{\Gamma}$). The case $M\cong (\lambda x. s) s_1
-\ldots s_m$ for $m\geq 1$ is treated identically.
+$\ord{A}\leq\ord{\Gamma}$). The case $M\equiv (\lambda x. N) N_1
+\ldots N_m$ for $m\geq 1$ is treated identically.
 
-Suppose that $M \cong \lambda \overline{x} . s : A$. By assumption,
-its  $\eta$-long n.f.\ $\lambda \overline{x} \overline{\varphi} .
-\elnf{s} \elnf{\varphi_1} \ldots \elnf{\varphi_m}: A$ (for some
-fresh variables $\varphi_1$ \ldots $\varphi_m$) is long-safe. Thus
+Suppose that $M \equiv \lambda \overline{x}^{\overline B} . N : A$. By assumption,
+its  $\eta$-long n.f.\ $\lambda \overline{x}^{\overline B} \overline{\varphi}^{\overline C} .
+\elnf{N} \elnf{\varphi_1} \ldots \elnf{\varphi_m}: A$ (for some
+fresh variables $\overline\varphi = \varphi_1 \ldots \varphi_m$) is long-safe. Thus
 we have $\ord{A}\leq\ord{\Gamma}$. Furthermore the long-safe subterm
-$\elnf{s} \elnf{\varphi_1} \ldots \elnf{\varphi_m}$ is precisely the
-eta-long expansion of $s\varphi_1 \ldots \varphi_m : o$ therefore by
-the induction hypothesis we have that $s \varphi_1 \ldots \varphi_m
+$\elnf{M} \elnf{\varphi_1} \ldots \elnf{\varphi_m}$ is precisely the
+eta-long expansion of $M\varphi_1 \ldots \varphi_m : o$ therefore by
+the induction hypothesis we have that $M \varphi_1 \ldots \varphi_m
 :o$ is safe. Since the $\varphi_i$'s are all safe (by rule
 $\rulename{var}$), we can ``peal-off'' $m$ applications (performed using
 the rules $\rulename{app_{as}}$ or $\rulename{app}$) from the sequent $\Gamma,
-\overline{x}, \overline{\varphi} \sentail s \varphi_1 \ldots
-\varphi_m :o$ which gives us the sequent $\Gamma, \overline{x},
-\overline{\varphi} \asentail s : A$. Since the $\overline{\varphi}$
-variables are fresh for $s$, we can further peal-off $m$
-applications of the weakening rule to obtain the judgment $\Gamma,
-\overline{x} \sentail s : A$. Finally we obtain $\Gamma \sentail
-\lambda \overline{x} . s : A$ using the rule $\rulename{abs}$ (which
+\overline{x}:{\overline B}, \overline{\varphi}:{\overline C} \sentail s \varphi_1 \ldots
+\varphi_m :o$ which gives us the sequent $\Gamma, \overline{x}:{\overline B},
+\overline{\varphi}:{\overline C} \asentail M : A$. Since the variables $\overline{\varphi}$
+are fresh for $M$, we can further peal-off one
+application of the weakening rule to obtain the judgment $\Gamma,
+\overline{x}:\overline B \sentail M : A$. Finally we obtain $\Gamma \sentail
+\lambda \overline{x}^{\overline B} . M : A$ using the rule $\rulename{abs}$ (which
 is permitted since we have $\ord{A}\leq\ord{\Gamma}$). \qed
 \smallskip
 
@@ -626,15 +642,15 @@ is permitted since we have $\ord{A}\leq\ord{\Gamma}$). \qed
 
 \begin{proposition}
 \label{prop:safe_iff_elnfsafe}
-A term is safe if and only if its $\eta$-long normal form is safe.
+A term $M\in \Lambda_{\mathbb{T}}$ is safe if and only if its $\eta$-long normal form $\elnf{M}$ is safe.
 \end{proposition}
 \proof
-`If':
+(If):
 \begin{align*}
   \Gamma \sentail \elnf{M}:T &\implies   \Gamma \lsentail \elnf{M}:T &  \mbox{By Lemma \ref{lem:safe_iff_etalong_lsafe} (only if),} \\
   &\implies   \Gamma \sentail \elnf{M}:T &  \mbox{By Lemma \ref{lem:safe_iff_etalong_lsafe} (if).}
 \end{align*}
-`Only if':
+(Only if):
 \begin{align*}
   \Gamma \sentail M:T &\implies   \Gamma \lsentail \elnf{M}:T &  \mbox{By Lemma \ref{lem:safe_iff_etalong_lsafe} (only if),} \\
   &\implies \Gamma \sentail \elnf{M}:T &  \mbox{By Lemma \ref{lem:longsafe_imp_safe}\qquad }
@@ -649,44 +665,47 @@ A term is safe if and only if its $\eta$-long normal form is safe.
 \subsection{Almost safety}
 \label{sec:almostsafety}
 We now give an alternative presentation of the safe lambda calculus.
-Consider the following system of rules:
+Consider the Curry-style system of rules of Table \ref{tab:currystylesafe_alt}. The Church-style version of this system is obtained by annotating the $\lambda$-binder in the abstraction rule.
+\begin{table}[htbp]
 $$ \rulename{var_{as}} \ \rulef{}{x : A\asappentail x : A}
 \qquad
-\rulename{app_{as}} \ \rulef{\Gamma \asappentail s : A\typear B
-\quad \Gamma \sentail t : A} {\Gamma \asappentail s~t : B}
+\rulename{app_{as}} \ \rulef{\Gamma \asappentail M : A\typear B
+\quad \Gamma \sentail N : A} {\Gamma \asappentail M\, N : B}
 \qquad
-\rulename{abs_{as}}\  \rulef{\dps  \Gamma, x : A \asentail s : B} {\Gamma \asentail \lambda x  . s : A\typear B}
+\rulename{abs_{as}}\  \rulef{\dps  \Gamma, x : A \asentail M : B} {\Gamma \asentail \lambda x  . M : A\typear B}
 $$
 
 $$
 \rulename{const_{as}} \ \rulef{}{\asappentail f : A}~f \in \Xi \qquad
-\rulename{wk_{as}} \ \rulef{\Gamma \asappentail s : A}{\Delta \asappentail s : A} \quad
+\rulename{wk_{as}} \ \rulef{\Gamma \asappentail M : A}{\Delta \asappentail M : A} \quad
 \Gamma \subset \Delta
 \qquad
-\rulename{wk} \ \rulef{\Gamma \sentail s : A}{\Delta \sentail s : A} \quad
+\rulename{wk} \ \rulef{\Gamma \sentail M : A}{\Delta \sentail M : A} \quad
 \Gamma \subset \Delta
 $$
 
 $$
-\rulename{\delta} \ \rulef{\Gamma \sentail s : A}{\Gamma \asentail s : A}
+\rulename{\delta} \ \rulef{\Gamma \sentail M : A}{\Gamma \asentail M : A}
 \qquad
-\rulename{\delta'} \ \rulef{\Gamma \asappentail s : A}{\Gamma \asentail s : A}
+\rulename{\delta'} \ \rulef{\Gamma \asappentail M : A}{\Gamma \asentail M : A}
 \qquad
 \rulename{\rho}\
-\rulef{\Gamma \asentail s : A}{\Gamma \sentail s : A}\
+\rulef{\Gamma \asentail M : A}{\Gamma \sentail M : A}\
 \ord\Gamma\geq\ord A \ .
 $$
+  \caption{Alternative Curry-style definition of the safe lambda calculus.}
+  \label{tab:currystylesafe_alt}
+\end{table}
 
-
-It is easy to see that this system of rules is equivalent to the one from
-Def.\ \ref{def:safelambda} in the sense that both systems generate the same set of judgments of the form $\Gamma \sentail M : T$. The above system, however, has the advantage of decomposing the application and abstraction rules into atomic steps where only one variable is abstracted at a time and only two terms are applied together at a time.
+It is easy to see that these (Curry-style and Church-style) systems of rules are equivalent to the ones from
+Def.\ \ref{def:safelambda} in the sense that they generate the same set of judgments of the form $\Gamma \sentail M : T$. The above systems, however, have the advantage of decomposing the application and abstraction rules into atomic steps where only one variable is abstracted at a time and only two terms are applied together at a time.
 
 \begin{definition}
-Terms typed with the entailment operator $\asentail$  are called \defname{almost safe} terms. Terms typed with the entailment operator $\asappentail$ are distinguished almost safe terms called \defname[almost safe!application]{almost safe applications}.
+Terms typed with the entailment operator $\asentail$  are called \defname{almost safe} terms. Terms typed with the entailment operator $\asappentail$ are are called \defname[almost safe!application]{almost safe applications}.
 \end{definition}
 
 
-The intuition behind these rules is as follows: almost safe terms represent terms that are not safe but which can become safe if sufficiently many safe terms are applied to them or if sufficiently many variables are abstracted. The rule \rulenamet{app_{as}} is used to form applications in which each applied term is safe:
+The intuition behind these rules is that almost safe terms represent terms that are not safe but which can become safe if sufficiently many safe terms are applied to them or if sufficiently many variables are abstracted. The rule \rulenamet{app_{as}} is used to form applications in which each applied term is safe:
 \begin{lemma}\hfill
 \label{lem:almostsafe_is_appplicative_safe}
 \begin{enumerate}
@@ -703,15 +722,16 @@ This results follows immediately from the definition of the rules.
 The rule \rulenamet{abs_{as}} is nothing less than the standard abstraction rule of the lambda calculus. As soon as the context and the type of the term being formed respect the safety condition (\ie all the context variables have order greater that the order of the type), the term can be marked as safe. This is done using the rule \rulenamet{\rho}. Together with the rule \rulenamet{\delta'} this implies that the closure of an almost safe term is always safe:
 \begin{lemma}
   \label{lem:closealmostsafe_is_safe}
-  If $\freevarset(M) \asappentail M : T$ then $\sentail \closure{M} : T$.
+  If $\Gamma \asappentail M : T$  and for all $z:A \in \Gamma$ we have $z\in\freevarset(M)$
+  then $\sentail \closure{M} : T$.
 \end{lemma}
 
 
 The two weakening rules \rulenamet{wk} and \rulenamet{wk_{as}} permit one to extend the context of a safe term or an almost safe application.
 We could have added a third rule to allow weakening for almost safe terms $\Gamma \asentail M : T$ as well. This is however not necessary because this kind of weakening can always be eliminated. (In particular if the term is an abstraction then we can instead apply the rule \rulenamet{wk_{as}} just before the abstraction rule).
 
-A term is almost safe if and only if its eta-long normal form is safe:
-\begin{lemma}
+An annotate term is almost safe if and only if its eta-long normal form is safe:
+\begin{lemma} Let $M\in\Lambda_{\mathbb{T}}$. Then
 \label{lem:almostsafe_iff_etalnf_almostsafe}
   $\Gamma \asentail M : T$ if and only if $\Gamma \asentail \etalnf{M} : T$.
 \end{lemma}
@@ -720,8 +740,7 @@ A term is almost safe if and only if its eta-long normal form is safe:
 We proceed by induction on $M$.
 Suppose that the last rule used is \rulenamet{\delta'}.
 Then by Lemma \ref{lem:almostsafe_is_appplicative_safe}
-$M$ is an application $N_0 N_1 \ldots N_k : (A_1,\ldots,A_n)$ with $k\geq 0$. Let $\varphi_i:A_i$ for $i\in\{1..n\}$ be fresh variables, using the
-rules \rulenamet{var_{as}}, \rulenamet{wk_{as}}, \rulenamet{app_{as}} and \rulenamet{abs_{as}} we can build the almost safe term $\Gamma \asentail \lambda \varphi_1 \ldots \varphi_n . N_0 N_1 \ldots N_k \varphi_1 \ldots \varphi_n :T$.
+$M$ is an application $N_0 N_1 \ldots N_k : (A_1,\ldots,A_n)$ with $k\geq 0$. Let $\varphi_i$ for $i\in\{1..n\}$ be fresh variables, using the rules \rulenamet{var_{as}}, \rulenamet{wk_{as}}, \rulenamet{app_{as}} and \rulenamet{abs_{as}} we can build the almost safe term $\Gamma \asentail \lambda \varphi_1^{A_1} \ldots \varphi_n^{A_n} . N_0 N_1 \ldots N_k \varphi_1 \ldots \varphi_n :T$.
 
 If the last rule used is \rulenamet{\delta} then
 $M$ is safe therefore by Proposition \ref{prop:safe_iff_elnfsafe}, its eta-long normal form is safe and therefore by \rulenamet{\delta} it is also almost safe.
@@ -741,7 +760,7 @@ Safe beta reduction preserves almost safety.
 Let $M$ be an almost safe term. By Lemma \ref{lem:almostsafe_is_appplicative_safe}, $M\equiv\lambda x_1 \ldots x_n . N_0 \ldots N_m$ for some $n, m\geq 0$ where $N_i$ is safe for every $0 \leq i\leq m$.
 Suppose that $M \betasred M'$. There are two cases:
 If the reduced redex occurs in some $N_i$ for $0 \leq i \leq m$ then we have $N \equiv \lambda x_1 \ldots x_n . N_0 \ldots N'_i \ldots N_m$ where $N_i \betasred N'_i$ for some $N'_i$. Since safety is preserved by safe reduction (Lemma \ref{lem:safered_preserve_safety}), $N'_i$ is safe. Hence we can conclude using the application and abstraction rule.
-The second case is when the redex is $N_1 \ldots N_q$ for some $1 \leq q\leq m$. This mean that $N_0$ is of the form $\lambda y_1 \ldots y_q. P$ for some safe term $P$, and $M' \equiv P[N_1/y_1 \ldots N_q/y_q] N_{q+1} \ldots N_m$. The substitution lemma \ref{lem:subst_preserves_safety} and the application and abstraction rule permit to conclude.
+The second case is when the redex is $N_1 \ldots N_q$ for some $1 \leq q\leq m$. This mean that $N_0$ is of the form $\lambda y_1 \ldots y_q. P$ for some safe term $P$, and $M' \equiv P[N_1/y_1 \ldots N_q/y_q] N_{q+1} \ldots N_m$. The Substitution Lemma \ref{lem:subst_preserves_safety} and the application and abstraction rule permit us to conclude.
 \qed
 
 

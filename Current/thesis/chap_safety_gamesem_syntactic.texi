@@ -131,7 +131,9 @@ By the Correspondence Theorem, it is easy to show that if a node in the computat
 However the converse does not hold. This is because the Correspondence Theorem applies to the \emph{intentional} innocent game model where the Opponent is not restricted to play deterministically, let alone innocently. Thus in this model, the strategy denotation accounts for contexts $C[\_]$ that are not part of the language considered, whereas in the definition of dead-code elimination, the context ranges over term of the language only. Hence a variable node may be reachable by a traversal (as defined in Chapter \ref{chap:concrete_gamesem}) but not reachable with the operational semantics of the language.
 
 \begin{example}
-Consider the simply typed lambda calculus and take the term $M \equiv \lambda \varphi:(o,o)\,x:o\, y:o\, z:o. \varphi x (\varphi y z)$. The node corresponding to the occurrence $y$ is reachable by the traversal $\lambda \varphi x y z \cdot \varphi \cdot \lambda \cdot \varphi \cdot \lambda \cdot y$ but there is no simply-typed context $C[\_]$ such that the evaluation of $C[M]$ leads to the evaluation of $y$.
+Take the following simply typed lambda term:
+$$M \equiv \lambda \varphi^{(o,o)}\,x^o\, y^o\, z^o. \varphi x (\varphi y z) \ .$$
+The node corresponding to the occurrence $y$ is reachable by the traversal $\lambda \varphi x y z \cdot \varphi \cdot \lambda \cdot \varphi \cdot \lambda \cdot y$ but there is no simply-typed context $C[\_]$ such that the evaluation of $C[M]$ leads to the evaluation of $y$.
 \end{example}
 
 The two notions of reachability can be reconciliated by adding a constraint in the rules of Table \ref{tab:trav_rules} corresponding to O-innocence: whenever a lambda node is visited, it is uniquely determined by the O-view of the traversal a that point.
@@ -577,7 +579,7 @@ In particular, a term has a P-incrementally justified denotation if and only its
 \begin{remark} The second part of the theorem crucially relies on the fact that
 the intentional game denotation does not require the Opponent to play innocently.
 Take for instance the eta-long beta-normal term
-$$M \equiv \lambda \varphi:(o,o)~ y:o .\ \varphi (\lambda x:o. x) (\varphi (\lambda x:o .\underline{y}) (\lambda x.x)) \ .$$
+$$M \equiv \lambda \varphi^{(o,o)}\, y^o .\ \varphi (\lambda x^o. x) (\varphi (\lambda x^o .\underline{y}) (\lambda x^o.x)) \ .$$
 It is clearly unsafe and indeed its denotation in the intentional model is not P-i.j.\ because in the traversal $t = \lambda \varphi y \cdot \varphi^1 \cdot\lambda\cdot\varphi^2\cdot \lambda x \cdot y$, the last node is not incrementally justified. However this traversal is not ``O-innocent'' because
 we have $\oview{t_{\prefixof \varphi^1}} = \oview{t_{\prefixof \varphi^2}}$
 but the node visited after $\varphi^1$ and $\varphi^2$ differ.
@@ -694,7 +696,7 @@ Consequently, P-pointers are superfluous in the game denotation of safe \pcf\ te
 \begin{example}[Counter-example]
 The use of dead-code elimination in the second part of the theorem is crucial.
 Take for instance the closed \pcf\ term:
-$$M \equiv \lambda f:((\pcfexp,\pcfexp),\pcfexp)\, x:\pcfexp\, y:\pcfexp. f (\lambda z : \pcfexp. \pcfcond (\pcfsucc\ x) y z ) \ .$$ This term is in $\beta$-normal form (the conditional operator cannot be reduced since the value of $x$ is undetermined). The $\eta$-long $\beta$-normal form of $M$ is therefore $M$ itself which is unsafe. But since $\pcfsucc\ x$ will always evaluate to a positive integer, the first branch of the conditional  operator will never be evaluated. Hence $M$ is observationally equivalent to the safe term $N \equiv \lambda f x y. f (\lambda z. z)$ which by the Full Abstraction theorem implies that they have the same denotation. But since $N$ is safe, by the first part of the theorem, we have that $\sem{M}$ is P-incrementally justified.
+$$M \equiv \lambda f^{((\pcfexp,\pcfexp),\pcfexp)}\, x^\pcfexp\, y^\pcfexp. f (\lambda z^\pcfexp. \pcfcond (\pcfsucc\ x) y z ) \ .$$ This term is in $\beta$-normal form (the conditional operator cannot be reduced since the value of $x$ is undetermined). The $\eta$-long $\beta$-normal form of $M$ is therefore $M$ itself which is unsafe. But since $\pcfsucc\ x$ will always evaluate to a positive integer, the first branch of the conditional  operator will never be evaluated. Hence $M$ is observationally equivalent to the safe term $N \equiv \lambda f x y. f (\lambda z. z)$ which by the Full Abstraction theorem implies that they have the same denotation. But since $N$ is safe, by the first part of the theorem, we have that $\sem{M}$ is P-incrementally justified.
 
 Such counter-example arises because the conditional operator of
 \pcf\ permits us to construct beta-normal terms containing
@@ -827,8 +829,8 @@ $f; g$ is not P-i.j.
 
 Since $M_f$ and $M_g$ are in $\eta$-nf, they can be written:
 \begin{eqnarray*}
-\sentail M_f &\equiv& \lambda x_1:{A_1} \ldots x_i:A_i\ \varphi_1:B_1 \ldots \varphi_l:B_l . N_f \\
-\sentail M_g &\equiv& \lambda y:(B_1, \ldots, B_l,o)\ \phi_1:C_1 \ldots \phi_k:C_k . N_g
+\sentail M_f &\equiv& \lambda x_1^{A_1} \ldots x_i^{A_i}\ \varphi_1^{B_1} \ldots \varphi_l^{B_l} . N_f \\
+\sentail M_g &\equiv& \lambda y^{(B_1, \ldots, B_l,o)}\ \phi_1^{C_1} \ldots \phi_k^{C_k} . N_g
 \end{eqnarray*}
 for some safe ground-type terms $N_f$ and $N_g$ in $\eta$-nf.
 Substituting these two equations in $M_{f;g}$ gives:
@@ -881,8 +883,8 @@ Strategies verifying this condition are the \index{strategy!closed P-incremental
 \begin{remark}\hfill
 \begin{enumerate}
   \item The condition is not necessary: Take $A=o$, $B=(o,o)$,
-$C=(o,o)$ and consider the two safe terms $M_f \equiv \lambda x:A\, u:o.u$
-and $M_g \equiv \lambda y:B . y\, a$ for  some constant $a:o$. Then we have $M_{f; g} =_\beta \lambda x . a$ which is safe hence $f;g$ is P-i.j.\ although $\ord{A} < \ord{B}$.
+$C=(o,o)$ and consider the two safe terms $M_f \equiv \lambda x^A\, u^o.u$
+and $M_g \equiv \lambda y^B . y\, a$ for  some constant $a:o$. Then we have $M_{f; g} =_\beta \lambda x . a$ which is safe hence $f;g$ is P-i.j.\ although $\ord{A} < \ord{B}$.
 
 \item In general type homogeneity is not preserved after composition. For instance the
 types $o \typear (o \typear o)$ and $(o \typear o) \typear \left((o

@@ -93,8 +93,7 @@ application of the weakening rule from the derivation tree of $\Gamma \hentail M
 \end{proof}
 
 \begin{proposition}
-$strat(\Gamma) \hentail M : T$ (resp.\ $strat(\Gamma) \hasappentail M : T$) is a valid judgment if and only if there is a derivation tree for
-$\Gamma \sentail M : T$ (resp.\ $\Gamma \asappentail M : T$) in the safe lambda calculus (Def. \ref{def:safelambda}) such that all the types appearing in the derivation tree are homogeneously-typed.
+$strat(\Gamma) \hentail M : T$ (resp.\ $strat(\Gamma) \hasappentail M : T$) is a valid judgment if and only if there is a derivation tree for $\Gamma \sentail M : T$ (resp.\ $\Gamma \asappentail M : T$) in the Curry-style safe lambda calculus (Def. \ref{def:safelambda}) such that all the types appearing in the derivation tree are homogeneously-typed.
 \end{proposition}
 \proof
 \emph{Only if}: The proof is by a trivial structural induction on $\Gamma \hentail M : T$.
@@ -122,7 +121,7 @@ $\Gamma \sentail \lambda x_1 \ldots x_n . s :
 
 \begin{example} \hfill
 \begin{asparaenum}[(i)]
-\item The term $(\lambda f x . x) g y $ where $f,g:(o,o)$, $x,y:o$ is homogeneously safe. One possible derivation is:
+\item The untyped term $(\lambda f x . x) g y $ is homogeneously safe. One possible derivation is:
 \begin{mathpar}
 \inferrule* [Left=\rulenamet{app_{strat}}]
     {\inferrule* [Left=\rulenamet{wk}]
@@ -132,35 +131,38 @@ $\Gamma \sentail \lambda x_1 \ldots x_n . s :
                   { \inferrule* [Left=\rulenamet{wk}]{
                       \inferrule* [Left=\rulenamet{abs}]
                         {\inferrule* [Left=\rulenamet{var}]{ }{x:o \hentail x : o}}
-                        {\hentail \lambda x. x : (o,o)}
+                        {\hentail \lambda x. x : 1}
                     }
-                    {f:(o,o) \hentail \lambda x. x : (o,o)}
+                    {f:(o,o) \hentail \lambda x. x : 1}
                   }
-                  {\hentail \lambda f x. x : ((o,o),o,o)}
+                  {\hentail \lambda f x. x : (1,o,o)}
                 }
-                {g:(o,o) \hentail \lambda f x. x : ((o,o),o,o)}
+                {g:(o,o) \hentail \lambda f x. x : (1,o,o)}
             \qquad
-             \inferrule* [Right=\rulenamet{var}] { }{g:(o,o) \hentail g : (o,o)} }
-            {g:(o,o) \hentail (\lambda f x. x) g : (o,o)}
+             \inferrule* [Right=\rulenamet{var}] { }{g:1 \hentail g : 1} }
+            {g:1 \hentail (\lambda f x. x) g : 1}
         }
-        { g:(o,o), y:o \hentail (\lambda f x. x) g : (o,o) }
+        { g:1, y:o \hentail (\lambda f x. x) g : 1 }
     \qquad
     \inferrule* [Right=\rulenamet{wk}]
         {\inferrule* [Right=\rulenamet{var}]{ }{y:o \hentail y:o}
         }
-        {g:(o,o), y:o \hentail y : o}
+        {g:1, y:o \hentail y : o}
     }
-    { g:(o,o), y:o \hentail (\lambda f x. x) g y : o}
+    { g:1, y:o \hentail (\lambda f x. x) g y : o}
 \end{mathpar}
 
-\item For $x:o$, $g:(o,(o,o),o)$, the terms $\lambda g x . g x$ and
-$\lambda g x . g x (\lambda x . x)$ are both safe and not homogeneously typed. This shows that the safe $\lambda$-calculus strictly contains the homogeneous safe $\lambda$-calculus.
+\item The anotated-terms $\lambda g^{(o,(o,o),o)} x^o . g x$ and
+$\lambda g^{(o,(o,o),o)} x^o . g x (\lambda x . x)$ are both safe but not homogeneously safe because they are not homogeneously typed. This shows that the safe $\lambda$-calculus strictly contains the homogeneous safe $\lambda$-calculus.
 
-\item For $x:o$, $f:(o,o)$ and $\varphi:((o,o),o)$ the term $$\sentail \lambda x f \varphi . \varphi : (o , (o, o) , ((o,o),o) , (o,o),o)$$ is a valid safe term that is not homogeneously typed.
+\item  The annotated-term $\lambda x^0 f^1 \varphi^2 . \varphi$ is safe but not homogeneously safe because its type $(0,1,2,2)$ is not homogeneous. On the other hand, the untyped term $\lambda x f \varphi . \varphi$ is homogeneously safe
+because the annotation $\lambda x^0 f^0 \varphi^0 . \varphi$ is safe and homogeneously typed.
 
 \item
 The following term is taken from \cite{serenistypesct05} (It is used as a counter-example to show that not all simply-typed terms are \emph{size-change terminating} \cite{jones01}):
 $$ E \equiv  (\lambda a . a (\lambda b . a (\lambda c d .d))) (\lambda e . e (\lambda f .f))$$
+Its principal type is $\mu \typear \mu$ where
+
 where
 $a : \sigma \typear \mu \typear \mu$,
 $b : \tau \typear \tau$,
@@ -168,18 +170,20 @@ $c : \tau \typear \tau$,
 $d : \mu$,
 $e : \sigma = (\tau \typear \tau) \typear \mu \typear \mu$,
 and $f : \tau$
-for some type variables $\tau$, $\mu$ and $\sigma$.
+for some type variables $\tau$, $\mu$ and $\sigma$ (not necessarily atomic).
 
-The term $E$ is safe \ie $\sentail E : \mu \typear \mu$ is
+The untyped term $E$ is principally safe \ie for 
+
+For any types $\mu, \tau$ (not necessarily atomic), the term $E$ is safe \ie $\sentail E : \mu \typear \mu$ is
 a valid judgment of the safe $\lambda$-calculus
-for any types $\mu, \tau$. It is \emph{homogeneously} safe
+. It is \emph{homogeneously} safe
 (\ie $\hentail E : \mu \typear \mu$ is
 a valid judgement of the \emph{homogeneous} safe $\lambda$-calculus) if and only if $\ord{\tau} \geq \ord{\mu}-1$. (In particular, this condition implies that $\tau$, $\mu$ and the types of $a,b,c,d,e,f$ are homogeneous.)
 \end{asparaenum}
 \end{example}
 
-\emph{Related work:} In \cite{demirandathesis}, de Miranda proposed a different notion of safe lambda calculus. This notion corresponds to (a less general version of) our notion of \emph{homogeneous} safe lambda calculus. It can be showed that for pure applicative terms (\ie with no lambda-abstraction) the two systems coincides. In particular the counterpart of Proposition \ref{prop:safegram_safelmd} is also shown in \cite{demirandathesis}. In the presence of lambda abstraction, however, our system is less restrictive. For instance the judgment $\hentail \lambda f:(o,o,o) x: o.  f x : (o,o)$ is derivable in the homogeneous safe lambda calculus but not in the safe lambda calculus \emph{\`a la} de Miranda.
-One can show that the system given in \cite{demirandathesis} is in fact equivalent to the \emph{homogeneous long-safe lambda calculus} \ie the restriction of the system of Def.\ \ref{dfn:longsafe} to homogeneous types.
+\emph{Related work:} In \cite{demirandathesis}, de Miranda proposed a different notion of safe lambda calculus. This notion corresponds to (a less general version of) our notion of \emph{homogeneous} safe lambda calculus. It can be showed that for pure applicative terms (\ie with no lambda-abstraction) the two systems coincides. In particular the counterpart of Proposition \ref{prop:safegram_safelmd} is also shown in \cite{demirandathesis}. In the presence of lambda abstraction, however, our system is less restrictive. For instance the judgment $\hentail \lambda f^{(o,o,o)} x^o.  f x : (o,o)$ is derivable in the homogeneous safe lambda calculus but not in the safe lambda calculus {\it \`a la} de Miranda.
+One can show that the system given in \cite{demirandathesis} is in fact equivalent to the \emph{homogeneous long-safe lambda calculus} {\it \`a la} Curry \ie the restriction of the system of Def.\ \ref{dfn:longsafe} to homogeneous types.
 
 
 %%% The following commented code is only valid
@@ -293,7 +297,7 @@ One can show that the system given in \cite{demirandathesis} is in fact equivale
 %%%%                                   {\Gamma  \hentail^0 M N : B}$$
 %%%%
 %%%%$$ \rulename{abs} \   \rulef{\Gamma| \overline{x} : \overline{A} \hentail^{-1} M : B}
-%%%%                                   {\Gamma  \hentail^0 \lambda \overline{x} : \overline{A} . M : (\overline{A}|B)}
+%%%%                                   {\Gamma  \hentail^0 \lambda \overline{x}^{\overline{A}} . M : (\overline{A}|B)}
 %%%%\ \mbox{($\overline{x} : \overline{A}$ is the lowest type-partition of the context)}                                   $$
 %%%%\caption{Alternative rules for the homogeneous safe lambda calculus.}
 %%%%\label{tab:homosafelmd_rules_refined}

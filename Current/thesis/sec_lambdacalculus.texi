@@ -39,16 +39,14 @@ $\lambda x . x$, $\lambda x . x y$, $(\lambda x . x x) (\lambda x .x x)$ are all
 \end{definition}
 
 A variable is \index{variable!fresh}\defname[fresh variable]{fresh} if it does not occur anywhere in the terms that we are considering.
-Two terms $M$ and $N$ are \defname{$\alpha$-convertible} if one can be obtained from the other by renaming bound variables to fresh names.
-\notation{$M\equiv N$}{Syntactic equality of terms (modulo $\alpha$-conversion)}
-We consider syntactic equality of terms modulo $\alpha$-conversion and we write $M\equiv N$ to denote this equality.
+Two terms $M$ and $N$ are \defname{$\alpha$-convertible} if one can be obtained from the other by renaming bound variables to fresh names.\notation{$M\equiv N$}{Syntactic equality of terms (modulo $\alpha$-conversion)} We consider syntactic equality of terms modulo $\alpha$-conversion and we write $M\equiv N$ to denote this equality.
 
 
-The set $sub(M)$ of \defname{sub-terms} of $M$ is given by induction as:
+The set $\subterm(M)$ of \defname{sub-terms} of $M$ is given by induction as:
 \begin{align*}
-  sub(x) & = \{ x \} \\
-  sub(M N) & = \{ M N\} \union sub(M) \union sub(N) \\
-  sub(\lambda x . M) &= \{ \lambda x . M \} \union sub(M)  \ .
+  \subterm(x) & = \{ x \} \\
+  \subterm(M N) & = \{ M N\} \union \subterm(M) \union \subterm(N) \\
+  \subterm(\lambda x . M) &= \{ \lambda x . M \} \union \subterm(M)  \ .
 \end{align*}
 
 \subsection{Substitution}
@@ -224,13 +222,16 @@ In the Curry style, typing is implicit. This means that each untyped term is ass
 either no type or infinitely many types. The other presentation, called Church style, makes the typing information explicit in the structure of the term by introducing type annotations in it. Thus terms of this system have a unique type. We present here the Curry version of the simply typed lambda calculus.
 
 
-We write $M:A$ to denote that the term $M$ can be assigned the type
-$A \in \mathbb{T}$ in the typing-system. A \defname{typing context} $\Gamma$ is a set of typing assumptions $x:T$ where $x$ is a variable in $\mathcal V$
-and $T$ is a simple type. We consider judgments of the form $\Gamma \cuentail M : A$ called \defname[term-in-context]{terms-in-context} where $\Gamma$ is a typing context, $A$ is a simple type and $M$ is a term.
-We write $\Gamma, x:A$ to denote the context $\Gamma \union \{ x:A \}$.
+We write $M:A$ to denote that the term $M$ can be assigned the type $A \in \mathbb{T}$ in the typing-system.
+A set $\Gamma$ of \emphind{typing assumptions} is a set of typing-assignments of the form $x:T$ where $x$ is a variable in $\mathcal V$ and $T \in \mathbb{T}$.
+It is \index{consistent typing assumptions}\emphind{consistent} if all the the variables names are distinct \ie each variable name is assigned a unique type. The underlying set of variable names is called the domain $\Gamma$ and is written $dom(\Gamma)$. We will write $\Gamma, x:A$ to denote the set of typing assumptions $\Gamma \union \{ x:A \}$.
+We consider judgments of the form $\Gamma \cuentail M : A$ called \defname[term-in-context]{terms-in-context} where 
+$\Gamma$ is a \emph{consistent} set of typing assumptions
+called the \defname{typing context}, $A$ is a simple type and $M$ is a term.
+
 
 \begin{definition}
-The \defname{simply typed lambda calculus} {\it \`a la} Curry, denoted by $\Lambda_\rightarrow$, is defined as the set of terms-in-context of the form $\Gamma \cuentail M : A$ that are derivable from the variable, application and abstraction rules defined as follows:
+The \defname{simply typed lambda calculus} {\it \`a la} Curry, denoted by $\cusystem$, is defined as the set of terms-in-context of the form $\Gamma \cuentail M : A$ that are derivable from the variable, application and abstraction rules defined as follows:
 $$ \rulef{}{\Gamma\cuentail x : A}\ x:A \in \Gamma
 \qquad
 \rulef{\Gamma \cuentail M : A\typear B \quad \Gamma \cuentail N : A} {\Gamma \cuentail M\, N : B}
@@ -305,12 +306,19 @@ $$ \Lambda_\mathbb{T} = \mathcal V \ | \ \Lambda_\mathbb{T}\, \Lambda_\mathbb{T}
 Observe that in the abstraction case, the binder is annotated with a type. That is the only difference with untyped terms $\Lambda$. For any annotated term $M \in \Lambda_\mathbb{T}$, the untyped term underlying $M$, written $|M|$, is obtained by erasing all the type annotations from $M$.
 
 We can now introduce new judgments of the form $$\Gamma\chentail M:A \in \Gamma$$ where $M$ ranges over \emph{annotated terms} $\Lambda_\mathbb{T}$.
-The typing rules then become:
+The simply typed lambda calculus \ala Church, written $\chsystem$, is then given by the following typing system:
 $$ \rulef{}{\Gamma\chentail x : A}\ x:A \in \Gamma
 \qquad
 \rulef{\Gamma \chentail M : A\typear B \quad \Gamma \chentail N : A} {\Gamma \chentail M\, N : B}
 \qquad
 \rulef{\Gamma, x : A \chentail M : B} {\Gamma \chentail \lambda x^A . M : A\typear B}$$
+
+In contrast with the Curry version, terms of the Church typed lambda calculus have a unique type at most:
+\begin{proposition}[Uniqueness of types in $\chsystem$]
+  If $\Gamma \chentail M : T$ and$\Gamma \chentail M : T'$
+  then $T=T'$. Further if $\Gamma \chentail M : T$,
+  $\Gamma \chentail M' : T'$ and $M=_\beta M'$ then $T=T'$.
+\end{proposition}
 
 The Curry-style and Church-style systems are related by the following result:
 \begin{proposition}
@@ -321,6 +329,12 @@ The Curry-style and Church-style systems are related by the following result:
 $\Gamma \cuentail M : A \implies \exists M'\in \Lambda_\mathbb{T} \mbox{ s.t. } \Gamma \chentail M' : A \zand  |M'| = M$.
 \end{enumerate}
 \end{proposition}
+
+In particular this implies
+\begin{corollary} Let $T\in\mathbb{T}$. Then
+$T$ is inhabited in $\chsystem$ iff
+it is inhabited in $\cusystem$.
+\end{corollary}
 
 \begin{convention}
 In the rest of this thesis we will use judgments of the form $\Gamma \stentail M : A$ to denote both {\it \`a la} Curry and {\it \`a la} Church terms-in-context: if $M$ is an annotated term in $\Lambda_{\mathbb{T}}$ then the judgment stands to $\Gamma \chentail M : A$ whereas if $M$ is an untyped term in $\Lambda$  then it stands for $\Gamma \cuentail M : A$.

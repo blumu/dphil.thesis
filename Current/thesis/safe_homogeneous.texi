@@ -1,4 +1,4 @@
-\section{Type homogeneity}
+\section{Homogeneous safe lambda calculus}
 \label{sec:safe_homog}
 
 We recall the definition of type-homogeneity from section \ref{sec:safe_homog}: a type $(A_1, \ldots A_n, o)$ is said to be homogeneous whenever $\ord{A_1} \geq \ord{A_2} \geq \ldots \geq \ord{A_n}$ and each of the $A_i$ is homogeneous.
@@ -63,7 +63,7 @@ $$
 where $\Delta$ is an homogeneously-typed alphabet, $\Sigma$ is a set of homogeneously-typed constants, and $\sigma$ denotes a variable list permutation.
 \end{definition}
 
-The main changes compared to the rules of the (non-homogeneous) safe lambda calculus are:
+The main changes compared to the rules of the non-homogeneous safe lambda calculus are:
 \begin{enumerate}[(i)]
 \item The contexts are stratified;
 \item All the types appearing in the rule are homogeneous;
@@ -73,22 +73,21 @@ The main changes compared to the rules of the (non-homogeneous) safe lambda calc
 
 \item Type-homogeneity constrains the order in which the variables are abstracted: in the \rulenamet{h\mbox{-}abs} rule, if a variable of a given order is abstracted then all the lower layers in the stratified context need to be abstracted as well;
 
-\item Because of the previous point and because context are stratified, the side-condition present in the original rule \rulenamet{abs} of the safe lambda calculus is always verified and is not required here. The side-condition in \rulenamet{h\mbox{-}abs} is just here to to ensure that the type $(\overline{A_n}|B)$ is homogeneous.
+\item Because of the previous point and because contexts are stratified, the side-condition present in the rule \rulenamet{abs} of the original safe lambda calculus is always verified and is not required here. Instead the side-condition in \rulenamet{h\mbox{-}abs} ensures that the type $(\overline{A_n}|B)$ is homogeneous.
 \end{enumerate}
 
 \begin{lemma}[Basic properties]
 \label{lem:homogsafe_basic_prop} Let $\Gamma \hentail M : B$ be a valid judgment then
 \begin{enumerate}[(i)]
 \item $B$ is homogeneous;
-\item every free variable of $M$ has order at least $\ord{B}$;
-\item \emph{(Context reduction)} $\freevarset(M) \hentail M : B$,
+\item $\forall z:A \in \Gamma :\ z \in \freevarset(M) \implies \ord A \geq \ord B$;
+\item \emph{(Context reduction)} $\Gamma_M  \hentail M : B$ where $\Gamma_M = \{ z:A \in \Gamma \ | \ z \in \freevarset(M) \}$.
 \end{enumerate}
-where $\freevarset(M)$ denotes the context constituted of the free variables of $M$.
 \end{lemma}
 \begin{proof}
-(i) and (ii) are proved by an trivial induction. (iii) Variables in $\Gamma$ not occurring free
+(i) and (ii) are proved by a trivial induction. (iii) Variables in $\Gamma$ not occurring free
 in $M$ are necessarily introduced by the weakening rule. The derivation of
-$\freevarset(M) \hentail M : A$ can be obtained by removing all the unnecessary
+$\Gamma_M \hentail M : A$ can be obtained by removing all the unnecessary
 application of the weakening rule from the derivation tree of $\Gamma \hentail M : A$.
 \end{proof}
 
@@ -157,33 +156,38 @@ $\lambda g^{(o,(o,o),o)} x^o . g x (\lambda x . x)$ are both safe but not homoge
 
 \item  The annotated-term $\lambda x^0 f^1 \varphi^2 . \varphi$ is safe but not homogeneously safe because its type $(0,1,2,2)$ is not homogeneous. On the other hand, the untyped term $\lambda x f \varphi . \varphi$ is homogeneously safe
 because the annotation $\lambda x^0 f^0 \varphi^0 . \varphi$ is safe and homogeneously typed.
-
-\item
-The following term is taken from \cite{serenistypesct05} (It is used as a counter-example to show that not all simply-typed terms are \emph{size-change terminating} \cite{jones01}):
-$$ E \equiv  (\lambda a . a (\lambda b . a (\lambda c d .d))) (\lambda e . e (\lambda f .f))$$
-Its principal type is $\mu \typear \mu$ where
-
-where
-$a : \sigma \typear \mu \typear \mu$,
-$b : \tau \typear \tau$,
-$c : \tau \typear \tau$,
-$d : \mu$,
-$e : \sigma = (\tau \typear \tau) \typear \mu \typear \mu$,
-and $f : \tau$
-for some type variables $\tau$, $\mu$ and $\sigma$ (not necessarily atomic).
-
-The untyped term $E$ is principally safe \ie for 
-
-For any types $\mu, \tau$ (not necessarily atomic), the term $E$ is safe \ie $\sentail E : \mu \typear \mu$ is
-a valid judgment of the safe $\lambda$-calculus
-. It is \emph{homogeneously} safe
-(\ie $\hentail E : \mu \typear \mu$ is
-a valid judgement of the \emph{homogeneous} safe $\lambda$-calculus) if and only if $\ord{\tau} \geq \ord{\mu}-1$. (In particular, this condition implies that $\tau$, $\mu$ and the types of $a,b,c,d,e,f$ are homogeneous.)
 \end{asparaenum}
 \end{example}
 
-\emph{Related work:} In \cite{demirandathesis}, de Miranda proposed a different notion of safe lambda calculus. This notion corresponds to (a less general version of) our notion of \emph{homogeneous} safe lambda calculus. It can be showed that for pure applicative terms (\ie with no lambda-abstraction) the two systems coincides. In particular the counterpart of Proposition \ref{prop:safegram_safelmd} is also shown in \cite{demirandathesis}. In the presence of lambda abstraction, however, our system is less restrictive. For instance the judgment $\hentail \lambda f^{(o,o,o)} x^o.  f x : (o,o)$ is derivable in the homogeneous safe lambda calculus but not in the safe lambda calculus {\it \`a la} de Miranda.
-One can show that the system given in \cite{demirandathesis} is in fact equivalent to the \emph{homogeneous long-safe lambda calculus} {\it \`a la} Curry \ie the restriction of the system of Def.\ \ref{dfn:longsafe} to homogeneous types.
+\begin{example}
+The following term is taken from \cite{serenistypesct05} where it is used as a counter-example to show that not all simply-typed terms are \emph{size-change terminating} \cite{jones01}:
+$$ E \equiv  (\lambda a . a (\lambda b . a (\lambda c d .d))) (\lambda e . e (\lambda f .f))$$
+
+\emph{Claim:} The untyped term $E$ is \emph{universally safe}.
+
+Indeed, let $E' \in \Lambda_{\mathbb{T}}$ be a type-annotation of $E$ (\ie $|E'| = E$) such that
+$E'$ is typable in the Church simply typed lambda calculus.
+Then it is easy to check that 
+$$\chentail E' : A \typear A $$
+for some type $A \in \mathbb{T}$ (\ie the principal type of $E$ is $\alpha \typear \alpha$) and the type assignments for the bound variables in $E'$ are of the form:
+\begin{align*}
+a &: C \typear A \typear A\\
+b &: B \typear B\\
+c &: B \typear B\\
+d &: A\\
+e &: C \equiv (B \typear B) \typear A \typear A\\
+f &: B
+\end{align*}
+for some for some types $A,B \in \mathbb{T}$ (not necessarily atomic).
+It is then an easy exercise to check that for any type $A,B\in\mathbb{T}$, we can form the following term-in-context:
+$$\sentail E' : A \typear A \ .$$
+
+On the other hand, $E$ is only homogeneously safe (and not universally homogeneously safe). More precisely, its annotation $E'$ is \emph{homogeneously} safe if and only if $\ord{B} \geq \ord{A}-1$ \ie
+$$\hentail E' : A \typear A \qquad \iff \qquad \ord{B} \geq \ord{A}-1 \ .$$
+(In particular, the condition in the right-hand side implies that $A$, $B$ and the types of $a,b,c,d,e,f$ are all homogeneous.)
+\end{example}
+
+\emph{Related work:} In \cite{demirandathesis}, de Miranda proposed a different notion of safe lambda calculus. This notion corresponds to (a less general version of) our notion of \emph{homogeneous} safe lambda calculus: It can be shown that the applicative fragment (\ie no lambda-abstraction) of de Miranda's typing system coincides with the applicative fragment of the system of Def.\ \ref{dfn:homogsafelmd}. In particular the counterpart of Proposition \ref{prop:safegram_safelmd} is also shown in \cite{demirandathesis}. In the presence of lambda abstraction, however, our system is less restrictive. For instance the judgment $\hentail \lambda f^{(o,o,o)} x^o.  f x : (o,o)$ is derivable in the homogeneous safe lambda calculus but not in the safe lambda calculus \ala de Miranda. One can show that the system given in \cite{demirandathesis} is in fact equivalent to the fragment of the \emph{long-safe lambda calculus} \ala Curry (Def.\ \ref{dfn:longsafe}) restricted to homogeneous types and deprived of the weakening rule.
 
 
 %%% The following commented code is only valid

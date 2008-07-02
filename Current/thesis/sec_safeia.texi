@@ -5,29 +5,29 @@ differ from their \pcf\ counterpart. Observe that it is necessary to have two ab
 
 \begin{FramedTable}
  {\bf Functional part}
-$$ \rulename{var} \ \rulef{}{x : A\sentail x : A} \qquad
-\rulename{wk} \ \rulef{\Gamma \sentail s : A}{\Delta \sentail s : A} \quad
+$$ \rulename{var} \ \rulef{}{\Gamma \sentail x : A}\quad x : A \in \Gamma \qquad
+\rulename{wk} \ \rulef{\Gamma \sentail M : A}{\Delta \sentail M : A} \quad
 \Gamma \subset \Delta$$
 
 \begin{center}
 \ovalbox{%
 \begin{Bcenter}
-$ \rulename{app_{as}} \ \rulef{\Gamma \sentail s : (A_1, \ldots , A_n,B)
-\quad \Gamma \sentail t_1 : A_1 \quad \ldots
-\quad \Gamma \sentail t_n : A_n} {\Gamma \asappentail s~t_1 \ldots t_n : B} $
+$ \rulename{app_{as}} \ \rulef{\Gamma \sentail M : (A_1, \ldots , A_n,B)
+\quad \Gamma \sentail N_1 : A_1 \quad \ldots
+\quad \Gamma \sentail N_n : A_n} {\Gamma \asappentail M\, N_1 \ldots N_n : B} $
  \\[12pt]
-$ \rulename{app} \ \rulef{\Gamma \sentail s : (A_1, \ldots , A_n,B)
-\quad \Gamma \sentail t_1 : A_1 \quad \ldots
-\quad \Gamma \sentail t_n : A_n} {\Gamma \sentail s~t_1 \ldots t_n : B} \quad \ord{B} \leq
+$ \rulename{app} \ \rulef{\Gamma \sentail M : (A_1, \ldots , A_n,B)
+\quad \Gamma \sentail N_1 : A_1 \quad \ldots
+\quad \Gamma \sentail N_n : A_n} {\Gamma \sentail M\, N_1 \ldots N_n : B} \quad \ord{B} \leq
 \ord{\Gamma}$
  \\[12pt]
 $ \rulename{abs_{as}} \ \rulef{\Gamma, x_1 : A_1, \ldots, x_n : A_n
-  \asappentail s : B} {\Gamma \sentail \lambda x_1^{A_1} \ldots x_n^{A_n} . s :
+  \asappentail M : B} {\Gamma \sentail \lambda x_1^{A_1} \ldots x_n^{A_n} . M :
   (A_1, \ldots ,A_n,B)} \quad \ord{(A_1, \ldots ,A_n,B)} \leq
 \ord{\Gamma}$
  \\[12pt]
 $ \rulename{abs} \ \rulef{\Gamma, x_1 : A_1, \ldots, x_n : A_n
-  \sentail s : B} {\Gamma \sentail \lambda x_1 \ldots x_n . s :
+  \sentail M : B} {\Gamma \sentail \lambda x_1 \ldots x_n . M :
   (A_1, \ldots ,A_n,B)} \quad \ord{(A_1, \ldots ,A_n,B)} \leq
 \ord{\Gamma}$
 \end{Bcenter}
@@ -226,7 +226,7 @@ differ from their IA counterpart. Note that the rule $\rulename{new}$ is kept un
 \begin{FramedTable}
  {\bf Functional part}
 
-$$ \rulename{var} \ \rulef{}{x : A  \vsafeentail x : A}
+$$ \rulename{var} \ \rulef{}{\Gamma  \vsafeentail x : A}\quad x : A \in \Gamma
 \qquad \rulename{wk} \ \rulef{\Gamma \vsafeentail s :
 A}{\Delta \vsafeentail s : A} \quad \Gamma \subset
 \Delta
@@ -295,7 +295,7 @@ $$ \rulename{mkvar} \ \rulef{\Gamma \vsafeentail M_1 : \iaexp \rightarrow \iacom
 It turns out that the definition of strongly safe \ialgol\ is needlessly
 restrictive. Indeed, we would like to identify a fragment of \ialgol\
 which restricts the occurrences of the variables in a term
-so that the so-called ``No-variable-capture'' lemma holds, \ie it is no necessary to rename variables afresh when performing substitution. But in the present setting of a language with imperative features, one can distinguish two types of variables in a closed term: the ``standard ones'' -- those that are bound by $\lambda$-abstraction; and the ``imperative'' ones -- those that are used as identifiers for memory cells, also called block-allocated variables. We do not gain anything by imposing constraints on the second kind of variables since no term can ever be substituted for such variables when performing reduction.
+so that the so-called ``No-variable-capture'' lemma holds, \ie it is no necessary to rename variables afresh when performing substitution (provided that the weakening rule is not used). But in the present setting of a language with imperative features, one can distinguish two types of variables in a closed term: the ``standard ones'' -- those that are bound by $\lambda$-abstraction; and the ``imperative'' ones -- those that are used as identifiers for memory cells, also called block-allocated variables. We do not gain anything by imposing constraints on the second kind of variables since no term can ever be substituted for such variables when performing reduction.
 
 Similarly, it is possible to remove the constraint for variables bound by a lambda node $\lambda x$ in terms of the form $\iamkvar (\lambda x . M) N$. Indeed, it is harmless (up to eta equivalence) to redefine the \iamkvar\ rule so that it only produces term of the form
 $\iamkvar (\lambda x . M) N$
@@ -323,18 +323,16 @@ The full system of rules is given in Table \ref{tab:safeia_formrules}. The rules
 \begin{FramedTable}
 {\bf Functional part}
 
-$$ \rulename{var} \ \rulef{}{x : A | \emptyset \safeentail x : A} \qquad
-\rulename{var^\iavar} \ \rulef{}{\emptyset | x : \iavar \safeentail x : \iavar}
+$$ \rulename{var^\iavar} \ \rulef{}{\emptyset | \Xi \safeentail x : \iavar} \quad x : \iavar \in \Xi
 \qquad
-\rulename{var^\iaexp} \ \rulef{}{\emptyset | x : \iaexp \safeentail x : \iaexp} $$
+\rulename{var^\iaexp} \ \rulef{}{\emptyset | \Xi \safeentail x : \iaexp} \quad x : \iaexp \in \Xi $$
 $$
+\rulename{var} \ \rulef{}{\Gamma | \emptyset \safeentail x : A}\quad x : A \in \Gamma
+\qquad
 \rulename{wk} \ \rulef{\Gamma | \Xi \safeentail s : A}{\Gamma' | \Xi \safeentail s : A} \quad
-\Gamma \subset \Gamma' \qquad
-\rulename{wk^{\ianew}} \ \rulef{\Gamma| \Xi \safeentail s : A}{\Gamma| \Xi' \safeentail s : A} \quad
-\Xi \subset \Xi'
+\Gamma \subset \Gamma'\ \zand\ \dom(\Gamma') \inter \dom(\Xi) = \emptyset
 $$
 
-such that $\Xi'$ contains only variables of type $\iavar$ and $\iaexp$, and the variables names in $\Gamma$ and $\Xi'$ (resp.\ $\Gamma'$ and $\Xi$) are disjoint.
 
 
 $$ \rulename{app_{as}} \ \rulef{\Gamma | \Xi \safeentail s : (A_1,\ldots,A_n,B) \quad
@@ -414,10 +412,19 @@ Observe that the unsafe occurrence of the variable $x$ is tolerated because it i
 
 Since in split safe \ialgol\ terms, only the variables from the left context component are constrained by the safe restriction, we have:
 \begin{lemma}
-If $\Gamma | \Xi
-\safeentail M : A$ then for all variable $z \in \freevarset(M) \inter \Gamma$, $\ord{z} \geq \ord{A}$
+Suppose $\Gamma | \Xi \safeentail M : A$. Then
+ $$ \forall z:A \in \Gamma . z \in \freevarset(M) \implies \ord{z} \geq \ord{A} \ .$$
 \end{lemma}
 This is a generalization of Lemma \ref{lem:ordfreevar} in the safe lambda calculus.
+\smallskip
+
+The small-step reduction semantics of safe IA is defined similarly as in Sec.\ \ref{subsec:smallstep_ia} except that $\beta$-reduction is replaced by safe $\beta$-reduction and the rules for \iamkvar\ are redefined according to Eq.\ \ref{eq:new_mkvar_smallstep}. Again it is easy to see that safety is preserved by the small-step reduction of \ialgol:
+\begin{lemma}[Reduction preserves safety]
+\label{lem:ia_safety_preserved} Let $M$ be an \ialgol\ term and $\rightarrow$ denotes the small-step reduction of safe \ialgol. Then
+$ \Gamma \ | \Xi \sentail M : A \zand M \rightarrow N \implies \Gamma \ | \Xi \sentail N : A \ .$
+\end{lemma}
+The proof is by an easy induction.
+
 
 \subsection{Substitution}
 The notion of substitution naturally extends to Safe \ialgol: it is done inductively on the structure of the term; for the block-variable case this gives:
@@ -431,8 +438,7 @@ And for capture-permitting substitution:
   (\ianewin{x}{M})\captsubst{N}{x} &=   \ianewin{x}{M} \ .
 \end{align*}
 
-\emph{In which sense are the two calculi above-defined ``safe''?} In the lambda calculus, the term ``safety'' refers to the fact that substitution can be performed \emph{capture-permitting}. Unfortunately, in the presence of block-allocation constructs, this lemma does not hold anymore.
-The key reason is that the block-allocation construct $\ianew$ does not increase the order of the term that is being formed contrary to the traditional $\lambda$-abstraction, and such property is crucially used in the proof of the No-variable-capture lemma in the safe lambda calculus. The following examples illustrate this. Consider the terms:
+\emph{In which sense are the two calculi above-defined ``safe''?} In the lambda calculus, the term ``safety'' refers to the fact that for the non-weakening fragment of the safe lambda calculus, substitution can be performed \emph{capture-permitting}. Unfortunately, in the presence of block-allocation constructs, this lemma does not hold anymore. The key reason is that the block-allocation construct $\ianew$ does not increase the order of the term that is being formed contrary to the traditional $\lambda$-abstraction, and such property is crucially used in the proof of the No-variable-capture lemma. The following examples illustrate this. Consider the terms:
 \begin{align*}
 M_1 &\equiv \ianewin{x}{\iaseq\ (\iaassign\ x\ 1)\ ((\lambda y^0. \ianewin{x}{y})(\iaderef\ x))} \\
 M_2 &\equiv \lambda x^1. (\lambda y^1. (\ianewin{x}{y\ 0})) x\\
@@ -460,8 +466,8 @@ $\lambda f^2 . \ianewin{x}{\lambda y^1. f (\lambda x^0. (\lambda z^0 . \iaderef\
 which is also not a valid \ialgol\ term.
 \end{enumerate}
 
-To deal with the first two examples, we have no other choice than renaming block-declared variables afresh upon substitution. For the third kind of variable capture (which only happens for safe terms that are not strongly safe) we can fix the problem by making the assumption that the set of names used for block-declared variables is disjoint from the set of names used for lambda-abstracted variables; or equivalent by assuming that each variable occurrence has an implicit tag indicating whether it is a block-allocated variable or a lambda-abstracted variable, thus permitting us to resolve any binding ambiguity. (Observe that the fact that the set of names of the two context components of a split-terms are disjoint is not sufficient because this only constrains the free variables of the term whereas what we are requiring here is a global constraint on all variables names occurring in the term.)
-All the observations that we have made about \ianew-bound variables also hold for \iamkvar-bound variables.
+To deal with the first two examples, we have no other choice than renaming block-declared variables afresh upon substitution. For the third kind of variable capture (which only happens for safe terms that are not strongly safe) we can fix the problem by making the assumption that the set of names used for block-declared variables is disjoint from the set of names used for lambda-abstracted variables; or equivalently by assuming that each variable occurrence has an implicit tag indicating whether it is a block-allocated variable or a lambda-abstracted variable, thus permitting us to resolve any binding ambiguity. (Observe that the fact that the set of names of the two context components of a split-terms are disjoint is not sufficient because this only constrains the free variables of the term whereas what we are requiring here is a global constraint on all variables names occurring in the term.)
+Similarly, this argument about \ianew-bound variables also holds for \iamkvar-bound variables.
 
 This leads us to the following notion of substitution which performs variable renaming only for block-allocated variables and \iamkvar-bound variables:
 \begin{definition}
@@ -484,12 +490,12 @@ y \semicaptsubst{N}{x} &= y & y\neq x;\\
 The other constants and application cases are defined inductively in the standard way.
 \end{definition}
 
-It is now possible to state a weaker version of the \emph{No-variable capture lemma} for safe \ialgol, namely that there is no need to rename \emph{$\lambda$-bound} variables afresh when performing substitution.
+It is now possible to state a version of the \emph{No-variable capture lemma} for safe \ialgol, namely that in the non-weakening fragment of safe \ialgol, there is no need to rename \emph{$\lambda$-bound} variables afresh when performing substitution.
 \begin{lemma}
 \label{lem:nocapture_safeia}
 Suppose that $\Gamma | \Xi
 \safeentail N : A$ and $\Gamma, x:A | \Xi
-\safeentail M : B$ are safe \ialgol\ terms then
+\safeentail M : B$ are safe \ialgol\ terms-in-context typed without the weakening rule then
 the substitution $M\subst{N}{x}$ can be performed semi-capture-permitting \emph{provided that the set of names for lambda-bound variables is disjoint from the set of names of block-allocated variables and \iamkvar-bound variables.}
 In other words:
 $$ M\subst{N}{x} =_\alpha M\semicaptsubst{N}{x} \ .$$
@@ -497,40 +503,35 @@ $$ M\subst{N}{x} =_\alpha M\semicaptsubst{N}{x} \ .$$
 The proof is a trivial extension of Lemma \ref{lem:nocapture}.
 
 
-The small-step reduction semantics of safe IA is defined similarly as in Sec.\ \ref{subsec:smallstep_ia} except that $\beta$-reduction is replaced by safe $\beta$-reduction and the rules for \iamkvar\ are redefined according to Eq.\ \ref{eq:new_mkvar_smallstep}. A consequence of Lemma \ref{lem:nocapture_safeia} is that safety is preserved by the small-step reduction of \ialgol:
-\begin{lemma}[Reduction preserves safety]
-\label{lem:ia_safety_preserved} Let $M$ be a safe \ialgol\ term. If
-$M \rightarrow N$, where $\rightarrow$ denotes the small-step reduction of safe \ialgol, then $N$ is also a safe term.
-\end{lemma}
-The proof is by an easy induction.
 
-
-
-\section{Generalization to any applied lambda calculus}
+\section{Generalization to other applied lambda calculi}
 \label{sec:safe_appliedlambda}
 In this section, we define the notion of safety for any given applied lambda calculus extended with a stock of interpreted constants $\Sigma$ but without recursion. The syntax of the language is given by some system of rules producing split-term of the form
-$$\Gamma|\Xi \entail M : T$$
-for some simple-type $T$, where variables in the context $\Gamma$ (resp.\ $\Xi$) are called $\Gamma$-variables (resp.\ $\Xi$-variables) and such that
+$$\Gamma\, |\, \Xi \entail M : T$$
+for some simple-type $T$, where variables in the context $\Gamma$ and $\Xi$ are called the $\Gamma$-variables and $\Xi$-variables respectively. The calculus must verify the following prerequisites:
 \begin{asparaenum}[(i)]
 \item The abstraction rule can only abstract $\Gamma$-variables;
 \item The terms of the languages are given by the semi-closed split-terms $\Gamma|\emptyset \entail M : T$ abbreviated as $\Gamma \entail M : T$.
 \end{asparaenum}
-\noindent Consequently, the $\Xi$-variables can only be bound by constant constructs of the language but not by lambda-abstraction. This implies that the $\Xi$-variables appearing in the derivation tree of a term $\Gamma \entail M : T$ correspond to variable nodes that are hereditarily enabled by $\Sigma$-constants in the computation tree of $M$.
-\bigskip
+\noindent Consequently, a $\Xi$-variable can only be ``bound'' by some constant construct of the language but not by a lambda-abstraction.
+%This implies that the $\Xi$-variables appearing in the derivation tree of a term $\Gamma \entail M : T$ correspond to variable nodes that are hereditarily enabled by $\Sigma$-constants in the computation tree of $M$.
 
-The \defname[safe!fragment]{safe fragment} of this applied lambda calculus is then defined as the system generating terms of the form $\Gamma \entail M : T$ obtained by constraining the lambda calculus fragment of the language so that:
+
+\begin{definition} Consider an applied lambda calculus as defined above.
+Its \defname[safe!fragment]{safe fragment} is defined as the system obtained by restricting the pure lambda calculus fragment of the language in such a way that:
 \begin{asparaenum}[(i)]
-\item The restriction of the system to its pure simply-typed fragment coincides with the definition of the safe lambda calculus;
+\item the restriction of the system to its pure simply-typed fragment coincides with the definition of the safe lambda calculus;
 \item The side-condition of the abstraction and application rules
- constrain only the $\Gamma$-variables.
+ constrains only $\Gamma$-variables.
 \end{asparaenum}
+Terms-in-context thus generated are written $\Gamma \sentail M : T$.
+\end{definition}
 
-Consequently a safe term-in-context $\Gamma \sentail M : T$ verifies the basic property:
-$$\forall z \in \Gamma . \ord{z} \geq \ord{T} \ .$$
+An immediate consequence is that terms-in-context of the safe fragment verify the basic property of the safe lambda calculus {\it i.e.}:
+$$\Gamma \sentail M : T \implies \forall z:A \in \Gamma . z \in \freevarset(M) \implies \ord{A} \geq \ord{T} \ .$$
+Further, in order for this language to be of any use, it must verify the subject reduction lemma (\ie the small-step reduction semantics must preserve safety). 
 
-In order for this language to make sense, the small-step reduction semantics has to preserve safety.
-
-Clearly, the results of the previous sections show that \ialgol\ and the recursion-free fragments of \pcf\ fit in this setting.
+The results of the previous sections show that \ialgol\ and the recursion-free fragments of \pcf\ both fit in this setting.
 
 
 

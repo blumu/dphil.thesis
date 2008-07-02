@@ -208,7 +208,7 @@ all the occurrences of unsafe subterms of $e$ are safe occurrences, which is in 
 \bigskip
 
 \subsubsection*{In what sense is the safe lambda calculus \emph{safe}?}
-\todo{Change this! No-variable capture lemma holds only if weakening rule is not used.}
+\todo{Update this section: No-variable capture lemma holds only in the fragment where the weakening rule is disallowed! }
 It is an
 elementary fact that when performing $\beta$-reduction in the lambda
 calculus, one must use capture-\emph{avoiding} substitution, which
@@ -241,8 +241,9 @@ the capture-\emph{permitting} substitution that textually replaces all free occu
 %subsequence of $s$ obtained by keeping only elements in $s$ whose position index is in $I$.
 %\end{definition}
 
+\todo{correct this lemma: the result holds only for terms typed without the weakening rule}
 \begin{lemma}[No-variable-capture lemma]
-\label{lem:nocapture} In the safe $\lambda$-calculus, there is
+\label{lem:nocapture} In the safe $\lambda$-calculus \ala Church, there is
 no variable capture when performing simultaneous capture-permitting substitution, {\it i.e.}:
 $$ M\{N_1 / x_1 , \cdots, N_n / x_n\} \equiv M[N_1 / x_1 , \cdots, N_n / x_n] $$
 provided that $\Gamma, \overline{x}:\overline{B} \sentail M : A$, $\Gamma \sentail  N_1:B_1,  \cdots ,\Gamma \sentail  N_n : B_n$ are valid judgments of the safe lambda calculus.
@@ -251,11 +252,11 @@ provided that $\Gamma, \overline{x}:\overline{B} \sentail M : A$, $\Gamma \senta
 \begin{proof}
 We prove the result by structural induction on $M$. The variable, constant and
 weakening cases are trivial.
-Otherwise, by Lemma \ref{lem:almostsafe_is_appplicative_safe}, $M$ is of the
-  form $\lambda \overline{y} . M_0 \ldots M_m$ where $\overline{y} = y_1
+Otherwise, $M$ is of the
+  form $\lambda \overline{y}^{\overline C} . M_0 \ldots M_m$ where $\overline{y} = y_1
 \ldots y_p$, $m,p\geq 0$ and for every $0 \leq i\leq m$, $M_i$ is safe.
 The simultaneous capture-permitting substitution gives:
-$$M \captsubst{\overline{N}}{\overline{x}} \equiv \lambda \overline{y} . M_0
+$$M \captsubst{\overline{N}}{\overline{x}} \equiv \lambda \overline{y}^{\overline C} . M_0
 \captsubst{\overline{N} \filter I}{\overline{x} \filter
 I} \ldots M_m
 \captsubst{\overline{N} \filter I}{\overline{x} \filter
@@ -264,12 +265,14 @@ where $I  = \{ i \in 1..n \ | \ x_i \not \in \overline{y}\}$ and for any list $s
 
 
 Let $0\leq i \leq m$. By the induction hypothesis there is no variable capture in $M_i \captsubst{\overline{N} \filter I}{\overline{x} \filter
-I}$. Suppose for contradiction that a variable capture occurs in $M \captsubst{\overline{N}}{\overline{x}}$. This means that we are in the following situation: for some $i \in I$ and $1\leq j \leq p$ the variable $y_j$ occurs freely in $N_i$, and $x_i$ occurs freely in $P$. By Lemma \ref{lem:ordfreevar} the later gives:
-$$ \ord{y_j} \geq \ord{N_i} = \ord{B_i} \ .$$
-
-Further since $i\in I$ we have $x_i \not \in \overline{y}$ therefore $x_i$ occurs freely in $\lambda \overline{y}. M_0 \ldots M_m \equiv M$, thus by Lemma \ref{lem:ordfreevar} we have:
-$$ \ord{B_i} \geq \ord A \geq 1+ \ord{y_j} > \ord{y_j}$$
-which contradicts the previous equation.
+I}$. Suppose for contradiction that a variable capture occurs in $M \captsubst{\overline{N}}{\overline{x}}$. This means that we are in the following situation: for some $i \in I$ and $1\leq j \leq p$ the variable $y_j$ occurs freely in $N_i$, and $x_i$ occurs freely in $M$. Therefore:
+\begin{align*}
+\ord{y_j} &\geq \ord{B_i} & \mbox{by Lemma \ref{lem:ordfreevar} since $y_j \in \freevarset(N_i)$} \\
+          & \geq \ord A & \mbox{by Lemma \ref{lem:ordfreevar} since $x_i \in \freevarset(M)$} \\
+          &= 1 + \max\{\ord C_k \ | \ 1\leq k\leq p \} \\
+          & > \ord{C_j}
+\end{align*}
+which gives us a contradiction.
 \end{proof}
 
 
@@ -782,7 +785,7 @@ Safe beta reduction preserves almost safety.
 Let $M$ be an almost safe term. By Lemma \ref{lem:almostsafe_is_appplicative_safe}, $M\equiv\lambda x_1 \ldots x_n . N_0 \ldots N_m$ for some $n, m\geq 0$ where $N_i$ is safe for every $0 \leq i\leq m$.
 Suppose that $M \betasred M'$. There are two cases:
 If the reduced redex occurs in some $N_i$ for $0 \leq i \leq m$ then we have $N \equiv \lambda x_1 \ldots x_n . N_0 \ldots N'_i \ldots N_m$ where $N_i \betasred N'_i$ for some $N'_i$. Since safety is preserved by safe reduction (Lemma \ref{lem:safered_preserve_safety}), $N'_i$ is safe. Hence we can conclude using the application and abstraction rule.
-The second case is when the redex is $N_1 \ldots N_q$ for some $1 \leq q\leq m$. This mean that $N_0$ is of the form $\lambda y_1 \ldots y_q. P$ for some safe term $P$, and $M' \equiv P[N_1/y_1 \ldots N_q/y_q] N_{q+1} \ldots N_m$. The Substitution Lemma \ref{lem:subst_preserves_safety} and the application and abstraction rule permit us to conclude.
+The second case is when the redex is $N_1 \ldots N_q$ for some $1 \leq q\leq m$. This means that $N_0$ is of the form $\lambda y_1 \ldots y_q. P$ for some safe term $P$, and $M' \equiv P[N_1/y_1 \ldots N_q/y_q] N_{q+1} \ldots N_m$. The Substitution Lemma \ref{lem:subst_preserves_safety} and the application and abstraction rule permit us to conclude.
 \qed
 
 
@@ -816,6 +819,6 @@ Such calculus can be defined by replacing the use of the function $\ord$ by anot
 Similarly, it is possible to generalize the homogeneity condition to other type-ranking function: We say that a type is {\sf rank}-homogeneous if it is $o$ or if it is $(A_1, \cdots, A_n, o)$ with the condition that $\rank{A_1} \geq \rank{A_2}\geq \cdots \geq \rank{A_n}$ and each $A_1$, \ldots, $A_n$ is {\sf rank}-homogeneous. Such parameterization gives rise to the homogeneous $\sf rank$-safe lambda calculus.
 
 
-\todo{Show that rank-safe lambda calculus makes only sense if rank is the type-order function: \ie such generalization is of no use.}
+\todo{Show that rank-safe lambda calculus makes only sense if the ranking function is precisely the type-order function $\ord$: in order to have the no-variable-capture lemma we need to have $\rank{A\typear B} > \rank{A}$, and for the typing rules to make sense we need $\rank{A}\geq \rank{B}$.}
 
 

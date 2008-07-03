@@ -438,7 +438,7 @@ And for capture-permitting substitution:
   (\ianewin{x}{M})\captsubst{N}{x} &=   \ianewin{x}{M} \ .
 \end{align*}
 
-\emph{In which sense are the two calculi above-defined ``safe''?} In the lambda calculus, the term ``safety'' refers to the fact that for the non-weakening fragment of the safe lambda calculus, substitution can be performed \emph{capture-permitting}. Unfortunately, in the presence of block-allocation constructs, this lemma does not hold anymore. The key reason is that the block-allocation construct $\ianew$ does not increase the order of the term that is being formed contrary to the traditional $\lambda$-abstraction, and such property is crucially used in the proof of the No-variable-capture lemma. The following examples illustrate this. Consider the terms:
+{\bf In which sense are the two calculi above-defined ``safe''?} In the lambda calculus fragment, the term ``safe'' refers to the fact that substitution can be performed \emph{capture-permitting} (under the \emph{safe typing convention}). Unfortunately, in the presence of block-allocation constructs, this lemma does not hold anymore because the block-allocation construct $\ianew$ does not increase the order of the term that is being formed contrary to $\lambda$-abstractions, and such property is crucially used in the proof of the No-variable-capture lemma. The following examples illustrate this. Consider the terms:
 \begin{align*}
 M_1 &\equiv \ianewin{x}{\iaseq\ (\iaassign\ x\ 1)\ ((\lambda y^0. \ianewin{x}{y})(\iaderef\ x))} \\
 M_2 &\equiv \lambda x^1. (\lambda y^1. (\ianewin{x}{y\ 0})) x\\
@@ -447,7 +447,7 @@ M_3 &\equiv  \lambda f^2 . \ianewin{x}{(\lambda y^1. f (\lambda x^0. y))(\lambda
 where the type $n$ is an abbreviation for $n_\iaexp$ for $n\in\nat$.
 
 Clearly, the \ialgol\ terms $M_1$ and $M_2$ are both strongly safe, and therefore also safe. $M_3$, however, is safe but not \emph{strongly} safe because the underlined occurrence of $x$ is not abstracted together with $z$.
-Theses examples shows that it is \emph{not} ``safe'' to use capture-permitting substitution in (strongly-) safe \ialgol. The term $M_1$ gives an example where a block-variable is captured by another block-declaration; in $M_2$ a block-variable is captured by a lambda-abstraction; and in $M_3$ a lambda-bound variable is captured by a block-variable declaration:
+Theses examples shows that we cannot use capture-permitting substitution in (strongly-) safe \ialgol. The term $M_1$ gives an example where a block-variable is captured by another block-declaration; in $M_2$ a block-variable is captured by a lambda-abstraction; and in $M_3$ a lambda-bound variable is captured by a block-variable declaration:
 \begin{enumerate}[(i)]
   \item
 Consider the term $M_1$, we have:
@@ -466,10 +466,9 @@ $\lambda f^2 . \ianewin{x}{\lambda y^1. f (\lambda x^0. (\lambda z^0 . \iaderef\
 which is also not a valid \ialgol\ term.
 \end{enumerate}
 
-To deal with the first two examples, we have no other choice than renaming block-declared variables afresh upon substitution. For the third kind of variable capture (which only happens for safe terms that are not strongly safe) we can fix the problem by making the assumption that the set of names used for block-declared variables is disjoint from the set of names used for lambda-abstracted variables; or equivalently by assuming that each variable occurrence has an implicit tag indicating whether it is a block-allocated variable or a lambda-abstracted variable, thus permitting us to resolve any binding ambiguity. (Observe that the fact that the set of names of the two context components of a split-terms are disjoint is not sufficient because this only constrains the free variables of the term whereas what we are requiring here is a global constraint on all variables names occurring in the term.)
-Similarly, this argument about \ianew-bound variables also holds for \iamkvar-bound variables.
+To deal with the first two examples, we have no other choice than renaming block-declared variables afresh upon substitution. For the third kind of variable capture (which only happens for safe terms that are not strongly safe) we can fix the problem by taking the assumption that the set of names used for block-declared variables is disjoint from the set of names used for lambda-abstracted variables; or equivalently by assuming that each variable occurrence has an implicit tag indicating whether it is a block-allocated variable or a lambda-abstracted variable, thus permitting us to resolve any binding ambiguity. (Observe that the fact that the set of names of the two context components of a split-terms are disjoint is not sufficient because this only constrains the free variables of the term whereas what we are requiring here is a global constraint on all variables names occurring in the term.)
 
-This leads us to the following notion of substitution which performs variable renaming only for block-allocated variables and \iamkvar-bound variables:
+Similar problems occur with \iamkvar-bound variables. This leads us to the following notion of substitution which performs variable renaming only for block-allocated variables and \iamkvar-bound variables:
 \begin{definition}
 The \defname{semi-capture-permitting substitution} of the term-in-context $\Gamma | \Xi
 \entail N : A$ for $x$ in the term-in-context $\Gamma, x:A | \Xi
@@ -489,6 +488,12 @@ y \semicaptsubst{N}{x} &= y & y\neq x;\\
 \end{align*}
 The other constants and application cases are defined inductively in the standard way.
 \end{definition}
+
+\begin{remark}
+Instead of redefining substitution, an equivalent way to resolve the problem is to strengthen the \emph{variable typing convention}: instead of requiring that all various typing of the same variable name have the same order, we require that they have exactly the same type. Formally: If there is two typing $x:T$ and $x:T'$ for the same name $x$ then $\ord T = \ord T'\ \zand \ T = \iavar \implies T'\neq\iavar$.
+\todo{finish}
+\end{remark}
+
 
 It is now possible to state a version of the \emph{No-variable capture lemma} for safe \ialgol, namely that in the non-weakening fragment of safe \ialgol, there is no need to rename \emph{$\lambda$-bound} variables afresh when performing substitution.
 \begin{lemma}

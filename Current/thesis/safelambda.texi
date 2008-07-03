@@ -218,7 +218,7 @@ Substitution can therefore be implemented simply by
 capture-\emph{permitting} replacement, without any need for variable
 renaming.
 
-\begin{convention}[Safe variable naming convention]
+\begin{convention}[Safe variable typing convention]
 \label{conv:orderconsistnaming}
 We say that a set $\Gamma$ of typing assumptions of the form $x:A$ where $x$ is a variable and $T$ is a simple type is \defname{order-consistent} if all the types assigned to a given variable are of the same order:
 $$x:A_1 \in \Gamma\ \zand\ x:A_2 \in \Gamma \implies \ord A_1 = \ord A_2 \ .$$
@@ -236,7 +236,7 @@ said to be \defname{order-consistent} just if the set $Ass(M)$ is, and
 a countable set of terms $M_0, M_1, \ldots$ is
 \defname{order-consistent} just if $\Union_{i\geq 0} Ass(M_i)$ is.
 
-We now adopt the \defname{safe variable naming convention}:
+We now adopt the \defname{safe variable typing convention}:
 In any definition, theorem or proof involving countably many terms, it is assumed that the set of terms involved is order-consistent.
 \end{convention}
 
@@ -245,12 +245,12 @@ In any definition, theorem or proof involving countably many terms, it is assume
 In the following, we write $M\captsubst{N}{x}$ to denote
 the capture-\emph{permitting} substitution that textually replaces all free occurrences of $x$ in $M$ by $N$ without performing variable renaming (See Def.\ \ref{def:captpermsubst}) and $M\captsubstl N_1/x_1, \ldots, N_p/x_p\captsubstr$ to refer to its simultaneous counterpart (Def.\ \ref{def:captpermsimultsubst}).
 
-\todo{correct this lemma: the result holds only for terms typed without the weakening rule}
 \begin{lemma}[No-variable-capture lemma]
 \label{lem:nocapture} In the safe $\lambda$-calculus \ala Church, there is
-no variable capture when performing simultaneous capture-permitting substitution, {\it i.e.}:
-$$ M\{N_1 / x_1 , \cdots, N_n / x_n\} \equiv M[N_1 / x_1 , \cdots, N_n / x_n] $$
-provided that $\Gamma, \overline{x}:\overline{B} \sentail M : A$, $\Gamma \sentail  N_1:B_1,  \cdots ,\Gamma \sentail  N_n : B_n$ are valid judgments of the safe lambda calculus.
+no variable capture when performing simultaneous capture-permitting substitution provided that we adopt the \emph{safe variable typing convention}
+(Convention \ref{conv:orderconsistnaming}). {\it i.e.}
+If $\Gamma, \overline{x}:\overline{B} \sentail M : A$, $\Gamma \sentail  N_1:B_1,  \cdots ,\Gamma \sentail  N_n : B_n$ then
+$$ M\{N_1 / x_1 , \cdots, N_n / x_n\} \equiv M[N_1 / x_1 , \cdots, N_n / x_n]\ . $$
 \end{lemma}
 
 \begin{proof}
@@ -267,14 +267,15 @@ I} \ldots M_m
 I} $$
 where $I  = \{ i \in 1..n \ | \ x_i \not \in \overline{y}\}$ and for any list $s$, $s \filter I$ denotes the sublist of $s$ obtained by keeping only elements in $s$ whose position index in the list belongs to $I$.
 
-
-Let $0\leq i \leq m$. By the induction hypothesis there is no variable capture in $M_i \captsubst{\overline{N} \filter I}{\overline{x} \filter
-I}$. Suppose for contradiction that a variable capture occurs in $M \captsubst{\overline{N}}{\overline{x}}$. This means that we are in the following situation: for some $i \in I$ and $1\leq j \leq p$ the variable $y_j$ occurs freely in $N_i$, and $x_i$ occurs freely in $M$. Therefore:
+Suppose for contradiction that a variable capture occurs in $M \captsubst{\overline{N}}{\overline{x}}$. By the induction hypothesis there is no variable capture in $M_i \captsubst{\overline{N} \filter I}{\overline{x} \filter
+I}$ for $0\leq i \leq m$. This means that we are in the following situation: for some $i \in I$ and $1\leq j \leq p$ the variable $y_j$ occurs freely in $N_i$, and $x_i$ occurs freely in $M$. Since $y_j \in \freevar(N_i)$ we must have $y_j:D \in \Gamma$ for some type $D$, and by the \emph{safe variable typing convention}, we necessarily have $\ord{D}=\ord{C_j}$.
+Therefore:
 \begin{align*}
-\ord{y_j} &\geq \ord{B_i} & \mbox{by Lemma \ref{lem:ordfreevar} since $y_j \in \freevarset(N_i)$} \\
-          & \geq \ord A & \mbox{by Lemma \ref{lem:ordfreevar} since $x_i \in \freevarset(M)$} \\
+\ord{D} = &\geq \ord{B_i} & \mbox{by Lemma \ref{lem:ordfreevar} since $y_j \in \freevarset(N_i)$,} \\
+          & \geq \ord A & \mbox{by Lemma \ref{lem:ordfreevar} since $x_i \in \freevarset(M)$,} \\
           &= 1 + \max\{\ord C_k \ | \ 1\leq k\leq p \} \\
-          & > \ord{C_j}
+          & > \ord{C_j} \\
+          & = \ord{D} & \mbox{by the \emph{safe variable typing} convention.}
 \end{align*}
 which gives us a contradiction.
 \end{proof}
@@ -355,7 +356,7 @@ implies $\Gamma \asappentail M[N_1/x_1, \ldots, N_n/x_n] : B$.
 
 It is desirable to have an appropriate notion of reduction for our
 calculus. The standard $\beta$-reduction rule is not
-adequate, however. Indeed, safety is not preserved by $\beta$-reduction as
+adequate, however, because safety is not preserved by $\beta$-reduction as
 the following example shows: The safe term $\lambda f^{(o,o,o)} z^o w^o. (\lambda x^o y^o . f x y) z w$
 $\beta$-reduces in one step to $\lambda f^{(o,o,o)} z^o w^o. (\underline{\lambda y^o . f \underline{z} y}) w$, which is
 unsafe since the underlined order-1 subterm contains a free
@@ -380,7 +381,7 @@ An untyped term $R\in\Lambda$ is a \defname[safe!redex]{safe redex} if it has of
 \item $R \equiv \lambda y_1 \ldots y_q . (\lambda x_1 \ldots x_n . M) N_1 \ldots N_l$ for some $l,n,q\geq 1$ and such that
     \begin{itemize}
     \item $R$ is safe,
-    \item $(\lambda x_1 \ldots x_n . M) N_1 \ldots N_l$ is \emph{almost safe} 
+    \item $(\lambda x_1 \ldots x_n . M) N_1 \ldots N_l$ is \emph{almost safe}
     (and therefore  $\lambda x_1 \ldots x_n . M$ is safe
     and $N_i$ is safe for $1\leq i\leq n$),
     \item $M$ is either safe or is an almost safe application.
@@ -425,7 +426,7 @@ This example shows that there exist safe redexes of the form $(\lambda x_1 \ldot
 The reason why we label such redexes as ``safe'' is because when they occur within a safe term, it will be possible to contract them without braking the safety of the whole term. Before showing this result, we first need to define how to contract safe redexes:
 \begin{definition}[Safe redex contraction]
 \label{dfn:saferedex_contraction} We use the abbreviations $\overline{x} =
-x_1 \ldots x_n$, $\overline{N} = N_1 \ldots N_l$ and 
+x_1 \ldots x_n$, $\overline{N} = N_1 \ldots N_l$ and
 $\overline{y} = y_1 \ldots y_1$m for $n,l,q \geq 1$. The relation
 $\beta_s$ (when viewed as a function) is defined on the set of safe
 redexes as follows:
@@ -462,11 +463,11 @@ $\Gamma \sentail \lambda x_{l+1}, \ldots x_n. M\subst{\overline{N}}{x_1 \ldots x
 (1.b) Again by the substitution lemma we have
 $\Gamma \asappentail M\subst{N_1\ldots N_n}{x_1 \ldots x_n} : B$ for some type $B$.
 Thus by definition of \emph{almost-safe applications}, we have $M\subst{N_1\ldots N_n}{x_1 \ldots x_n} \equiv M_0 \ldots M_r$ for some safe terms $M_0, \ldots, M_r$, $r\geq 1$. If $l=n$ then the proof is finished, otherwise we use the rule \rulenamet{app_{as}} to form
-$\Gamma \asappentail M_0 \ldots M_r\, N_{n+1} \ldots N_l \equiv 
+$\Gamma \asappentail M_0 \ldots M_r\, N_{n+1} \ldots N_l \equiv
 M\subst{N_1\ldots N_n}{x_1 \ldots x_n}\, N_{n+1} \ldots N_l  \equiv M_2 : T$.
 
 
-(2.a) As in the case (1.a) we can form 
+(2.a) As in the case (1.a) we can form
 $\Gamma, x_{l+1}:A_{l+1}, \ldots x_n:A_n \asappentail M\subst{\overline{N}}{x_1 \ldots x_l} : B$. But here the term $(\lambda \overline{x} . M) N_1 \ldots N_l$ is not necessarily safe therefore we do not have $\ord \Gamma \geq \ord((\lambda \overline{x} . M) N_1 \ldots N_l)$ and thus we cannot abstract the variables $x_{l+1}, \ldots x_n$. However because $M_1$ is safe we do have $\ord \Gamma \geq \ord T$ so we can abstract the variables $\overline{y}$ and $x_{l+1}, \ldots x_n$ together which gives us
 $ \Gamma \sentail \lambda \overline{y} x_{l+1}, \ldots x_n. M\subst{\overline{N}}{x_1 \ldots x_l} \equiv M_2: T$.
 
@@ -591,7 +592,7 @@ On the other hand, $\eta$-reduction (of one variable) preserves long-safety:
   $p\geq 1$ then again, since $\lambda \varphi^\tau . N_0 \ldots N_p
   \varphi$ is safe, each of the $N_i$ is safe for $0 \leq i \leq p$
   and for any $z\in \freevarset(\lambda \varphi^\tau . M\, \varphi)$, $\ord{z} \geq
-  \ord{\lambda \varphi^\tau . M\, \varphi} = \ord{s}$. Since  $\varphi$ does not occur free in $M$ we have $\freevarset(M) = \freevarset(\lambda \varphi^\tau . M\, \varphi)$, thus we can use the application rule to form $\Gamma_M \lsentail N_0 \ldots N_p : A$ where $\Gamma_M$ is the subset of $\Gamma$ verifying 
+  \ord{\lambda \varphi^\tau . M\, \varphi} = \ord{s}$. Since  $\varphi$ does not occur free in $M$ we have $\freevarset(M) = \freevarset(\lambda \varphi^\tau . M\, \varphi)$, thus we can use the application rule to form $\Gamma_M \lsentail N_0 \ldots N_p : A$ where $\Gamma_M$ is the subset of $\Gamma$ verifying
   $\dom(\Gamma) = \freevarset(M)$. The weakening rules permits us to conclude $\Gamma \lsentail M :A$. \qed
 \smallskip
 
@@ -659,7 +660,7 @@ f^{(o,(o,o),o,o)} g^{((o,o),o,o,o),o)} . g(\lambda y^{(o,o)} x^o
 
 \begin{lemma}
   \label{lem:safe_iff_etalong_lsafe}
-  An annotated term $M \in \lambda_{\mathbb{T}}$ is safe if and only if its $\eta$-long normal form is long-safe {\it i.e.}:  
+  An annotated term $M \in \lambda_{\mathbb{T}}$ is safe if and only if its $\eta$-long normal form is long-safe {\it i.e.}:
   $$ \Gamma \sentail M : T \iff \Gamma \lsentail \elnf{M} : T \ . $$
 \end{lemma}
 \proof (Only if) Let $\Gamma \sentail M:(A_1,\ldots,A_l,o)$.
@@ -720,7 +721,7 @@ is permitted since we have $\ord{A}\leq\ord{\Gamma}$). \qed
 \begin{proposition}
 \label{prop:safe_iff_elnfsafe}
 A term $M\in \Lambda_{\mathbb{T}}$ is safe if and only if its $\eta$-long normal form is safe {\it i.e.}:
-$$ \Gamma \sentail M : B \iff \Gamma \sentail \elnf{M} : B \ .$$ 
+$$ \Gamma \sentail M : B \iff \Gamma \sentail \elnf{M} : B \ .$$
 \end{proposition}
 \proof \begin{align*}
  \mbox{(If):}\qquad \Gamma \sentail \elnf{M}:T &\implies   \Gamma \lsentail \elnf{M}:T &  \mbox{By Lemma \ref{lem:safe_iff_etalong_lsafe} (only if),} \\

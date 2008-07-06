@@ -268,7 +268,7 @@ I} $$
 where $I  = \{ i \in 1..n \ | \ x_i \not \in \overline{y}\}$ and for any list $s$, $s \filter I$ denotes the sublist of $s$ obtained by keeping only elements in $s$ whose position index in the list belongs to $I$.
 
 Suppose for contradiction that a variable capture occurs in $M \captsubst{\overline{N}}{\overline{x}}$. By the induction hypothesis there is no variable capture in $M_i \captsubst{\overline{N} \filter I}{\overline{x} \filter
-I}$ for $0\leq i \leq m$. This means that we are in the following situation: for some $i \in I$ and $1\leq j \leq p$ the variable $y_j$ occurs freely in $N_i$, and $x_i$ occurs freely in $M$. Since $y_j \in \freevar(N_i)$ we must have $y_j:D \in \Gamma$ for some type $D$, and by the \emph{safe variable typing convention}, we necessarily have $\ord{D}=\ord{C_j}$.
+I}$ for $0\leq i \leq m$. This means that we are in the following situation: for some $i \in I$ and $1\leq j \leq p$ the variable $y_j$ occurs freely in $N_i$, and $x_i$ occurs freely in $M$. Since $y_j \in \freevarset(N_i)$ we must have $y_j:D \in \Gamma$ for some type $D$, and by the \emph{safe variable typing convention}, we necessarily have $\ord{D}=\ord{C_j}$.
 Therefore:
 \begin{align*}
 \ord{D} = &\geq \ord{B_i} & \mbox{by Lemma \ref{lem:ordfreevar} since $y_j \in \freevarset(N_i)$,} \\
@@ -841,36 +841,45 @@ The second case is when the redex is $N_1 \ldots N_q$ for some $1 \leq q\leq m$.
 \qed
 
 
+\section{Safety with respect to other type-ranking functions}
 
-
-\section{Parameterized safe lambda calculus}
-
-Let $\mathbb{T}$ denote the set of simple types over a set of atomic types $\mathbb{A}$. We call \defname{type-ranking function}, or just ranking function, any function
-${\sf rank} : \mathbb{T} \funto (L, \leq)$ for some set $L$ and preorder $\leq$ verifying the condition:
- $${\sf rank}(B) \leq {\sf rank}(A\typear B) \ .$$
-
+We call \defname{type-ranking function} any function
+${\sf rank} : \mathbb{T} \funto (L, \leq)$ mapping the set $\mathbb{T}$ of simple types over a set of atomic types $\mathbb{A}$ to some preorder $(L,\leq)$.
 \begin{example}
-The followings are type-ranking functions:
+The followings are examples of type-ranking functions $\mathbb{T} \funto (\nat,\leq)$:
 \begin{itemize}
-\item $\ord : \mathbb{T} \funto (\nat,\leq)$ with $\ord{a} = 0$
-for any atomic type $a\in \mathbb{A}$, and $\ord{A \typear B} = \max(\ord{A}+1, \ord{B})$;
-\item ${\sf height} : \mathbb{T} \funto (\nat,\leq)$ with
-$\slheight{A \typear B} = 1 + \max(\slheight{A}, \slheight{B})$ and
-$\slheight{o} = 0$ ;
-\item ${\sf arity} : \mathbb{T} \funto (\nat,\leq)$ with $\arity{o} = 0$
-and $\arity{A_1, \cdots, A_n} = n$;
-\item ${\sf size} : \mathbb{T} \funto (\nat,\leq)$ with ${\sf size}(o) = 0$
-and ${\sf size}(A \typear B) = {\sf size}(A) + {\sf size}(B)$.
+\item The type-order defined by $\ord(\alpha) = 0$
+for $\alpha\in \mathbb{A}$, and $\ord(A \typear B) = \max(\ord(A)+1, \ord(B))$;
+\item The height of a type defined by $\slheight(A \typear B) = 1 + \max(\slheight(A), \slheight(B))$ and
+$\slheight(\alpha) = 0$ for $\alpha \in \mathbb{A}$;
+\item The type-arity function defined by $\arity(A_1, \cdots, A_n,\alpha) = n$;
+\item The size of a type defined by ${\rm size}(\alpha) = 0$ for $\alpha \in \mathbb{A}$
+and ${\rm size}(A \typear B) = {\rm size}(A) + {\rm size}(B)$.
 \end{itemize}
-The product of two type-ranking function is also a type-ranking function with respect to the lexicographic ordering. For instance ${\sf order} \times {\sf arity} : \mathbb{T} \funto (\nat \times \nat,\leq)$ is a type-ranking function.
+The pairing of two type-ranking functions is also a type-ranking function. For instance $\langle \ord, \arity \rangle : \mathbb{T} \funto (\nat \times \nat,\leq)$ is a type-ranking function
+where $\leq$ denotes the lexicographic ordering.
 \end{example}
 
-\emph{Question: We have defined the safe lambda calculus with respect to the type-ordering function $\ord$. Does it make sense to define a version of the safe lambda calculus parameterized over a ranking function different from $\ord$?}
-
-Such calculus can be defined by replacing the use of the function $\ord$ by another ranking function in the formation rules of the calculus.
-Similarly, it is possible to generalize the homogeneity condition to other type-ranking function: We say that a type is {\sf rank}-homogeneous if it is $o$ or if it is $(A_1, \cdots, A_n, o)$ with the condition that $\rank{A_1} \geq \rank{A_2}\geq \cdots \geq \rank{A_n}$ and each $A_1$, \ldots, $A_n$ is {\sf rank}-homogeneous. Such parameterization gives rise to the homogeneous $\sf rank$-safe lambda calculus.
+We have defined the safe lambda calculus as a restriction on the simply typed lambda calculus obtained by restricting the occurrences of variables according to their \emph{order}. \emph{Would it make sense to define a version of the safe lambda calculus where the constraint uses a different type-ranking function?}
 
 
-\todo{Show that rank-safe lambda calculus makes only sense if the ranking function is precisely the type-order function $\ord$: in order to have the no-variable-capture lemma we need to have $\rank{A\typear B} > \rank{A}$, and for the typing rules to make sense we need $\rank{A}\geq \rank{B}$.}
+In the safe lambda calculus, the rules \rulenamet{abs} and \rulenamet{app} permit us to perform multiple abstraction  or application at a time. For the \rulenamet{abs} rule, the idea is that the side-condition might not be verified after one abstraction but it may become after consecutive abstractions, and similarly for the application rule. So the design of the typing rules implicitly assume that abstracting variables increases the order of the term's type, and similarly performing application decreases its order.
+In other words, the type-ranking function is used as a complexity measure for types: ``bigger'' types must have higher complexity:
+\begin{eqnarray}
+ {\sf rank}(A\typear B) \geq {\sf rank}(B)\ . \label{eqn:rankprop1}
+\end{eqnarray}
+
+On the other hand, in order to prove the No-variable-capture Lemma we need the following property:
+\begin{eqnarray}
+{\sf rank}(A\typear B) > {\sf rank}(A)\ . \label{eqn:rankprop2}
+\end{eqnarray}
+
+The minimal function verifying the two previous equations is precisely the function $\ord$ \ie
+for any ${\sf rank} : \mathbb{T} \funto (L, \leq)$ verifying Eq.\ \ref{eqn:rankprop1} and
+Eq.\ \ref{eqn:rankprop2} we have $\ord \leq {\sf rank}$ (where $\leq$ denotes pointwise ordering).
+
+Consequently, our notion of safe lambda calculus makes only sense when the ranking function used is the type-order function $\ord$.
+
+%It is even possible to generalize the homogeneity condition to other type-ranking function: We say that a type is {\sf rank}-homogeneous if it is in $\mathbb{A}$ or if it is $(A_1, \cdots, A_n, \alpha)$ where $\rank{A_1} \geq \rank{A_2}\geq \cdots \geq \rank{A_n}$ and each $A_1$, \ldots, $A_n$ is {\sf rank}-homogeneous. This gives rise to the homogeneous fragment of the $\sf rank$-safe lambda calculus.
 
 

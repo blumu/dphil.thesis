@@ -1912,105 +1912,6 @@ By definition, safe \ialgol\ terms are the semi-closed safe split-terms, hence:
 \label{prop:safeia_closedpij} In the standard game model of \ialgol, safe terms are denoted by closed P-i.j.\ strategies.
 \end{proposition}
 
-
-\section{Full abstraction}
-\emph{Question: What is a fully abstract model of safe PCF and safe \ialgol?}
-\smallskip
-
-We already know from the fully-abstract game model of PCF that when the observational preorder is defined with respect to unrestricted (\ie possibly unsafe) PCF contexts,
- observational equivalence is captured by equality of the game denotations. We show here that a similar result hold for safe \pcf\ in the extensional category $\quotient{\mathcal{I}_{ib}}{\intrpre_{\mathcal{I}_{ib}}}$
-(Sec.\ \ref{sec:pijcategory}).
-\smallskip
-
-Let us first recall some basic definitions. A context is a \pcf\ term containing exactly one free occurrence of a distinguished variable `$-$' called the ``hole''. A context is usually denoted by $C[-]$ so that
-$$ - : A \entail C[-] : B$$
-is a valid \pcf\ term-in-context for some type $A$ and $B$.
-For any term $M$ of type $A$ we write $C[M]$ to denote the term obtained by substituting $M$ for the hole using capture-permitting substitution. Due to the possibility of variable capture, this term is not necessarily a valid \pcf\ term.  Also it is possible to have $C_1[-] =_\beta C_2[-]$ and $C_1[M] \neq_\beta C_2[M]$. For instance take $C_1[-] \equiv (\lambda x^\iaexp . -) 0$ and $C_2[-] \equiv (\lambda x^\iaexp . -) \Omega$. Then $C_1[-] =_\beta - =_\beta C_2[-]$. But $C_1[x] =_\beta 0$ and $C_2[x]=_\beta \Omega$.
-
-A \defname[program]{\pcf\ program} is a closed \pcf\ term of base type. For any typing-context $\Gamma$ and type $A\in\mathbb{T}$ the \defname{program contexts} ${\sf Ctxt}(\Gamma, A)$ are the \pcf\ contexts $C[-]$ such that for all \pcf\ term-in-context, $\Gamma \entail M : A$, the term $C[M]$ is a \pcf\ program.
-The observational preorder $\obspre$ for \pcf\ terms is defined by
-$$ M \obspre N \iff \forall C[-] \in {\sf Ctxt}(\Gamma, A).\ C[M] \eval \implies C[N] \eval \ . $$
-
-Let $C[-]$ be a \pcf\ context with a hole $-$ of type $A$. We say that $C[-]$ is a \defname{safe context} if the judgment
-$$ -: A \sentail C[-] : B,$$
-is a valid safe \pcf\ term-in-context.
-
-The \defname{safe program contexts} ${\sf Ctxt_s}(\Gamma, A)$ are the contexts $C[-]$
-such that for all safe term-in-context $\Gamma \entail M : A$, the term $C[M]$ is a safe \pcf\ program.
-
-Although the small-step operational semantics of \pcf\ and safe \pcf\
-differ -- the former contracts $\beta$-redexes one at a time whereas the latter contracts ``consecutive'' $\beta$-redexes in a single step --  they have the same big-step operational semantics \ie a safe term evaluates to a value in safe \pcf\ if and only if it evaluates to the same value in \pcf. We will write $\eval$ to denote this operational semantics relation. We can now define the observational preorder for safe \pcf:
-\begin{definition}
-The \defname{observational preorder} for safe \pcf\ terms, written $\obspre_s$, is defined as follows: Let $M$ and $N$ be two closed \pcf\ terms of the type $A$. Then
-$$ M \obspre_s N \iff \forall C[-] \in {\sf Ctxt_s}(\Gamma, A).\ C[M] \eval \implies C[N] \eval \ . $$
-\ie $M \obspre_s N$ iff for all \emph{safe} context $C[-]$ such that $C[M]$ and $C[N]$ are two well-formed safe closed \pcf\ terms of type $\pcfexp$, $C[M]\eval$ implies $C[N]\eval$.
-
-The \defname{observational equivalence} relation $\obseq_s$ is defined as the reflexive closure of $\obspre_s$.
-\end{definition}
-\begin{remark}
-Observe that the context $C[-]$ ranges over \emph{safe} contexts only.
-Allowing $C[-]$ to range over all contexts including unsafe ones (while still requiring that $C[M]$ and $C[N]$ are safe) would give rise to a different notion of observational preorder because the safety of $C[M]$ does not necessarily implies that of $C[-]$ (\eg the context $\_ : A \entail \lambda x^A . - : B$
-is unsafe although $C[x]$ is safe).
-\end{remark}
-
-
-
-\begin{theorem}[Full abstraction of safe \pcf]
-For any closed safe \pcf\ terms $M$ and $N$ of the same type,
-$$ \sem{M}_{\mathcal{I}} \intrpre_{\mathcal{I}_{ib}} \sem{N}_{\mathcal{I}}\ \iff\ M \obspre_s  N \ .$$
-\end{theorem}
-\proof
-Clearly, the inequational soundness of the \pcf\ game model implies that of the safe \pcf\ game model. This is because a safe term is denoted by the same strategy in $\mathcal{I}_{ib}$ and $\mathcal{C}_{ib}$ and because the big-step evaluation semantics of the two languages coincide.
-Furthermore we have seen in Chapter \ref{chap:syntactic_gamesem} that the definability result for \pcf\ implies that of safe \pcf: every compact closed P-i.j.\ strategy is the denotation of some safe \pcf\ term (Prop.\ \ref{prop:safetydefinability}). Full abstraction then falls out easily from  definability and soundness as in the \pcf\ case \cite{abramsky94full}. \qed
-
-% Piece of the proof:
-%We have a compact test strategy $\alpha:A\rightarrow N$ and by definability, there must be some context $x:A \vdash C[x] : N$ such that $\sem{x:A \vdash C[x] : N} = \alpha$. The definability result for Safe PCF gives us that $\lambda x . C[x] : A \rightarrow N$ is safe which in
-%turns implies that $x:A \vdash C[x] : N$ is safe since $\ord{N} = 0$.
-
-\subsection*{Idealized Algol}
-The proof of full abstraction of Idealized Algol is based on the Innocent Factorization theorem:
-\begin{theorem}[Innocent Factorization \cite{AM97a}]
-  For any strategy $\sigma$ on an a \ialgol\ game $A$, there exists an innocent strategy $\tau : !var \lingamear A$ such that $\sigma = cell ; \tau$.
-\end{theorem}
-
-A version of this theorem also holds for safe \ialgol:
-\begin{lemma}
-For any closed P-i.j.\ strategy $\sigma$ on an a \ialgol\ game $A$, there is an innocent strategy $\tau^* : !var \lingamear A$ which is closed P-i.j.\ modulo $In(\sem{!var})$ and such that $\sigma = cell ; \tau^*$.
-\end{lemma}
-\proof
-By the Factorization Theorem we have that $\sigma = cell ; \tau$ for some innocent strategy $\tau : !var \lingamear A$.
-Observe that $\tau$ is not necessarily P-i.j.\ modulo $In(\sem{!var})$, although $\sigma$ is P-i.j. (See the following remark.)
-However all the plays of $\tau$ interacting with $cell$ are P-i.j.\ modulo $In(\sem{!var})$. Indeed, take an interaction play $u\in Int(I, !var, A)$
-ending with an $A$-move.  It is easy to see that P-view of the play $u\filter I, A$ is obtained from the P-view of
-the play $u\filter !var, A$ by removing the moves played in $\sem{!var}$.
-Thus because the question moves of the game $\sem{!var}$ are of order $0$, since $u\filter I, A$ is P-i.j., so must be $u\filter !var, A$.
-
-We can therefore obtain a strategy $\tau^*$ that is P-i.j.\ modulo $In(\sem{!var})$ and verifies $\sigma = cell ; \tau^*$ by truncating all the plays in $\tau$ that are not P-i.j.
-\qed
-\smallskip
-
-\begin{remark}
-In the previous proof, we mentioned that it is possible for $cell ; \tau$ to be P-i.j\ although $\tau$ is not even
-P-i.j.\ modulo $In(\sem{!var})$. Here is an example illustrating this fact. Take the \ialgol\ term:
-\begin{align*}
- x:\iavar & \entail \lambda f^2\, y^\iaexp. \iaseq\, (\iaassign\, x\, 0)\ (\pcfcond\, (\iaderef\, x)\ 0\
-(f (\lambda z^\iaexp.\underline{y}))) \equiv M \\
-&: \iavar^0 \typear ((\iaexp^1\typear\iaexp^2)\typear\iaexp^3)
- \typear \iaexp^4 \typear \iaexp^5
-\end{align*}
-It is unsafe because of the unsafe occurrence $y$, and its denotation is not P-i.j.\ modulo $In(\sem{!var})$ because it contains the play:
-$$ \Pstr[0.5cm]{ (q5){q_5} (w-q5){\iawrite_0} (d-w)\iadone (r-q5)\iaread (v1-r)1 (q3-q5){q_3} (q2-q3,40){q_2} (q4-q5,40){\underline{q_4}}  } \ .$$
-However the term $\ianewin{x}{M}$ is observationally equivalent to $0$ and therefore its denotation is P-i.j.
-\end{remark}
-
-As in the \ialgol\ case, the factorization result can be used to show that all the compact
-closed P-i.j.\ strategies on \ialgol\ types are definable in safe \ialgol. Inequational Soundness of the game model follows from that
-of \ialgol. We then obtain:
-\begin{theorem}[Full abstraction of safe \ialgol]
-For any closed safe \ialgol\ terms $M$ and $N$ of the same type,
-$$ \sem{M}_{\mathcal{I}} \intrpre_{\mathcal{I}_b} \sem{N}_{\mathcal{I}}\ \iff\ M \obspre_s  N \ .$$
-\end{theorem}
-
 \section{O-incremental justification}
 \label{sec:oincrjust}
 
@@ -2052,14 +1953,6 @@ $u \filter (A \typear o)$ is O-i.j.
 \qed
 \smallskip
 
-In the definition of the intrinsic preorder $\intrpre_{\mathcal I}$, the test strategy $\alpha$ is P-i.j.\ therefore by the previous Lemma it can only interact with O-i.j.\ plays. Hence for any strategy $\sigma$ in $\mathcal{I}$, both $\mathcal{O}(\sigma)$ and $\sigma$ are in the same $\intrpre_{\mathcal I}$-equivalence class. From the point of view of the observational equivalence problem for safe terms -- by regarding $\sigma : A$ as the denotation of some closed term $\vdash M:A$ and $\alpha$ as the denotation of some context $x:A \siaentail C[x]:\pcfexp$ -- this means that plays that are not O-i.j.\ are not relevant. The full-abstraction of safe \ialgol\ (resp.\ safe \pcf) can thus be restated as:
-\begin{equation}
- \mathcal{O}(\sem{M}_{\mathcal{I}}) \intrpre_{\mathcal{I}_{b}} \mathcal{O}(\sem{N}_{\mathcal{I}})\ \iff\ M \obspre_s  N \ .
-\label{eqn:fullabstr_safeia_oij}
-\end{equation}
-where the notion of safe context and observational equivalence is defined similarly as in Safe \pcf.
-
-
 \begin{lemma}
 \label{lem:order3_oij}
   In an order-$3$ \emph{well-opened} game all the legal positions are O-i.j.
@@ -2088,7 +1981,7 @@ where we write $m'$ to denote moves from the left copy of $A$.
 Let $\sigma, \mu :A$ be two P-i.j.\ strategies on an order-$3$ game $A$. Then
 $$ \sigma \intrpre \mu \iff \sigma \intrpre_{\mathcal I} \mu \ .$$
 \end{corollary}
-\proof 
+\proof
 Let $\alpha:A\typear o$ be a test strategy.
 By Lemma \ref{lem:order3_oij}, $\sigma$ and $\mu$ are necessarily O-i.j. Thus by Lemma \ref{lem:oij_interact_with_pij}, the plays of $\sigma, \mu$ can only
 interact with P-i.j.\ plays from $\alpha$. Hence
@@ -2279,6 +2172,172 @@ $ \sigma \intrpre \mu$ iff $\sigma \intrpre_{\mathcal I} \mu$.
 %%%give fully abstract model of safe \pcf\ and safe \ialgol\ respectively.
 
 
+
+\section{Full abstraction}
+\emph{Question: What is a fully abstract model of safe PCF and safe \ialgol?}
+\smallskip
+
+We already know from the fully-abstract game model of PCF that when the observational preorder is defined with respect to unrestricted (\ie possibly unsafe) PCF contexts,
+ observational equivalence is captured by equality of the game denotations. We show here that a similar result hold for safe \pcf\ in the extensional category $\quotient{\mathcal{I}_{ib}}{\intrpre_{\mathcal{I}_{ib}}}$
+(Sec.\ \ref{sec:pijcategory}).
+\smallskip
+
+Let us first recall some basic definitions. A context is a \pcf\ term containing exactly one free occurrence of a distinguished variable `$-$' called the ``hole''. A context is usually denoted by $C[-]$ so that
+$$ - : A \entail C[-] : B$$
+is a valid \pcf\ term-in-context for some type $A$ and $B$.
+For any term $M$ of type $A$ we write $C[M]$ to denote the term obtained by substituting $M$ for the hole using capture-permitting substitution. Due to the possibility of variable capture, this term is not necessarily a valid \pcf\ term.  Also it is possible to have $C_1[-] =_\beta C_2[-]$ and $C_1[M] \neq_\beta C_2[M]$. For instance take $C_1[-] \equiv (\lambda x^\iaexp . -) 0$ and $C_2[-] \equiv (\lambda x^\iaexp . -) \Omega$. Then $C_1[-] =_\beta - =_\beta C_2[-]$. But $C_1[x] =_\beta 0$ and $C_2[x]=_\beta \Omega$.
+
+
+We write ${\sf Trm}(\Gamma, A)$ for the set of terms $M$ such that
+$\Gamma \entail M : A$ is derivable in \pcf.
+Terms in ${\sf Trm}(\emptyset, \iaexp)$, \ie closed \pcf\ terms of base type,
+are called \defname[program]{\pcf\ program}. For any typing-context $\Gamma$ and type $A\in\mathbb{T}$ the \defname{program contexts} ${\sf Ctxt}(\Gamma, A)$ are the \pcf\ contexts $C[-]$ such that for all $M \in {\sf Trm}(\Gamma, A)$, the term $C[M]$ is a \pcf\ program.
+
+We write ${\sf Trm_s}(\Gamma, A)$ for the set of terms $M$ such that $\Gamma \entail M : A$ is derivable in safe \pcf.
+We say that a \pcf\ context $C[-]$ is a \defname{safe context} if the judgment
+$$ -: A \sentail C[-] : B,$$
+is a valid safe \pcf\ term-in-context.
+The \defname{safe program contexts} ${\sf Ctxt_s}(\Gamma, A)$ are the contexts $C[-]$
+such that for all safe term-in-context $\Gamma \entail M : A$, the term $C[M]$ is a safe \pcf\ program.
+
+Although the small-step operational semantics of \pcf\ and safe \pcf\
+differ -- the former contracts $\beta$-redexes one at a time whereas the latter contracts ``consecutive'' $\beta$-redexes in a single step --  they have the same big-step operational semantics \ie a safe term evaluates to a value in safe \pcf\ if and only if it evaluates to the same value in \pcf. We will write $\eval$ to denote this operational semantics relation. We now define several versions of observational preorder for \pcf\ and safe \pcf:
+
+\begin{definition}[Observational preorders]
+Let $\Gamma$ be a typing-context and $T$ be a simple type.
+We define the relations $\obspre_{u[u]}$, $\obspre_{s[u]}$ on
+${\sf Trm}(\Gamma, T)$ and $\obspre_{u[s]}$, $\obspre_{s[s]}$ on
+${\sf Trm_s}(\Gamma, T)$ as follows:
+
+Let $M$ and $N$ range over ${\sf Trm}(\Gamma, T)$. Then
+\begin{align*}
+     M \obspre_{u[u]} N \ &\defeq\  \forall C[-] \in {\sf Ctxt}(\Gamma, A).\ C[M] \eval \implies C[N] \eval  \\
+     M \obspre_{s[u]} N \ &\defeq\  \forall C[-] \in {\sf Ctxt}(\Gamma, A) \mbox{ s.t.\ $C[-]$ is safe : } C[M] \eval \implies C[N] \eval \ .
+\end{align*}
+The relation $\obspre_{u[u]}$ is the standard observational preorder for \pcf\ terms. The relation $\obseq_{s[u]}$ is defined similarly but contexts range over safe terms only.
+
+Let $M$ and $N$ range over ${\sf Trm_s}(\Gamma, T)$. Then
+\begin{align*}
+    M \obspre_{u[s]} N\ &\defeq\ \forall C[-] \in {\sf Ctxt}(\Gamma, A).\ C[M] \eval \implies C[N] \eval \\
+    M \obspre_{s[s]} N\ &\defeq\ \forall C[-] \in {\sf Ctxt_s}(\Gamma, A).\ C[M] \eval \implies C[N] \eval \ .
+\end{align*}
+Note that in the last equation, the condition ``$C[-] \in {\sf Ctxt_s}(\Gamma, A)$'' is stronger than ``$C[-] \in {\sf Ctxt}(\Gamma, A)$ and $C[-]$ is safe'':
+we have $M \obspre_{s[s]} N$ iff for all \emph{safe} context $C[-]$ such that $C[M]$ and $C[N]$ are two \emph{safe} closed \pcf\ terms of type $\pcfexp$, $C[M]\eval$ implies $C[N]\eval$.
+
+The equivalence relations $\obseq_{u[u]}$, $\obseq_{s[u]}$, $\obseq_{u[s]}$ and $\obseq_{s[s]}$ are defined as the reflexive closures of $\obspre_{u[u]}$, $\obspre_{s[u]}$, $\obspre_{u[s]}$ and $\obspre_{s[s]}$.
+\end{definition}
+
+\begin{remark}
+It is possible to define a third notion of observational preorder for safe terms
+by allowing contexts to be unsafe while still requiring that $C[M]$ and $C[N]$ are safe. This notion of observational preorder differs from $\obspre_{s[s]}$ because the safety of $C[M]$ does not necessarily implies that of $C[-]$ (\eg the context $\_ : A \entail \lambda x^A . - : B$ is unsafe although $C[x]$ is safe).
+\end{remark}
+
+
+\begin{lemma}
+We have the following inclusion $\obspre_{u[u]}\ \subseteq\ \obspre_{s[u]}$,
+  $\obspre_{u[s]}\ \subseteq\ \obspre_{s[s]}$ and
+    $\obspre_{u[s]}\ \subseteq\ \obspre_{u[u]}$.
+\end{lemma}
+\proof Trivial \qed
+
+Note that it is not clear whether we have $\obspre_{s[s]}\ \subseteq\ \obspre_{s[u]}$ hold.
+
+We call \defname{Safe $\pcf^*$} the fragment of \pcf\ consisting of \emph{closed} terms.
+\begin{theorem}[Full abstraction for safe \pcf]
+Let $M,N$ be two \emph{closed} safe \pcf\ terms of the same type. Then
+\begin{align*}
+M \obspre_{s[s]}  N &\iff\ 
+\sem{M}_{\mathcal{I}} \intrpre_{\mathcal{I}_{ib}} \sem{N}_{\mathcal{I}} \\
+&\iff\  \mathcal{O}(\sem{M}_{\mathcal{I}}) \intrpre_{\mathcal{I}_{ib}} \mathcal{O}(\sem{N}_{\mathcal{I}}) \ .
+\end{align*}
+\end{theorem}
+\proof
+First equivalence: The proofs follows the steps of the proof of the Full Abstraction of \pcf\ (\cite{abramsky94full}).
+
+($\Leftarrow$) Clearly, the inequational soundness of the \pcf\ game model implies that of the safe \pcf\ game model. This is because a safe term is denoted by the same strategy in $\mathcal{I}_{ib}$ and $\mathcal{C}_{ib}$ and because the big-step evaluation semantics of the two languages coincide.
+
+($\Rightarrow$) Let $T$ be the type of $M$ and $N$. Suppose that $\sem{M}_{\mathcal{I}} \intrpre_{\mathcal{I}_{ib}} \sem{N}_{\mathcal{I}}$. Then by definition of the intrinsic preorder there exists a P-i.j.\ strategy $\alpha : \sem{T} \typear \iaexp$ such that $\sem{M} \fatcompos \alpha = \top$
+and $\sem{N} \fatcompos \alpha = \bot$. $\alpha$ can be chosen to be compact. 
+Moreover since $\ord T \geq \ord \iaexp  = 0$, the strategy $\alpha$ is closed P-i.j.
+By the definability result for safe \pcf\ (Prop.\ \ref{prop:safetydefinability}), there exists a closed safe term-in-context $ \sentail \lambda z^T. Q : T \typear \iaexp$
+such that $\sem{\lambda z^T. Q}$ is isomorphic to $\alpha$. Using the application rule we can then form the safe context:
+$$-:T \sentail (\lambda z^T . Q) - \equiv  C[-] : \iaexp $$
+Clearly, $\sem{C[-]} = \sem{\lambda z^T. Q} \cong \alpha$. By Computational Adequacy it follows that $C[M]\eval$ and $C[M]\not\eval$.
+
+Second equivalence: In the definition of the intrinsic preorder $\intrpre_{\mathcal I}$, the test strategy $\alpha$ ranges over P-i.j.\ strategies therefore by Lemma \ref{lem:oij_interact_with_pij} $\alpha$ can only interact with O-i.j.\ plays. Hence for any strategy $\sigma$ in $\mathcal{I}$, $\mathcal{O}(\sigma)$ and $\sigma$ are in the same $\intrpre_{\mathcal I}$-equivalence class.
+\qed
+
+\begin{remark}
+  Note that this full abstraction result only holds for the fragment of \pcf\ consisting of \emph{closed} terms. 
+  \todo{Add a conter-example}
+
+  In \pcf, however, the Full abstraction results holds for all terms.  
+    The usual argument to show full abstraction for opened \pcf\ terms is as follows:
+    Let $M,N \in {\sf Term(\Gamma,T)$ and suppose that $\sem{M} \intrpre \sem{N}$. Then there is a compact strategy $\alpha : (\Gamma \typear\sem{T}) \typear \iaexp$ such that $\sem{M} \fatcompos \alpha = \top$ and $\sem{N} \fatcompos \alpha = \bot$.
+By definability, there exists a term-in-context:
+$ z:\Gamma \typear T \sentail Q : \iaexp$
+such that $\sem{Q} = \alpha$. We can then take the program context:
+$$-:T \entail (\lambda z^{\Gamma \typear T} . Q)(\lambda y^\Gamma . -) \equiv  C[-] : \iaexp $$
+and since $\sem{C[-]} \cong \sem{Q} = \alpha$, we can conclude using Computational Adequacy.
+
+  Unfortunately, the same argument cannot be used in safe \pcf\ because for $C[-]$ to be safe we need to have $\ord \Gamma < \ord T$. But this contradicts the fact that $\ord \Gamma \geq \ord T$ by safety of $M$.
+\end{remark}
+
+\subsection*{Idealized Algol}
+The proof of full abstraction of Idealized Algol is based on the Innocent Factorization theorem:
+\begin{theorem}[Innocent Factorization \cite{AM97a}]
+  For any strategy $\sigma$ on an a \ialgol\ game $A$, there exists an innocent strategy $\tau : !var \lingamear A$ such that $\sigma = cell ; \tau$.
+\end{theorem}
+
+A version of this theorem also holds for safe \ialgol:
+\begin{lemma}
+For any closed P-i.j.\ strategy $\sigma$ on an a \ialgol\ game $A$, there is an innocent strategy $\tau^* : !var \lingamear A$ which is closed P-i.j.\ modulo $In(\sem{!var})$ and such that $\sigma = cell ; \tau^*$.
+\end{lemma}
+\proof
+By the Factorization Theorem we have that $\sigma = cell ; \tau$ for some innocent strategy $\tau : !var \lingamear A$.
+Observe that $\tau$ is not necessarily P-i.j.\ modulo $In(\sem{!var})$, although $\sigma$ is P-i.j. (See the following remark.)
+However all the plays of $\tau$ interacting with $cell$ are P-i.j.\ modulo $In(\sem{!var})$. Indeed, take an interaction play $u\in Int(I, !var, A)$
+ending with an $A$-move.  It is easy to see that P-view of the play $u\filter I, A$ is obtained from the P-view of
+the play $u\filter !var, A$ by removing the moves played in $\sem{!var}$.
+Thus because the question moves of the game $\sem{!var}$ are of order $0$, since $u\filter I, A$ is P-i.j., so must be $u\filter !var, A$.
+
+We can therefore obtain a strategy $\tau^*$ that is P-i.j.\ modulo $In(\sem{!var})$ and verifies $\sigma = cell ; \tau^*$ by truncating all the plays in $\tau$ that are not P-i.j.
+\qed
+\smallskip
+
+\begin{remark}
+In the previous proof, we mentioned that it is possible for $cell ; \tau$ to be P-i.j\ although $\tau$ is not even
+P-i.j.\ modulo $In(\sem{!var})$. Here is an example illustrating this fact. Take the \ialgol\ term:
+\begin{align*}
+ x:\iavar & \entail \lambda f^2\, y^\iaexp. \iaseq\, (\iaassign\, x\, 0)\ (\pcfcond\, (\iaderef\, x)\ 0\
+(f (\lambda z^\iaexp.\underline{y}))) \equiv M \\
+&: \iavar^0 \typear ((\iaexp^1\typear\iaexp^2)\typear\iaexp^3)
+ \typear \iaexp^4 \typear \iaexp^5
+\end{align*}
+It is unsafe because of the unsafe occurrence $y$, and its denotation is not P-i.j.\ modulo $In(\sem{!var})$ because it contains the play:
+$$ \Pstr[0.5cm]{ (q5){q_5} (w-q5){\iawrite_0} (d-w)\iadone (r-q5)\iaread (v1-r)1 (q3-q5){q_3} (q2-q3,40){q_2} (q4-q5,40){\underline{q_4}}  } \ .$$
+However the term $\ianewin{x}{M}$ is observationally equivalent to $0$ and therefore its denotation is P-i.j.
+\end{remark}
+
+As in the \ialgol\ case, the factorization result can be used to show that all the compact
+closed P-i.j.\ strategies on \ialgol\ types are definable in safe \ialgol. Inequational Soundness of the game model follows from that
+of \ialgol. We then obtain:
+\begin{theorem}[Full abstraction of safe $\ialgol^*$]
+\label{thm:fullabstraction_safeia}
+Let $\Gamma \siaentail M : T$ and $\Gamma \siaentail N : T$ be two terms-in-context typable in safe \ialgol\ with $\ord \Gamma > \ord T$. Then:
+\begin{align*}
+M \obspre_{s[s]}  N \ &\iff\  \sem{M}_{\mathcal{I}} \intrpre_{\mathcal{I}_b} \sem{N}_{\mathcal{I}} \\
+&\iff\  \mathcal{O}(\sem{M}_{\mathcal{I}}) \intrpre_{\mathcal{I}_{b}} \mathcal{O}(\sem{N}_{\mathcal{I}})\ .
+\end{align*}
+where the preorder $\obspre_{s[s]}$ is defined similarly as in the safe \pcf\ case.
+\end{theorem}
+\proof
+This result follows from the definability result as in the case of safe \pcf.
+\qed
+
+
+
+
 \section{Algorithmic game semantics}
 
 The game model of safe \ialgol\ is greatly simplified since justification pointers are unnecessary.
@@ -2293,7 +2352,7 @@ the sets of complete plays of their denotation are the same. Consequently, we ca
 
 \begin{lemma}
 \label{lem:safecontext_substitution}
-Let $\Gamma \siaentail M : A$ be a safe \ialgol\ term and 
+Let $\Gamma \siaentail M : A$ be a safe \ialgol\ term and
 $C[-]$ be a safe context in ${\sf Ctxt}(\Gamma,A)$ then
 $$ \sem{C[M]} = \sem{C[-]} ; \sem{M} \ . $$
 \end{lemma}
@@ -2311,7 +2370,7 @@ $C[-]\equiv (\lambda x^\iaexp . -) \Omega$ we have $\sem{C[-]};\sem{M}=id_A;\sem
 \label{prop:unsafe_conservative_uptoord3}
 \begin{enumerate}[(i)]
 \item Up to order $3$, it is conservative, with respect to observational equivalence, to add unsafe context to safe ones:
-$$ M \obspre_s N \iff M \obspre N$$
+$$ M \obspre_s N \iff M \obspre N \ .$$
 \item Adding unsafe context is not conservative at order $4$ for Idealized Algol.
 \end{enumerate}
 \end{proposition}
@@ -2325,7 +2384,7 @@ $$ M \obspre_s N \iff M \obspre N$$
   \sem{N};\sem{C[-]} = \top & \mbox{Lemma \ref{lem:safecontext_substitution}} \\
   &\iff \sem{M} \intrpre \sem{N} & \mbox{Def.\ of $\intrpre$} \\
   &\iff \sem{M} \intrpre_{\mathcal I} \sem{N} & \mbox{Corollary \ref{cor:order3_intrinsicpreorder}} \\
-  &\iff M \obspre_s N & \mbox{Full abstraction.}  
+  &\iff M \obspre_s N & \mbox{Full abstraction.}
 \end{align*}
 
 (ii) The idea is to start from some term $E$ and construct a term $D$ that behaves like $E$ except that it has a ``hidden'' behaviour which can only by triggered when the Opponent plays in some particular way that is not incrementally justified.
@@ -2364,7 +2423,7 @@ Let $\sigma$ and $\tau$ be two closed P-i.j.\ strategies on a simple game $A$ in
 $$\sigma \intrpre_{\mathcal{I}} \tau \qquad \iff \qquad  comp(\mathcal{O}(\sigma)) \subseteq comp(\mathcal{O}(\tau)) \ .$$
 \end{theorem}
 \proof
-By Eq.\ \ref{eqn:fullabstr_safeia_oij}, $\sigma \intrpre_{\mathcal{I}} \tau$ iff
+By Theorem \ref{thm:fullabstraction_safeia}, $\sigma \intrpre_{\mathcal{I}} \tau$ iff
 $\mathcal{O}(\sigma) \intrpre_{\mathcal{I}} \mathcal{O}(\tau)$.
 The rest of the proof then follows the same argument used to prove the original Characterization Theorem for the category $\mathcal{C}_{b}$ \citep[Theorem 25]{AM97a}, with one subtlety: in the first part of the proof, the fact that $\mathcal{O}(\sigma)$ is O-i.j.\ guarantees that the strategy $\alpha :A\typear\Sigma$ which ``follows the script of $s$'' is P-incrementally justified.
 \qed
@@ -2457,14 +2516,14 @@ All the previous results are recapitulated in Table \ref{tab:ia_obseq_complexity
   \multirow{2}{*}{$L$} & \multirow{2}{*}{Obs.\ eq.} &   order 2          &  order 2       & order 3     & order 3 & \multirow{2}{*}{order 4}  \\
                        &                          &    + while         &   + $Y_1$      & + while     & +$Y_0$  &          \\ \hline \hline
 
-  \multirow{4}{*}{IA}  & \multirow{2}{*}{$\obseq$}      & \multirow{8}{1.8cm}{PSPACE$^{(1)}$ \\ {\small $\preccurlyeq$ DFA}} & \multirow{8}{*}{U$^{(2)}$} & \multirow{8}{3.2cm}{EXPTIME-hard$^{(3)}$ \\ EXPTIME-complete for $\beta$-nf\\ {\small $\preccurlyeq$ VPA} }  & \multirow{8}{2cm}{D$^{(4)}$ \\ {\small $\preccurlyeq_{exp}$ DPDA\\ $\succcurlyeq$ DPDA} } & \multirow{2}{*}{U$^{(5)}$}\\
+  \multirow{4}{*}{IA}  & \multirow{2}{*}{$\obseq_{u[u]}$}      & \multirow{8}{1.8cm}{PSPACE$^{(1)}$ \\ {\small $\preccurlyeq$ DFA}} & \multirow{8}{*}{U$^{(2)}$} & \multirow{8}{3.2cm}{EXPTIME-hard$^{(3)}$ \\ EXPTIME-complete for $\beta$-nf\\ {\small $\preccurlyeq$ VPA} }  & \multirow{8}{2cm}{D$^{(4)}$ \\ {\small $\preccurlyeq_{exp}$ DPDA\\ $\succcurlyeq$ DPDA} } & \multirow{2}{*}{U$^{(5)}$}\\
                        &                          &                    &                & & & \\
-\cline{2-2}\cline{7-7} & \multirow{2}{*}{$\obseq_s$} &                    &                & & & \multirow{2}{*}{?$^{(6)}$} \\
+\cline{2-2}\cline{7-7} & \multirow{2}{*}{$\obseq_{s[u]}$} &                    &                & & & \multirow{2}{*}{?$^{(6)}$} \\
                        &                          &                    &                & & & \\
 \cline{1-2}\cline{7-7}
-  \multirow{4}{*}{Safe IA} & \multirow{2}{*}{$\obseq$}      &                &                & & & \multirow{2}{*}{U} \\
+  \multirow{4}{*}{Safe IA} & \multirow{2}{*}{$\obseq_{u[s]}$}      &                &                & & & \multirow{2}{*}{U} \\
                            &                          &                &                & & & \\
-\cline{2-2}\cline{7-7}     & \multirow{2}{*}{$\obseq_s$} &                &                & & & \multirow{2}{*}{?} \\
+\cline{2-2}\cline{7-7}     & \multirow{2}{*}{$\obseq_{s[s]}$} &                &                & & & \multirow{2}{*}{?} \\
                            &                          &                &                & & & \\ \hline
 %
 %  \multirow{4}{*}{St. Safe IA} & \multirow{2}{*}{IA}           & \multirow{4}{*}{D} & \multirow{4}{*}{?} & \multirow{4}{*}{D} & \multirow{4}{*}{D} & \multirow{2}{*}{?} \\

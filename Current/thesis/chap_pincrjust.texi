@@ -1914,34 +1914,52 @@ By definition, safe \ialgol\ terms are the semi-closed safe split-terms, hence:
 
 
 \section{Full abstraction}
+\emph{Question: What is a fully abstract model of safe PCF and safe \ialgol?}
+\smallskip
 
-Let $C[\_]$ be a \pcf\ context \ie a \pcf\ term with a hole $\_$ of type $A$. We say that $C[\_]$ is a \defname{safe context} if the judgment
-$$ z: A \sentail C[z] : B,$$
-where $z$ is a fresh variable occurring only once in the term $C[z]$, is a valid safe \pcf\ term-in-context.
+We already know from the fully-abstract game model of PCF that when the observational preorder is defined with respect to unrestricted (\ie possibly unsafe) PCF contexts,
+ observational equivalence is captured by equality of the game denotations. We show here that a similar result hold for safe \pcf\ in the extensional category $\quotient{\mathcal{I}_{ib}}{\intrpre_{\mathcal{I}_{ib}}}$
+(Sec.\ \ref{sec:pijcategory}).
+\smallskip
+
+Let us first recall some basic definitions. A context is a \pcf\ term containing exactly one free occurrence of a distinguished variable `$-$' called the ``hole''. A context is usually denoted by $C[-]$ so that
+$$ - : A \entail C[-] : B$$
+is a valid \pcf\ term-in-context for some type $A$ and $B$.
+For any term $M$ of type $A$ we write $C[M]$ to denote the term obtained by substituting $M$ for the hole using capture-permitting substitution. Due to the possibility of variable capture, this term is not necessarily a valid \pcf\ term.  Also it is possible to have $C_1[-] =_\beta C_2[-]$ and $C_1[M] \neq_\beta C_2[M]$. For instance take $C_1[-] \equiv (\lambda x^\iaexp . -) 0$ and $C_2[-] \equiv (\lambda x^\iaexp . -) \Omega$. Then $C_1[-] =_\beta - =_\beta C_2[-]$. But $C_1[x] =_\beta 0$ and $C_2[x]=_\beta \Omega$.
+
+A \defname[program]{\pcf\ program} is a closed \pcf\ term of base type. For any typing-context $\Gamma$ and type $A\in\mathbb{T}$ the \defname{program contexts} ${\sf Ctxt}(\Gamma, A)$ are the \pcf\ contexts $C[-]$ such that for all \pcf\ term-in-context, $\Gamma \entail M : A$, the term $C[M]$ is a \pcf\ program.
+The observational preorder $\obspre$ for \pcf\ terms is defined by
+$$ M \obspre N \iff \forall C[-] \in {\sf Ctxt}(\Gamma, A).\ C[M] \eval \implies C[N] \eval \ . $$
+
+Let $C[-]$ be a \pcf\ context with a hole $-$ of type $A$. We say that $C[-]$ is a \defname{safe context} if the judgment
+$$ -: A \sentail C[-] : B,$$
+is a valid safe \pcf\ term-in-context.
+
+The \defname{safe program contexts} ${\sf Ctxt_s}(\Gamma, A)$ are the contexts $C[-]$
+such that for all safe term-in-context $\Gamma \entail M : A$, the term $C[M]$ is a safe \pcf\ program.
 
 Although the small-step operational semantics of \pcf\ and safe \pcf\
-differ -- the former reduces $\beta$-redex one at a time whereas the latter reduces ``consecutive'' $\beta$-redexes in one step --  they have the same big-step operational semantics: a safe term evaluates to a value in safe \pcf\ if and only if it evaluates to the same value in \pcf. We will write $\eval$ to denote this operational semantics relation. We can now define the observational preorder for safe \pcf:
+differ -- the former contracts $\beta$-redexes one at a time whereas the latter contracts ``consecutive'' $\beta$-redexes in a single step --  they have the same big-step operational semantics \ie a safe term evaluates to a value in safe \pcf\ if and only if it evaluates to the same value in \pcf. We will write $\eval$ to denote this operational semantics relation. We can now define the observational preorder for safe \pcf:
 \begin{definition}
-The \defname{observational preorder} for safe \pcf\ terms, written $\obspre_s$, is defined as follows: for any two closed terms $M$ and $N$ of the same type, we have $M \obspre_s N$ iff for all \emph{safe} context $C[\_]$ such that $C[M]$ and $C[N]$ are two well-formed safe closed \pcf\ terms of type $\pcfexp$, $C[M]\eval$ implies $C[N]\eval$.
+The \defname{observational preorder} for safe \pcf\ terms, written $\obspre_s$, is defined as follows: Let $M$ and $N$ be two closed \pcf\ terms of the type $A$. Then
+$$ M \obspre_s N \iff \forall C[-] \in {\sf Ctxt_s}(\Gamma, A).\ C[M] \eval \implies C[N] \eval \ . $$
+\ie $M \obspre_s N$ iff for all \emph{safe} context $C[-]$ such that $C[M]$ and $C[N]$ are two well-formed safe closed \pcf\ terms of type $\pcfexp$, $C[M]\eval$ implies $C[N]\eval$.
 \end{definition}
+\begin{remark}
+Observe that the context $C[-]$ ranges over \emph{safe} contexts only.
+Allowing $C[-]$ to range over all contexts including unsafe ones (while still requiring that $C[M]$ and $C[N]$ are safe) would give rise to a different notion of observational preorder because the safety of $C[M]$ does not necessarily implies that of $C[-]$ (\eg the context $\_ : A \entail \lambda x^A . - : B$
+is unsafe although $C[x]$ is safe).
+\end{remark}
 
-When observational equivalence is defined with
-respect to unrestricted (\ie possibly unsafe) PCF contexts, we already know from the fully-abstract game model of PCF that observational equivalence of safe \pcf\ terms is captured by equality in the game-model.
-\smallskip
 
-\emph{Question: What is a fully abstract model of safe PCF with respect to {\rm safe} contexts?}
-\smallskip
 
-We show here that the extensional category $\quotient{\mathcal{I}_{ib}}{\intrpre_{\mathcal{I}_{ib}}}$
-(Sec.\ \ref{sec:pijcategory}) provides such a model.
-\smallskip
-
-Clearly, the inequational soundness of the \pcf\ game model implies that of the safe \pcf\ game model. This is because a safe term is denoted by the same strategy in $\mathcal{I}_{ib}$ and $\mathcal{C}_{ib}$ and because the big-step evaluation semantics of the two languages coincide.
-Furthermore we have seen in Chapter \ref{chap:syntactic_gamesem} that the definability result for \pcf\ implies that of safe \pcf: every compact closed P-i.j.\ strategy is the denotation of some safe \pcf\ term (Prop.\ \ref{prop:safetydefinability}). Full abstraction then falls out easily from  definability and soundness as in the \pcf\ case \cite{abramsky94full}:
 \begin{theorem}[Full abstraction of safe \pcf]
 For any closed safe \pcf\ terms $M$ and $N$ of the same type,
 $$ \sem{M}_{\mathcal{I}} \intrpre_{\mathcal{I}_{ib}} \sem{N}_{\mathcal{I}}\ \iff\ M \obspre_s  N \ .$$
 \end{theorem}
+\proof
+Clearly, the inequational soundness of the \pcf\ game model implies that of the safe \pcf\ game model. This is because a safe term is denoted by the same strategy in $\mathcal{I}_{ib}$ and $\mathcal{C}_{ib}$ and because the big-step evaluation semantics of the two languages coincide.
+Furthermore we have seen in Chapter \ref{chap:syntactic_gamesem} that the definability result for \pcf\ implies that of safe \pcf: every compact closed P-i.j.\ strategy is the denotation of some safe \pcf\ term (Prop.\ \ref{prop:safetydefinability}). Full abstraction then falls out easily from  definability and soundness as in the \pcf\ case \cite{abramsky94full}. \qed
 
 % Piece of the proof:
 %We have a compact test strategy $\alpha:A\rightarrow N$ and by definability, there must be some context $x:A \vdash C[x] : N$ such that $\sem{x:A \vdash C[x] : N} = \alpha$. The definability result for Safe PCF gives us that $\lambda x . C[x] : A \rightarrow N$ is safe which in
@@ -1967,12 +1985,13 @@ Thus because the question moves of the game $\sem{!var}$ are of order $0$, since
 
 We can therefore obtain a strategy $\tau^*$ that is P-i.j.\ modulo $In(\sem{!var})$ and verifies $\sigma = cell ; \tau^*$ by truncating all the plays in $\tau$ that are not P-i.j.
 \qed
+\smallskip
 
 \begin{remark}
 In the previous proof, we mentioned that it is possible for $cell ; \tau$ to be P-i.j\ although $\tau$ is not even
 P-i.j.\ modulo $In(\sem{!var})$. Here is an example illustrating this fact. Take the \ialgol\ term:
 \begin{align*}
- x:\iavar & \entail \lambda f^2\, y^\iaexp. \iaseq\, (\iaassign\, x\, 0)\ (\pcfcond\, (\iaderef\, x)\ 0\ 
+ x:\iavar & \entail \lambda f^2\, y^\iaexp. \iaseq\, (\iaassign\, x\, 0)\ (\pcfcond\, (\iaderef\, x)\ 0\
 (f (\lambda z^\iaexp.\underline{y}))) \equiv M \\
 &: \iavar^0 \typear ((\iaexp^1\typear\iaexp^2)\typear\iaexp^3)
  \typear \iaexp^4 \typear \iaexp^5
@@ -1995,7 +2014,7 @@ $$ \sem{M}_{\mathcal{I}} \intrpre_{\mathcal{I}_b} \sem{N}_{\mathcal{I}}\ \iff\ M
 
 We define \emph{O-incremental justification} as the dual of P-incremental justification:
 \begin{definition}\hfill
-\begin{compactenum}[i.]
+\begin{compactenum}[(i)]
 \item  A play $s m$ of \emph{odd} length is said to be \defname{O-incrementally justified}, or \emph{O-i.j.} for short, if $m$ points to the last unanswered P-question in $\pview{s}$ with order strictly greater than $\ord{m}$.
 
 \item A strategy $\sigma$ is said to be \defname{O-incrementally justified}, if all plays in $\sigma$ ending with an O-question are
@@ -2009,6 +2028,35 @@ is similar to the one between O-visibility and P-visibility (see \cite[Sec.~3.6]
 
 For any strategy $\sigma$, we write $\mathcal{O}(\sigma)$ to denote the largest subset of plays of $\sigma$ whose odd-length prefixes are all O-i.j.\ \ie  $\mathcal{O}(\sigma)$ is obtained by removing all the plays containing O-moves that are not incrementally justified.
 The set of plays $\mathcal{O}(\sigma)$ defines a strategy that mimics the strategy $\sigma$ as long as the Opponent plays incrementally and does not answer otherwise.
+
+
+\begin{lemma}
+\label{lem:oij_interact_with_pij}
+Let $\sigma :A$ and $\alpha : A \typear o$ be two strategies.
+
+In the composition $\sigma;\alpha$, the P-i.j.\ plays of $\sigma$ interact only with O-i.j.\ plays of $\alpha$,
+and the O-i.j.\ plays of $\sigma$ interact only with P-i.j.\ plays of $\alpha$.
+\end{lemma}
+\proof
+Let $\sigma : A$ and $\alpha : A \typear o$ be two strategies, and $q$ be the initial move of the game $\sem{A \typear o}$.
+For every $s\in L_A$ we have $q s \in L_{A \typear o}$. P-moves and O-moves in $\sem{A}$ become O-moves and P-moves in $\sem{A
+\typear o}$ respectively. Hence P-views of plays in $A$ correspond to O-views in $A \typear o$: $q \pview{s}^A = \oview{q s}_{A \typear o}$.
+Now take an interaction sequence $u = q v \in \sigma \| \alpha$.
+We have $u \filter (A \typear o) = (q v)\filter (A \typear o)
+= q (v\filter A)$. Hence if $u\filter A = v \filter A$ is
+P-i.j.\ then by the previous remark,
+$u \filter (A \typear o)$ is O-i.j.
+ The proof of the second part is symmetrical.
+\qed
+\smallskip
+
+In the definition of the intrinsic preorder $\intrpre_{\mathcal I}$, the test strategy $\alpha$ is P-i.j.\ therefore by the previous Lemma it can only interact with O-i.j.\ plays. Hence for any strategy $\sigma$ in $\mathcal{I}$, both $\mathcal{O}(\sigma)$ and $\sigma$ are in the same $\intrpre_{\mathcal I}$-equivalence class. From the point of view of the observational equivalence problem for safe terms -- by regarding $\sigma : A$ as the denotation of some closed term $\vdash M:A$ and $\alpha$ as the denotation of some context $x:A \siaentail C[x]:\pcfexp$ -- this means that plays that are not O-i.j.\ are not relevant. The full-abstraction of safe \ialgol\ (resp.\ safe \pcf) can thus be restated as:
+\begin{equation}
+ \mathcal{O}(\sem{M}_{\mathcal{I}}) \intrpre_{\mathcal{I}_{b}} \mathcal{O}(\sem{N}_{\mathcal{I}})\ \iff\ M \obspre_s  N \ .
+\label{eqn:fullabstr_safeia_oij}
+\end{equation}
+where the notion of safe context and observational equivalence is defined similarly as in Safe \pcf.
+
 
 \begin{lemma}
 \label{lem:order3_oij}
@@ -2033,32 +2081,21 @@ $$ \Pstr[17pt]{(q0){q_0} (qp0-q0){q'_0} (qp1-qp0){q'_1}
 where we write $m'$ to denote moves from the left copy of $A$.
 
 
-\begin{lemma}
-\label{lem:oij_interact_with_pij}
-Let $\sigma :A$ and $\mu : A \typear o$ be two strategies.
-
-In the composition $\sigma;\mu$, the P-i.j.\ plays of $\sigma$ interact only with O-i.j.\ plays of $\mu$,
-and the O-i.j.\ plays of $\sigma$ interact only with P-i.j.\ plays of $\mu$.
-\end{lemma}
-\proof
-Let $\sigma : A$ and $\mu : A \typear o$ be two strategies, and $q$ be the initial move of the game $\sem{A \typear o}$.
-For every $s\in L_A$ we have $q s \in L_{A \typear o}$. P-moves and O-moves in $\sem{A}$ become O-moves and P-moves in $\sem{A
-\typear o}$ respectively. Hence P-views of plays in $A$ correspond to O-views in $A \typear o$: $q \pview{s}^A = \oview{q s}_{A \typear o}$.
-Now take an interaction sequence $u = q v \in \sigma \| \mu$.
-We have $u \filter (A \typear o) = (q v)\filter (A \typear o)
-= q (v\filter A)$. Hence if $u\filter A = v \filter A$ is
-P-i.j.\ then by the previous remark,
-$u \filter (A \typear o)$ is O-i.j.
- The proof of the second part is symmetrical.
+\begin{corollary}
+\label{cor:order3_intrinsicpreorder}
+Let $\sigma, \mu :A$ be two P-i.j.\ strategies on an order-$3$ game $A$. Then
+$$ \sigma \intrpre \mu \iff \sigma \intrpre_{\mathcal I} \mu \ .$$
+\end{corollary}
+\proof 
+Let $\alpha:A\typear o$ be a test strategy.
+By Lemma \ref{lem:order3_oij}, $\sigma$ and $\mu$ are necessarily O-i.j. Thus by Lemma \ref{lem:oij_interact_with_pij}, the plays of $\sigma, \mu$ can only
+interact with P-i.j.\ plays from $\alpha$. Hence
+$\sigma;\alpha = \sigma; \mathcal{P}(\alpha)$
+and $\mu;\alpha = \mu; \mathcal{P}(\alpha)$.
+Therefore by definition of the intrinsic preorders we have
+$ \sigma \intrpre \mu$ iff $\sigma \intrpre_{\mathcal I} \mu$.
 \qed
-\smallskip
 
-In the definition of the intrinsic preorder $\intrpre_{\mathcal I}$, the test strategy $\alpha$ is P-i.j.\ therefore by the previous Lemma it can only interact with O-i.j.\ plays. Hence for any strategy $\sigma$ in $\mathcal{I}$, both $\mathcal{O}(\sigma)$ and $\sigma$ are in the same $\intrpre_{\mathcal I}$-equivalence class. From the point of view of the observational equivalence problem for safe terms -- by regarding $\sigma : A$ as the denotation of some closed term $\vdash M:A$ and $\mu$ as the denotation of some context $x:A \vdash C[x]:o$ -- this means that plays that are not O-i.j.\ are not relevant. The full-abstraction of safe \ialgol\ (resp.\ safe \pcf) can thus be restated as:
-\begin{equation}
- \mathcal{O}(\sem{M}_{\mathcal{I}}) \intrpre_{\mathcal{I}_{b}} \mathcal{O}(\sem{N}_{\mathcal{I}})\ \iff\ M \obspre_s  N \ .
-\label{eqn:fullabstr_safeia_oij}
-\end{equation}
-where the notion of safe context and observational equivalence is defined similarly as in Safe \pcf.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%% The following can only be included when the proof of O-ij decompositionality is finished...
@@ -2251,38 +2288,61 @@ the sets of complete plays of their denotation are the same. Consequently, we ca
 
 
 \subsection*{Observational equivalence}
-\begin{proposition}
+
+\begin{lemma}
+\label{lem:safecontext_substitution}
+Let $\Gamma \siaentail M : A$ be a safe \ialgol\ term and 
+$C[-]$ be a safe context in ${\sf Ctxt}(\Gamma,A)$ then
+$$ \sem{C[M]} = \sem{C[-]} ; \sem{M} \ . $$
+\end{lemma}
+\proof
+Plugging a term in a context is done via capture-permitting substitution therefore $C[M] \equiv (C[-])\captsubst{-}{M}$.
+But thanks to the No-variable-capture lemma \ref{lem:nocapture_safeia} we have
+$(C[-])\captsubst{-}{M} \equiv (C[-])\subst{-}{M}$. Hence $\sem{C[M]} = \sem{C[-]\subst{-}{M}} = \sem{C[-]};\sem{M}$.
+\qed
+
+Note that this lemma does not hold in general, for instance with
+$C[-]\equiv (\lambda x^\iaexp . -) \Omega$ we have $\sem{C[-]};\sem{M}=id_A;\sem{M} = \sem{M}$ but $C[x] = \bot$.
+
+\begin{proposition} \hfill
 \label{prop:unsafe_conservative_uptoord3}
-Up to order $3$, it is conservative, with respect to observational equivalence, to add unsafe context to safe ones
-(\ie if for two terms $M$ and $N$ and for any safe context $C[-]$, $C[M] \eval
-\implies C[N] \eval$ then the same property holds for unsafe contexts).
-Adding unsafe context is not conservative at order $4$ for Idealized Algol.
+\begin{enumerate}[(i)]
+\item Up to order $3$, it is conservative, with respect to observational equivalence, to add unsafe context to safe ones:
+$$ M \obspre_s N \iff M \obspre N$$
+\item Adding unsafe context is not conservative at order $4$ for Idealized Algol.
+\end{enumerate}
 \end{proposition}
 \proof
-Let $A$ be an order-$3$ game, $\sigma:A$ be the denotation of a term, and $\alpha:A\typear o$ be the denotation of a context.
-By Lemma \ref{lem:order3_oij}, $\sigma$ is necessarily O-i.j. Thus by Lemma \ref{lem:oij_interact_with_pij}, the plays of $\sigma$ can only
-interact with P-i.j.\ plays from $\alpha$. Thus the presence of non P-i.j.\ plays in $\alpha$ does not alter the observational equivalence relation and
-hence it is conservative to add unsafe contexts to safe ones.
+(i) Let $A$ be an order-$3$ type and $M,N$ be two \ialgol\ terms of type $A$.
+\begin{align*}
+  M \obspre N &\iff \forall C[-] \in {\sf Ctxt(\Gamma, A)} : C[M] \eval \implies C[N] \eval & \mbox{Def.\ of $\obseq$} \\
+  &\iff \forall C[-] \in {\sf Ctxt(\Gamma, A)} : \sem{C[M]} = \top \implies
+  \sem{C[N]} = \top & \mbox{Computational adequacy} \\
+  &\iff \forall C[-] \in {\sf Ctxt(\Gamma, A)} : \sem{M};\sem{C[-]} = \top \implies
+  \sem{N};\sem{C[-]} = \top & \mbox{Lemma \ref{lem:safecontext_substitution}} \\
+  &\iff \sem{M} \intrpre \sem{N} & \mbox{Def.\ of $\intrpre$} \\
+  &\iff \sem{M} \intrpre_{\mathcal I} \sem{N} & \mbox{Corollary \ref{cor:order3_intrinsicpreorder}} \\
+  &\iff M \obspre_s N & \mbox{Def.\ of $\obspre_s$.}  
+\end{align*}
 
-We now show that adding unsafe context is not conservative at order $4$. The idea is to
-start from some term $E$ and construct a term $D$ that behaves like $E$ except that it has a ``hidden'' behaviour which can only by triggered when the Opponent plays in some particular way that is not incrementally justified.
+(ii) The idea is to start from some term $E$ and construct a term $D$ that behaves like $E$ except that it has a ``hidden'' behaviour which can only by triggered when the Opponent plays in some particular way that is not incrementally justified.
 Take the following order-$4$ \ialgol\ terms:
 \begin{align*}
-  E &\equiv \lambda \varphi  . \varphi (\lambda u_1. u_1\, \iaskip) (\lambda u_2. u_2\, \iaskip) : ((2,2,0),0) \\
-  D &\equiv \lambda \varphi  . \ianewin{LAST:=0} \\
-  & \qquad\ \varphi\ (\lambda u_1. \ianewin{PREV:=!LAST} LAST:=1; u_1 ([!LAST=1]);LAST:=PREV) \\
-  & \qquad\ \ \  (\lambda u_2. \ianewin{PREV:=!LAST} LAST:=2; u_2 ([!LAST=2]);LAST:=PREV) \\
+  E &\equiv \lambda \varphi^{(2,2,0)}  . \varphi (\lambda u_1^o. u_1\, \iaskip) (\lambda u_2^o. u_2\, \iaskip) : ((2,2,0),0) \\
+  D &\equiv \lambda \varphi^{(2,2,0)}  . \ianewin{LAST:=0} \\
+  & \qquad\ \varphi\ (\lambda u_1^o. \ianewin{PREV:=!LAST} LAST:=1; u_1 ([!LAST=1]);LAST:=PREV) \\
+  & \qquad\ \ \  (\lambda u_2^o. \ianewin{PREV:=!LAST} LAST:=2; u_2 ([!LAST=2]);LAST:=PREV) \\
   & \quad : ((2,2,0),0)
 \end{align*}
 where we use the type abbreviations $0$ for $\iacom$ and $k+1=k\typear \iacom$ for $k\geq0$, and for every term $T:\iaexp$, the assertion operator $[T]$ is syntactic sugar for $\pcfcond\ T\ \Omega\ \iaskip$ \ie the term that does nothing if $T$ evaluates to a positive number and goes into an infinite loop otherwise.
 
 The two terms $M$ and $N$ are not observationally equivalent in \pcf\ because the unsafe context
-$$C[\_] = \_\ (\lambda w_1\, w_2 . w_1 (\lambda x.w_2 (\lambda y .\underline{x})))$$
+$$C[-] = \_\ (\lambda w_1^2 w_2^2 . w_1 (\lambda x^o.w_2 (\lambda y^o .\underline{x})))$$
 can separate them: we have $C[D] \not\eval$ and $C[E]\eval$.
 In safe \pcf, however, these two terms are observationally equivalent:
-Let $C[\_]$ be a safe context. We claim that when evaluating $C[D]$, the variable $LAST$ always contains the index of the last called $\varphi$'s parameter
+Let $C[-]$ be a safe context. We claim that when evaluating $C[D]$, the variable $LAST$ always contains the index of the last called $\varphi$'s parameter
 and therefore the assertion tests in $D$ always succeed.
-This can be shown by induction on the length of the interaction play between $\sem{C[\_]}$ and $\sem{D}$. We give here an informal argument.
+This can be shown by induction on the length of the interaction play between $\sem{C[-]}$ and $\sem{D}$. We give here an informal argument.
 Let us assume that the context makes a single call to $D$. (The argument can be easily adapted to the general case.)
 During the evaluation, whenever a parameter of $\varphi$ is called, $D$ first sets the variable $LAST$ to the parameter index $i$ and then calls the Opponent's parameter $u_i$. At that point, O can either make another call to one of $\varphi$'s parameter, or it can call the parameter of some previous call to some $u_j$ for $j\in\{1,2\}$.
 Suppose it does the latter, because it is playing incrementally (since the context is safe) such $u_j$ must necessarily be the $u_i$ that was last called by P.
@@ -2313,8 +2373,8 @@ Consequently, observational equivalence of safe \ialgol\ terms with respect to s
 \subsection*{Classification}
 
 \paragraph{Upper bounds}
-By Proposition \ref{prop:unsafe_conservative_uptoord3}, all the known upper-bound for \ialgol\ are also valid for safe \ialgol\ up to order $3$.
-Therefore safe $\ialgol_2$ + while is decidable in PSPACE \cite{ghicamccusker00}, $\ialgol_3$ + while is decidable in EXPTIME for terms in $\beta$-nf \cite{DBLP:conf/fossacs/MurawskiW05}, and $\ialgol_3 + Y_0$ is decidable with a complexity that is at most doubly exponentially larger than that of the DPDA equivalence problem \cite{DBLP:conf/icalp/MurawskiOW05}.
+By Proposition \ref{prop:unsafe_conservative_uptoord3}, all the known upper-bound for \ialgol\ are also valid for safe \ialgol\ up to order $3$:
+safe $\ialgol_2$ + while is decidable in PSPACE \cite{ghicamccusker00}, $\ialgol_3$ + while is decidable in EXPTIME for terms in $\beta$-nf \cite{DBLP:conf/fossacs/MurawskiW05}, and $\ialgol_3 + Y_0$ is decidable with a complexity that is at most doubly exponentially larger than that of the DPDA equivalence problem \cite{DBLP:conf/icalp/MurawskiOW05}.
 
 
 \paragraph{Lower bounds}
@@ -2391,7 +2451,7 @@ All the previous results are recapitulated in Table \ref{tab:ia_obseq_complexity
 \begin{tabular}{|c|c||c|c|c|c|c|}
     \cline{3-7}
   \multicolumn{2}{c|}{}  & \multicolumn{5}{c|}{Finitary fragments} \\ \hline
-  \multirow{2}{*}{$L$} & \multirow{2}{*}{$C[\_]$} &   order 2          &  order 2       & order 3     & order 3 & \multirow{2}{*}{order 4}  \\
+  \multirow{2}{*}{$L$} & \multirow{2}{*}{$C[-]$} &   order 2          &  order 2       & order 3     & order 3 & \multirow{2}{*}{order 4}  \\
                        &                          &    + while         &   + $Y_1$      & + while     & +$Y_0$  &          \\ \hline \hline
 
   \multirow{4}{*}{IA}  & \multirow{2}{*}{IA}      & \multirow{8}{1.8cm}{PSPACE$^{(1)}$ \\ {\small $\preccurlyeq$ DFA}} & \multirow{8}{*}{U$^{(2)}$} & \multirow{8}{3.2cm}{EXPTIME-hard$^{(3)}$ \\ EXPTIME-complete for $\beta$-nf\\ {\small $\preccurlyeq$ VPA} }  & \multirow{8}{2cm}{D$^{(4)}$ \\ {\small $\preccurlyeq_{exp}$ DPDA\\ $\succcurlyeq$ DPDA} } & \multirow{2}{*}{U$^{(5)}$}\\

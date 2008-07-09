@@ -2181,7 +2181,7 @@ $ \sigma \intrpre \mu$ iff $\sigma \intrpre_{\mathcal I} \mu$.
 \smallskip
 
 We already know from the fully-abstract game model of PCF that when the observational preorder is defined with respect to unrestricted (\ie possibly unsafe) PCF contexts,
- observational equivalence is captured by equality of the quotiented game denotations. 
+ observational equivalence is captured by equality of the quotiented game denotations.
  We show here that a similar correspondence holds when observational equivalence
  is defined with respect to safe contexts only.
  This further implies a full abstraction result for the fragments of \pcf\ and \ialgol\ consisting of safe closed terms.
@@ -2205,6 +2205,7 @@ $$ -: A \sentail C[-] : B,$$
 is a valid safe \pcf\ term-in-context.
 The \defname{safe program contexts} ${\sf Ctxt_s}(\Gamma, A)$ are the program contexts
 from ${\sf Ctxt}(\Gamma, A)$ that are safe contexts.
+\smallskip
 
 We now define two notions of observational preorder for \pcf:
 \begin{definition}[Observational preorders]
@@ -2230,15 +2231,34 @@ We write $\obseq$ and $\obseq_s$ to denote the reflexive closures of $\obspre$ a
 \proof Trivial. \qed
 \smallskip
 
-Note that in the definition of $\obspre_s$, the program context $C[-]$ ranges in ${\sf Ctxt_s}(\Gamma, A)$ but it is not explicitly required that $C[M]$ and $C[N]$ are themselves safe terms. When restricted to safe terms, however, $C[M]$ and $C[N]$ are necessarily safe: \begin{lemma}
-If $M\in {\sf Trm_s}(\Gamma,T)$, $C[-] \in {\sf Ctxt_s}(\Gamma,T)$ and
-$C[M] \in {\sf Trm}(\Gamma,{\tt \iaexp})$ then $C[M] \in {\sf Trm_s}(\Gamma,{\rm \iaexp})$.
+Note that in the definition of $\obspre_s$, the program context $C[-]$ ranges in ${\sf Ctxt_s}(\Gamma, A)$ but it is not required that $C[M]$ and $C[N]$ are themselves safe. When restricted to safe terms, however, $C[M]$ and $C[N]$ are necessarily safe:
+\begin{lemma}
+$M\in {\sf Trm_s}(\Gamma,T) \zand C[-] \in {\sf Ctxt_s}(\Gamma,T) \implies
+C[M] \in {\sf Trm_s}(\emptyset,\iaexp)$.
 \end{lemma}
 \proof
-  Suppose that $\Gamma \sentail M : T$ and $- : T \sentail C[-] : \iaexp$ are
-  valid safe judgments and $\entail C[M] : \iaexp$ is a closed (not necessarily safe) term.
-  \todo{finish}
+Suppose that $M\in {\sf Trm_s}(\Gamma,T)$ and $C[-] \in {\sf Ctxt_s}(\Gamma,T)$
+then in particular, $M\in {\sf Trm}(\Gamma,T)$ and 
+$C[-] \in {\sf Ctxt}(\Gamma,T)$, therefore by definition of a program context we have
+$C[M] \in {\sf Trm}(\emptyset,\iaexp)$.
+
+Plugging a term in the context is done via capture-permitting substitution \ie $C[M] \equiv (C[-])\captsubst{M}{-}$. Since both $C[-]$ and $M$ are safe and $C[M]$ is a valid term, by the No-variable-capture lemma (Corollary \ref{cor:nocapture_safeia}(ii)) it is syntactically equivalent to perform the standard substitution: $C[M] \equiv (C[-])\subst{M}{-}$. Hence by the Substitution Lemma \ref{lem:subst_preserves_safety}, $C[M]$ is safe.
 \qed
+\smallskip
+
+
+\begin{lemma}
+\label{lem:safecontext_substitution}
+$M \in {\sf Trm_s}(\Gamma,A) \zand C[-] \in {\sf Ctxt_s}(\Gamma,A) \implies \sem{C[M]} = \sem{C[-]} ; \sem{M}$.
+\end{lemma}
+\proof
+By the previous lemma, plugging $M$ in $C[-]$ can be done using the capture permitting-substitution therefore $\sem{C[M]} = \sem{C[-]};\sem{M}$.
+\qed
+\smallskip
+
+Note that this lemma does not hold for unsafe context. For instance with
+$C[-]\equiv (\lambda x^\iaexp . -) \Omega$ we have $\sem{C[-]};\sem{M}=id_A;\sem{M} = \sem{M}$ but $\sem{C[x]} = \bot$.
+\smallskip
 
 \begin{remark}
 It is possible to define a third notion of observational preorder where the
@@ -2248,11 +2268,11 @@ contexts are unrestricted but where we require instead that $C[M]$ and $C[N]$ ar
 \begin{remark}
 \label{rem:obseqsafe_openedterms}
 The observational preorder $\obspre_s$ is very coarse. In particular it equates
-many open terms that are not equated by the preorder $\obspre$. 
+many open terms that are not equated by the preorder $\obspre$.
 If we fix a type $T$ then all the open terms of type $T$ containing variables of order at least $T$ will be equated by $\obspre_s$.
-The is because for any such term $M$, there is no safe context $C[-]$ such that $C[M]$ is closed. Indeed, if $C[M]$ is closed then all the free variables in $M$ must be abstracted in $C[M]$. Take a variable $z\in\freevarset(M)$ verifying $\ord z \geq \ord T$, then the hole in $C[-]$ must appear in a subterm of the form $\lambda z . \cdots - \cdots$ containing the hole `--'. But then this implies that the context is unsafe 
+The is because for any such term $M$, there is no safe context $C[-]$ such that $C[M]$ is closed. Indeed, if $C[M]$ is closed then all the free variables in $M$ must be abstracted in $C[M]$. Take a variable $z\in\freevarset(M)$ verifying $\ord z \geq \ord T$, then the hole in $C[-]$ must appear in a subterm of the form $\lambda z . \cdots - \cdots$ containing the hole `--'. But then this implies that the context is unsafe
 because the hole, which has order smaller than $z$. is not abstracted with $z$. For example, the terms $x:\pcfexp \entail \pcfcond\, 0\, x\, i \equiv M_i : \pcfexp$
-for $i\in\nat$ are all $\obseq_s$-equivalent. However their closure $N_i \equiv \lambad x^\pcfexp. M_i$ are not: $N_i \not\obseq_s N_j$ for every $i\neq j$.
+for $i\in\nat$ are all $\obseq_s$-equivalent, but their closures $N_i \equiv \lambda x^\pcfexp. M_i$ are not: $N_i \not\obspre_s N_j$ for every $i\neq j$.
 \end{remark}
 
 
@@ -2262,7 +2282,7 @@ $$P\eval \iff \sem{P}_{\mathcal{C}} \neq \bot \iff \sem{P}_{\mathcal C} \not \in
 \end{proposition}
 \proof
 The first equivalence is the Computational Adequacy result for \pcf\
-(\cite{AM97a}). Second equivalence: The $\intrpre_{{\mathcal I}_{ib}}$-equivalence class 
+(\cite{AM97a}). Second equivalence: The $\intrpre_{{\mathcal I}_{ib}}$-equivalence class
 of $\bot$ contains only the strategy $\bot$ itself.
 Indeed, suppose that $\sigma \intrpre_{{\mathcal I}_{ib}} \bot$ then
 for all P-i.j.\ strategy $\alpha:A\typear \Sigma$ we have $\sigma\fatcompos \alpha = \top \implies \bot\fatcompos \alpha = \top$. But the condition $\bot\fatcompos \alpha = \top$ never holds therefore we necessarily have $\sigma\fatcompos \alpha = \bot$
@@ -2281,13 +2301,13 @@ It follows from Inequational soundness in $\mathcal C$ (\cite{AM97a})
 since $\obspre$ is a subset of $\obspre_s$.
 \qed
 
-\begin{theorem}[Inequational soundness in $\quotient{\mathcal C}{\intrpre_{{\mathcal I}_{ib}}}$]
+\begin{theorem}[Inequational soundness in $\quotient{{\mathcal C}_{ib}}{\intrpre_{{\mathcal I}_{ib}}}$]
 \label{thm:ineqsound_safepcf}
 Let $M,N \in {\sf Trm}(\Gamma,T)$. Then:
-$$\sem{M}_{\mathcal C} \intrpre_{\mathcal I} \sem{N}_{\mathcal C} \implies M \obspre_s N \ .$$
+$$\sem{M}_{\mathcal C} \intrpre_{{\mathcal I}_{ib}} \sem{N}_{\mathcal C} \implies M \obspre_s N \ .$$
 \end{theorem}
 \proof
-We first show the result for closed terms: We follow the same argument as the proof of Inequational soundness for \pcf\ (\cite{AM97a}). Let $M,N \in {\sf Trm}(\emptyset,T)$ and suppose that $\sem{M}_{\mathcal C} \intrpre_{\mathcal I} \sem{N}_{\mathcal C}$
+We first show the result for closed terms: We follow the same argument as the proof of Inequational soundness for \pcf\ (\cite{AM97a}). Let $M,N \in {\sf Trm}(\emptyset,T)$ and suppose that $\sem{M}_{\mathcal C} \intrpre_{{\mathcal I}_{ib}} \sem{N}_{\mathcal C}$
 and that $C[M] \eval$ for some safe context $C[-]$. Then the denotation of
 $C[-]$ is a P-i.j.\ strategy $\alpha \in {\mathcal I}(T,\Sigma)$.
 For any closed term $P$, the context-substitution $C[P]$ causes no variable capture
@@ -2301,7 +2321,7 @@ We first make an observation:
 For all $C[-] \in {\sf Ctxt_s}(\Gamma,T)$ and
 $M \in {\sf Trm}(\Gamma,T)$ where $\Gamma = \overline{x}:\overline{A}$ we have:
 \begin{equation*}
-C[M]\eval \iff C[{\lambda \overline x}^{\overline A} . M \overline{x} ] \eval 
+C[M]\eval \iff C[{\lambda \overline x}^{\overline A} . M \overline{x} ] \eval
  \iff C'[{\lambda \overline x}^{\overline A} . M] \eval \label{eqn:context_hack}
 \end{equation*}
 where $C'[-]$ is the program context defined as $C'[-]\equiv C[-\, \overline{x}]$. It is easy to see that this context is necessarily safe: $C'[-] \in {\sf Ctxt_s}(\Gamma,(\overline{A},T))$.
@@ -2310,7 +2330,7 @@ Now consider two open terms $M,N \in {\sf Trm}(\Gamma,T)$.
 W.l.o.g.\ we can assume that $\Gamma = \overline{x}:\overline{A}$
 where $ \overline{x} = \freevarset(M) \union\freevarset(N)$. We then have
 \begin{align*}
-  \sem{M}_{\mathcal C} \intrpre_{\mathcal I} \sem{N}_{\mathcal C} 
+  \sem{M}_{\mathcal C} \intrpre_{{\mathcal I}_{ib}} \sem{N}_{\mathcal C}
   &\iff \Lambda^{|\overline{x}|}(\sem{{\lambda\overline x}^{\overline A}.M}_{\mathcal C}) \intrpre_{\mathcal I} \Lambda^{|\overline{y}|}(\sem{{\lambda\overline x}^{\overline A}.N}_{\mathcal C}) & \\
   &\iff \sem{{\lambda\overline x}^{\overline A}.M}_{\mathcal C} \intrpre_{\mathcal I} \sem{{\lambda\overline x}^{\overline A}.N}_{\mathcal C} & \\
   &\iff \sem{{\lambda\overline x}^{\overline A}.M}_{\mathcal C} \intrpre_{\mathcal I} \sem{{\lambda\overline x}^{\overline A}.N}_{\mathcal C} & \\
@@ -2348,7 +2368,7 @@ $-:T \siaentail (\lambda z^{\Gamma \typear T} . Q)(\lambda y^\Gamma . -) \equiv 
 we have $\ord{-} = \ord T > \ord \Gamma$ by assumption.
 Clearly, $\sem{C[-]} \cong \sem{\lambda z^T. Q} = \alpha$ therefore by Computational Adequacy it follows that $C[M]\eval$ and $C[M]\not\eval$.
 
-(ii) In the definition of the preorder $\intrpre_{\mathcal I}$, the test strategy $\alpha$ ranges over P-i.j.\ strategies therefore by Lemma \ref{lem:oij_interact_with_pij} $\alpha$ can only interact with O-i.j.\ plays. Hence for any strategy $\sigma$ in $\mathcal{I}$, $\mathcal{O}(\sigma)$ and $\sigma$ are in the same $\intrpre_{\mathcal I}$-equivalence class.
+(ii) In the definition of the preorder $\intrpre_{{\mathcal I}_{ib}}$, the test strategy $\alpha$ ranges over P-i.j.\ strategies therefore by Lemma \ref{lem:oij_interact_with_pij} $\alpha$ can only interact with O-i.j.\ plays. Hence for any strategy $\sigma$ in $\mathcal{C}$, $\mathcal{O}(\sigma)$ and $\sigma$ are in the same $\intrpre_{{\mathcal I}_{ib}}$-equivalence class.
 \qed
 \bigskip
 
@@ -2377,11 +2397,11 @@ follows immediately from Theorem \ref{thm:fullabs_pcfstar} since $\sem{M}_\mathc
 \bigskip
 
 \begin{remark}
-    Observe that the condition \ref{eqn:starpcf_condition} used in Theorem \ref{thm:fullabs_pcfstar} expresses precisely the negation of the basic property of the safe lambda calculus. Therefore the star fragment of safe \pcf\ is precisely given by the set of \emph{closed} safe terms. That is why our full abstraction result holds only for the fragment of \pcf\ consisting of \emph{closed} terms.  
-    
-    Full abstraction fails for open terms. For instance the family of opened safe terms $M_i \equiv \pcfcond\, 0\, x\, i$ for $i\in\nat$
+    Observe that the condition \ref{eqn:starpcf_condition} used in Theorem \ref{thm:fullabs_pcfstar} expresses precisely the negation of the basic property of the safe lambda calculus. Therefore the star fragment of safe \pcf\ is precisely given by the set of \emph{closed} safe terms. That is why our full abstraction result holds only for the fragment of \pcf\ consisting of \emph{closed} terms.
+
+    Full abstraction fails for open terms. For instance the family of opened safe terms $\pcfcond\, 0\, x\, i$ for $i\in\nat$
     are all in the same $\obspre_s$-equivalence class although their denotations are not in     the same $\intrpre_{\mathcal{I}_{ib}}$-equivalence class.
-    
+
     In fact the observational relation $\obspre_s$ trivially equates all open safe terms of a given type! This is due to the fact that for any open safe term $M$, there is no safe context $C[-]$ such that the term $C[M]$ is closed. (See remark \ref{rem:obseqsafe_openedterms}).
 \end{remark}
 
@@ -2453,22 +2473,6 @@ the sets of complete plays of their denotation are the same. Consequently, we ca
 
 \subsection*{Observational equivalence}
 
-\begin{lemma}
-\label{lem:safecontext_substitution}
-Let $\Gamma \siaentail M : A$ be a safe \ialgol\ term and
-$C[-]$ be a safe context in ${\sf Ctxt}(\Gamma,A)$ then
-$$ \sem{C[M]} = \sem{C[-]} ; \sem{M} \ . $$
-\end{lemma}
-\proof
-Plugging a term in a context is done via capture-permitting substitution therefore $C[M] \equiv (C[-])\captsubst{-}{M}$.
-But thanks to the No-variable-capture lemma \ref{lem:nocapture_safeia} we have
-$(C[-])\captsubst{-}{M} \equiv (C[-])\subst{-}{M}$. Hence $\sem{C[M]} = \sem{C[-]\subst{-}{M}} = \sem{C[-]};\sem{M}$.
-\qed
-\smallskip
-
-Note that this lemma does not hold in general, for instance with
-$C[-]\equiv (\lambda x^\iaexp . -) \Omega$ we have $\sem{C[-]};\sem{M}=id_A;\sem{M} = \sem{M}$ but $C[x] = \bot$.
-
 \begin{proposition} \hfill
 \label{prop:unsafe_conservative_uptoord3}
 \begin{enumerate}[(i)]
@@ -2480,14 +2484,9 @@ $$ M \obspre_s N \iff M \obspre N \ .$$
 \proof
 (i) Let $A$ be an order-$3$ type and $M,N$ be two \ialgol\ terms of type $A$.
 \begin{align*}
-  M \obspre N &\iff \forall C[-] \in {\sf Ctxt(\Gamma, A)} : C[M] \eval \implies C[N] \eval & \mbox{Def.\ of $\obseq$} \\
-  &\iff \forall C[-] \in {\sf Ctxt(\Gamma, A)} : \sem{C[M]} = \top \implies
-  \sem{C[N]} = \top & \mbox{Computational adequacy} \\
-  &\iff \forall C[-] \in {\sf Ctxt(\Gamma, A)} : \sem{M};\sem{C[-]} = \top \implies
-  \sem{N};\sem{C[-]} = \top & \mbox{Lemma \ref{lem:safecontext_substitution}} \\
-  &\iff \sem{M} \intrpre \sem{N} & \mbox{Def.\ of $\intrpre$} \\
+  M \obspre N &\iff \sem{M} \intrpre \sem{N} & \mbox{By Full abstraction of \ialgol.} \\
   &\iff \sem{M} \intrpre_{\mathcal I} \sem{N} & \mbox{Corollary \ref{cor:order3_intrinsicpreorder}} \\
-  &\iff M \obspre_s N & \mbox{Full abstraction.}
+  &\iff M \obspre_s N & \mbox{Full abstraction of \ialgol\ with respect to safe contexts.}
 \end{align*}
 
 (ii) The idea is to start from some term $E$ and construct a term $D$ that behaves like $E$ except that it has a ``hidden'' behaviour which can only by triggered when the Opponent plays in some particular way that is not incrementally justified.

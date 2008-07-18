@@ -45,7 +45,7 @@ if there is derivation in $\cusystem$ then there is a compact derivation with th
 Similarly, we define the notion of compact derivation in the safe lambda calculus. It is easy to check that, despite the side-conditions imposed by the abstraction rule,
 the compact deductions are sufficient. We write ${\sf Der}_{s}(\Gamma, M, T)$ for the set of compact deduction of $\Gamma \sentail M : T$ in safe $\cusystem$.
 
-We say that a deduction $\Delta \in {\sf Der}_{cu}(\Gamma, M, T)$ is \defname[safe!deduction]{safe} if $\ord \Gamma \geq \ord T$ and for 
+We say that a deduction $\Delta \in {\sf Der}_{cu}(\Gamma, M, T)$ is \defname[safe!deduction]{safe} if $\ord \Gamma \geq \ord T$ and for
 all term-in-context $\Gamma'\stentail M : T'$ deduced in $\Delta$
 from the abstraction rule we have: $\ord \Gamma' \geq \ord T'$.
 
@@ -56,7 +56,7 @@ we write $\epsilon(\Delta)$ to denote the deduction tree obtained by replacing j
 \begin{lemma}[Relating derivations from $\cusystem$ and safe $\cusystem$]
 \label{lem:rel_cu_safe} \hfill
 \begin{enumerate}[(i)]
-\item $\Delta \in {\sf Der}_{s}(\Gamma, M, T) \implies 
+\item $\Delta \in {\sf Der}_{s}(\Gamma, M, T) \implies
   \epsilon(\Delta) \in {\sf Der}_{cu}(\Gamma, M, T) \zand \epsilon(\Delta)$ is safe,
   \item $\Delta' \in {\sf Der}_{cu}(\Gamma, M, T) \zand \Delta' \mbox{ is safe.} \implies \exists \Delta \in {\sf Der}_{s}(\Gamma, M, T) : \Delta' = \epsilon(\Delta)$.
   \end{enumerate}
@@ -68,43 +68,65 @@ This follows immediately from the definition of safe $\cusystem$.
 
 \subsection{Type checking and typability}
 
-By the PT Theorem \ref{thm:pt}, \textsc{Typability} is decidable in $\cusystem$ and
-if a term is typable then it has a computable principal derivation \ie every other derivation is an instance of that derivation.
+By the PT Theorem \ref{thm:pt}, if a term is typable then it has a computable principal derivation \ie every other derivation is an instance of that derivation.
 The same result holds for compact derivations:
 \begin{lemma}[Principal compact derivation]
-  If $M$ is typable in $\cusystem$ then is has a \emph{compact} principal derivation $\Delta$ \ie any derivation $\Delta' \in {\sf Der}_{cu}(\Gamma, M, T)$ is an instance of $\Delta$.
+  If $M$ is typable in $\cusystem$ then is has a \emph{compact} principal derivation $\Delta$ (\ie any derivation $\Delta' \in {\sf Der}_{cu}(\Gamma, M, T)$ is an instance of $\Delta$) that is computable from $M$.
 \end{lemma}
-\proof 
+\proof
 This follows immediately from Theorem \ref{thm:pt}: compact derivations are just ``reorganized'' derivations: for any standard derivation there exists a corresponding compact derivation containing the same typing assumptions.
+The \emph{compact} principal derivation can be obtained from the principal derivation by performing the same ``reorganization''.
 \qed
 \smallskip
 
 \begin{proposition}
-  Type checking is decidable in safe $\cusystem$.
+  \textsc{Type checking} in safe $\cusystem$ is decidable.
 \end{proposition}
 \proof
 Let $M \in \Lambda$, $T\in\mathbb{T}$ and $\Gamma$ be a typing-context.
 We have $\Gamma \sentail M : T$ iff ${\sf Der}_{s}(\Gamma, M, T) \neq \emptyset$.
 By Lemma \ref{lem:rel_cu_safe}, there is a derivation in ${\sf Der}_{s}(\Gamma, M, T)$
 if and only if there is a safe derivation in ${\sf Der}_{cu}(\Gamma, M, T)$.
+We already know that the \textsc{Type checking} problem in $\cusystem$ (``Is ${\sf Der}_{cu}(\Gamma, M, T)$ empty?'') is decidable. If ${\sf Der}_{cu}(\Gamma, M, T)$ is empty then we can answer `No' to the type-checking problem. Otherwise by the previous Lemma, we can compute a compact principal derivation $\Delta_p$ of $\Gamma \sentail M : T$ and we know that there exists a safe derivation iff there exists a type-substitution $s$ for $\Delta_p$ such that
+\begin{inparaenum}[(i)]
+\item $s(\Delta_p)$ is safe;
+\item the conclusion of $s(\Delta_p)$ is $\Gamma \sentail M : T$.
+\end{inparaenum}
 
-By the \emph{Principal compact derivation} lemma, the problem ``${\sf Der}_{cu}(\Gamma, M, T) = \emptyset?$'' is decidable. If it is empty then we can answer `No' to the type-checking problem. Otherwise we can compute a compact principal derivation $\Delta_p$ of
-$\Gamma \sentail M : T$ and we know that there exists a safe derivation 
-iff there exists a type-substitution $s$ for $\Delta_p$ such that $s(\Delta_p)$ is safe.
-
-This property turns out to be decidable. Indeed, the deduction $\Delta_p$ contains finitely many atoms $a_1 \ldots a_n \in \mathbb{A}$, $n\geq 1$. Therefore the safety of $s(\Delta_p)$ can be expressed in terms of a system of inequations over the order of the atoms occurring in $\Delta_p$. This system can be reexpressed into a system of inequations $\mathcal{S}$ of the form $x_i > x_j$ for $i,j\in \{1,.., q\}$ and variables $x_1, \ldots, x_q \in\mathbb{Z}$ and such that for every atom $a_k$, $\ord a_k = x_{i_k}$ for some $i_k \in \{1, .., q\}$.
+The latter property can be decided by unifying the types appearing in the conclusion of $\Delta_p$ with $\Gamma$ and $T$.
+The former property turns out to be also decidable. Indeed, the deduction $\Delta_p$ contains finitely many atoms $a_1 \ldots a_n \in \mathbb{A}$, $n\geq 1$. Therefore the safety of $s(\Delta_p)$ can be expressed in terms of a system of inequations over the order of the atoms occurring in $\Delta_p$. This system can be reexpressed into a system of inequations $\mathcal{S}$ of the form $x_i > x_j$ for $i,j\in \{1,.., q\}$ and variables $x_1, \ldots, x_q \in\mathbb{Z}$ and such that for every atom $a_k$, $\ord a_k = x_{i_k}$ for some $i_k \in \{1, .., q\}$.
 
 A substitution $s$ verifying the required property exists if and only if $\mathcal{S}$ has a solution: If the solution to $\mathcal{S}$ is $(x_1,\ldots, x_q)$
-then we just need to take the substitution $s = [(x_{k_1})_o/a_1, \ldots (x_{k_n})_o/a_n]$ for some fresh atom $o\in\mathbb{A}$. (Observe that if $(x_1,\ldots, x_q)$ is a solution then so is $(x_1+k,\ldots, x_q+k)$ for $k\geq 0$, therefore the $x_i$s can be assume to be positive.)
+then we just need to take the substitution $s = [(x_{k_1})_o/a_1, \ldots (x_{k_n})_o/a_n]$ for some fresh atom $o\in\mathbb{A}$. (Observe that if $(x_1,\ldots, x_q)$ is a solution then so is $(x_1+k,\ldots, x_q+k)$ for $k\geq 0$, therefore the $x_i$s can all be assume to be positive.)
 
-The problem therefore reduces to solving a system of linear inequalities over $\mathbb{Z}^q$. This is clearly decidable: 
+The problem therefore reduces to solving this particular system of linear inequalities over $\mathbb{Z}^q$. This is clearly decidable:
  We can construct a directed graph $G$ whose set of vertices is given by $\{1,..,q\}$ and with an edge from $i$ to $j$ for each equation $x_i>x_j$ in $\mathcal{S}$.
 Solving $\mathcal{S}$ then reduces to deciding whether $G$ contains a cycle, which is decidable. If $G$ has no cycle then a solution can be found by performing a breadth-first search algorithm.
 \qed
 
+\begin{proposition}
+\label{prop:typability}
+ \textsc{Typability} in safe $\cusystem$ is decidable.
+\end{proposition}
+\proof
+The proof is the same as for  \textsc{Type Checking} except that only condition (i) needs to be decided.
+\qed
 
-\todo{Typability: same thing...}
 \subsection{The type inhabitation problem}
+
+
+
+Statman showed in \cite{Statman1979} that the problem of deciding
+whether a type \emph{defined over an infinite number of ground
+atoms} is inhabited (or equivalently of deciding validity of an
+intuitionistic implicative formula) is PSPACE-complete. In the safe lambda calculus, no complexity is known. In fact it is not even clear whether the problem is decidable:
+\begin{proposition}
+  \textsc{Inhabitation} in safe $\stsystem$ is (at least) semi-decidable: given a simple type, there is an algorithm that prints a safe inhabitant if there is one but may not terminate if there is not.
+\end{proposition}
+\proof
+Inhabitants are enumerated using the searching algorithm presented in \cite{Hindley1997}. Each inhabitant can then be tested for typability in safe $\stsystem$ by Proposition \ref{prop:typability}.
+\qed
+\smallskip
 
 It is well known that the simply typed lambda calculus corresponds
 to intuitionistic implicative logic via the Curry-Howard
@@ -115,33 +137,33 @@ intuitionistic implicative logic that corresponds to the safe lambda
 calculus under the Curry-Howard isomorphism. We call it the
 \emph{safe fragment of intuitionistic implicative logic}.
 
-An obvious first question is to compare the reasoning power of these
+An obvious question is to compare the reasoning power of these
 two logics, in other words, to determine which types are inhabited
 in the lambda calculus but not in the safe lambda
-calculus.\footnote{This problem was raised to our attention by Ugo
-dal Lago.}
-
-If types are generated from a single atom $o$, then there is a
-positive answer: every type generated from one atom that is
-inhabited in the lambda calculus is also inhabited in the safe
-lambda calculus. Indeed, one can transform any unsafe inhabitant $M$
+calculus.\footnote{This problem was raised by Ugo dal Lago.} 
+Let us say that a type is \defname[unsafe type]{unsafe} if it is inhabited and every inhabitant is unsafe. At order $2$, all closed normal terms are safe therefore there is no unsafe type at this order. The following proposition further shows that all types generated from a single atom $o$ are not unsafe:
+\begin{proposition}
+ Every type generated from one atom $o$ that is inhabited
+in the lambda calculus is also inhabited by a safe lambda term. 
+\end{proposition}
+\proof
+One can transform any unsafe normal inhabitant $M$
 into a safe one of the same type as follows: Compute the eta-long
-beta normal form of $M$. Let $x$ be an occurrence of a ground-type
+beta-normal form of $M$. Let $x$ be an occurrence of a ground-type
 variable in a subterm of the form $\lambda \overline{x} . C[x]$
 where $\lambda \overline{x}$ is the binder of $x$ and for some
-context $C[\_~]$ different from the identity $C[R]=R$. We replace
-the subterm $\lambda \overline{x} . C[x]$ by $\lambda \overline{x}.
-x$ in $M$. This transformation is sound because both $C[x]$ and $x$
-are of the same ground type. We repeat this procedure until the term
-stabilizes. This procedure clearly terminates since the size of the
+context $C[-]$ different from the identity ($C[-]\equiv -$). Since the term is considered is beta-normal and because its type is built out of a unique atom $o$, $x$ is necessarily of type $o$. We then replace the subterm $\lambda \overline{x} . C[x]$ by $\lambda \overline{x}. x$ in $M$. This transformation is sound because $C[x]$ and $x$ both have type $o$. We repeat this procedure until the term stabilizes. This algorithm clearly terminates since the size of the
 term decreases strictly after each step. The final term obtained is
 safe and of the same type as $M$.
+\qed
+\smallskip
 
-This argument cannot be generalized to types generated from multiple
-atoms. In fact there are order-$3$ types with only $2$ atoms that
-are inhabited in the simply typed lambda calculus but not in the
-safe lambda calculus. Take for instance the order-$3$ type
- $( ((b, a), b),  ((a, b), a),  a)$ for some distinct atoms $a$ and $b$. It is only inhabited by the following family of terms which are all unsafe:
+Observe that the previous argument crucially uses the fact that the type is generated from a single atom. It cannot be repeated for types generated from multiple atoms. In fact there are order-$3$ types with only $2$ atoms that
+are inhabited by simply typed terms but not by safe terms as the example (i) below shows.
+
+\begin{example} Let $a$, $b$ and $c$ be three distinct atoms.
+\begin{enumerate}[(i)]
+\item  Take the order-$3$ type  $( ((b, a), b),  ((a, b), a),  a)$. Its normal inhabitants are given (up to $\alpha$-conversion) by the following family of terms which are all unsafe:
  \begin{align*}
 & \lambda f g . g (\lambda x_1 . f (\lambda y_1 . x_1)) \\
 &\lambda f g . g (\lambda x_1 . f (\lambda y_1 . g (\lambda x_2 . y_1))) \\
@@ -150,30 +172,19 @@ safe lambda calculus. Take for instance the order-$3$ type
 &\ldots
 \end{align*}
 
-Another example is the type of function composition. Take three
-distinct atoms $a$, $b$ and $c$. For any $i,j,k\in\nat$, we write
-$\sigma(i,j,k)$ to denote the type
-$$\sigma(i,j,k) \equiv (i_a \typear j_b) \typear (j_b \typear k_c) \typear i_a \typear
-k_c \ .$$
-where $(n+1)_a$ denotes the type $ (\ldots ((a\typear a)\typear a) \ldots) \typear a$ containing $n$ occurrence of $a$ as defined in Sec.\ \ref{sec:simpletype}.
-
-For all $i$, $j$, $k$, this type is inhabited in the lambda calculus
+\item The order-$3$ type $( ((a, c), b),  ((c, b), a),  a)$ has for only normal inhabitant the unsafe term $\lambda f g . g (\lambda x . f (\lambda y . c))$.
+    
+\item  For any $i,j,k\in\nat$, let $\sigma(i,j,k)$ denote the type
+$$\sigma(i,j,k) \equiv (i_a \typear j_b) \typear (j_b \typear k_c) \typear i_a \typear k_c $$
+where $(n+1)_a$ denotes the type $ (\ldots ((a\typear a)\typear a) \ldots) \typear a$ containing $n$ occurrence of $a$ as defined in Sec.\ \ref{sec:simpletype}. This type is inhabited 
 by the ``function composition term'':
 $$\lambda x y z w . y (x z) $$
-which is safe if and only if $i\geq j$. Suppose that $i<j$ then the type
-$\sigma(i,j,k)$ may still be safely inhabited. For instance
+which is safe if and only if $i\geq j$. There exists values for $i,j,k$ such that $i<j$ and $\sigma(i,j,k)$ is safely inhabited. For instance
 $\sigma(1,3,4)$ is inhabited by the safe term
 $$ \lambda x^{1_a \typear 3_b} y^{3_b \typear 4_c} z^{1_c} w^{3_c} . y (x (\lambda u^a . u)) \ .$$
-The order-$4$ type $\sigma(0,2,0)$, however, is only inhabited by the unsafe term $\lambda x y z w. y (x z) $.
-
-
-Statman showed in \cite{Statman1979} that the problem of deciding
-whether a type \emph{defined over an infinite number of ground
-atoms} is inhabited (or equivalently of deciding validity of an
-intuitionistic implicative formula) is PSPACE-complete. The previous
-observations suggest that the validity problem for the safe fragment
-of implicative logic may not be PSPACE-hard.
-
+The order-$4$ type $\sigma(0,2,0)$, however, is unsafe: its only normal inhabitant is the unsafe term $\lambda x y z w. y (x z) $.
+\end{enumerate}
+\end{example}
 
 \section{Safe combinators}
 

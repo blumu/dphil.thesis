@@ -91,7 +91,7 @@
     \thispagestyle{empty}
   \null\vfill
   \begin{center}
-    { \Huge {\bfseries {\@title}} \par}
+    { \Huge { \textsc{\@title}} \par}
 {\large \vspace*{40mm} {\crest \par} \vspace*{25mm}}
     {{\Large \@author} \par}
 {\large \vspace*{1ex}

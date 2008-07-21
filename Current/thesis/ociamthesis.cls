@@ -92,16 +92,19 @@
   \null\vfill
   \begin{center}
     { \Huge { \textsc{\@title}} \par}
-{\large \vspace*{40mm} {\crest \par} \vspace*{25mm}}
+\vspace*{1cm}
     {{\Large \@author} \par}
 {\large \vspace*{1ex}
-    {{\@college} \par}
-\vspace*{1ex}
-    {University of Oxford \par}
+    {{\it \@college} \par}
 \vspace*{25mm}
     {{\submittedtext} \par}
 \vspace*{1ex}
     {\it {\@degree} \par}
+{\large \vspace*{4ex} {\crest \par}
+\vspace*{4ex} Oxford University Computing Laboratory \par}
+\vspace*{25mm}
+%\vspace*{1ex}
+%    {University of Oxford \par}
 \vspace*{2ex}
     {\@degreedate}}
   \end{center}

@@ -1,12 +1,9 @@
 \subsection{PCF}
 \label{sec:pcf}
-The Programming language for Computable Functions, \pcf\ for short, is a simple programming language introduced in a classical paper by Plotkin ``LCF considered as a programming language''
-(\cite{DBLP:journals/tcs/Plotkin77}). \pcf\ is based on LCF, the
-Logic of Computable Functions devised by Dana Scott in
-\cite{scott_lcf}. It is a Church-like simply typed lambda calculus extended with arithmetic operators, conditional and recursion.
-
-\subsection{Syntax}
-\pcf\ terms are given by the grammar:
+The \emph{Programming language for Computable Functions}, \pcf\ for short, is a simple programming language based on the \emph{Logic of Computable Functions} (LCF) devised by Dana Scott in \cite{scott_lcf}. It was introduced in a classical paper by Plotkin ``LCF considered as a programming language''
+(\cite{DBLP:journals/tcs/Plotkin77}). \pcf\ can be viewed as the Church-like simply typed lambda calculus extended with arithmetic operators, conditional and recursion.
+\subsubsection*{Syntax}
+The set of types is $\mathbb{T}_\iaexp$: the simple types generated from the atomic type $\iaexp$ representing natural numbers. \pcf\ terms are given by the grammar:
 \begin{eqnarray*}
  M ::= x\ |\ \lambda x^A. M \ |\ M M \ |\ \\
 \ |\ n \ |\ \pcfsucc\  M \ |\  \pcfpred\  M \\
@@ -18,7 +15,7 @@ represents an integer constant ranging over the set of natural numbers,
 $Y_A : (A\rightarrow A)\rightarrow A$ for any type $A$ is the recursion
 combinator.
 
-The set of types is $\mathbb{T}_\iaexp$, the simple types over the atomic type $\iaexp$ representing natural numbers. The language is formally given by terms-in-context of the form $\Gamma \entail M : A$ defined by induction over the rules of table \ref{tab:pcf_formrules}.
+The language is formally given by terms-in-context of the form $\Gamma \entail M : A$ defined by induction over the rules of table \ref{tab:pcf_formrules}.
 \begin{table}[htbp]
 $$ \rulename{var} \rulef{}{x_1:A_1, x_2:A_2, \ldots x_n : A_n  \vdash x_i : A_i}\ i \in 1..n$$
 $$ \rulename{app} \rulef{\Gamma \vdash M : A\rightarrow B \qquad \Gamma \vdash N:A}{\Gamma \vdash M\ N : B}
@@ -51,14 +48,13 @@ Equality on integer is also definable by:
 so that $\userop{Eq}\, M\, N \eval 1$ if $M$ and $N$ evaluate to the same value, and $\userop{Eq}\, M\, N \eval 0$ otherwise.
 \end{example}
 
-\subsection{Operational semantics of \pcf}
+\subsubsection*{Operational semantics}
 
-We now give the operational semantics of the language using a big-step style
-semantics. A call \emphind{canonical form} a term that is either a number or a function:
-$$V ::= n\ |\ \lambda x. M$$
+The operational semantics of the language is given using a big-step style
+semantics. We call \defname{canonical form} a term that is either a number or a function:
+$$V ::= n\ |\ \lambda x^A. M$$
 The notation $M \eval V$ means that the closed term $M$ evaluates to the canonical form $V$.
-We write $M \eval$ if the judgment $M \eval V$ is valid for some value $V$.
-The full operational semantics is given in table
+We write $M \eval$ if the judgment $M \eval V$ is valid for some canonical form $V$. The full operational semantics is given in table
 \ref{tab:bigstep_pcf}. Since the evaluation rules are defined for closed
 terms only, the context $\Gamma$ is omitted in the rules.
 \begin{table}[htbp]
@@ -80,17 +76,16 @@ $$\rulef{M (\mathrm{Y} M) \eval V }{\texttt{Y} M \eval V}$$
 \end{table}
 
 
-\subsection{Case constructs}
-We will consider an extension of \pcf\ denoted $\pcf_c$.
-This language adds a family of $k$-ary conditionals formed with the rule:
+\subsubsection*{Case constructs}
+\pcf\ is sometimes extended with a family of $k$-ary conditionals formed with the rule:
 $$
 \rulename{case} \rulef{\Gamma \vdash M : \iaexp \qquad \Gamma \vdash N_1 : \iaexp\quad \ldots\quad \Gamma \vdash N_k : \iaexp }{\Gamma \vdash \pcfcase_k\, M\, N_1\, N_2 \ldots N_k : \iaexp}
 $$
-Its operational semantics is given by the rule:
+The resulting language is referred as $\pcf_c$. Its operational semantics is given by that of \pcf\ together with the rule:
 $$ \rulef{M \eval i \quad N_{i+1} \eval V}{\pcfcase_k\ N\ N_1\ N_2\ \ldots\ N_k\ \eval V}\ i \in \{0, \ldots,k-1\}.$$
 
 
-\subsection{Syntactic sugar}
+\subsubsection*{Syntactic sugar}
 For any integer $k\in\nat$ and term $M:\pcfexp$ we write ``$M + k$'' as syntactic sugar for ``$\userop{Plus}\, M\, k$''.
 For any terms $M$, $N_1$ and $N_2$ of type \iaexp\ we write ``$N_1 = N_2$'' for ``$\userop{Eq}\ N_1\ N_2$'',
 ``$N_1 \neq N_2$'' for ``$\pcfcond\,(\userop{Eq}\ N_2\ N_2)\, 1\, 0$'',
@@ -125,16 +120,12 @@ In addition to these local variables, \ialgol\ features the so called ``\emphind
 This operator can be used to construct a special variable by specifying custom assignment and dereferencing functions.
 It takes two arguments: the first one, the acceptor, is the function that is responsible of affecting a value to the variable. The second one is an expression that returns the value hold by the variable. This mechanism is similar to the ``set/get'' object programming paradigm used by C++ programmers.  An example of such variable is the term $\iamkvar\ (\lambda v.\iaskip)\ 0$. Variables created that way are called ``bad variables'' because they do not necessarily behave like a memory cell: reading the content of the variable does not necessarily gives you the last value that was written. For instance reading from the variable defined above always yield $0$ whichever value was written to it previously.
 
-This addition to the language may seem a little bit artificial but its presence has semantic importance.\footnote{McCusker showed in \cite{mccusker2001} that the standard game model of \ialgol\ is only equationally fully abstract for the language without bad variables, whereas it is inequationally fully abstract for full \ialgol.}
+This addition to the language may seem a little bit artificial but its presence has semantic importance.\footnote{McCusker showed in \cite{mccusker2001} that the standard game model of \ialgol\ is only equationally fully abstract for the language without bad variables, whereas for full \ialgol, it is also \emph{inequationally} fully abstract.}
 
 
-\subsection{The syntax of \ialgol}
+\subsubsection*{The syntax}
 
-The set of formation rules for \ialgol\ terms are defined on top of the formations rules of \pcf.
-The rules for the constructs of \ialgol\ are given in table \ref{tab:ia_formrules}.
-Judgements are of the form $\Gamma \vdash M : A$. If $\Gamma = \emptyset$ then we say that $M$
-is a closed term.
-
+The typing system for \ialgol\ is an extension of that of \pcf. The additional rules are given in table \ref{tab:ia_formrules}.
 \begin{table}[htbp]
 $$ \rulef{\Gamma \vdash M : \iacom \quad \Gamma \vdash N :A}
     {\Gamma \vdash \iaseq_A\, M\, N : A} \quad A \in \{ \iacom, \iaexp\}$$
@@ -155,60 +146,38 @@ $$ \rulef{\Gamma \vdash M_1 : \iaexp \rightarrow \iacom \quad \Gamma \vdash M_2 
 \label{tab:ia_formrules}
 \end{table}
 
-We will also use the standard ML-like syntactic sugar: $X:=v$ for $\iaassign\, X\, v$,
-$!X$ for $\iaderef\, X$, and $M;N$ for $\iaseq\, M\, N$.
+We will sometimes use the ML-like syntactic sugar: ``$X:=v$'' for ``$\iaassign\, X\, v$'', ``$!X$'' for ``$\iaderef\, X$'', and ``$M;N$'' for ``$\iaseq\, M\, N$''.
 
 
-\subsection{Finitary fragments of Idealized algol}
+\subsubsection*{Finitary fragments of Idealized algol}
 \label{subsec:iafragments}
-We introduce some commonly used fragments of the language \ialgol. Firstly, \defname{Finitary
-Idealized Algol} denotes the recursion-free sub-fragment of \ialgol\
-over finite ground types (\ie  $\nat$ is replaced by the set $\{0..max\}$ for some fixed natural number $max$).
+We call \defname{Finitary Idealized Algol} the recursion-free sub-fragment of \ialgol\ defined over finite ground types (\ie where the atomic type $\iaexp$ inhabits the set $\{0..M\}$ for some fixed natural number $M \in \nat$).
 
 \begin{definition}[$i$th order \ialgol\ term]
 A term $\Gamma \vdash M:T$ of finitary Idealized algol is an $i$th-order term if any sequent $\Gamma' \vdash N:A$ appearing in the typing derivation of $M$ is such that $\ord{A} \leq i$ and all the variables in $\Gamma'$ are of order strictly less than $i$.
 \end{definition}
 
 The fragment of finitary Idealized Algol
-consisting of the collection of $i$th-order terms is denoted $\ialgol_i$.
+consisting of the collection of $i$th-order terms is denoted $\ialgol_i$ and is called the \defname{order-$i$ finitary fragment of \ialgol}.
 If we add the iteration construct defined as
 $$  \rulef{\Gamma \vdash M : \iabool \qquad \Gamma \vdash N : \iacom}{\Gamma \vdash \iawhile\ M\ \iado\ N : \iacom } \quad \mbox{where } \forall x \in \Gamma : \ord{x} < i $$
 we obtain the fragments $\ialgol_i + \textsf{while}$ for $i\in\nat$.
 Finally $\ialgol_i + \textsf{Y}_j$ for $j< i$ denotes the fragment $\ialgol_i$ augmented with a set of fixed-point iterators $\textsf{Y}_A : (A\typear A ) \typear A$ for any type $A$ of order $j$ at most, whose syntax is defined by the rule:
-$$  \rulef{\Gamma \vdash \lambda x . M : A\rightarrow A}{\Gamma \vdash Y_A M : A} \quad \mbox{where } \forall x \in \Gamma : \ord{x} < i \mbox{ and } \ord{A} \leq j $$
+$$  \rulef{\Gamma \vdash \lambda x^A . M : A\typear A}{\Gamma \vdash Y_A M : A} \quad \mbox{where } \forall x \in \Gamma : \ord{x} < i \mbox{ and } \ord{A} \leq j. $$
 
 
-\subsection{Operational semantics of \ialgol}
+\subsubsection*{Operational semantics of \ialgol}
 
 To define the operational semantics of IA we proceed slightly differently than for \pcf. Instead of giving the semantics for closed terms, we consider terms whose free variables are all of type
-\iavar. Terms are ``closed'' by means of stores. A store is a
-function mapping free variables of type \iavar\ to natural
-numbers. Suppose $\Gamma$ is a context containing only variables of
-type \iavar, then we say that $\Gamma$ is a
-\iavar-context. A store with domain $\Gamma$ is called a
-$\Gamma$-store. The notation $s\ |\ x \mapsto n$ refers to the store
-that maps $x$ to $n$ and acts according to the store $s$ otherwise.
-
-%%%% The following is poorly written:
-%
-%In \pcf, the evaluation rules were given for closed terms only.
-%Suppose that we proceed the same way for IA and consider the
-%evaluation rule for the $\ianew$ construct: the conclusion is
-%$\texttt{new } x:=0 \texttt{ in } M$ and the premise is an
-%evaluation for a certain term constructed from $M$, more precisely
-%the term $M$ where \emph{some} occurrences of $x$ are replaced by
-%the value $0$. Because of the presence of the \iaassign
-%operator, we cannot simply replace all the occurrences of $x$ in $M$
-%(the required substitution is  more complicated than the
-%substitution used for beta-reduction).
+\iavar. A context $\Gamma$ whose variables are all assigned the type \iavar\ is called a \iavar-context. Terms are ``closed'' by means of \emph{stores}. A \defname{store} is a function mapping free variables of type \iavar\ to natural numbers.  It is called $\Gamma$-store just if its domain of definition is precisely the domain of the typing-context $\Gamma$. If $s$ is a store then $s\ |\ x \mapsto n$ denotes the store that maps $x$ to $n$ and acts according to $s$ for other variables.
 
 
-The \emphind{canonical forms} for IA are given by the grammar:
-$$ V ::= \iaskip\ |\ n\ |\ \lambda x. M\ |\ x\ |\  \iamkvar\  M\ N$$
+The set of \ialgol\ \defname{canonical forms} is given by the grammar:
+$$ V ::= \iaskip\ |\ n\ |\ \lambda x^A. M\ |\ x\ |\  \iamkvar\  M\ N$$
 where $n$ ranges over natural number and $x$ over variable names.
 
 
-An \ialgol\ program is a term together with a $\Gamma$-store such
+An \ialgol\ \defname{program} is a term together with a $\Gamma$-store such
 that $\Gamma \vdash M : A$. The evaluation semantics is expressed by
 the judgment form:
 $$s,M \eval s', V$$
@@ -248,25 +217,24 @@ $$
 \label{tab:bigstep_ia}
 \end{table}
 
-\subsection{Small-step semantics of \ialgol}
+\subsubsection*{Small-step semantics}
 \label{subsec:smallstep_ia}
-The previous section defined the operational semantics of
-\ialgol\ by mean of a big step semantics. We can equivalently define it using a small-step semantics.
-The reduction rules are of the form $s,e \rightarrow s',e'$ where $s$ and $s'$ denotes the stores and $e$ and
-$e'$ denotes \ialgol\ expressions. Let $n$ range over the natural number.
-The reduction rules are:
+The operational semantics of \ialgol\ can equivalently be defined by means of  a small-step semantics:  We use reduction rules are of the form $s,M \rightarrow s',M'$ where $s$ and $s'$ denotes the stores and $M$ and
+$M'$ denotes \ialgol\ terms.
+The relation $\rightarrow$ is defined by the following rules (We write 
+$M \rightarrow M'$ as an abbreviation for $s,M \rightarrow s',M'$.):
 \begin{itemize}
-\item The $\beta$-reduction of the lambda calculus;
-\item reduction rules for \pcf\ constants:
+\item \emph{$\beta$-reduction:} If $M \beta M'$ then $M \rightarrow M'$;
+\item \emph{\pcf\ constants:}
 \begin{eqnarray*}
 \pcfsucc\ n &\rightarrow& n+1 \\
 \pcfpred\ n+1 &\rightarrow& n \\
 \pcfpred\ 0 &\rightarrow& 0 \\
 \pcfcond\ 0\ N_1 N_2 &\rightarrow& N_1 \\
-\pcfcond\ n+1\ N_1 N_2 &\rightarrow& N_2 \\
+\pcfcond\ (n+1)\ N_1 N_2 &\rightarrow& N_2 \\
 Y\ M &\rightarrow& M (Y M)
 \end{eqnarray*}
-\item reduction rules for \ialgol\ constants:
+\item \emph{\ialgol\ constants:}
 \begin{eqnarray*}
 \iaseq\ \iaskip\  M &\rightarrow& M \\
 s, \ianewin{x}{M} &\rightarrow& (s|x\mapsto 0), M \\
@@ -276,29 +244,27 @@ s, \iaderef\ x &\rightarrow& s, s(x) \\
 \iaderef\ (\iamkvar M N) &\rightarrow& N
 \end{eqnarray*}
 \end{itemize}
+where $n$ ranges over the natural numbers.
 
-Furthermore, redexes can be reduced when occurring as part of a
-larger expression. This is formally defined using the notion of \emphind{evaluation contexts}. These
-are expressions containing a hole denoted by $-$ indicating a position where a
-reduction can take place.
-Evaluation contexts are given by the grammar
+The \emph{redexes} - the expressions occurring in the left-hand side of a reduction rule - can be reduced when occurring as part of a
+larger expression. The locations where such reduction can occur are defined by means of \emphind{evaluation contexts}. These
+are expressions containing a hole denoted by $-$ indicating a position where a reduction can take place. They are given by the grammar
 \begin{eqnarray*}
 E[-] &::=& - |\ E N\ |\ \pcfsucc\ E\ |\ \pcfpred\ E\ |\ \pcfcond\ E\ N_1\ N_2\ |\ \\
 &&    \iaseq\ E\ N\ |\ \iaderef\ E\ |\ \iaassign\ E\ n\ |\ \iaassign\ M\ E \ |\ \\
-&&    \iamkvar\ M\ E\ |\ \iamkvar\ E\ M\ |\ \ianewin{x}{E}  .
+&&    \iamkvar\ M\ E\ |\ \iamkvar\ E\ M\ |\ \ianewin{x}{E} \ .
 \end{eqnarray*}
 The small-step semantics is then completed with the rule:
-$$ \rulef{M \rightarrow N}{E[M] \rightarrow E[N]} $$
+$$ \rulef{M \rightarrow N}{E[M] \rightarrow E[N]} \ .$$
 
-\subsubsection{Substitution}
+\subsubsection*{Substitution}
 
-The notion of substitution naturally extends to Safe \ialgol: it is done inductively on the structure of the term. For the block-variable case this gives:
+The substitution operation naturally extends to \ialgol: it is done inductively on the structure of the term. For the block-variable case this gives:
 \begin{align*}
   (\ianewin{x}{M})\subst{N}{y} &= \ianewin{z}{M\subst{z}{x}\subst{N}{y}} & \mbox{if $x\neq y$, $z$ fresh;}\\
   (\ianewin{x}{M})\subst{N}{x} &= \ianewin{x}{M}
 \end{align*}
-and for capture-permitting substitution:
+Capture-permitting substitution is defined similarly. The former equation becomes:
 \begin{align*}
-  (\ianewin{x}{M})\captsubst{N}{y} &=   \ianewin{x}{M\captsubst{N}{y}} & \mbox{if $x\neq y$;}\\
-  (\ianewin{x}{M})\captsubst{N}{x} &=   \ianewin{x}{M} \ .
+  (\ianewin{x}{M})\captsubst{N}{y} &=   \ianewin{x}{M\captsubst{N}{y}} & \mbox{if $x\neq y$.}
 \end{align*}

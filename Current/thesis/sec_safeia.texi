@@ -1,6 +1,6 @@
 % -*- TeX -*- -*- Soft -*-
 \section{Extensions}
-We now consider extension of the safe simply type lambda calculus.
+We now consider extensions of the safe simply type lambda calculus.
 
 \subsection{PCF}
 We define \defname[safe!\pcf]{safe \pcf} as the applied safe lambda calculus with types defined over a single atomic type of natural numbers and extended with the basic operators of \pcf: additions, substraction, conditional branching and recursion). Equivalently, it is the restriction of \pcf\ where the application and abstraction rules are constrained similarly as in the safe lambda calculus. The rules are given in Table \ref{tab:safepcf}. The circled rules are those that differ from their \pcf\ counterpart. Observe that it is necessary to have two abstraction rules \rulenamet{abs_{as}} and \rulenamet{abs} to allow both almost safe terms and terms formed with the constant rules to be abstracted.
@@ -83,8 +83,8 @@ Indeed, compare the two ways of defining a recursive term:
 \end{mathpar}
 Both derivations start with the premise $\Gamma, f: A \sentail M : A$ which implies that $\ord{\Gamma} \geq \ord{A}$. In the left derivation, before applying the $Y$ combinator, we need first to abstract the variable $f$. This is done using the abstraction rule whose side-conditions gives $\ord{\Gamma} > \ord{A}$. The right derivation, however, only imposes the condition $\ord{\Gamma} \geq \ord{A}$.
 
-In fact, the safe $\mu$-\pcf\ does not really deserve its name, because
-it does not verifies the No-variable-capture lemma!
+In fact, safe $\mu$-\pcf\ does not deserve its name because
+the No-variable-capture lemma does not hold anymore in this language!
 For instance for any types $A$ and $B$ with $\ord{A}\geq\ord{B}$, the term
 $$ \lambda f^{A \typear B}\; a^A. (\lambda x^B.(\mu f^B.x))(f a)$$
 is a safe $\mu$-\pcf\ term that $\beta$-reduces to
@@ -93,10 +93,7 @@ At this point it would not be sound to push the substitution under the $\mu$ wit
 Hence the definition that we really want for safe \pcf\ is the one based on the Y-combinator.
 
 
-Observe that if we were able to distinguish variables that are bound by $\lambda$ from those bound by $\mu$---for instance by tagging their occurrences appropriately---then the clash of variable name would be tolerable in this particular example because the two clashing occurrences of $f$ are bound by a different kind of binder.
-
-
-Unfortunately, this argument cannot be generalized: there are safe $\mu$-\pcf\ terms that, when reduced using capture-permitting substitution, cause clashes between $\lambda$-bound variables. Take for instance:
+Observe that if we were able to distinguish variables that are bound by $\lambda$ from those bound by $\mu$---for instance by tagging their occurrences appropriately---then the clash of variable name would be tolerable in this particular example since the two clashing occurrences of $f$ are bound by a different kind of binder. Unfortunately, this argument cannot be generalized: there are safe $\mu$-\pcf\ terms that, when reduced using capture-permitting substitution, cause clashes between $\lambda$-bound variables. Take for instance:
 \begin{align*}
  M &\equiv \lambda g^3\; h^3\; x^1 . g ( \mu F^3. N(F,g,h,x))\\
  N(F,g,h,x) &\equiv x ( h ( \lambda x^1 . F (\lambda z^0.z)))
@@ -104,9 +101,10 @@ Unfortunately, this argument cannot be generalized: there are safe $\mu$-\pcf\ t
 where $0$ denotes the type $o$ and $n+1$ denotes $n \typear o$, for $n\in\nat$.
 The safe $\mu$-\pcf\ term $M$ reduces to:
 $$ \lambda g^3\; h^3\; x^1 . g (x ( h ( \lambda \underline{x}^1 . F (\lambda z^0.z))))[N(F,g,h,\underline{x})/F] \enspace .$$
-Performing the substitution capture-permitting causes a clash between the two underlined variables.
+Performing this substitution \emph{capture-permitting} would cause a clash between the two underlined variables.
 
-In fact, the same example shows that the game-semantic characterization of safe \pcf\ that we will give in Chapter \ref{chap:model} does not hold for safe $\mu$-\pcf.
+Another reason why safe $\mu$-\pcf\ is not an interesting language is that the game-semantic characterization of safe \pcf\ that we will establish in Chapter \ref{chap:model} does not hold in safe $\mu$-\pcf.
+%(The above-counter example can illustrate this).
 
 \subsubsection{Expressivity}
 
@@ -135,7 +133,7 @@ The operational semantics is described using a set of states $ \{ {\sf halted} \
 \end{eqnarray*}
 We write $\rightarrow^*$ to denote the reflexive transitive closure of $\rightarrow$.
 
-The \textsc{Queue-Halting} problem  (``Given a \textsc{Queue} program, will it halt eventually?'') is undecidable. This is because Post's Tag Systems, which are Turing complete\cite{Minsky64}, can be simulated \cite{Minsky67} in \textsc{Queue}.
+The \textsc{Queue-Halting} problem  (``Given a \textsc{Queue} program, will it halt eventually?'') is undecidable. This is because Post's Tag Systems, which are Turing complete \cite{Minsky64}, can be simulated \cite{Minsky67} in \textsc{Queue}.
 
 
 \paragraph*{Encoding \textsc{Queue-Halting} in safe \pcf}
@@ -327,7 +325,8 @@ by
 This change ensures that no substitution will ever be done on the term $\lambda x . M$. Hence there is no need to require the term $\lambda x . M$ to be safe: it is sufficient to have that $M$ is safe.
 \bigskip
 
-These remarks lead us to define a more general notion of safety for \ialgol. We consider a new judgment of the form $\Gamma | \Xi  \siaentail M : A$, called a \defname{split term-in-context} (this terminology is borrowed from \cite{abramsky:game-semantics-tutorial}), where the context is partitioned into two \emph{disjoint} components: The first component $\Gamma$ will contain the lambda-bound variables
+These remarks lead us a more general notion of safety for \ialgol. We consider new judgments of the form $\Gamma | \Xi  \siaentail M : A$, called a \defname{split terms-in-context} (this terminology is borrowed from Abramsky and McCusker's tutorial on
+game semantics \cite{abramsky:game-semantics-tutorial}), where the context is partitioned into two \emph{disjoint} components: The first component $\Gamma$ will contain the lambda-bound variables
 that are constrained by the safety restriction; the second component will contain block-declared variables as well as \iamkvar-bound variables. The component $\Xi$ contains variables of type \iavar\ and \iaexp\ only, while the
 other component can contain variables of any type including \iavar.  It is straightforward to redefine the typing rule of \ialgol\ in such a way that these two distinct contexts are maintained appropriately. In particular:
 \begin{enumerate}[(i)]
@@ -568,82 +567,4 @@ Further, in order for this language to be of any use, it must verify the subject
 
 The results of the previous sections show that \ialgol\ and the recursion-free fragments of \pcf\ both fit in this setting.
 
-
-
-\section{Conclusion and future works}
-
-\todo{Conclusion of Chapter \ref{chap:safelambda} (on the safe lambda calculus)}
-
-
-\emph{Related work:} A first attempt to adapt the safety restriction to the lambda calculus was made in \cite{DBLP:conf/fossacs/AehligMO05} by Aehlig, de Miranda and Ong. The calculus presented here is more general (no condition is imposed on types and use of $\Sigma$-constants of any order is allowed) and simpler (the typing system is a slight variation of that of the simply typed lambda calculus).
-
-
-% \subsection*{Related work}
-
-% \noindent\emph{The safety condition for higher-order grammars}
-
-% \smallskip
-
-% \noindent We have mentioned the result of Knapik et al.\ \cite{KNU02} that
-% infinite trees generated by \emph{safe} higher-order grammars have
-% decidable MSO theories.  A natural question to ask is whether the
-% \emph{safety condition} is really necessary.  This has then been
-% partially answered by Aehlig et al.\
-% \cite{DBLP:conf/tlca/AehligMO05} where it was shown that safety is not
-% a requirement at level $2$ to guarantee MSO decidability. Also, for
-% the restricted case of word languages, the same authors have shown
-% \cite{DBLP:conf/fossacs/AehligMO05} that level $2$ safe higher-order
-% grammars are as powerful as (non-deterministic) unsafe ones.  De
-% Miranda's thesis \cite{demirandathesis} proposes a unified framework
-% for the study of higher-order grammars and gives a detailed analysis
-% of the safety constraint at level 2.
-
-% More recently, Luke Ong obtained a more general result and showed
-% that the MSO theory of infinite trees generated by higher-order
-% grammars of any level, \emph{whether safe or not}, is decidable
-% \cite{OngLics2006}.  Using an argument based on innocent
-% game-semantics, he establishes a correspondence between the tree
-% generated by a higher-order grammar called \emph{value tree} and a
-% certain regular tree called \emph{computation tree}. Paths in the
-% value tree correspond to traversals in the computation tree.
-% Decidability is then obtain by reducing the problem to the acceptance
-% of the (annotated) computation tree by a certain alternating parity
-% tree automaton.  The approach that we follow in
-% Sec. \ref{sec:correspondence} uses many ingredients introduced in this
-% paper.
-
-
-% The equivalence of \emph{safe} higher-order grammars and higher-order
-% deterministic push-down automata for the purpose of generating
-% infinite trees \cite{KNU02} has its counterpart in the general (not
-% necessarily safe) case: the paper \cite{hmos-lics08}
-% establishes the equivalence of order-$n$ higher-order grammars and
-% order-$n$ \emph{collapsible pushdown automata}. Those automata form a
-% new kind of pushdown systems in which every stack symbol has a link to
-% a stack situated somewhere below it and with an additional stack
-% operation whose effect is to ``collapse'' a stack $s$ to the state
-% indicated by the link from the top stack symbol.
-
-
-\subsection{Representability of functions over free algebras}
-
-There is an isomorphism between binary trees and closed simply typed terms of
-type $\tau =(o\typear o\typear o) \typear o \typear o$. Thus any
-closed term of type $\tau\typear\tau \typear \ldots \typear \tau $
-represents an $n$-ary function over trees. Zaionc gave a
-characterization of the set of tree functions representable in the
-simply typed lambda calculus \cite{DBLP:conf/aluacs/Zaionc88}: it is
-precisely the minimal set containing constant functions, projections
-and closed under composition and limited primitive recursion. Zaionc
-showed that the same characterization holds for the general case of
-functions expressed over free algebras
-\cite{DBLP:journals/apal/Zaionc91}: they are given by the
-minimal set containing constant functions, projections and closed
-under composition and limited primitive recursion. This result subsumes
-Schwichtenberg's result on definable numeric functions as well as
-Zaionc's own results on definable word and tree functions.
-
-All these basic operations are safe except limited primitive recursion.
-This suggests that one needs to restrict further the primitive recursion in order to obtain a characterization of free-algebra functions representable in the
-safe lambda calculus. Such result would generalized our expressivity result for numeric and word functions from Sec.\ \ref{sec:expressivity}.
 

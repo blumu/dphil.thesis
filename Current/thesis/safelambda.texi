@@ -5,7 +5,7 @@ In the first part we introduce the typing system of the safe lambda calculus. We
 
 The typing system of the safe lambda calculus is a small variation of the simply typed lambda calculus where the abstraction rule is able to abstract more than one variable at a time but with an extra constraint: the free variables in the resulting term must have order greater than the term itself. The application rule is similarly constrained. The connection with safe higher-order grammars is then made evident by restricting our calculus to pure applicative term: an applicative term of ground type is typable in the safe lambda calculus if and only if it is safe in the sense of Knapik et~al.
 
-We study how terms of this language behave with respect to the term conversions commonly studied in the lambda calculus. We adapt the notion of beta-reduction to ensure that a version of the context-reduction lemma holds (safe terms reduce to safe terms) and we show that eta-long expansion preserves safety.
+We study how terms of this language behave with respect to the term conversions commonly studied in the lambda calculus. We adapt the notion of beta-reduction to ensure that a version of the context-reduction lemma holds (safe terms reduce to safe terms) and we show that taking the eta-long normal form preserves safety.
 
 Next, in an attempt to quantify the impact of the safety constraint, we
 look at the complexity of the beta-equivalence problem---Given two safe terms, are they beta-equivalent?.
@@ -304,7 +304,7 @@ which gives us a contradiction.
 Alternatively, one can state a slight variation of the No-variable capture Lemma that does not rely on Convention \ref{conv:orderconsistnaming}:
 \begin{lemma}
 \label{lem:nocapture_noconvention}
-Let $\Gamma, \overline{x}:\overline{B} \sentail M : A$, $\Gamma \sentail  N_1:B_1,  \cdots ,\Gamma \sentail  N_n : B_n$, with $|\overline x| = n$, be valid judgement of the safe $\lambda$-calculus \ala Church. Then if further $\Gamma \chentail M\{{\overline N} / {\overline x}\} : A$ is valid Church simply-typed term-in-context (not-necessarily safe) then
+Let $\Gamma, \overline{x}:\overline{B} \sentail M : A$, $\Gamma \sentail  N_1:B_1,  \cdots ,\Gamma \sentail  N_n : B_n$, with $|\overline x| = n$, be valid judgement of the safe $\lambda$-calculus \ala Church. Then if further $\Gamma \chentail M\{{\overline N} / {\overline x}\} : A$ is valid Church simply typed term-in-context (not-necessarily safe) then
 $$ M\{{\overline N} / {\overline x}\} \equiv M[{\overline N} / {\overline x}]\enspace . $$
 \end{lemma}
 \proof
@@ -552,29 +552,59 @@ $\beta_s$ by the formation rules of the safe lambda calculus.
 $\betasred$ \emph{does not} preserve ``unsafety'': Take any safe annotated-term $S$ and unsafe annotated-term $U$ of the same type $\tau$, then the term $(\lambda x^\tau y^\tau . y)\, U\, S :\tau$ is unsafe but it $\beta_s$-reduces to $S$ which is safe.
 \end{remark}
 
-\subsection{Eta-long expansion}
-We now restrict our attention to the Church-style (safe) lambda calculus. Since terms are annotated, their type as well as the types of their subterms are uniquely determined. The $\eta$-long normal form (or simply $\eta$-long form) of an annotated term
-% (also called \emph{long reduced form}, \emph{$\eta$-normal form} and
-% \emph{extensional form} in the literature
-% \cite{DBLP:journals/tcs/JensenP76,DBLP:journals/tcs/Huet75,huet76})
+\subsection{Eta-long normal form}
+We now restrict our attention to the Church-style (safe) lambda calculus. Since terms are annotated, their type as well as the types of their subterms are uniquely determined. 
+The $\eta$-expansion of $M: A\typear B$ is defined as the annotated term
+$\lambda x^A . M x : A\typear B$ where $x:A$ is a fresh variable. The \emph{$\eta$-long-expansion} of a term $M : (A_1,\ldots,A_n,o)$ is defined as $\lambda \varphi_1^{A_1} \ldots \varphi_l^{A_l} . M \varphi_1 \ldots \varphi_l$
+where each $\varphi_i$ is a fresh variable. The \index{eta-long normal form}\emphind{$\eta$-long normal form} (or just $\eta$-long form) of an annotated term (also referred in the literature as \emph{long reduced form}, \emph{$\eta$-normal form} or
+ \emph{extensional form} \cite{DBLP:journals/tcs/JensenP76,DBLP:journals/tcs/Huet75,huet76})
 is obtained by hereditarily $\eta$-expanding the body of every
 lambda abstraction as well as every subterm occurring in an
 \emph{operand position} (\ie, occurring as the second argument of
-some occurrence of the binary application operator). Formally the
-\defname[eta-long normal form]{$\eta$-long form}, written $\elnf{M}$, of an annotated term $M$ of type $(A_1,\ldots,A_n,o)$ with $n \geq 0$ is defined by cases according to
-the syntactic shape of $M$:
+some occurrence of the binary application operator). Formally,
+\begin{definition}
+\label{dfn:etalongnf}
+The \defname[eta-long normal form]{$\eta$-long form}, written $\elnf{M}$ or sometimes $\etalnf{t}$, of an annotated term $M$ of type $(A_1,\ldots,A_n,o)$ with $n \geq 0$ is defined by cases according to
+the syntactic shape of $M$ (A simply typed term is either an abstraction or it can be written uniquely as
+$s_0 s_1 \ldots s_m$ where $m\geq0$ and $s_0$ is a variable, a $\Sigma$-constant or an abstraction.
+):
+\notation{$\elnf{M}$}{Eta-long normal form of the term $M$}%
 \begin{eqnarray*}
   \elnf{\lambda x^\tau . N } &\equiv& \lambda x^\tau . \elnf{N} \\
-  \elnf{x N_1 \ldots N_m } &\equiv& \lambda \overline{\varphi}^{\overline{A}} . x \elnf{N_1}\ldots \elnf{N_m} \elnf{\varphi_1} \ldots \elnf{\varphi_n} \\
+  \elnf{\alpha N_1 \ldots N_m } &\equiv& \lambda \overline{\varphi}^{\overline{A}} . \alpha \elnf{N_1}\ldots \elnf{N_m} \elnf{\varphi_1} \ldots \elnf{\varphi_n} \\
   \elnf{(\lambda x^\tau . N) N_1 \ldots N_p } &\equiv& \lambda \overline{\varphi}^{\overline{A}} . (\lambda x^\tau . \elnf{N}) \elnf{N_1} \ldots \elnf{N_p} \elnf{\varphi_1} \ldots \elnf{\varphi_n}
 \end{eqnarray*}
-where $m \geq 0$, $p\geq 1$, $x$ is either a variable or constant, $\overline{\varphi} = \varphi_1 \ldots \varphi_n$ and each $\varphi_i : A_i$ is a fresh variable.
+where $m \geq 0$, $p\geq 1$, $x$ is a variable, $\overline{\varphi} = \varphi_1 \ldots \varphi_n$ and each $\varphi_i : A_i$ is a fresh variable, and $\alpha$ is either a variable or a constant.
+\end{definition}
 
 \begin{remark}
-  This transformation does not introduce
-  new redexes therefore the $\eta$-long normal form of a $\beta$-normal
-  term is also $\beta$-normal.
+The $\eta$-long normal form is defined for any simply typed lambda term, whether $\beta$-normal or not.
+Furthermore, the transformation does not introduce any new redex therefore the $\eta$-long normal form of a $\beta$-normal
+term remains $\beta$-normal.
 \end{remark}
+
+%\begin{lemma}
+%The $\eta$-long normal form of a term in $\beta$-normal form is also in $\beta$-normal form.
+%\end{lemma}
+%\begin{proof}
+%By induction on the structure of the term and the order of its type.
+%\emph{Base case}:
+%If $M=x:0$ then $\elnf{x} = \lambda . x$ is also in $\beta$-nf.
+%\emph{Step case}:
+%The case $M = (\lambda x . s) s_1 \ldots s_m : (A_1,\ldots,A_n,o)$ with $m>0$ is not possible since $M$ is in
+%$\beta$-normal form.
+%Suppose $M = \lambda x . s$ then $s$ is in $\beta$-nf. By the induction hypothesis $\elnf{s}$ is also in $\beta$-nf and therefore
+%so is $\elnf{M} = \lambda x . \elnf{s}$.
+%
+%Suppose $M= \alpha s_1 \ldots s_m : (A_1,\ldots,A_n,o)$. Let $i,j$
+%range over $1..n$ and $1..m$ respectively. The $s_j$ are in
+%$\beta$-nf and the $\varphi_i$ are variables of order smaller than
+%$M$, therefore by the induction hypothesis the $\elnf{\varphi_i}$ and
+%the $\elnf{s_j}$ are in $\beta$-nf. Hence $\elnf{M}$ is also in
+%$\beta$-nf.
+%\end{proof}
+
+
 
 \begin{definition}
 \label{dfn:longsafe}
@@ -734,7 +764,7 @@ its  $\eta$-long n.f.\ $\lambda \overline{x}^{\overline B} \overline{\varphi}^{\
 fresh variables $\overline\varphi = \varphi_1 \ldots \varphi_m$) is long-safe. Thus
 we have $\ord{A}\leq\ord{\Gamma}$. Furthermore the long-safe subterm
 $\elnf{M} \elnf{\varphi_1} \ldots \elnf{\varphi_m}$ is precisely the
-eta-long expansion of $M\varphi_1 \ldots \varphi_m : o$ therefore by
+eta-long form of $M\varphi_1 \ldots \varphi_m : o$ therefore by
 the induction hypothesis we have that $M \varphi_1 \ldots \varphi_m
 :o$ is safe. Since the $\varphi_i$'s are all safe (by rule
 $\rulename{var}$), we can ``peal-off'' $m$ applications (performed using
@@ -842,7 +872,7 @@ The rule \rulenamet{abs_{as}} is nothing less than the standard abstraction rule
 The two weakening rules \rulenamet{wk} and \rulenamet{wk_{as}} permit one to extend the context of a safe term or an almost safe application.
 We could have added a third rule to allow weakening for almost safe terms $\Gamma \asentail M : T$ as well. This is however not necessary because this kind of weakening can always be eliminated. (In particular if the term is an abstraction then we can instead apply the rule \rulenamet{wk_{as}} just before the abstraction rule).
 
-An annotate term is almost safe if and only if its eta-long normal form is safe:
+An annotated term is almost safe if and only if its eta-long normal form is safe:
 \begin{lemma} Let $M\in\Lambda_{\mathbb{T}}$. Then
 \label{lem:almostsafe_iff_etalnf_almostsafe}
   $\Gamma \asentail M : T$ if and only if $\Gamma \asentail \etalnf{M} : T$.
@@ -861,7 +891,7 @@ If the last rule used is \rulenamet{abs_{as}} then by the induction hypothesis t
 
 \emph{If:} It is again a proof by structural induction on the eta-long normal form. The basic idea is that the rule \rulenamet{abs_{as}} (resp.\ \rulenamet{app_{app}}) allows us to ``peal-off'' the lambda-abstraction (resp.\ extra operands) introduced during the eta-expansion.
 \end{proof}
-The two preceding lemmas show that the closure of the eta-long expansion of an almost safe term is safe. This explains the expression ``almost safe'': an almost safe is semantically safe in the sense that it is (extensionally) equivalent to a safe term; on the other hand it is syntactically unsafe since it cannot appear as an operand of an application inside a larger safe term.
+The two preceding lemmas show that the closure of the eta-long normal form of an almost safe term is safe. This explains the expression ``almost safe'': an almost safe is semantically safe in the sense that it is (extensionally) equivalent to a safe term; on the other hand it is syntactically unsafe since it cannot appear as an operand of an application inside a larger safe term.
 
 
 \begin{lemma}[Safe beta reduction preserves almost safety]

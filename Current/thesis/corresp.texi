@@ -36,94 +36,35 @@ higher-order uninterpreted constants.\footnote{A constant $f$ is
   does not contain any rule of the form $f \dots \rightarrow e$. $f$
   can be regarded as a data constructor.} We fix a simply typed term-in-context $\Gamma \vdash M :T$ for the rest of the section.
 
-\subsection{\texorpdfstring{$\eta$}{eta}-long normal form}
-
-The notion of \emph{$\eta$-long normal form} appeared under the names
-\emph{long reduced form} \cite{DBLP:journals/tcs/JensenP76} and  \emph{$\eta$-normal form} \cite{DBLP:journals/tcs/Huet75}. It was then
-investigated by Huet under the name \emph{extensional form} \citep{huet76}.
-
-The $\eta$-expansion of $M: A\typear B$ is defined as the term
-$\lambda x . M x : A\typear B$ where $x:A$ is a fresh variable. Similarly, we can define the $\eta$-long-expansion of a term $M : (A_1,\ldots,A_n,o)$ as $\lambda \varphi_1 \ldots \varphi_l . M \varphi_1 \ldots \varphi_l$
-where the $\varphi_i:A_i$ are fresh variables.
-The \defname[eta normal form]{$\eta$-normal
-form} of a term is defined to be the term obtained by hereditarily $\eta$-long-expanding the body of every lambda abstraction as well as every subterm occurring
-at an operand position (\ie, occurring in the second argument of some
-occurrence of the binary application operator, that is to say in $v$
-for some subterm of the form $\ldots (t~v) \ldots$).
-Formally:
-\begin{definition}[$\eta$-long normal form]
-\label{dfn:etalongnf}
-A simply-typed term is either an abstraction or it can be written uniquely as
-$s_0 s_1 \ldots s_m$ where $m\geq0$ and $s_0$ is a variable, a $\Sigma$-constant or an abstraction.
-
-The $\eta$-long normal form of a term $t:(A_1,\ldots,A_n,o)$ for $n \geq 0$, written $\elnf{t}$ or sometimes $\etalnf{t}$, is defined by cases according to
-the syntactic shape of $t$:
-\begin{align*}
-\elnf{\lambda x . s } &= \lambda x . \elnf{s} \\
-\elnf{\alpha s_1 \ldots s_m } &= \lambda \overline{\varphi} . \alpha \elnf{s_1}\ldots \elnf{s_m} \elnf{\varphi_1} \ldots \elnf{\varphi_n}
-\\
-\elnf{(\lambda x . s) s_1 \ldots s_p } &= \lambda \overline{\varphi} . (\lambda x . \elnf{s}) \elnf{s_1} \ldots \elnf{s_p} \elnf{\varphi_1} \ldots \elnf{\varphi_n}
-\end{align*}
-where $m\geq0$, $p\geq 1$, $x$ is either a variable or a constant, $\overline{\varphi} = \varphi_1 \ldots \varphi_n$, each $\varphi_i : A_i$ is a fresh variable and $\alpha$ is either a variable or a constant.
-\end{definition}
-
-In the case $n=0$ we have
-$\elnf{x s_1 \ldots s_m : o} = \lambda . x \elnf{s_1} \elnf{s_2} \ldots \elnf{s_m}$.
-The `dummy' lambda in the right-hand side of the equation is deliberately kept as it plays an important role in the correspondence with game semantics.
+%%% Section to include in the LMCS paper (not needed in the thesis because eta-long nf are already defined in the background chapter
+%\subsection{Eta-long normal form}
 
 
 
-Note that this version of the $\eta$-long normal form is defined for any simply-typed lambda term, whether $\beta$-normal or not.
-Furthermore, since the transformation does not introduce any new redex, the $\eta$-long normal form of a $\beta$-normal
-  term is also $\beta$-normal.
-
-%\begin{lemma}
-%The $\eta$-long normal form of a term in $\beta$-normal form is also in $\beta$-normal form.
-%\end{lemma}
-%\begin{proof}
-%By induction on the structure of the term and the order of its type.
-%\emph{Base case}:
-%If $M=x:0$ then $\elnf{x} = \lambda . x$ is also in $\beta$-nf.
-%\emph{Step case}:
-%The case $M = (\lambda x . s) s_1 \ldots s_m : (A_1,\ldots,A_n,o)$ with $m>0$ is not possible since $M$ is in
-%$\beta$-normal form.
-%Suppose $M = \lambda x . s$ then $s$ is in $\beta$-nf. By the induction hypothesis $\elnf{s}$ is also in $\beta$-nf and therefore
-%so is $\elnf{M} = \lambda x . \elnf{s}$.
-%
-%Suppose $M= \alpha s_1 \ldots s_m : (A_1,\ldots,A_n,o)$. Let $i,j$
-%range over $1..n$ and $1..m$ respectively. The $s_j$ are in
-%$\beta$-nf and the $\varphi_i$ are variables of order smaller than
-%$M$, therefore by the induction hypothesis the $\elnf{\varphi_i}$ and
-%the $\elnf{s_j}$ are in $\beta$-nf. Hence $\elnf{M}$ is also in
-%$\beta$-nf.
-%\end{proof}
-
-
-
-\subsection{Computation tree}
+\subsection{Definition}
 
 We define the \emph{computation tree} of a simply-typed $\lambda$-term as an abstract syntax tree representation of its \emph{$\eta$-long normal form} (Def.\ \ref{dfn:etalongnf}). Our definition generalizes the notion of computation tree for higher-order grammar \cite{OngLics2006}.
 
 \emph{Notation:} We write $l\langle t_1, \ldots, t_n \rangle$ with $n \geq 0$ to denote the \emph{ordered tree} with a root labelled $l$ with $n$ child-subtrees $t_1$, \ldots, $t_n$.
 
 \begin{definition}
-Let $\Gamma \stentail M:T$ be a simply-typed term with variable names ranging in
-  $\mathcal{V}$ and constants in $\Sigma$. Since $M$ is in $\eta$-normal form, it must be of the form $\lambda \overline{x} . s_0 s_1
-\ldots s_m$ where $\overline{x} = x_1 \ldots x_n$ for $n\geq 0$ and
-$s_0 s_1 \ldots s_m$ is of ground type and either
-$s_0$ is a variable or a constant and $m\geq0$ or $s_0$ is an
-abstraction $\lambda\overline{y}.s$ and $m\geq1$, where $s$ and the
-$s_j$'s for $j\in 1..m$ are in $\eta$-normal form.
+Let $\Gamma \stentail M:T$ be a simply typed term with variable names ranging in
+  $\mathcal{V}$ and constants in $\Sigma$. Since $M$ is in $\eta$-normal form, it must be of the form $\lambda \overline{x} . s_0 s_1 \ldots s_m$ where $\overline{x} = x_1 \ldots x_n$ for $n\geq 0$ and
+$s_0 s_1 \ldots s_m$ is of ground type, each
+$s_j$ for $j\in 1..m$ is in $\eta$-long nf, and either
+$s_0$ is a variable or a constant and $m\geq0$; or $s_0$ is an
+abstraction $\lambda\overline{y}.s$ and $m\geq1$ where $s$ is in $\eta$-long nf.
 
-  The tree $\tau^*(M)$ with labels in $$ \{ @ \} \union \Sigma \union \mathcal{V}
+If $M$ is of ground type (\ie, $T=o$) then its $\eta$-long nf $\elnf{M}$ is of the form
+ $\lambda . N$; The symbol '$\lambda$' does not correspond to a real lambda-abstraction---we call it `dummy lambda'--- but it will be convenient to keep it in expressions representing eta-long normal forms.
+
+  We define the tree $\tau^*(M)$ with labels in $ \{ @ \} \union \Sigma \union \mathcal{V}
   \union \{ \lambda x_1 \ldots x_n \ | \ x_1 ,\ldots, x_n \in
-  \mathcal{V}, n\in\nat \}$$ is defined from its $\eta$-long form as follows.
+  \mathcal{V}, n\in\nat \}$, illustrated in Table \ref{tab:defcomptree}, from its $\eta$-long form as follows.
 \begin{eqnarray*}
   \mbox{for $m\geq 0$, $z \in \mathcal{V}\union\Sigma$: } \tau(\lambda \overline{x} . z s_1 \ldots s_m : o) &=& \lambda \overline{x} \langle z \langle\tau(s_1),\ldots,\tau(s_m)\rangle\rangle \\
   \mbox{for $m \geq 1$: } \tau(\lambda \overline{x} . (\lambda y.t) s_1 \ldots s_m :o) &=& \lambda \overline{x} \langle @ \langle \tau(\lambda y.t),\tau(s_1),\ldots,\tau(s_m) \rangle \rangle \enspace .
 \end{eqnarray*}
-Table \ref{tab:defcomptree} gives a
-graphically representation of this tree.
 \end{definition}
 
 
@@ -168,13 +109,15 @@ $m \geq 1$
 
 \begin{definition}
 \label{dfn:comptree}
-Let $M$ be a simply-typed term not necessarily in $\eta$-normal
+Let $M$ be a simply typed term not necessarily in $\eta$-normal
 form. Let $\mathcal{D}$ denote the set of values of base type $o$.
 The \defname{computation tree} of $M$, written $\tau(M)$ is the tree
-obtained from $\tau^*(\etalnf{M})$ by adding leaves to the nodes as follows: every node $n \in \tau(M)$ has a
+obtained from $\tau^*(\elnf{M})$ by adding leaves to the nodes as follows: every node $n \in \tau(M)$ has a
 child leaf labelled $v_n$, called \defname{value-leaf}, for every
 possible value $v \in \mathcal{D}$.
+\notation{$\tau(M)$}{Computation tree of the term $M$}%
 \end{definition}
+
 
 The inner nodes of the tree are of three kinds:
 \begin{itemize}
@@ -274,7 +217,9 @@ child {node {$@$}
 
 
 \emph{Notations:} We write $\theroot$ to denote the root of
-$\tau(M)$. We write $E$ to denote the parent-child relation of the
+$\tau(M)$.%
+\notation{$\theroot$}{Root of the computation tree}%
+We write $E$ to denote the parent-child relation of the
 tree, $V$ for the set of vertices (leaves and inner nodes) of the
 tree, $N$ for the set of inner nodes and $L$ for the set of
 value-leaves. Thus $V = N \union L$.
@@ -416,10 +361,11 @@ $$
 We say that a node $n_0$ of the computation tree is \defname{hereditarily enabled} by $n_p \in N$ if there are nodes $n_1,\ldots, n_{p-1} \in N$ such that $n_{i+1}$ enables $n_{i}$
 for all $i\in 0..p-1$.
 
-For any set of nodes $S, H \subseteq N$ we write $S^{H\vdash}$ to denote
-the subset $S \inter \vdash^*(H)$ of $S$ constituted of nodes hereditarily enabled by some node in $H$. Formally:
-$$S^{H\vdash} = \{ n \in S \ | \exists n_0 \in H \mbox{ s.t. }n_0  \vdash^* n \} \enspace .$$
-If $H$ is a singleton $\{n_0\}$ then we abbreviate $S^{\{n_0\}\vdash}$ into $S^{n_0\vdash}$.
+For any set of nodes $S, H \subseteq N$ we write $S^{H\enable}$ to denote
+the subset $S \inter \enable^*(H)$ of $S$ constituted of nodes hereditarily enabled by some node in $H$. Formally:
+$$S^{H\enable} = \{ n \in S \ | \exists n_0 \in H \mbox{ s.t. }n_0  \enable^* n \} \enspace .$$
+If $H$ is a singleton $\{n_0\}$ then we abbreviate $S^{\{n_0\}\enable}$ into $S^{n_0\enable}$.
+\notation{$S^{H\enable}$}{Subset of $S$ consisting of the nodes hereditarily enabled by some node in $H$}%
 
 We have
 $V_{\sf var}^{\theroot\vdash} = V \setminus ( V_{\sf var}^{N_@\vdash}
@@ -533,6 +479,7 @@ Let $t$ be a justified sequence of nodes of $\travset(M)$ and $n$ be
 some occurrence in $t$. We define the justified sequence $t \filter
 n$ as  the subsequence of $t$ consisting of nodes hereditarily
 justified by $n$ in $t$.
+\notation{$t \filter n$}{Hereditary projection of justified sequence $t$ with respect to occurrence $n$}%
 \end{definition}
 
 \begin{lemma}
@@ -903,7 +850,7 @@ and $x_j \in V^{\lambda \overline{\eta}_{i'} \vdash}$).
 \subsubsection{Traversal rules for interpreted constants}
 
 The framework that we have established up to know aims at providing
-a computation model of simply-typed lambda terms. It is however
+a computation model of simply typed lambda terms. It is however
 possible to extend it to other higher-order languages that are based
 on the simply typed lambda calculus. To achieve, one needs to
 complete the core traversal rules from Table \ref{tab:trav_rules}
@@ -1183,9 +1130,8 @@ inserted in step 1.).
 We write $u+@$ for this second transformation.
 \end{definition}
 These transformations are well-defined because in a traversal, an
-@-node always occurs in-between two nodes $n_1$ and $n_2$ such that
-$n_1$ is the parent node of @ and $n_2$ is the first child node of @
-in the computation tree:
+@-node is always immediately preceded by its parent node $n_1$, and immediately followed by
+its first child $n_2$:
 \begin{center}
 \begin{tikzpicture}[baseline=(root.base),level distance=4ex,sibling distance=12mm,level 2/.style={sibling distance=8mm}]
 \path node (root) {$n_1$}
@@ -1207,7 +1153,7 @@ Let $t$ be the traversal given in example \ref{examp:trav}, we have:
 \end{example}
 
 
-We also want to remove $\Sigma$-nodes form the traversals. To that end we define the operation $-\Sigma$ and $+\Sigma$ in the exact same way as $-@$ and $+@$. Again these transformations are well-defined since in a traversal, a $\Sigma$-node $f$ always follows immediately its parent $\lambda$-node $p$, and an occurrence of a value-node $v_p$ always follows immediately a value-node $v_f$.
+We also want to remove $\Sigma$-nodes form the traversals. To that end we define the operation $-\Sigma$ and $+\Sigma$ in the exact same way as $-@$ and $+@$. Again these transformations are well-defined since in a traversal, a $\Sigma$-node $f$ is always immediately preceded by its parent node $p$, and a value-node $v_p$ is always immediately preceded by a value-node $v_f$.
 
 Note that the operations $-@$ and $-\Sigma$ are commutative:
 $(t-@)-\Sigma = (t-\Sigma)-@$.
@@ -1304,6 +1250,7 @@ whose P-view at that point contain the node $n_0$. Formally:
 \begin{definition}
 For any traversal $t\in \travset(M)$ and reference-node $n_0$ occurring in $t$, $t \filterplus n_0$
 is the subsequence of $t$ defined by induction on $t$ as follows:
+\notation{$t \filterplus n$}{Subterm projection of a traversal $t$ with respect to occurrence $n$}%
 \begin{compactitem}
 \item If $n\in N_\lambda \union L_{\sf var} \union L_\Sigma \union L_@$ then
 \begin{align*}
@@ -1330,8 +1277,7 @@ $t'\filterplus r_0$ it is reassigned to be $r_0$.
 \end{compactitem}
 \end{definition}
 
-We call this transformation a subterm projection with respect to a reference node occurrence because it keeps only nodes
-that appear in the sub-tree rooted at this node. If $n_0$ is an occurrence of a lambda node $n \in N_\lambda$ then we
+We call this transformation the subterm projection \emph{with respect to a reference node occurrence} because it keeps only nodes that appear in the sub-tree rooted at this node. If $n_0$ is an occurrence of a lambda node $n \in N_\lambda$ then we
 will call $t \filterplus n_0$ a \defname{sub-traversal of the
 computation tree} $\tau(M)$. This appellation is suggestive of the
 forthcoming Proposition \ref{prop:trav_projection} stating that $t
@@ -2432,7 +2378,7 @@ category of games and innocent well-bracketed strategies
 \cite{hylandong_pcf,abramsky94full}.
 A strategy is commonly defined in the literature as a set of plays closed by
 even-length prefixing. For our purpose, however, it is more convenient to represent strategies using \emph{prefix-closed} set of plays. This will spare us some considerations on the parity of traversal length when showing the correspondence between traversals and game semantics.
- For the rest of the section we fix a simply-typed term $\Gamma \vdash M :T$. We write $\sem{\Gamma \vdash M : T}$ for its strategy denotation (in the standard cartesian closed category of games and innocent strategies \cite{abramsky94full, hylandong_pcf}). We use the notation $\prefset(S)$ to denote the prefix-closure of the set $S$.
+ For the rest of the section we fix a simply typed term $\Gamma \vdash M :T$. We write $\sem{\Gamma \vdash M : T}$ for its strategy denotation (in the standard cartesian closed category of games and innocent strategies \cite{abramsky94full, hylandong_pcf}). We use the notation $\prefset(S)$ to denote the prefix-closure of the set $S$.
 
 \subsection{Interaction game semantics}
 \label{sec:interaction_semantics}
@@ -3462,7 +3408,7 @@ $ \varphi_M(t\filter r)$ by Lemma
 
 \subsection{The correspondence theorem for the pure simply typed lambda calculus}
 In this section, we establish a connection between the interaction
-semantics of a simply-typed term without interpreted constants (\ie, $\Sigma = \emptyset$) and the traversals of its computation tree: we show that the set $\travset(M)$ of traversals of the computation tree is
+semantics of a simply typed term without interpreted constants (\ie, $\Sigma = \emptyset$) and the traversals of its computation tree: we show that the set $\travset(M)$ of traversals of the computation tree is
 isomorphic to the set of uncovered plays of the strategy denotation
 (this is the counterpart of Ong's ``Path-Traversal Correspondence'' Theorem
 \cite{OngLics2006}), and that the set of traversal reductions is
@@ -3743,7 +3689,7 @@ simply typed $\lambda$-calculus with \emph{uninterpreted} constants since we can
 
 \begin{theorem}[The Correspondence Theorem]
 \label{thm:correspondence}
- For any simply-typed term $\Gamma \vdash M :T$,
+ For any simply typed term $\Gamma \vdash M :T$,
 $\varphi_M$ defines a bijection from $\travset(M)^\star$ to $\syntrevsem{\Gamma \vdash M : T}$ and $\psi_M$ defines a bijection from $\travset(M)^{\filter
 \theroot}$ to $\sem{\Gamma \vdash M : T}$:
 \begin{eqnarray*}
@@ -3787,7 +3733,7 @@ child {node {$@$}
     When traversing $N_i$, if the traversal encounters a variable bound by the root of $\tau(N_i)$ then the traversal of $N_i$
     is interrupted and
     the traversal of $N_0$ resumes.  This schema is repeated until the traversal of $\tau(N_0)$ is completed\footnote{Since we are considering
-    simply-typed terms, the traversal does indeed terminate. However this will not be true anymore in the \pcf\ case.}.
+    simply typed terms, the traversal does indeed terminate. However this will not be true anymore in the \pcf\ case.}.
 
     The traversal of $M$ is therefore made of an initialization part followed by an interleaving of a traversal of $N_0$ and
     several traversals of $N_i$ for $i=1..p$. This schema is reminiscent of the way the evaluation copycat map $ev$ works in game semantics.
@@ -3799,7 +3745,7 @@ child {node {$@$}
 \smallskip
 
 \proof
-Let $\Gamma \vdash M : T$ be a simply-typed term where $\Gamma =
+Let $\Gamma \vdash M : T$ be a simply typed term where $\Gamma =
 x_1:X_1,\ldots x_n:X_n$. We assume that $M$ is already in
 $\eta$-long normal form. By remark \ref{rem:corresp_proofreduction} we just need to
 show that $\varphi_M(\travset(M)^\star) = \syntrevsem{\Gamma \vdash M : T}$.
@@ -4374,7 +4320,7 @@ t\filter r = (n){\lambda f z} \cdot (n4-n,50){f}^{[1]} \cdot
 
 
 \begin{remark}
-Observe that the way we have defined traversals, the Opponent, contrary to the Proponent, is not required to play deterministically, let alone innocently. It is only required that he plays visibly (\ie, his justifiers must appear in the O-view) and respects well-bracketing. This means that the game-denotation given by the Correspondence Theorem also accounts for contexts that are not simply-typed terms. This indeed corresponds to the standard innocent game model of \pcf: the morphisms of the category $\mathcal{C}_{ib}$ are P-innocent strategies but not O-innocent. The addition of O-knowing-plays in the denotations is conservative for observational equivalence because the full-abstraction result holds in the category quotiented by the intrinsic preorder, and in the definition of the preorder, the ``test'' strategy $\alpha$ ranges over innocent strategies only.
+Observe that the way we have defined traversals, the Opponent, contrary to the Proponent, is not required to play deterministically, let alone innocently. It is only required that he plays visibly (\ie, his justifiers must appear in the O-view) and respects well-bracketing. This means that the game-denotation given by the Correspondence Theorem also accounts for contexts that are not simply typed terms. This indeed corresponds to the standard innocent game model of \pcf: the morphisms of the category $\mathcal{C}_{ib}$ are P-innocent strategies but not O-innocent. The addition of O-knowing-plays in the denotations is conservative for observational equivalence because the full-abstraction result holds in the category quotiented by the intrinsic preorder, and in the definition of the preorder, the ``test'' strategy $\alpha$ ranges over innocent strategies only.
 \end{remark}
 
 

@@ -1,11 +1,14 @@
 :default
+del /q TeXAux\*.*
 latex -aux-directory=TeXAux thesis.tex
 bibtex TeXAux\thesis
 makeindex -s myown.ist TeXAux\thesis
-makeindex -s myown.ist -o TeXAux\thesis.and TeXAux\thesis.adx
-makeindex -s myown.ist -o TeXAux\thesis.nnd TeXAux\thesis.ndx
+::makeindex -s myown.ist -o TeXAux\thesis.and TeXAux\thesis.adx
+::makeindex -s myown.ist -o TeXAux\thesis.nnd TeXAux\thesis.ndx
 latex -aux-directory=TeXAux thesis.tex
 latex -aux-directory=TeXAux thesis.tex
+dvips -z -t a4 thesis.dvi
+ps2pdf thesis.ps
 goto end
 
 

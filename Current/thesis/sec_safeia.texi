@@ -3,13 +3,16 @@
 We now consider extensions of the safe simply type lambda calculus.
 
 \subsection{PCF}
-We define \defname[safe!\pcf]{safe \pcf} as the applied safe lambda calculus with types defined over a single atomic type of natural numbers and extended with the basic operators of \pcf: additions, substraction, conditional branching and recursion). Equivalently, it is the restriction of \pcf\ where the application and abstraction rules are constrained similarly as in the safe lambda calculus. The rules are given in Table \ref{tab:safepcf}. The circled rules are those that differ from their \pcf\ counterpart. Observe that it is necessary to have two abstraction rules \rulenamet{abs_{as}} and \rulenamet{abs} to allow both almost safe terms and terms formed with the constant rules to be abstracted.
+We define \defname[safe!\pcf]{safe \pcf} as the applied safe lambda calculus with types defined over a single atomic type of natural numbers and extended with the basic operators of \pcf: additions, substraction, conditional branching and recursion). Equivalently, it is the restriction of \pcf\ where the application and abstraction rules are constrained similarly as in the safe lambda calculus. The rules are given in Table \ref{tab:safepcf}. The circled rules are those that differ from their \pcf\ counterpart.
 
 \begin{FramedTable}
  {\bf Functional part}
-$$ \rulename{var} \ \rulef{}{\Gamma \sentail x : A}\quad x : A \in \Gamma \qquad
-\rulename{wk} \ \rulef{\Gamma \sentail M : A}{\Delta \sentail M : A} \quad
-\Gamma \subset \Delta$$
+$$ \rulename{var} \ \rulef{}{\Gamma \sentail x : A}\quad x : A \in \Gamma
+\qquad
+\rulename{wk} \ \rulef{\Gamma \sentail M : A}{\Delta \sentail M : A} \quad \Gamma \subset \Delta
+\qquad
+\rulename{\delta} \ \rulef{\Gamma \sentail M : A}{\Gamma \asappentail M : A}
+$$
 
 \begin{center}
 \ovalbox{%
@@ -23,13 +26,8 @@ $ \rulename{app} \ \rulef{\Gamma \sentail M : (A_1, \ldots , A_n,B)
 \quad \Gamma \sentail N_n : A_n} {\Gamma \sentail M\, N_1 \ldots N_n : B} \quad \ord{B} \leq
 \ord{\Gamma}$
  \\[12pt]
-$ \rulename{abs_{as}} \ \rulef{\Gamma, x_1 : A_1, \ldots, x_n : A_n
-  \asappentail M : B} {\Gamma \sentail \lambda x_1^{A_1} \ldots x_n^{A_n} . M :
-  (A_1, \ldots ,A_n,B)} \quad \ord{(A_1, \ldots ,A_n,B)} \leq
-\ord{\Gamma}$
- \\[12pt]
 $ \rulename{abs} \ \rulef{\Gamma, x_1 : A_1, \ldots, x_n : A_n
-  \sentail M : B} {\Gamma \sentail \lambda x_1 \ldots x_n . M :
+  \asappentail M : B} {\Gamma \sentail \lambda x_1^{A_1} \ldots x_n^{A_n} . M :
   (A_1, \ldots ,A_n,B)} \quad \ord{(A_1, \ldots ,A_n,B)} \leq
 \ord{\Gamma}$
 \end{Bcenter}
@@ -228,6 +226,8 @@ $$ \rulename{var} \ \rulef{}{\Gamma  \vsiaentail x : A}\quad x : A \in \Gamma
 \qquad \rulename{wk} \ \rulef{\Gamma \vsiaentail s :
 A}{\Delta \vsiaentail s : A} \quad \Gamma \subset
 \Delta
+\qquad
+\rulename{\delta} \ \rulef{\Gamma \vsiaentail M : A}{\Gamma \asappentail M : A}
 $$
 
 \begin{center}
@@ -242,13 +242,8 @@ $ \rulename{app} \ \rulef{\Gamma \vsiaentail s : (A_1, \ldots , A_n,B)
 \quad \Gamma \vsiaentail t_n : A_n} {\Gamma \sentail s~t_1 \ldots t_n : B} \quad \ord{B} \leq
 \ord{\Gamma}$
  \\[12pt]
-$ \rulename{abs_{as}} \ \rulef{\Gamma, x_1 : A_1, \ldots, x_n : A_n
-  \asappentail s : B} {\Gamma \vsiaentail \lambda x_1 \ldots x_n . s :
-  (A_1, \ldots ,A_n,B)} \quad \ord{(A_1, \ldots ,A_n,B)} \leq
-\ord{\Gamma}$
- \\[12pt]
 $ \rulename{abs} \ \rulef{\Gamma, x_1 : A_1, \ldots, x_n : A_n
-  \vsiaentail s : B} {\Gamma \vsiaentail \lambda x_1^{A_1} \ldots x_n^{A_n} . s :
+  \asappentail s : B} {\Gamma \vsiaentail \lambda x_1 \ldots x_n . s :
   (A_1, \ldots ,A_n,B)} \quad \ord{(A_1, \ldots ,A_n,B)} \leq
 \ord{\Gamma}$
 \end{Bcenter}
@@ -287,7 +282,7 @@ $$ \rulename{mkvar} \ \rulef{\Gamma \vsiaentail M_1 : \iaexp \rightarrow \iacom 
 \end{FramedTable}
 
  This languages verifies the basic property of the safe lambda calculus: free variables have order greater or equal to the order of the term.
- It is interesting to note that the typing rules of \ialgol\ do not need to be modified for this property to hold. In particular, the rule \rulenamet{new} allows one to ``abstract'' variables without having to verify any side-condition, contrary to the standard abstraction rules \rulenamet{abs} and \rulenamet{abs_{as}}. Such side-condition is unnecessary because the block-allocation construct produces a term with the same type as the term in the premise of the rule. Therefore the basic property trivially holds.
+ It is interesting to note that the typing rules of \ialgol\ do not need to be modified for this property to hold. In particular, the rule \rulenamet{new} allows one to ``abstract'' variables without having to verify any side-condition, contrary to the lambda-abstraction rule \rulenamet{abs}. Such side-condition is unnecessary because the block-allocation construct produces a term with the same type as the term in the premise of the rule. Therefore the basic property trivially holds.
 
  On the other hand, this ability to ``abstract'' variables without increasing the order of the term as a downside: the No-variable-capture result---that it is no necessary to rename variables afresh when performing substitution---does not hold anymore, at least in its original formulation.
  Take for instance the following strongly-safe term-in-context:
@@ -334,7 +329,7 @@ other component can contain variables of any type including \iavar.  It is strai
 \item the \ianew\ and \iamkvar\ constructs can only bind variables from the second context component;
 \item the side-condition in the abstraction rules constrains only variables from the first context component.
 \end{enumerate}
-The typing system for this new judgement is given in Table \ref{tab:safeia_formrules}. The rules that are circled in the table are those that differ from their counterpart in Table \ref{tab:verysafeia_formrules}.
+The typing system for this new judgement is given in Table \ref{tab:safeia_formrules}; The circled rules highlight the important changes from the rules of Table \ref{tab:verysafeia_formrules}.
  A split-term with an empty context $\Xi$ is called a \defname{semi-closed split-term}. We define \defname[safe!\ialgol]{safe \ialgol} to be the set of \emph{semi-closed} split-terms typable with the system of rules of Table \ref{tab:safeia_formrules}. For convenience we introduce the additional rule
 $$ \rulef{\Gamma\, |\, \emptyset \siaentail M : A} {\Gamma \siaentail M : A}$$
 so that safe \ialgol\ is given by the set of terms-in-context $\Gamma \siaentail M : A$.
@@ -342,31 +337,34 @@ so that safe \ialgol\ is given by the set of terms-in-context $\Gamma \siaentail
 \begin{FramedTable}
 {\bf Functional part}
 
-$$ \rulename{var^\iavar} \ \rulef{}{\emptyset | \Xi \siaentail x : \iavar} \quad x : \iavar \in \Xi
+$$ \rulename{var^\iavar} \ \rulef{}{\emptyset | \Xi \siaentail x : \iavar} \ x : \iavar \in \Xi
 \qquad
-\rulename{var^\iaexp} \ \rulef{}{\emptyset | \Xi \siaentail x : \iaexp} \quad x : \iaexp \in \Xi $$
+\rulename{var^\iaexp} \ \rulef{}{\emptyset | \Xi \siaentail x : \iaexp} \ x : \iaexp \in \Xi $$
 $$
 \rulename{var} \ \rulef{}{\Gamma | \emptyset \siaentail x : A}\quad x : A \in \Gamma
 \qquad
-\rulename{wk} \ \rulef{\Gamma | \Xi \siaentail s : A}{\Gamma' | \Xi \siaentail s : A} \quad
-\Gamma \subset \Gamma'\ \zand\ \dom(\Gamma') \inter \dom(\Xi) = \emptyset
+\ovalbox{
+$
+\rulename{wk} \ \dps \rulef{\Gamma | \Xi \siaentail s : A}{\Gamma' | \Xi \siaentail s : A} \
+\Gamma \subset \Gamma'\, \zand\, \dom(\Gamma') \inter \dom(\Xi) = \emptyset $
+}
 $$
 
 
 
-$$ \rulename{app_{as}} \ \rulef{\Gamma | \Xi \siaentail s : (A_1,\ldots,A_n,B) \quad
-\Gamma | \Xi \siaentail t_1 : A_1 \quad \ldots \quad \Gamma | \Xi \siaentail t_n : A_n
+$$\rulename{\delta} \ \rulef{\Gamma \sentail M : A}{\Gamma \asappentail M : A}
+ \qquad 
+ \rulename{app_{as}} \ \rulef{\Gamma | \Xi \siaentail s : (A_1,\ldots,A_n,B) \quad
+\Gamma | \Xi \siaentail t_1 : A_1 \ \ldots \ \Gamma | \Xi \siaentail t_n : A_n
 } {\Gamma | \Xi \asappentail s t_1 \ldots t_n : B}$$
-
-$$ \rulename{app} \ \rulef{\Gamma | \Xi \siaentail s : (A_1,\ldots,A_n,B) \quad
-\Gamma | \Xi \siaentail t_1 : A_1 \quad \ldots \quad \Gamma | \Xi \siaentail t_n : A_n
-} {\Gamma | \Xi \siaentail s t_1 \ldots t_n : B} \quad \ord{B} \leq \ord{\Gamma}$$
 
 \begin{center}\ovalbox{
 \begin{Bcenter}
- $\rulename{abs_{as}} \ \dps  \rulef{\dps \Gamma, x_1 : A_1, \ldots, x_n : A_n | \Xi \asappentail s : B} {\Gamma | \Xi \siaentail \lambda x_1 \ldots x_n . s : (A_1, \ldots ,A_n,B)} \ord{(A_1, \ldots ,A_n,B)} \leq \ord{\Gamma}$
+$ \rulename{app} \ \dps \rulef{\Gamma | \Xi \siaentail s : (A_1,\ldots,A_n,B) \quad
+\Gamma | \Xi \siaentail t_1 : A_1 \quad \ldots \quad \Gamma | \Xi \siaentail t_n : A_n
+} {\Gamma | \Xi \siaentail s t_1 \ldots t_n : B} \quad \ord{B} \leq \ord{\Gamma}$
 \\[12pt]
- $\rulename{abs} \ \dps  \rulef{\dps \Gamma, x_1 : A_1, \ldots, x_n : A_n | \Xi \siaentail s : B} {\Gamma | \Xi \siaentail \lambda x_1^{A_1} \ldots x_n^{A_n} . s : (A_1, \ldots ,A_n,B)} \ord{(A_1, \ldots ,A_n,B)} \leq \ord{\Gamma}$
+ $\rulename{abs} \ \dps  \rulef{\dps \Gamma, x_1 : A_1, \ldots, x_n : A_n | \Xi \asappentail s : B} {\Gamma | \Xi \siaentail \lambda x_1 \ldots x_n . s : (A_1, \ldots ,A_n,B)}\quad \ord{(A_1, \ldots ,A_n,B)} \leq \ord{\Gamma}$
 \end{Bcenter}
 }
 \end{center}
@@ -400,7 +398,7 @@ $
 \iavar\ \siaentail M : A}
     {\Gamma | \Xi \siaentail \ianewin{x}\ M : A} \quad A \in \{ \iacom, \iaexp\} $
 \\[12pt]
-$ \rulename{mkvar} \ \rulef{\Gamma| \Xi, x:\iaexp \siaentail M_1 : \iaexp \rightarrow \iacom \quad \Gamma, \Xi \siaentail M_2 : \iaexp}
+$ \rulename{mkvar} \ \rulef{\Gamma| \Xi, x:\iaexp \siaentail M_1 : \iaexp \rightarrow \iacom \quad \Gamma| \Xi \siaentail M_2 : \iaexp}
     {\Gamma| \Xi \siaentail \iamkvar\ (\lambda x^\iaexp .M_1)\ M_2\ : \iavar}$
 \end{Bcenter}
 }\end{center}

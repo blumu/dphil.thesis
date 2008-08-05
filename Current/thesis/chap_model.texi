@@ -53,6 +53,8 @@ $$ \rulename{var} \ \rulef{}{x : A\sentail x : A} \qquad
 \rulename{const} \ \rulef{}{\sentail f : A}~f \in \Xi \qquad
 \rulename{wk} \ \rulef{\Gamma \sentail s : A}{\Delta \sentail s : A}
 \quad \Gamma \subset \Delta
+\qquad
+\rulename{\delta} \ \rulef{\Gamma \sentail M : A}{\Gamma \asappentail M : A}
 $$
 
 \begin{center}
@@ -72,12 +74,8 @@ $$ \rulename{app} \ \rulef{\Gamma \sentail s : (A_1, \ldots , A_n,B)
 \quad \Gamma \sentail t_n : A_n} {\Gamma \sentail s~t_1 \ldots t_n : B} \quad \framebox{$\Gamma \geq B$}
 $$
 
-$$ \rulename{abs_{as}} \ \rulef{\Gamma, x_1 : A_1, \ldots, x_n : A_n
-  \asappentail s : B} {\Gamma \sentail \lambda x_1 \ldots x_n . s :
-  (A_1, \ldots ,A_n,B)} \quad \framebox{$\Gamma \geq (A_1, \ldots ,A_n,B)$}
-$$
 $$ \rulename{abs} \ \rulef{\Gamma, x_1 : A_1, \ldots, x_n : A_n
-  \sentail s : B} {\Gamma \sentail \lambda x_1 \ldots x_n . s :
+  \asappentail s : B} {\Gamma \sentail \lambda x_1 \ldots x_n . s :
   (A_1, \ldots ,A_n,B)} \quad \framebox{$\Gamma \geq (A_1, \ldots ,A_n,B)$}
 $$
 \caption{The safe lambda calculus with product.}
@@ -91,11 +89,11 @@ The terms $M_1$ and $M_2$ given above are both unsafe.
 It is easy to see that the basic property of the safe lambda calculus still holds---the free variables of a term have order greater than the order of the term itself---and therefore all the basic results showed in Chapter \ref{chap:safelambda} also hold (No-variable-capture lemma, safety is preserved by safe $\beta$ reduction,~...).
 
 We call \defname{typed-calculus} any applied simply typed lambda calculus with product with a stock of constants and function symbols together with an operational semantics for function symbols given by means of a set of reduction rules. We define the \defname[safe!fragment]{safe fragment} of a typed-calculus as the system obtained by replacing the abstraction and application
-rules by the rules \rulenamet{app} \rulenamet{app_{as}}, \rulenamet{abs} and \rulenamet{abs_{as}} from the definition above.
+rules by the rules \rulenamet{app}, \rulenamet{app_{as}}, \rulenamet{abs} and \rulenamet{\delta} from Table \ref{tab:safelmb_product}.
 A language that is the safe fragment of some typed-lambda calculus is called a \defname[safe!typed-calculus]{safe typed-calculus}.
 
 The \defname{long safe fragment} of a type-calculus is is the subclass of the safe fragment consisting of terms-in-context that are
- typable without using the rules \rulenamet{app_{as}} or \rulenamet{abs_{as}}. (See definition \ref{dfn:longsafe}.)
+ typable without using the rule \rulenamet{app_{as}}. (See definition \ref{dfn:longsafe}.)
 
 \paragraph{Alternative definition}
 
@@ -290,7 +288,7 @@ Ground types are interpreted as objects of the category, this suffices to interp
 
 We show that for any safe term $M$, its denotation $\sem{M}_{\mathbf{C}}$ in $\mathbf{C}$ is also a morphism of the subcategory
 $\mathbf{I}$. Since the model $\mathbf{C}$ is sound, $M$ has the same denotation as its eta-long normal form therefore we can assume w.l.o.g.\ that $M$ is eta-long normal.
- We show the result by induction on the structure of  $M$. We do not have to consider the rules \rulenamet{app_{as}} or \rulenamet{abs_{as}} because they are not required to type $\eta$-long normal terms. The \rulenamet{var} axiom is interpreted by the identity morphisms which all belong to the ICC.
+ We show the result by induction on the structure of  $M$. We do not have to consider the rule \rulenamet{app_{as}} because it is not required to type $\eta$-long normal terms. The \rulenamet{var} axiom is interpreted by the identity morphisms which all belong to the ICC.
 The rules \rulenamet{\times}, \rulenamet{\pi_1} and \rulenamet{\pi_2} are interpreted by pairing and projections.
 The weakening rule \rulenamet{wk} is interpreted by composition with the projection morphism $\pi_1$.
 For the rule \rulenamet{app}, the term formed is of ground type (since we work with eta-long normal form) so we have $\sem{s\,t_1\ldots t_n : o} = \langle \sem{s}, \sem{t_1}, \ldots, \sem{t_n}\rangle \fatcompos ev_{(A_1\times\ldots\times A_n),o}$ so we can conclude using the I.H.\ on the fact that the evaluation map $ev_{(A_1\times\ldots\times A_n),o}$ belongs to the ICC.
@@ -1648,7 +1646,7 @@ This result is not surprising since we already know by Proposition \ref{prop:inc
   In the standard game model of the simply typed lambda calculus with product, safe terms are denoted by closed P-i.j.\ strategies.
 \end{proposition}
 \proof
-  By induction on the formation rules that almost safe terms are denoted by P-i.j.\ strategies and safe terms are denoted by \emph{closed} P-i.j.\ strategies.
+  We show by induction on the formation rules that (1) almost safe terms are denoted by P-i.j.\ strategies; (2) safe terms are denoted by \emph{closed} P-i.j.\ strategies.
   \begin{compactitem}
     \item \rulenamet{var} $\sem{x:A \sentail x:A }$ is the identity strategy $id_A$ which is closed P-i.j.
 
@@ -1661,6 +1659,8 @@ This result is not surprising since we already know by Proposition \ref{prop:inc
     $\Delta$ occurs in any play of the strategy.
 
     \item \rulenamet{\times}, \rulenamet{\pi_1} and \rulenamet{\pi_2}: The result follows from the I.H.\ and Proposition \ref{prop:pij_pairing_projection}.
+    
+    \item \rulenamet{\delta}: It follows from the I.H.
 
     \item \rulenamet{app_{as}} Suppose that $\Gamma \asappentail t_0 t_1 \ldots t_n : B$
 with $\Gamma \sentail t_0 : (A_1,\ldots,A_n,B)$ and $\Gamma \sentail t_i : A_i$ for $i \in\{ 1..n\}$. By the I.H., for $i \in \{0..n\}$ the strategy
@@ -1677,7 +1677,7 @@ with $\Gamma \sentail t_0 : (A_1,\ldots,A_n,B)$ and $\Gamma \sentail t_i : A_i$ 
     by Lemma \ref{lem:closedpij_singleBinitmove}(ii), $\sem{ \Gamma \sentail t_0 t_1 \ldots t_n : B}$ is \emph{closed} P-i.j.
 
 
-    \item \rulenamet{abs} and \rulenamet{abs_{as}}: By the I.H., the premise of the rule has a P-i.j.\ denotation.
+    \item \rulenamet{abs}: By the I.H., the premise of the rule has a P-i.j.\ denotation.
     The denotation of the term in the conclusion of the rule is isomorphic, up to currying, to the denotation of the premise. Therefore it is also P.i.j.
     And by the side-condition and Lemma \ref{lem:closedpij_singleBinitmove}(ii) this implies that it is \emph{closed} P-i.j.
         \qed
@@ -1876,7 +1876,7 @@ $In(\sem{\Xi})$ contains only order-$0$ questions because the context $\Xi$ cont
 \proof
 We only need to prove the result for terms where the only allowed uses of the $Y$ combinator is in subterms of the form $\Omega$, the result then follows immediately using the syntactic approximants technique and continuity of the ``closed P-i.j.'' property.
 
-We proceed by induction on the safe \ialgol\ term. The cases \rulenamet{var},  \rulenamet{wk}, \rulenamet{const}, \rulenamet{succ}, \rulenamet{pred}, \rulenamet{cond} are the same as for the safe \pcf.
+We proceed by induction on the safe \ialgol\ term. The cases \rulenamet{var},  \rulenamet{wk}, \rulenamet{const}, \rulenamet{succ}, \rulenamet{pred}, \rulenamet{cond} are the same as for safe \pcf.
 \begin{asparaitem}[-]
   \item \rulenamet{var^\ianew}, \rulenamet{wk^\ianew} are similar to
   \rulenamet{var}  and \rulenamet{wk}.
@@ -1887,7 +1887,7 @@ We proceed by induction on the safe \ialgol\ term. The cases \rulenamet{var},  \
 
   \item \rulenamet{app} The premise of the rule is an almost safe split-term (\ie, a consecutive applications of safe terms). By the I.H.\ all these terms have a denotation that is closed P-i.j.\ modulo $In(\sem{\Xi})$. Since the evaluation strategy $ev$ is P-i.j., by Lemma \ref{lem:leftcompos_preserv_pijmodulo} this implies that the denotation of the split-term being formed is P-i.j.\ modulo $In(\sem{\Xi})$. Finally, the side-condition of the rule ensures that it is \emph{closed} P-i.j.\ modulo $In(\sem{\Xi})$.
 
-  \item \rulenamet{abs} and \rulenamet{abs_{as}} It follows from the I.H.\ and because the side condition of the abstraction rules constrains only free variables from the $\Gamma$-context.
+  \item \rulenamet{abs} It follows from the I.H.\ and because the side condition of the abstraction rules constrains only free variables from the $\Gamma$-context.
 
   \item \rulenamet{new} Let $\sigma = \sem{\Gamma | \Xi, x : \iavar \siaentail M : B}$.  We have $\sem{\Gamma | \Xi \siaentail
 \ianewin{x}{M} : B} = (id_{\Gamma,\Xi} \otimes cell)

@@ -734,7 +734,7 @@ The enabling relation and the definition of justified sequence is modified so th
 Let $p$ be a node and suppose that its $i$th child $n$ has the
 return type \iavar. Then $n$ is a generalized lambda-node with subnodes
 $\lambda^r \overline{\xi}$, $\lambda^{w_0}
-\overline{\xi}$, \ldots. From the point of view of the parent node $p$, these subnodes are referenced as ``$i.\alpha$'' where $i\in\{0..arity(p)\}$ and $\alpha \in \{ r\} \union\{ w_k \ | \ k \in \nat \}$. For instance  $i.r$ refers to the root labelled $\lambda^r \overline{\xi}$ of the $i$th child of $p$, and
+\overline{\xi}$, \ldots. From the point of view of the parent node $p$, these subnodes are referenced as ``$i.\alpha$'' where $0\leq i \leq arity(p)$ and $\alpha \in \{ r\} \union\{ w_k \ | \ k \in \nat \}$. For instance  $i.r$ refers to the root labelled $\lambda^r \overline{\xi}$ of the $i$th child of $p$, and
 $i.w_k$ refers to the root labelled $\lambda^{w_k} \overline{\xi}$.
 
 
@@ -746,12 +746,12 @@ The following new rules are added on top of those defined in Sec.\  \ref{subsec:
 The rule \rulenamet{app} is now split up in three
 rules \rulenamet{app_\iaexp}, \rulenamet{app_\iacom} and \rulenamet{app_\iavar} corresponding to traversals ending with an @-node of return type \iaexp, \iacom\ and \iavar\ respectively.
 The rules \rulenamet{app_\iaexp}, \rulenamet{app_\iacom}
-are defined identically to the rule \rulenamet{app} of Sec.\  \ref{subsec:traversal}. The rule \rulenamet{app_\iavar} is given by:
-$$\rulename{app_\iavar}
+are defined identically to \rulenamet{app} (See Sec.\  \ref{subsec:traversal}). The rule \rulenamet{app_\iavar} is
+$$\rulename{app_\iavar}\ 
 \Pstr{t \cdot (lHyp){\lambda^k \overline{\xi}} \cdot
 (appHyp-lHyp,35:0){@} \in \travset}
 \mbox{ and } k \in \{ r, w_0, w_1, \ldots \}
- \implies \Pstr[18pt] {t \cdot (l){\lambda^k
+ \implies \Pstr[10pt] {t \cdot (l){\lambda^k
 \overline{\xi}} \cdot (app-l,35:0){@} \cdot (l2-app,35:0.k){\lambda^k
 \overline{\eta}} \in \travset }$$
 
@@ -761,23 +761,19 @@ $$\rulename{app_\iavar}
 
 We define the rules \rulenamet{InputVal^\$} for $\$$ ranging in $\{\iacom,\iavar,\iaexp\}$. For $\iacom$ and $\iaexp$, the rules are defined identically to \rulenamet{InputVal} of Sec.\ \ref{subsec:traversal}.
 The \iavar\ case is implemented by two rules:
+$$\rulename{InputValue^\iavar_r}\ 
+\rulef{t_1 \cdot \lambda^r \overline{\xi} \cdot x \cdot t_2 \in \travset}
+{\Pstr[19pt]{t_1 \cdot (x){x} \cdot t_2 \cdot (xv-x,38:v){v_x} \in\travset}}
+\ x \mbox{ pending node } \zand\  x \in N_{\sf var}^{\theroot\vdash} \zand x:\iavar,\ v \in\mathcal{D} .$$
 
-\begin{center}
-
-\rulenamet{InputValue^\iavar_r} $t_1
-\cdot \lambda^r \overline{\xi} \cdot x \cdot t_2 \in \travset$, $?(t)=\ldots \cdot x$,
-$x \in N_{\sf var}^{\theroot\vdash}$, $x:\iavar$  $\implies$ \Pstr[0.5cm]{t_1 \cdot (x){x} \cdot t_2 \cdot (xv-x,38:v){v_x} \in\travset} for all $v \in
-\mathcal{D}$.
-
-\rulenamet{InputValue^\iavar_w} $t_1
-\cdot\lambda^w \overline{\xi} \cdot x \cdot t_2 \in\travset$, $?(t)=\ldots \cdot x$, $x \in N_{\sf var}^{\theroot\vdash}$, $x:\iavar$  $\implies$ \Pstr[0.5cm]{t_1 \cdot
-(x){x} \cdot t_2 \cdot (xv-x,38:v){\iadone_x} \in\travset}.
-\end{center}
-
+$$\rulename{InputValue^\iavar_w}\ 
+\rulef{t_1 \cdot\lambda^w \overline{\xi} \cdot x \cdot t_2 \in\travset}
+{\Pstr[18pt]{t_1 \cdot (x){x} \cdot t_2 \cdot (xv-x,38:v){\iadone_x} \in\travset}}
+\ x \mbox{ pending node } \zand\  x \in N_{\sf var}^{\theroot\vdash} \zand x:\iavar .$$
 
 \item \emph{IA constants rules}
 
-The rules for the constants of \ialgol\ are given in Table \ref{tab:ia_travrules}. These rules for \ianew\ are purely structural, they are defined the same way as the rules \rulenamet{app_\iaexp}, \rulenamet{app_\iacom} and \rulenamet{app_\iadone}.
+The rules for the constants of \ialgol\ are given in Table \ref{tab:ia_travrules}. These rules for \ianew\ are purely structural, they are defined similarly to \rulenamet{app_\iaexp}, \rulenamet{app_\iacom} and \rulenamet{app_\iadone}.
 
 \begin{table}[htbp]
 $$
@@ -844,11 +840,10 @@ where $v$ denotes some value from $\mathcal{D}$.
 \label{tab:ia_travrules}
 \end{table}
 
-The rules from Table \ref{tab:ia_travrules} are not sufficient to model \iamkvar. Indeed, we have not yet specified what happens when reaching a variable node that is hereditarily justified by the constant \iamkvar.
+The rules from Table \ref{tab:ia_travrules} do not suffice to model \iamkvar\ however. We need to specify what happens when reaching a variable node that is hereditarily justified by the constant \iamkvar.
 Take for instance the term $\iaassign\ (\iamkvar\ (\lambda x . M) N)
-7$. The rule (\mbox{mkvar}$_w''$) permits us to pass the node
-\iamkvar\ and to continue by traversing the computation tree of $\lambda x . M$, which may subsequently lead us to some occurrence of $x$.
-The behaviour of the traversal at this point is specified by new traversal rules defined in the next paragraph.
+7$. The rule (\mbox{mkvar}$_w''$) permits one to pass the node
+\iamkvar\ and to continue with the traversal of the computation tree of $\lambda x . M$, which may subsequently lead to some occurrence of $x$. The behaviour of the traversal at this point is specified by the traversal rules defined in the next paragraph.
 
 
 \item \emph{Variable rules}
@@ -861,7 +856,7 @@ Let $x$ be an internal variable node. Then by definition it is either hereditari
 This case is a generalization of the rule \rulenamet{Var} (Sec.\ \ref{subsec:traversal}). The only difference is that for variables of type \iavar, the lambda nodes preceding $x$ in the traversal determines the lambda-node that will be visited next:
 $$ \rulename{Var_\iavar}
     \rulef{\Pstr[0.5cm]{t \cdot (n){n} \cdot (lx){\lambda \overline{x}}     \ldots \lambda^\alpha x_i \cdot (x-lx,40:i){x_i} } \in \travset}
-{\Pstr[23pt]{t \cdot (n){n} \cdot (lx){\lambda \overline{x}}
+{\Pstr[25pt]{t \cdot (n){n} \cdot (lx){\lambda \overline{x}}
 \ldots \lambda^\alpha x_i \cdot  (x-lx,30:i){x_i} \cdot (letai-n,40:i.\alpha){\lambda\overline{\eta_i}}
 \in \travset}}
 \quad x_i \in N_{\sf var}^{@\vdash} \zand \alpha \in \{r\} \union \{w_i \ | \ i \in \nat \}
@@ -876,23 +871,19 @@ $$
 
 \item Suppose that $x$ is a block-allocated variable.
 
-Given a block-declaration $\ianew\ x$, we call \defname{assignment of $x$} any segment of traversal of the form $\lambda^{w_k}\overline\xi \cdot x$ for some $k\in \mathcal{D}_{\iaexp}$ such that $x$ is an occurrence of a node in the tree that is bound by $\ianew\ x$. $k$ is called \emph{the value assigned} to $x$.
+Given a block-declaration $\ianew\ x$, we call \emph{assignment of $x$} any segment of traversal of the form $\lambda^{w_k}\overline\xi \cdot x$ for some $k\in \mathcal{D}_{\iaexp}$ and occurrence $x$ of a node bound by $\ianew\ x$. We call $k$ the \emph{value assigned} to $x$.
 $$
-\rulename{\ianew\mbox{-}Var_w}
-\quad
-t \cdot \lambda^{w_k} \overline{\xi} \cdot x \in \travset
-       \zand x \in N^{\ianew\vdash}_{\sf var}
-\  \implies \
-\Pstr[17pt]{t \cdot \lambda^{w_k} \overline{\xi} \cdot (x)x \cdot (dx-x,30)\iadone_x \in \travset}
+\rulename{\ianew\mbox{-}Var_w} \ 
+\rulef{
+t \cdot \lambda^{w_k} \overline{\xi} \cdot x \in \travset }
+{\Pstr[15pt]{t \cdot \lambda^{w_k} \overline{\xi} \cdot (x)x \cdot (dx-x,35)\iadone_x \in \travset}}\ x \in N^{\ianew\vdash}_{\sf var}
 $$
 $$
-\rulename{\ianew\mbox{-}Var_r}
-\quad \Pstr[17pt]{t_1 \cdot (dec){\ianevar{x}} \cdot t_2 \cdot \lambda^r \overline{\xi} \cdot (x-dec,25)x \in \travset}
-\implies
-\parbox[t]{5.9cm}{\Pstr[17pt]{t_1 \cdot (dec){\ianevar{x}} \cdot t_2 \cdot \lambda^r \overline{\xi} \cdot (x-dec,25)x \cdot (kx-x,30)k_x \in \travset}
-\smallskip
-
-where $k\in\nat$ is the last value assigned to $x$ in $t_2$, or $0$ if there is no such assignment.}
+\rulename{\ianew\mbox{-}Var_r} \  
+\rulef{ \Pstr[17pt]{t_1 \cdot (dec){\ianevar{x}} \cdot t_2 \cdot \lambda^r \overline{\xi} \cdot (x-dec,30)x \in \travset} }
+{\Pstr[17pt]{t_1 \cdot (dec){\ianevar{x}} \cdot t_2 \cdot \lambda^r \overline{\xi} \cdot (x-dec,30)x \cdot (kx-x,35)k_x \in \travset}}
+\qquad
+\parbox[t]{5.7cm}{where $k\in\nat$ is the last value assigned to $x$ in $t_2$, or $0$ if there is no such assignment.}
 $$
 \end{itemize}
 \end{itemize}
@@ -902,16 +893,15 @@ The properties that we proved for computation trees and traversals
 of the $\lambda$-calculus with constants can easily be lifted
 to computation hypertrees of \ialgol. In particular:
 \begin{itemize}
-\item constant traversal rules are well-behaved (for order-$0$ and order-$1$ constants, this is a consequence
+\item Constant traversal rules are well-behaved (for order-$0$ and order-$1$ constants, this is a consequence
 of Lemma \ref{lem:sigma_order1_are_wellbehaved}; for $\iamkvar$
-and $\ianew$ this can be verified easily);
+and $\ianew$ this can be easily verified);
 \item P-view of traversals are paths in the computation hypertrees;
-\item for beta-normal terms, the P-view of the reduction of a traversal is the reduction of the P-view (Lemma \ref{lem:betanf_wellbehavedconst_trav_pview_red},
+\item For beta-normal terms, the P-view of the reduction of a traversal is the reduction of the P-view (Lemma \ref{lem:betanf_wellbehavedconst_trav_pview_red},
 and the O-view of a traversal is the O-view of its reduction
 (Lemma \ref{lem:oviewproj_wrt_theroot});
-\item there is a mapping from vertices of the computation hypertrees to moves in the interaction game semantics;
-\item there is a correspondence between traversals of the computation tree and plays in interaction game semantics;
+\item There is a mapping from vertices of the computation hypertrees to moves in the interaction game semantics;
+\item There is a correspondence between traversals of the computation tree and plays in interaction game semantics;
 \item consequently, there is a correspondence between the standard game semantics and
-the set of justified sequences of nodes $\travset(M)^{\filter
-\theroot}$.
+the set of justified sequences of nodes $\travset(M)^{\filter \theroot}$.
 \end{itemize}

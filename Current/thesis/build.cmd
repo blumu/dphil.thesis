@@ -7,9 +7,12 @@ makeindex -s myown.ist TeXAux\thesis
 ::makeindex -s myown.ist -o TeXAux\thesis.nnd TeXAux\thesis.ndx
 latex -aux-directory=TeXAux thesis.tex
 latex -aux-directory=TeXAux thesis.tex
+latex -aux-directory=TeXAux thesis.tex
 dvips -z -t a4 thesis.dvi
 ps2pdf thesis.ps
 goto end
+
+pdftex -ini "&latex" -aux-directory=TeXAux thesis.tex
 
 
 :pdflatex

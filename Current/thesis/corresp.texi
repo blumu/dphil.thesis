@@ -734,7 +734,7 @@ child[dotted]{
 
 \begin{remark}
 Our notions of computation tree and traversal differ slightly from the original definitions by Ong \cite{OngLics2006}.
-In his original setting:
+In his setting:
 \begin{itemize}[-]
     \item computation trees contain (uninterpreted first-order) constants. Here we have not accounted for constants but as previously observed, uninterpreted constants can just be regarded as free variables, thus we do not lose any expressivity here.
 
@@ -1429,7 +1429,7 @@ We proceed by induction on $t_{\prefixof n}$.
 If $n=r_0$ or if $r_0$ does not occur in $t_{\prefixof n}$ then
 the result holds trivially. Suppose that $r_0$ occurs in $t_{<n}$.
 Let $m$ be $n$'s justifier in $t$. We do a case analysis on $n$.
-The case $n\in L_@ \union L_\Sigma \union N_@ \union N_\Sigma$ 
+The case $n\in L_@ \union L_\Sigma \union N_@ \union N_\Sigma$
 is excluded by assumption.
 
 Suppose $n \in L_\lambda \union L_{\sf var} \union N_\lambda$ then
@@ -2356,8 +2356,8 @@ A strategy is commonly defined in the literature as a set of plays closed by
 even-length prefixing. For our purpose, however, it is more convenient to represent strategies using \emph{prefix-closed} set of plays. This will spare us some considerations on the parity of traversal length when showing the correspondence between traversals and game semantics.
  For the rest of the section we fix a simply typed term $\Gamma \vdash M :T$. We write $\sem{\Gamma \vdash M : T}$ for its strategy denotation (in the standard cartesian closed category of games and innocent strategies \cite{abramsky94full, hylandong_pcf}). We use the notation $\prefset(S)$ to denote the prefix-closure of the set $S$.
 
-\subsection{Interaction game semantics}
-\label{sec:interaction_semantics}
+\subsection{Revealed game semantics}
+\label{sec:revealed_semantics}
 
 In standard game semantics, terms are denoted by strategies that are computed
 inductively on the structure of the term: calculating the denotation of a term boils down to
@@ -2379,47 +2379,42 @@ calculated inductively on the syntax of the $\eta$-long normal form of the term.
 
 \subsubsection{Revealed strategies}
 
-\begin{definition} \hfill
-\begin{itemize}
-\item We call \defname{interaction type tree} or just \defname{interaction type},
-a tree whose leaves are labelled with \pcf\ simple types and
-inner nodes are labelled with symbol in $\{ ;, \langle \_\ ,\_
-\rangle, \Lambda \}$.
-
-
-Nodes labelled $;$ and $\langle \_\ ,\_ \rangle$ are binary
-nodes while nodes labelled by $\Lambda$ are unary nodes. If
-$T_1$ and $T_2$ are interaction types we write $\langle T_1, T_2
-\rangle$ to denote the interaction type obtained by attaching
-$T_1$ and $T_2$ to a $\langle \_\ ,\_ \rangle$-node. Similarly
+\begin{definition} 
+We consider ordered trees whose leaves are labelled with \pcf\ simple types and inner nodes are labelled with symbols in $\{ ;, \langle \_\ ,\_
+\rangle, \Lambda \}$ where `$;$' and `$\langle \_\ ,\_ \rangle$'
+are of arity $2$ and `$\Lambda$' is of arity one. 
+We write $\langle T_1, T_2 \rangle$ for the tree obtained by attaching $T_1$ and $T_2$ to a $\langle \_\ ,\_ \rangle$-node, and similarly
 we use the notations $T_1 ; T_2$ and $\Lambda(T_1)$.
 
-\item The \defname{underlying simple type} of $T$, or just type of $T$, written $type(T)$ is defined as follows:
-    \begin{itemize}
-    \item If $T$ is a leaf then $type(T)$ is the type that labels it;
+The set of \defname{interaction type trees}, or just \defname{interaction types}, is defined inductively as follows:
+\begin{itemize}
+    \item \emph{Leaf}: If $T$ is a leaf annotated by a type $A$ then $T$ is an interaction type, and we define $type(T)$ to be $A$;
 
-    \item $type(\Lambda(T_1^{A \gameprod B \gamear C})) = A \gamear (B \gamear C)$;
+    \item \emph{Currying}: If $T$ is an interaction type with
+    $type(T) = A \gameprod B \gamear C$ then
+    $\Lambda(T)$ is also an interaction type
+    and $type(\Lambda(T)) = A \gamear (B \gamear C)$;
 
-    \item $type(\langle T_1^{C \gamear A} , T_2^{C \gamear B} \rangle) =
-    C \gamear A \gameprod B$;
+    \item \emph{Pairing}: If $T_1$ and $T_2$ are interaction types with
+    $type(T_1) = C \gamear A$ and
+    $type(T_2) = C \gamear B$ then
+    $\langle T_1 , T_2 \rangle$ is also an interaction type
+    and $type(\langle T_1 , T_2 \rangle) = C \gamear A \gameprod B$    
+    (Pairing generalizes straightforwardly to a $p$-tuple operator $\langle \Sigma_1, \ldots, \Sigma_p \rangle$ for $p\geq2$, in which case the tree has $p$ child subtrees.);
 
-    \item $type(T_1^{A \gamear B};T_2^{B \gamear C}) = A \gamear C$.
-    \end{itemize}
-    We sometimes indicate the type in exponent; for instance $T^{A\gamear B}$ if $type(T) = A\gamear B$. The type of a node of the tree $T$ is then defined as the type of the subtree rooted at that node.
+    \item \emph{Composition}: If $T_1$ and $T_2$ are interaction types with     $type(T_1) = A \gamear B$ and $type(T_2) = B \gamear C$
+    then $T_1;T_2$ is also an interaction type and
+    $type(T_1;T_2) = A \gamear C$.
 \end{itemize}
-For the interaction type tree to be well-defined, it is required
-that types of children nodes are consistent with the kind of the
-parent node. For instance the two children nodes of a ;-node must be
-of type $A\gamear B$ and $B\gamear C$.
+We call $type(T)$ the \defname{underlying type} (or just type) of  the interaction type $T$. We sometimes write $T^A$ to indicate that $type(T) = A$.
 \end{definition}
-Note that it is straightforward to generalize the pairing operator to a $p$-tuple operator $\langle \Sigma_1, \ldots, \Sigma_p \rangle$ for $p\geq2$ (in which case the root of the interaction game has $p$ children).
 
-
+\indexnotation{$\revsem{M}$}{Revealed strategy denotation of a term $M$}%
 Let $T$ be an interaction type tree. Each node of type $A$ in $T$
 can be mapped to the (standard) game $\sem{A}$. By taking the image
 of $T$ across this mapping we obtain a tree whose leaves and nodes
 are labelled by games. This tree, written $\revsem{T}$, is called
-an \defname{interaction game}. \indexnotation{$\revsem{M}$}{Revealed strategy denotation of a term $M$}%
+an \defname{interaction game}.
 A \defname{revealed strategy} $\Sigma$ on the interaction game $\revsem{T}$ is a compositions of several standard strategies in which certain internal moves are not hidden. Formally:
 \begin{definition}
 A \defname{revealed strategy} $\Sigma$ on an interaction game $\revsem{T}$,
@@ -2428,7 +2423,7 @@ tree $T$ where
 \begin{itemize}
 \item each leaf $\sem{A}$ of $T$ is annotated with a (standard) strategy $\sigma$ on the game
 $\sem{A}$;
-\item each $;$-node is annotated with two sets of indices $U_{\sf sup}, U_{\sf prof} \subseteq \nat$ called respectively the
+\item each $;$-node is annotated with two sets of indices $S, P \subseteq \nat$ called respectively the
 \emph{superficial} and \emph{profound} uncovering indices.
 \end{itemize}
 \end{definition}
@@ -2474,20 +2469,15 @@ $\Sigma = (\sigma_1 ;^{\emptyset,\{0\}} \sigma_2) ;^{\{0\},\{0\}} \sigma_3$.
 
 
 The intuition behind this definition is that if a $;$-node has
-children $\Sigma_1 : \revsem{A\gamear
-B}$ and $\Sigma_2 : \revsem{B\gamear C}$ then the two
-sets of indices $U_{\sf sup}, U_{\sf prof}$ indicate which components of $B$ should be
-uncovered when performing composition. The set $U_{\sf sup}$ permits one to uncover 
-\defname[move!superficial]{superficial} internal moves (\ie, those that are created by the top-level composition between $\Sigma_1$ and $\Sigma_2$), while the set $U_{\sf prof}$ can be used to cover/uncover the \defname[move!profound]{profound} internal moves (\ie, those that are already present in the revealed strategies $\Sigma_1$ and $\Sigma_2$).
-The precise definition of this uncovering will be unveiled in the definition of the \emph{uncovered positions} of a revealed strategy in
-the next paragraph.
+children $\Sigma_1 : \revsem{A\gamear B}$ and $\Sigma_2 : \revsem{B\gamear C}$ then the two sets of indices $S, P$ indicate which components of $B$ should be
+uncovered when performing composition. The set $S$ indicates which
+\defname[move!superficial]{superficial} internal moves (\ie, those that are created by the top-level composition between $\Sigma_1$ and $\Sigma_2$) to uncover; whereas the set $P$ indicates the \defname[move!profound]{profound} internal moves (\ie, those that are already present in the revealed strategies $\Sigma_1$ and $\Sigma_2$) to uncover. This notion of uncovering is made concrete in the next paragraph where we define \emph{revealed strategies} by means of \emph{uncovered positions}.
+
 
 \subsubsection{Uncovered play}
 
 The analogue of a play in the interaction semantics is called an
-\emph{uncovered play}, it is a play containing internal moves. Each move may belong to several games
-from different nodes of the interaction game.
-The moves are implicitly tagged so that it is possible to retrieve the particular component of the node-game to which the move belongs.
+\emph{uncovered play} or \emph{uncovered position}; it is a play whose moves are interleaved with internal moves. Each move in such a play may belong to multiple games from different nodes of the interaction game; they are thus implicitly tagged so that one can retrieve the components of the node-games to which the move belongs.
 
 \begin{definition}
 The \defname{set of possible moves} $M_T$ of an interaction game
@@ -2497,11 +2487,13 @@ $\sim_T \subseteq \mathcal{M}_T \times \mathcal{M}_T$ defined as follows:
 For a single leaf tree $T$ labelled by a type $A$ we define
 $\mathcal{M}_T = M_A$ and $\sim_T = id_{M_A}$; for other cases:
     \begin{align*}
-        \mathcal{M}_{\Lambda(T)} &= \mathcal{M}_{T} + M_{type(\Lambda(T))}
+        \mathcal{M}_{\Lambda(T^{A \gameprod B \gamear C})} &= \mathcal{M}_{T} + M_{A \gamear B \gamear C}
     \\
-        \sim_{\Lambda(T)} &= \left( \sim_{T}
-        \union \left(type\ \Lambda(T) \leftrightarrow type\ T\right)
-        \right)^=
+        \sim_{\Lambda(T^{A \gameprod B \gamear C})} &= \left( \sim_{T}
+        \union \left((A \gameprod B \gamear C)
+        \leftrightarrow  (A \gamear (B \gamear C))
+%        type\ \Lambda(T) \leftrightarrow type\ T
+        \right) \right)^=
     \\
     \\
         \mathcal{M}_{\langle T_1^{C^1 \gamear A^1}, T_2^{C^2 \gamear B^2}\rangle}
@@ -2521,101 +2513,68 @@ $\mathcal{M}_T = M_A$ and $\sim_T = id_{M_A}$; for other cases:
         \union (B^1 \leftrightarrow B^2) \union (C \leftrightarrow C^2)
         \right)^=
     \end{align*}
-    where $A\leftrightarrow B$ denotes the canonical bijection between $M_A$ and $M_B$ for two isomorphic arenas $A$ and $B$; and $R^=$ denotes the smallest equivalence relation containing $R$.
+    where $A\leftrightarrow B$ denotes the canonical bijection between $M_A$ and $M_B$ for two isomorphic games $A$ and $B$; and $R^=$ denotes the smallest equivalence relation containing $R$.
 \end{definition}
 
 We call \defname{internal move} of the game $\revsem{T}$, any $\sim$-class from $M_T$ that does not contain any move from $M_{type(T)}$. We denote the set of all internal moves by $M_T^{\sf int}$. The complement of $M_T^{\sf int}$ in $M_T$, called the set of \defname{external moves}, is denoted by
-$M_T^{\sf ext}$.
-
-For every subgame $A$ occurring in some node of the interaction game $T$, we write $M_{T,A}^{\sf int}$ (resp.\ $M_{T,A}^{\sf ext}$) for the subset of moves of $M_T^{\sf int}$ (resp.\ $M_T^{\sf ext}$) consisting of $\sim$-classes containing some move in $M_A$.
+$M_T^{\sf ext}$. For every subgame $A$ occurring in some node of the interaction game $T$, we write $M_{T,A}^{\sf int}$ (resp.\ $M_{T,A}^{\sf ext}$) for the subset of moves of $M_T^{\sf int}$ (resp.\ $M_T^{\sf ext}$) consisting of $\sim$-classes containing some move in $M_A$.
 \smallskip
 
-A \defname{justified interaction sequence} of moves on the interaction game $\revsem{T}$ is a sequence of moves from $M_T$ together with pointers where each move in the sequence except the first one has a link attached to it pointing to some preceding move in the sequence.
+A \defname{justified interaction sequence} of moves on the interaction game $\revsem{T}$ is a sequence of moves from $M_T$ together with pointers where each move in the sequence except the first one has a link attached to it pointing to some preceding move in the sequence. We write $J_T$ to denote the set of justified interaction sequences over $\revsem{T}$.
 
 
 \begin{definition}[Projection]
 \label{def:sub_interstrat_projection}
-Let $s$ be a justified sequence of moves on the interaction game $\revsem{T}$.
-We define the following projection operations:
+Let $s \in J_T$. We define the following projection operations:
 \begin{enumerate}[(a)]
-\item  Let $T'$ be a direct subtree of $T$. We define the projection $s\filter T'$ to be the subsequence of $s$ consisting of moves $\sim$-equivalent to some move in $M_{T'}$. This operation may cause a move to ``lose'' its pointer. This situation corresponds to
-    $(s \cdot m) \filter T' = (s \filter T') \cdot m$ where $m$'s justifier does not appear in $s \filter T'$.
-    In that case, a new link is reassigned to $m$ that points to the only occurrence of an initial
-    $\sem{type(T')}$-move in $\pview{s \filter \sem{type(T')}}$ (where $s \filter \sem{type(T')}$ is defined in iii.).
+\item Let $M'$ be a subset of $M_T$. The projection $s \filter M'$ is defined as the subsequence of $s$ consisting of $\sim$-equivalence classes from $M'$;
 
-    Note that since $M_T$ is a set of equivalence classes with respect to $\sim$, the projection operator $\_ \filter T'$ implicitly performs the ``retagging'' of the moves to the appropriate components of each game of the interaction game $\revsem{T'}$.
+\item Let $T'$ be an immediate subtree of $T$. We define the projection $s\filter T'$ as the subsequence of $s$ consisting of $\sim$-equivalence classes from $M_{T}$ that contain some equivalence class of $M_{T'}$ (\ie, those $m \in M_T$ such we have $m' \subseteq m$ for some $m' \in M_{T'}$.)
+    
+    This operation may cause an element of the sequence to ``lose'' its pointer; this situation is $(s \cdot m) \filter T' = (s \filter T') \cdot m$ where $m$'s justifier does not appear in $s \filter T'$.
+    In such case, $m$'s justifier is set to the only occurrence of an initial $\sem{type(T')}$-move in $\pview{s \filter \sem{type(T')}}$ (\cf (d)).
 
-\item  Let $T'$ be a non-direct subtree of $T$.
+    (Note that due to the inductive definition of the equivalence $\sim$, the projection $\_ \filter T'$ induces an implicit ``retagging'' of the moves to the appropriate game components of the interaction game $\revsem{T'}$.)
+
+
+\item  Let $T'$ be a non-immediate subtree of $T$.
     We define the projection $s\filter T'$ as  $(\ldots (s\filter T^0) \filter \ldots \filter T^{k-1}) \filter T^k$
-    where $T=T^0$ and $T'=T^k$ and for every $1\leq l \leq k$, $T^l$ is a direct subtree of $T^{l-1}$.
+    where $T^0$, \ldots, $T^k$ is the uniquely defined sequence of subtrees of $T$ satisfying $T=T^0$, $T'=T^k$ and such that for every $1\leq l \leq k$, $T^l$ is an immediate subtree of $T^{l-1}$.
 
-\item Let $T'$ be some subtree of $T$ and $A$ be a sub-game of $\sem{type(T')}$. We define the projection operator $s\filter A$ to be the subsequence of $s\filter T'$ consisting of the $\sim$-classes that contain some move in $M_A$.
+\item Let $T'$ be some subtree of $T$ and $A$ be a sub-game of $\sem{type(T')}$. We define the projection operator $s\filter A$ to be the subsequence of $s\filter T'$ consisting of the $\sim$-classes that contain some move in $M_A$. Formally
+    $s\filter A \defeq s \filter \{ [m] \in M_T \ | m \in M_A \} $ where $[m]$ denotes the $\sim$-equivalence class of $m$.
 
-\item For every initial move $m$ of the game $\sem{type(T)}$ occurring in $s$, $s \filter m$ is the subsequence of $s$ consisting of moves that are \emph{hereditarily justified} by that particular occurrence of $m$ in $s \filter type(T)$.
-% NOTE: it is important to precise ``in $s \filter type(T)$'' because $s$'justification
-% pointers differs depending on the sub-interaction game considered.
+\item For every $\sem{type(T)}$-initial move $m$ occurring in $s$, $s \filter m$ is the subsequence of $s$ consisting of moves that are \emph{hereditarily justified} by that occurrence of $m$ in $s \filter \sem{type(T)}$.
+% NOTE: it is important to precise ``in $s \filter \sem{type(T)}$'' because $s$'justification pointers differs depending on the sub-interaction game considered.
 \end{enumerate}
-By extension, we also define these operations on sets of justified interaction sequences.
+By extension, we also define these operations on \emph{sets} of justified interaction sequences.
 \end{definition}
 
-
-\begin{definition}[Legal uncovered positions] We recall
-that in the standard game semantics, the set of legal positions
-$L_A$ of a game $A$ is the set of justified sequences of moves from
-$M_A$ respecting visibility and alternation. We define the set of
-\defname{legal uncovered position} $L_T$ of an interaction game $\revsem{T}$ as
-follows. If $T$ is
-    \begin{itemize}
-    \item a leaf annotated by a type $A$ then $L_T =
-    L_A$;
-    \item a unary node with child node $T'$ then:
-    $$L_T = \{ s \in JustSeq(T) \ | \ s \filter type(T) \in L_{type(T)} \zand  s \filter T' \in L_{T'} \} \ ;$$
-    \item a binary node with children nodes $T_1$ and $T_2$ then:
-    $$L_T = \{ s \in JustSeq(T) \ | \ s \filter type(T) \in L_{type(T)} \zand  s \filter T_1 \in L_{T_1}
-    \zand  s \filter T_2 \in L_{T_2} \} \enspace .$$
-    \end{itemize}
-    where $JustSeq(T)$ denotes the set of justified interaction sequences on
-    $\revsem{T}$.
-\end{definition}
-
-
-We now define a revealed strategy by means of a set of uncovered positions the interaction game.
-The set of positions of an interaction strategy is computed from its constituent standard strategies using a bottom-up computation starting from the leaves of the tree representing the strategy. In particular, at each ;-node the composition operation of game semantics will be applied. In contrast with the standard game semantics, however, internal moves will not be all hidden. But in accordance with standard game semantics (see definition of the projection $\_ \filter A,C$ \cite{abramsky:game-semantics-tutorial}), when composing $\Sigma_l:T_l^{A\gamear B}$ with $\Sigma_r:T_r^{B\gamear C}$, the justification pointers are readjusted as follows: if an initial A-move $a$ has link pointing to an initial B-move itself pointing to an initial C-move $c$ then it is replaced by a link pointing directly to $c$. Thus if we take any interaction position $u$ of $\Sigma_l ; \Sigma_r$, by taking the subsequence of $u$ consisting of nodes in $A$ and $C$ only (ignoring the moves in $B$ as well as the internal moves coming from compositions that took place at deeper level in the interaction semantics) then we obtain a valid \emph{standard} position of the standard strategy that underlies the interaction strategy $\Sigma_l ; \Sigma_r$.
-
-Additionally, given a position of an interaction strategy $\Sigma$ and a sub-interaction strategy $\Sigma':T'$ of $\Sigma:T$,
-we would like to be be able to obtain a valid position of $\Sigma'$.
-At first this may seem problematic since during composition we have lost all the links going from initial A-moves to initial B-moves!
-Fortunately, these can be retrieved easily. Indeed, take an interaction sequence $u \cdot a \in Int(A,B,C)$ where $a$ is an initial A-move,
-then by P-visibility in the game $A\gamear B$, $a$ points to an initial B-move in $\pview{u\filter A,B}$. But the P-view, by definition, contains at most one initial B-move! Hence the original pointer associated to $a$ can just be retrieved from the P-view $\pview{u\filter A,B}$.
-We now observe that this pointer-recovery procedure corresponds precisely to the way the projection operation was defined in Def.\ \ref{def:sub_interstrat_projection}. Consequently, for every position $u$ of $\Sigma_l ; \Sigma_r$ where $\Sigma_l:T_l$ and $\Sigma_r:T_r$,
-the sequence $u\filter T_l$ is a valid position of $\Sigma_l$ and $u\filter T_r$ is a valid position of $\Sigma_r$.
-More generally, this implies that for every subtree $\Sigma':T'$ of $\Sigma:T$, and any position $u$ of the interaction strategy $\Sigma$, $u\filter T'$ is a valid position of $\Sigma'$.
-
+We now characterize revealed strategies by means of sets of justified sequences of moves called \emph{uncovered positions} or \emph{uncovered plays}.
+This set is calculated by a bottom-up computation on the strategy tree. At each ;-node, we apply the composition operation of game semantics; however, in contrast with the standard game semantics, not all internal moves are hidden. Further, in accordance with standard game semantics, justification pointers are adjusted when composing two interaction strategies $\Sigma_l:T_l^{A\gamear B}$ with $\Sigma_r:T_r^{B\gamear C}$: if an initial A-move $a$ is justified by an initial B-move itself justified by an initial C-move $c$ then $a$'s justifier is set to $c$ (see definition of the projection $\_ \filter A,C$ \cite{abramsky:game-semantics-tutorial}). Thus for every interaction position $u$ of $\Sigma_l ; \Sigma_r$, the subsequence consisting of nodes in $A$ and $C$ only---filtering out $B$-moves as well as the internal moves coming from compositions taking place at deeper level in the interaction semantics---is a valid position of the \emph{standard} strategy underlying $\Sigma_l ; \Sigma_r$.
 
 \begin{definition}
 \label{dfn:revealedstrat}
-The set of \defname{uncovered positions} of a revealed strategy is defined inductively on the
-structure of the annotated interaction type tree underlying the
-interaction strategy:
+A revealed strategy $\Sigma$ (defined by means of an annotated type tree) is characterized by its set of \defname{uncovered positions} defined inductively as follows:
 \begin{itemize}[-]
 \item \emph{Leaf} labelled with type $A$ and annotated by the strategy $\sigma$: The set of positions of the revealed strategy is precisely the set of positions of the standard strategy $\sigma$.
 
-\item \emph{Currying}: $\Lambda(\Sigma' : \revsem{T'}) : \revsem{T} = \{ u \in L_T \ |  u \filter T' \in \Sigma'  \}$.
+\item \emph{Currying}: Let $\Sigma : \revsem{T}$.
+$$\Lambda(\Sigma) = \{ u \in J_{\Lambda(T)} \ |\  \rho(u) \in \Sigma \} \enspace , $$
+where $\rho$ denotes the canonical bijection from $M_{\Lambda(T)}$ to $M_T$.
 
-\item \emph{Pairing}: $$\begin{array}{lcll}
-\langle \Sigma_1 : \revsem{T_1}, \Sigma_2 : \revsem{T_2} \rangle : \revsem{T} &= \{ u \in L_T \ | &
+\item \emph{Pairing}: Let $\Sigma_1 : \revsem{T_1}$ and $\Sigma_2 :\revsem{T_2}$.
+$$\begin{array}{lcll}
+\langle \Sigma_1, \Sigma_2 \rangle  &=\ \{ u \in J_{\langle T_1, T_2 \rangle} \ | &
    (u \filter T_1 \in \Sigma_1 \zand\ u \filter T_2 = \epsilon) \\
-&&  \zor\  ( u \filter T_1 = \epsilon \zand u \filter T_2 \in \Sigma_2) \}
-\end{array}$$
-where $type(T_1) = C\gamear A$, $type(T_2) = C\gamear B$
-and $type(T) = C\gamear A \gameprod B$.
+&&  \zor\  ( u \filter T_1 = \epsilon \zand u \filter T_2 \in \Sigma_2) \}\enspace .
+\end{array} $$
 
-\item \emph{Uncovered composition}: Take $\Sigma_1 : \revsem{T_1}$ and $\Sigma_2 :\revsem{T_2}$ then $\Sigma_1\ \| \ \Sigma_2$ is defined on the game $\revsem{T}$ where
-$type(T) = A \gamear C$, $type(T_1) = A \gamear B_0 \gameprod
+\item \emph{Uncovered composition}: Let $\Sigma_1 : \revsem{T_1}$ and $\Sigma_2 :\revsem{T_2}$ where $type(T_1) = A \gamear B_0 \gameprod
 \ldots \gameprod B_l$ and $type(T_2) = B_0 \gameprod \ldots
-\gameprod B_l \gamear C$ as
+\gameprod B_l \gamear C$.
 \begin{align*}
-\Sigma_1 \| \Sigma_2 = \{ u \in L_T  \ | \
+\Sigma_1 \| \Sigma_2 = \{ u \in J_{T_1;T_2}  \ | \
 & \ \ u \filter T_2 \in \Sigma_2 \\
 & \zand\ \parbox[t]{8.5cm}{for all occurrence $m$ in $u$ of an initial
                 $\sem{type(T_1)}$-move, $u \filter T_1 \filter m \in \Sigma_1$} \\
@@ -2623,67 +2582,74 @@ $type(T) = A \gamear C$, $type(T_1) = A \gamear B_0 \gameprod
 itself justified by $c \in C^2$ in $u \filter T_2$ then $m$ is justified by $c$ in $u$. \} \enspace .}
 \end{align*}
 
-\item \emph{Partially covered composition}:
-$$ \Sigma_1\ ;^{U_{\sf sup},U_{\sf prof}}\ \Sigma_2 = \{ \cover(u,\{0..l\}\setminus U_{\sf sup}, \{0..l\}\setminus U_{\sf prof}) \ | \ u \in \Sigma_1 \| \Sigma_2 \}$$
-where
-$$\cover(u,C_{\sf sup},C_{\sf prof}) = u \filter  M_T \setminus \left( \Union_{j\in
-C_{\sf sup}} \overbrace{M^{\sf ext}_{T_1,B_j} \union M^{\sf ext}_{T_2,B_j})}^{\hbox{superficial $B_j$-moves}}
-\union
-\Union_{j\in
-C_{\sf prof}} \overbrace{M^{\sf int}_{T_1,B_j} \union M^{\sf int}_{T_2,B_j})}^{\hbox{profound $B_j$-moves}} \right) \enspace .$$
-Observe that $\Sigma_1 \| \Sigma_2 = \Sigma_1;^{\{0..l\},\{0..l\}} \Sigma_2$.
+\item \emph{Partially covered composition}: Let $\Sigma_1 : \revsem{T_1}$ and $\Sigma_2 :\revsem{T_2}$ where $type(T_1) = A \gamear B_0 \gameprod
+\ldots \gameprod B_l$ and $type(T_2) = B_0 \gameprod \ldots
+\gameprod B_l \gamear C$.
+\begin{align*}
+\Sigma_1\ ;^{S,P}\ \Sigma_2 &= \{ \hide(u,\{0..l\}\setminus S, \{0..l\}\setminus P) \ | \ u \in \Sigma_1 \| \Sigma_2 \} \\
+\mbox{ where } \hide(u,S,P) & = u \filter  ( M_T \setminus H(S,P) ) \\
+H(S,P) & = \Union_{j\in S} \underbrace{M^{\sf ext}_{T_1,B_j} \union M^{\sf ext}_{T_2,B_j}}_{\hbox{\small superficial $B_j$-moves}}
+\union\ \Union_{j\in P} \underbrace{M^{\sf int}_{T_1,B_j} \union M^{\sf int}_{T_2,B_j}}_{\hbox{\small profound $B_j$-moves}} \enspace .
+\end{align*}
+
+Observe that in particular $\Sigma_1 \| \Sigma_2 = \Sigma_1;^{\{0..l\},\{0..l\}} \Sigma_2$.
 \end{itemize}
 \end{definition}
-
-
 In words, the \emph{uncovered composition}
-$\Sigma_1 \|\ \Sigma_2$ is the set of uncovered plays obtained by performing the usual composition of the standard strategies underlying $\Sigma_1$ and $\Sigma_2$ while preserving the internal moves already in $\Sigma_1$ and $\Sigma_2$ as well as the internal move produced by the composition.
+of $\Sigma_1 \|\ \Sigma_2$ is the set of uncovered plays obtained by performing the usual composition of the standard strategies underlying $\Sigma_1$ and $\Sigma_2$ while preserving the internal moves already in $\Sigma_1$ and $\Sigma_2$ as well as the internal move produced by the composition.
 
 Whereas if $B$ is the product game $B_0
 \gameprod \ldots \gameprod B_l$ then the \emph{partially covered composition}
-$\Sigma_1 ;^{U_{\sf sup}, U_{\sf prof}} \Sigma_2$
-only keeps the superficial internal moves from the component $B_k$ for some $k \in U_{\sf sup}$ and the profound internal moves from the component $B_k$ for some $k \in U_{\sf prof}$.
-\smallskip
+$\Sigma_1 ;^{S,P} \Sigma_2$
+only keeps the superficial internal moves from the component $B_k$ for some $k \in S$ and the profound internal moves from the component $B_k$ for some $k \in P$.
+\medskip
 
+\todo{rewrite}
+
+Given a position of an interaction strategy $\Sigma$ and a sub-interaction strategy $\Sigma':T'$ of $\Sigma:T$, it is desirable to have a way to compute the corresponding position of $\Sigma'$.
+This seems problematic at first since after performing strategy composition, we lose all the links going from initial A-moves to initial B-moves. Fortunately, these can be retrieved easily. Indeed, take an interaction sequence $u \cdot a \in Int(A,B,C)$ where $a$ is an initial A-move, then by P-visibility in the game $A\gamear B$, $a$ points to an initial B-move in $\pview{u\filter A,B}$. By definition the P-view contains at most one initial B-move hence the original pointer associated to $a$ is uniquely determined (by the P-view $\pview{u\filter A,B}$).
+This pointer-recovery procedure corresponds precisely to the way the projection operation was defined in Def.~\ref{def:sub_interstrat_projection}. Consequently, for every position $u$ of $\Sigma_l ; \Sigma_r$ where $\Sigma_l:T_l$ and $\Sigma_r:T_r$,
+the sequence $u\filter T_l$ belongs to  $\Sigma_l$ and $u\filter T_r$ belongs to $\Sigma_r$. More generally, this implies that for every subtree $\Sigma':T'$ of $\Sigma:T$, and every position $u$ of the interaction strategy $\Sigma$, $u\filter T'$ belongs to $\Sigma'$.
+
+
+In Def.~\ref{def:sub_interstrat_projection} we have defined a notion of projection for justified sequences of moves of an interaction strategies. This operation proceeds by eliminating some of the moves from the sequence. 
+In general, when projecting a sequence $s \in \Sigma$ on a subtree $\Sigma'$, the resulting sequence is not necessarily an \emph{interaction position} of the sub-interaction strategy $\Sigma'$ because some internal moves may be missing from $s$. The sequence $s\filter \Sigma'$ is instead a subsequence of
+ some interaction position in $\Sigma'$.
+ 
+
+
+% Suppose that the label of $T$'s root is in $\{ \Lambda, \langle \_, \_ \rangle, \|\}$ (\ie, not `$;$') and
 
 
 \begin{lemma}[Complete interaction sequence]
 \label{lem:inter_complete}
-Let $u$ be an interaction sequence of some interaction strategy $\Sigma : \revsem{T}$
-and suppose that the standard strategy denoting the leaves of $\Sigma$ are all well-bracketed. Then for every node game $A$ of $T$ and interaction sequence $u\in
-\Sigma$ we have:
+Let $u$ be an uncovered play of an interaction strategy $\Sigma : \revsem{T}$
+and suppose that the standard strategy denoting the leaves of $\Sigma$ are all well-bracketed. Then for every subtree $T'$ of $T$ we have:
 \begin{enumerate}[(i)]
-\item $u \filter A$ is well-bracketed;
+\item The sequence $u \filter \sem{type(T')}$ is well-bracketed;
 
-\item If $u \filter type(T)$ is complete (all question moves answered) then
-    $u \filter A$ is complete.
+\item If $u \filter \sem{type(T')}$ is complete (\ie, all question moves are answered) then so is $u \filter T'$.
 \end{enumerate}
 \end{lemma}
 \begin{proof}
-By induction on the structure of the interaction game
-$\revsem{T}$. The base case is trivial. We only treat composition,
-the other cases being trivial: Let $ u \in \Sigma_1 ; ^U \Sigma_2$
-for some $U \subseteq \nat$ with $\Sigma_1 : \revsem{T_1^{A\gamear
-B}}$ and $\Sigma_2 : \revsem{T_2^{B\gamear C}}$.
+(i) An easy induction on the structure of the tree $T'$ shows that if all the leaf strategies of $\Sigma$ are well-bracketed then so are the uncovered positions of $\Sigma$. Thus $u$ is well-bracketed.
+Now a property of the filtering operations $u \filter \sem{type(T')}$ is that an answer move is removed from the sequence $u$ if and only if its enabling question is also removed. Consequently since $u$ is well-bracketed, for every subtree $T'$ of $T$ we have that $u \filter \sem{type(T')}$ is well-bracketed.
+  
+(ii) We show the contrapositive. The projection $u \filter \sem{type(T')}$  keeps only the moves from the top-level game of $T'$ whereas $u\filter T'$ preserves all the internal moves. Suppose that $u\filter T'$ is not complete
+then there is some internal move $b$ in $u$ that is not answered.
+Let $\Sigma'' : T''$ be the subtree of $\Sigma$ corresponding to the location where the move $b$ is uncovered: $\Sigma'' = \Sigma_1 ;^{S,P} \Sigma_2$ for some $S,P \subseteq \nat$ with $\Sigma_1 : \revsem{T_1^{A\gamear B}}$ and $\Sigma_2 : \revsem{T_2^{B\gamear C}}$ and such that $b$ belongs to some 
+uncovered component of $B$-move (\ie, corresponding to some index in $S$). We have $\sem{type(T'')} = \sem{A\gamear C}$.
 
-i. During composition, pointers attached to answer moves are
-preserved with respect to $\sim$ thus non-well-bracketing of
-$u\filter A\gamear C$ implies either non-well-bracketing of
-$u\filter A\gamear B$ or $u\filter B\gamear C$.
+The move $b$ is unanswered in $u\filter T'$, therefore it is not answered either in $u\filter T''$, and neither in $u \filter T_1$ and $u \filter T_2$.
 
-For ii., suppose $u \filter type(T) = \Pstr{(q)q\ u'\ (a-q)a }$. By
-well-bracketing (i.) and since $q$ and $a$ belong to $C$ we must
-have $u \filter B\gamear C = \Pstr{(q)q \ldots (a-q)a}$ thus $u
-\filter B\gamear C$ is complete. Suppose that $u \filter A\gamear B$
-is not complete, then its first move is unanswered, but since this
-is a $B$-move, it must also occur unanswered in $u \filter B\gamear
-C$ which is a contradiction since we have just prove that $u \filter
-B\gamear C$ is complete. Thus $u \filter A\gamear B$ is also
-complete.
-
-The induction hypothesis permits us to conclude.
+Thus the sequences $u\filter A,B$ and $u\filter B,C$ are not complete,
+which implies that $u\filter A,C$ is not complete.
+(Suppose $u \filter A\gamear C$ is complete then $u\filter A\gamear C = \Pstr{(q)q\ u'\ (a-q)a }$. Then $q$ and $a$ both belong to $C$ and we
+have $u \filter B\gamear C = \Pstr{(q)q \ldots (a-q)a}$ which by 
+well-bracketing gives that $u \filter B\gamear C$ is complete.) %This in turn implies that $u \filter A\gamear B$ is complete. Indeed, otherwise the first move in $u \filter A\gamear B$, which is a $B$-move, is unanswered; thus this move also occurs unanswered in $u \filter B\gamear C$ which gives a contradiction.
 \end{proof}
-Consequently if $u\filter type(T)$ is complete then $u$ is maximal: no move (and in particular no internal move) can be played after $u$.
+
+A consequence of (ii) is that if $u\filter \sem{type(T)}$ is complete then $u\filter T = u$ is maximal: no move---and in particular no internal move---can be played after $u$.
 
 \subsubsection{Fully-revealed and syntactically-revealed semantics}
 
@@ -2708,7 +2674,7 @@ where $\Gamma = x_1 : X_1 \ldots x_l : X_l$, $A_0 =
 $p$ parameters where $p\geq 1$.
 \end{definition}
 
-Fig.~\ref{fig:interaction_strategy_denotations} shows tree representations of the interaction games involved in the revealed strategy $\revsem{\Gamma \vdash M : A}$ for the two application cases. These two trees give us information about the constituent strategies involved in $\revsem{M}$. For instance the revealed strategy $\revsem{N_0}$ is defined on the interaction game $\revsem{T^{00}}$ whose root game is $A \gamear B_0$, and the strategy $ev$ is defined on the interaction game $\revsem{T^1}$ whose underlying tree is constituted of a single game-node $B_0 \gameprod \ldots \gameprod B_p \gamear o$ (thus plays of $ev$ do not contain any uncovered move).
+Fig.~\ref{fig:interaction_strategy_denotations} shows tree representations of the interaction games involved in the revealed strategy $\revsem{\Gamma \vdash M : A}$ for the two application cases. These trees give us information about the constituent strategies involved in $\revsem{M}$. For instance the revealed strategy $\revsem{N_0}$ is defined on the interaction game $\revsem{T^{00}}$ whose root game is $A \gamear B_0$, and the strategy $ev$ is defined on the interaction game $\revsem{T^1}$ whose underlying tree is constituted of a single game-node $B_0 \gameprod \ldots \gameprod B_p \gamear o$ (thus plays of $ev$ do not contain any uncovered move).
 
     \begin{figure}[htbp]
        \begin{center}
@@ -2776,7 +2742,7 @@ x : (o\typear o) \typear o} , \sem{ x:X \vdash \lambda y . y
 : o \typear o} \rangle \| ev^2 ) \enspace .$$
 \end{example}
 
-Note that the set of fully-revealed strategy is not a category (composition is not associative and there is no identity  strategy).
+Note that the set of fully-revealed strategies does not give rise to a category because strategy composition is not associative and there is no identity interaction strategy.
 
 
 \begin{definition}[Syntactically-revealed semantics]
@@ -3318,10 +3284,10 @@ be generalized to any lambda node by iterating the argument at every lambda node
 \emph{Claim:} The justification pointers in the sequences of nodes $t^\star \filter V^{(\odot)}$ are the same as those
 of the sequence of moves $\varphi_M(t^\star) \filter \revsem{\Delta \vdash A }$.
 
-By Definition \ref{dfn:phi_for_justsequ}, the sequences $\varphi_M(t^\star)$ and $t^\star$ have the same justification pointers,
-The projection operations $\_ \filter V^{(\odot)}$ (Definition \ref{def:subterm_trav_projection})
-and $\_ \filter \revsem{\Delta \vdash A}$ (Definition \ref{def:sub_interstrat_projection}) may alter the
-pointers in the sequences $\varphi_M(t^\star)$ and $t^\star$, but fortunately they do so identically!
+By Definition \ref{dfn:phi_for_justsequ}, the sequences $\varphi_M(t^\star)$ and $t^\star$ have the same justification pointers.
+The projection operations $\_ \filter V^{(\odot)}$ (Def.~\ref{def:subterm_trav_projection})
+and $\_ \filter \revsem{\Delta \vdash A}$ (Def.~\ref{def:sub_interstrat_projection}) both alter the
+pointers in the sequences $\varphi_M(t^\star)$ and $t^\star$, but they do so identically!
 Indeed, the operation $\_ \filter V^{(\odot)}$ changes pointers only for variable nodes that are free in $V^{(\odot)}$: it makes them point to
 the only occurrence of $\odot$ in the P-view at that point (which is also the only occurrence of a level-2 lambda node in the P-view).
 Similarly, the operation $\_ \filter \revsem{\Delta \vdash A}$ changes pointers only for initial A-moves: it makes them point to
@@ -3360,8 +3326,7 @@ the one which is closest to the root $r$. Let $\Gamma(\odot) \vdash
     then $m$ necessarily belongs to the subgame $\Gamma(\odot)$ of $\sem{\Gamma(\odot)\gamear T(\odot)}$ .
     Indeed, since $\odot$'s parent node is an application node, moves in the subgame
     $\sem{T(\odot)}$ correspond to internal moves of the application. By definition of
-    the interaction strategy for the application case, such moves can only be $\sim$-equivalent to other internal
-    moves and thus cannot be equivalent to move in $\sem{T}$.
+    the interaction strategy for the application case, such moves can only be $\sim$-equivalent to other internal  moves and thus cannot be equivalent to a move from $\sem{T}$.
 
     Consequently, $n$ is hereditarily justified by a free variable node $z$ in $\kappa(\odot)$. By assumption, $\odot$ is the closest node to the root $r$ (excluding $r$ itself) for which $n$ belongs to $V^{\odot\vdash}$ (the domain of definition of $\psi_{\kappa(\odot)}$). Hence $z$ is not bound by any $\lambda$-node occurring in the path to the root. Thus $z\in
     V^{\theroot\vdash}$ and therefore $n \in V^{\theroot\vdash}$.
@@ -3790,7 +3755,7 @@ child{node{$@$}
     We have:
     $$
     \syntrevsem{\Gamma \vdash M : o}
-            =  \underbrace{\langle \syntrevsem{\Gamma \vdash N_0 : B_0}, \ldots, \syntrevsem{\Gamma \vdash N_p : B_p} \rangle}_{\Sigma}\ \| \ ev
+            =  \underbrace{\langle \syntrevsem{\Gamma \vdash N_0 : B_0}, \ldots, \syntrevsem{\Gamma \vdash N_p : B_p} \rangle}_{\Sigma}\ \| \ ev \enspace .
     $$
 
     We refer the reader to Fig.~\ref{fig:interaction_strategy_denotations} from the previous section for a tree-representation of $\syntrevsem{M}$ which fixes the names of the different games involved in the interaction strategy. In particular the games $A$, $B$ and $C$ are defined as:
@@ -3827,9 +3792,9 @@ child{node{$@$}
 
     By unraveling the definition of $u \in \syntrevsem{\Gamma \vdash M : T}$ we have:
     \begin{equation}
-    \left\{
+    \left.
     \begin{array}{ll}
-(a)\quad       u \in L_T\enspace ;  \\
+(a)\quad       u \in J_T\enspace ;  \\
 (b)\quad        \hbox{For every occurrence $b$ in $u$ of an initial $B_k$-move, for some $k \in \{0..p\}$:} \\
 \quad\quad                \left\{\begin{array}{ll}
                     u \filter T^{0k} \filter b  \in \syntrevsem{N_k} \enspace , \\
@@ -3838,7 +3803,7 @@ child{node{$@$}
         \right. \\
 (c)\quad        u \filter B_0 = u \filter B_1, \ldots, B_p, C \enspace .
     \end{array}
-    \right.
+    \right\}
       \label{eqn:u_in_app_intersem}
     \end{equation}
 
@@ -4014,14 +3979,16 @@ $\varphi_M(t^\star) = u$.
   $u = \varphi_{M}(t^\star)$ for some traversal $t$ of $\tau(M)$. To show that
   $u$ is a position of $\syntrevsem{\Gamma \vdash M : T}$ we have to prove that it satisfies the three conditions of  (\ref{eqn:u_in_app_intersem}):
 \begin{itemize}
-    \item (a) $\varphi_{M}(t^\star) \in L_T$: It suffices to show that $\varphi_{M}(t^\star) \filter \sem{T}$ is a legal
-    position of the standard game $\sem{T}$. (By (b) and (c) it follows immediately that for every standard game $D$ occurring as a node of the interaction-game $T$ we have that $\varphi_{M}(t^\star) \filter D$ is a valid position of $D$.)
-
-    By Lemma \ref{lem:varphi_proj}(ii) we have $\varphi_{M}(t^\star) \filter \sem{T} = \varphi(t \filter \theroot)$.
-    Since $t$ is a traversal, it verifies well-bracketing, alternation and visibility. An easy induction shows that the unanswered occurrences of $t\filter \theroot$ correspond to the unanswered
-     occurrences of $t$ that are hereditarily justified by the root.
-     Again, an easy induction shows that $t\filter\theroot$ verifies alternation. Finally by Lemma \ref{lem:pviewproj_wrt_theroot},
-     $t \filter \theroot$ satisfies visibility.
+    \item (a) By definition, $\varphi_{M}$ maps justified sequence of nodes to justified sequence of moves from $M_T$ therefore $\varphi_{M}(t^\star) \in J_T$.
+         
+%%%%%%         Clearly  It suffices to show that $\varphi_{M}(t^\star) \filter \sem{T}$ is a legal
+%%%%%%    position of the standard game $\sem{T}$. (By (b) and (c) it follows immediately that for every standard game $D$ occurring as a node of the interaction-game $T$ we have that $\varphi_{M}(t^\star) \filter D$ is a valid position of $D$.)
+%%%%%%
+%%%%%%    By Lemma \ref{lem:varphi_proj}(ii) we have $\varphi_{M}(t^\star) \filter \sem{T} = \varphi(t \filter \theroot)$.
+%%%%%%    Since $t$ is a traversal, it verifies well-bracketing, alternation and visibility. An easy induction shows that the unanswered occurrences of $t\filter \theroot$ correspond to the unanswered
+%%%%%%     occurrences of $t$ that are hereditarily justified by the root.
+%%%%%%     Again, an easy induction shows that $t\filter\theroot$ verifies alternation. Finally by Lemma \ref{lem:pviewproj_wrt_theroot},
+%%%%%%     $t \filter \theroot$ satisfies visibility.
 
     \item (b) Take an initial $B$-move $b \in B_k$, for some $k\in\{0..p\}$, occurring in $\varphi_{M}(t^\star)$. There is a corresponding occurrence $r_k$ in $t$ of a level-$2$ lambda node $\theroot_k$ of $\tau(M)$.
     By definition, the function $\varphi_{M}$ maps nodes from the subtree of $\tau(M)$ rooted at $\theroot_{k'}$, for every $k'\in \{0..p\}$, to moves of the game $\syntrevsem{\Gamma \vdash B_{k'}}$ that are hereditarily justified by some occurrence of $\varphi_M(\theroot_{k'})$.
@@ -4062,28 +4029,28 @@ child {node {$x_i$}
    }
 
     We now use the notations of Fig.~\ref{fig:interaction_strategy_denotations} for names of the games involved in the interaction strategy. The composition of $\Sigma$ with $ev$ takes place on the following games:
-    $$ \overbrace{X_1 \times \ldots \overbrace{((B_1'' \times \ldots \times B_p'') \typear o'')}^{X_i} \ldots \times X_n}^A \stackrel\Sigma\longrightarrow \overbrace{\tikz[baseline=(r.base)]{ \node[draw,dashed](r){$\overbrace{((B_1' \times \ldots \times B_p') \typear o')}^{B_0} \times B_1 \times \ldots B_p $};}}^B \stackrel{ev}\longrightarrow \overbrace{o}^C$$
+    $$ \overbrace{X_1 \times \ldots \overbrace{((B_1'' \times \ldots \times B_p'') \typear o'')}^{X_i} \ldots \times X_n}^A \stackrel\Sigma\longrightarrow \overbrace{\tikz[baseline=(r.base)]{ \node[draw,dashed](r){$\overbrace{((B_1' \times \ldots \times B_p') \typear o')}^{B_0} \times B_1 \times \ldots B_p $};}}^B \stackrel{ev}\longrightarrow \overbrace{o}^C .$$
 
         Let $q_0$, $q_0'$ and $q_0''$ be the initial
     question of $C$, $B_0$ and $X_i$ respectively.
     \begin{description}
         \item[$\syntrevsem{\Gamma \vdash M : T} \subseteq \varphi_{M}( \travset(M)^\star )$.] We show (constructively) by induction that for every $v \in \Sigma \| ev$, there is some traversal $t$ such that
-        the sequence $u = \cover(v, \{0..p\}, \{0\})$ is equal to $\varphi_M(t^\star)$.
+        the sequence $u = \hide(v, \{0..p\}, \{0\})$ is equal to $\varphi_M(t^\star)$.
 
-    The base case $v=\epsilon$ is trivial. Suppose that $v = v' \cdot m \in  \Sigma   \| ev$  where $\cover(v', \{0..p\}, \{0\}) = \varphi_M(t'^\star)$ for some traversal $t'$ of $\tau(M)$ and move $m \in M_T$. Unraveling the definition of $v \in \Sigma \| ev$ gives
+    The base case $v=\epsilon$ is trivial. Suppose that $v = v' \cdot m \in  \Sigma   \| ev$  where $\hide(v', \{0..p\}, \{0\}) = \varphi_M(t'^\star)$ for some traversal $t'$ of $\tau(M)$ and move $m \in M_T$. Unraveling the definition of $v \in \Sigma \| ev$ gives
     \begin{equation}
-    \left\{
+    \left.
     \begin{array}{ll}
-              & v \in L_T \\
-        \zand & \hbox{For every occurrence $b$ in $v$ of an initial $B_k$-move for some $k \in \{0..p\}$:} \\
-        & \left\{\begin{array}{ll}
-            v \filter T^{00} \filter b  \in \pi_i \hbox{ if $k=0$ and } v \filter T^{0k} \filter b  \in \syntrevsem{N_k} \hbox{ if $k>0$;} \\
-            \hbox{and } \forall k'\in \{0..p\}\setminus\{k\} .\ v \filter T^{0k'} \filter b  = \epsilon
+              & \hbox{- } v \in J_T; \\
+              & \hbox{- for every occurrence $b$ in $v$ of an initial $B_k$-move for some $k \in \{0..p\}$:} \\
+        & \begin{array}{ll}
+            v \filter T^{00} \filter b  \in \pi_i \hbox{ if $k=0$ and } v \filter T^{0k} \filter b  \in \syntrevsem{N_k} \hbox{ if $k>0$,} \\
+            \hbox{and } \forall k'\in \{0..p\}\setminus\{k\} .\ v \filter T^{0k'} \filter b  = \epsilon;
         \end{array}
-        \right. \\
-        \zand & v \filter B_0 = v \filter B_1, \ldots, B_p, C \enspace .
+        \\
+         & \mbox{- and } v \filter B_0 = v \filter B_1, \ldots, B_p, C \enspace .
     \end{array}
-    \right.
+    \right\}
     \label{eqn:u_in_varapp_intersem}
     \end{equation}
 
@@ -4093,7 +4060,7 @@ child {node {$x_i$}
         \begin{enumerate}[1.]
             \item $m\in C$. The proof is the same as in the @-application case except that the rules \rulenamet{Value^{\lambda\mapsto{\sf var}}} and \rulenamet{Value^{{\sf var}\mapsto\lambda}} are used instead of \rulenamet{Value^{\lambda\mapsto @}} and \rulenamet{Value^{@\mapsto\lambda}} respectively.
 
-            \item $m$ is a superficial internal $B$-move. Then $\cover(v,\{0..p\}, \{0\}) = \cover(v', \{0..p\}, \{0\})$ so we can directly conclude from the I.H.
+            \item $m$ is a superficial internal $B$-move. Then $\hide(v,\{0..p\}, \{0\}) = \hide(v', \{0..p\}, \{0\})$ so we can directly conclude from the I.H.
 
             \item $m$ is a profound internal $B$-move. Then necessarily $m$ belongs to $B_k$ for some $k\in \{1..p\}$ (since $\pi_i$ does not contain internal moves). Thus $m$ must be hereditarily justified by some $b \in B_k$. The treatment of this case is identical to the @-application case where $m\in T^0$ is not initial in $B$ and $b \in B_k$ for some $k\in \{0..p\}$.
 
@@ -4118,7 +4085,7 @@ child {node {$x_i$}
                        m' \in \oview{\psi_M (t'\filter r)} &= \psi_M ( \oview{t'\filter r}) \\
                           &= \varphi_M ( \oview{t' \filter r}) & \mbox{since $\varphi_M$ and $\psi_M$ coincide on $V^{\theroot \vdash}$,} \\
                         &= \varphi_M ( \oview{t'}) & \mbox{by Lemma \ref{lem:oviewproj_wrt_theroot}.} \end{align*}
-               This implies that $\alpha'$ appears in $\oview{t'}$ which allows us to use the rule \rulenamet{InputVar} to form the traversal $t = t'\cdot \alpha$ verifying $\varphi_M(t^\star) =               \cover(v,\{0..p\},\{0\})$.
+               This implies that $\alpha'$ appears in $\oview{t'}$ which allows us to use the rule \rulenamet{InputVar} to form the traversal $t = t'\cdot \alpha$ verifying $\varphi_M(t^\star) =               \hide(v,\{0..p\},\{0\})$.
 
                 \item Suppose $m$ is a $\pmove$-answer. The same argument holds using the rule \rulenamet{InputValue} instead of \rulenamet{InputVar}.
 
@@ -4129,7 +4096,7 @@ child {node {$x_i$}
                    Let $\pview{v}$ denote the \emph{core} of the interaction sequence $v$ \cite{McCusker-GamesandFullAbstrac}.
 
                    By P-visibility in $v\filter A,C$, $m$ occurs in $\pview{v' \filter A,C}$.
-                   Further we have $\pview{v' \filter A,C} = \pview{v'} \filter A,C$ \cite{McCusker-GamesandFullAbstrac}, and clearly $\pview{v'} \filter A,C$ equals $\pview{\cover(v', \{0..p\}, \{0\})}\filter A,C$.
+                   Further we have $\pview{v' \filter A,C} = \pview{v'} \filter A,C$ \cite{McCusker-GamesandFullAbstrac}, and clearly $\pview{v'} \filter A,C$ equals $\pview{\hide(v', \{0..p\}, \{0\})}\filter A,C$.
                    Hence
                     \begin{align*}
                        m' \in \pview{\varphi_M (t'^\star)} \filter A,C &\subseqof  \pview{\varphi_M (t'^\star)} \enspace .
@@ -4142,9 +4109,7 @@ child {node {$x_i$}
 
 \item[$\varphi_{M}( \travset(M)^\star) \subseteq \syntrevsem{M}$.]
   Let $t$ be some traversal of $\tau(M)$. To show that
-  $\varphi_{M}(t^\star)$ is a position of $\syntrevsem{\Gamma \vdash M : T}$ we have to prove that $\varphi_{M}(t^\star) = \cover(v, \{0..p\}, \{0\})$ for some $v$ satisfying condition (\ref{eqn:u_in_varapp_intersem}).
-
-  It suffices to take $v = \delta(\varphi_{M}(t^\star))$
+  $\varphi_{M}(t^\star)$ is a position of $\syntrevsem{\Gamma \vdash M : T}$ we have to prove that $\varphi_{M}(t^\star) = \hide(v, \{0..p\}, \{0\})$ for some $v$ satisfying condition (\ref{eqn:u_in_varapp_intersem}).   It suffices to take $v = \delta(\varphi_{M}(t^\star))$
   where $\delta$ denotes the function sketched in Sec.\ \ref{subsub:defdelta} that transforms plays of the syntactically-revealed semantics to their corresponding plays of the fully-revealed semantics. The rest of the argument is the same as in the @-application case. \qedhere
 
         \end{enumerate}

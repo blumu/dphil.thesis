@@ -3,41 +3,40 @@
 Game semantics is a very powerful paradigm for giving models of programming languages. It was the first kind of semantics able to provide a \emph{fully abstract model} of the language \pcf, a result which was subsequently extended to other languages. In a nutshell, the term ``full abstraction'' means that the model provides a faithful mathematical characterization of the language. A natural way to give a semantic account of a language consists therefore in giving a game semantic characterization of it. A question that we will try to answer in this thesis is how does a syntactic restriction such as \emph{safety}
 impact on the on the game model of a language? A substantial part of this thesis is devoted to this question (Chapter \ref{chap:concrete_gamesem} and \ref{chap:model}).
 
-This chapter introduces the basic notions of game semantics including the categorical interpretation, the game interpretation of \pcf\ and \ialgol, and the full abstraction results. It concludes by giving a brief summary of some important results in \emph{Algorithmic game semantics}. For an introduction, we recommend the tutorial by Samson Abramsky  \cite{abramsky:game-semantics-tutorial} on which this chapter is based. Many details and proofs will be omitted; we refer the reader to other literature \cite{hylandong_pcf, abramsky94full} for a complete description of game semantics. The reader familiar with game semantics may very well consider skipping this chapter altogether as all the definitions and notations introduced here are standard.
+This chapter introduces the basic notions of game semantics including the categorical interpretation, the game interpretation of \pcf\ and \ialgol, and the full abstraction results. It concludes by giving a brief summary of some important results in \emph{Algorithmic game semantics}. For an introduction, we recommend the tutorial by Samson Abramsky  \cite{abramsky:game-semantics-tutorial} on which this chapter is based. Many details and proofs will be omitted; we refer the reader to other literature \cite{hylandong_pcf, abramsky94full} for a complete account. The reader familiar with game semantics may very well consider skipping this chapter altogether as all the definitions and notations introduced here are standard.
 
-\subsection{History}
+\subsection{Historical remarks}
 
-Game semantics finds its origin in various works. Paul Lorenzen introduced a game semantics for logic in the 1950s to study intuitionistic logic \citep{lor61}. In this setting, the notion of logical truth is modeled using game
-theoretic concepts such as the existence of a winning strategy.
-Four decades later, Andreas R. Blass established a connection with linear logic. At the same time, Samson Abramsky and Radha Jagadeesan \cite{abramsky92games} on one hand, Martin Hyland and Luke Ong \cite{HO93a} on the other hand, used game semantics to prove full completeness of Multiplicative Linear Logic (MLL). Game semantics has then emerged as a new paradigm for the study of formal models for programming languages. The idea is to model the execution of a program as a game played by two protagonists. Two players are involved in these game: the Opponent, who represents the environment, and the Proponent, who representing the program.
-The meaning of the program is then modeled by a strategy for the Proponent.
+We give an outline of the history of game semantics. Cardone and Hindley
+gave a more detailed survey \cite{cardone2006hlc}.
 
-
-Subsequently, these game-based models have been used to give a solution to the long-standing problem of ``Full abstraction of \pcf'' \citep{abramsky94full, hylandong_pcf,Nickau:lfcs94}. This result has then led to applications in the field of software verification \cite{ghicamccusker00} opening-up a new field called Algorithmic Game Semantics \citep{Abr02}.
-
+\subsubsection*{Logic}
+% 1 Lorenzen, 2 berry+curien, 3 Blass, 4 Joyal
+Game semantics finds its origin in various works \cite{lor61,DBLP:journals/tcs/BerryC82,blass1992gsl,Joyal1977}. Paul Lorenzen introduced a game semantics for logic in the 1950s to study intuitionistic logic \citep{lor61} where the notion of logical truth is modeled using game-theoretic concepts such as the existence of a winning strategy. Four decades later, this approach was used by Andreas Blass \cite{blass1992gsl} to establish a connection with Girard's linear logic. Joyal \cite{Joyal1977} later presented his ``combinatorial'' calculus of strategies, establishing the first categorical account of two-player games.
+%The work of Berry and Curien \cite{DBLP:journals/tcs/BerryC82} on characterizations of sequentiality at higher-types by concrete data structures, has also contributed to the development of game semantics although the concept of game is not explicitly mentioned in this work.
+In the 1990s, Samson Abramsky and Radha Jagadeesan \cite{abramsky92games} on one hand, Martin Hyland and Luke Ong \cite{HO93a} on the other hand, used game semantics to prove full completeness of Multiplicative Linear Logic (MLL).
 
 \subsubsection*{Models of programming languages}
 
-Before the 1980s, there were many approaches to define models for programming languages. Among the successful ones, there were the axiomatic, operational and denotational semantics.
-\begin{itemize}
-\item Operational semantics gives a meaning to a program by describing the behaviour of a machine executing the program. It is defined formally
-by giving a state transition system.
-\item Axiomatic semantics defines the behaviour of the program through the use of axioms and is used to prove program correctness
-by static analysis of the code of the program.
-\item The denotational semantics approach consists in mapping a program to a mathematical structure
-having good properties such as compositionality. This mapping is achieved by structural induction on the syntax of the program.
-\end{itemize}
-
-In the 1990s, three different independent research groups: Samson
+Subsequently, game semantics emerged as a new paradigm for the study of formal models for programming languages. Three different independent research groups: Samson
 Abramsky, Radhakrishnan Jagadeesan and Pasquale Malacaria
-\citep{abramsky94full}, Martin Hyland and Luke Ong
-\citep{hylandong_pcf} and Nickau \citep{Nickau:lfcs94} introduced
-game semantics, a new kind of semantics, in order to solve a long
-standing problem in the semanticists community, namely finding a fully
+\citep{abramsky94full}; Martin Hyland and Luke Ong
+\citep{hylandong_pcf}; and Nickau \citep{Nickau:lfcs94} introduced
+a new kind of model based on game semantics in order to solve a long
+standing problem in the semanticists community: finding a fully
 abstract model for \pcf.
 
-\subsubsection*{The problem of full abstraction for \pcf}
+Many approaches were used to define models for programming languages before the 
+the introduction of game models. Among the successful ones were the:
+\begin{itemize}
+\item \emph{operational semantics}:  the meaning of a program is defined by describing the behaviour of a machine executing it. This is formally done by means of a state transition system;
+\item \emph{axiomatic semantics}: the behaviour of the program is defined by means of axioms. This kind of semantics lends itself well to proving correctness of the program by static analysis of the program code;
+\item \emph{denotational semantics}: programs are mapped to mathematical objects with good properties (such as compositionality). This mapping is done by structural induction on the syntax of the program.
+\end{itemize}
 
+In \emph{game semantics}, the idea is to model the program as a game played by two protagonists: the Opponent, representing the environment, and the Proponent, representing the program. The meaning of the program is then modeled by a strategy for the Proponent.
+
+\subsubsection*{The problem of full abstraction for \pcf}
 
 The problem of the Full Abstraction for \pcf\ goes back to the
 1970s. Scott constructed a model of \pcf\ based on domain theory \citep{scott93} which gives a sound interpretation of
@@ -45,10 +44,10 @@ observational equivalence: if two terms have the same domain
 theoretic interpretation then they are observationally equivalent.
 However the converse is not true: there exist two \pcf\ terms
 which are observationally equivalent but have different domain
-theoretic denotations. We say that the model is not \emph{fully abstract}.
+theoretic denotations---we say that the model is not \emph{fully abstract}.
 
-The key reason why the domain theoretic model is not fully
-abstract is that the parallel-or operator defined by the following
+The reason why the domain theoretic model is not fully
+abstract lies in the fact that the \emph{parallel-or} operator defined by the following
 truth table
 \begin{center}
 \begin{tabular}{l|lll}
@@ -58,18 +57,15 @@ tt & tt & tt & tt\\
 ff & $\bot$ & tt & ff\\
 \end{tabular}
 \end{center}
-is not definable by any \pcf\ term. Indeed, it is possible to define two
+is not definable by any \pcf\ term. It is possible to define two
 different \pcf\ terms that have the same behaviour except when
 applied to a term computing p-or. Since p-or is not definable in
 \pcf, these two terms will have the same denotation. Hence the model is not fully abstract.
 
 
-It is possible to ``patch'' \pcf\ by adding the operator p-or, the
-resulting language ``\pcf+p-or'' is fully-abstracted by Scott
-domain theoretic model \citep{DBLP:journals/tcs/Plotkin77}. The language we are now dealing with, however,
-is strictly more powerful than
-\pcf\ since it allows parallel execution of commands whereas \pcf\
-only permits sequential execution.
+One solution to the problem is to ``patch'' \pcf\ by adding the p-or operator; the
+resulting language ``\pcf+p-or'' was shown to be fully-abstracted by Scott
+domain theoretic model \citep{DBLP:journals/tcs/Plotkin77}. However the language that we are now dealing with is strictly more powerful than \pcf---it allows parallel execution of commands whereas \pcf\ only permits sequential execution.
 
 Another approach involves the elimination of the undefinable
 elements (like p-or) by strengthening the conditions on the function
@@ -83,7 +79,7 @@ Full abstract models for \pcf\ were found at the same time and independently by 
 
 The game semantics approach has then been adapted to other varieties of programming paradigms including languages with stores (Idealized Algol), call-by-value \citep{honda99gametheoretic,abramsky98callbyvalue} and call-by-name, general references \citep{DBLP:conf/lics/AbramskyHM98}, polymorphism
 \citep{DBLP:journals/apal/AbramskyJ05}, control features
-(continuation and exception), non determinism, concurrency. In all these cases, the game semantics model led to a syntax-independent fully abstract model of the corresponding language.
+(continuation and exception), non determinism, concurrency. In all these cases, the game semantics model provides a syntax-independent fully abstract model of the language considered.
 
 \subsection{Definitions}
 \label{sec:catgames}

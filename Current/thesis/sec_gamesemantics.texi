@@ -1,7 +1,6 @@
  \label{sec:gamesem}
 
-Game semantics is a very powerful paradigm for giving models of programming languages. It was the first kind of semantics able to provide a \emph{fully abstract model} of the language \pcf, a result which was subsequently extended to other languages. In a nutshell, the term ``full abstraction'' means that the model provides a faithful mathematical characterization of the language. A natural way to give a semantic account of a language consists therefore in giving a game semantic characterization of it. A question that we will try to answer in this thesis is how does a syntactic restriction such as \emph{safety}
-impact on the on the game model of a language? A substantial part of this thesis is devoted to this question (Chapter \ref{chap:concrete_gamesem} and \ref{chap:model}).
+Game semantics is a very powerful paradigm for giving models of programming languages. It was the first kind of semantics able to provide a \emph{fully abstract model} of the language \pcf, a result which was subsequently extended to other languages. In a nutshell, the term ``full abstraction'' means that the model provides a faithful mathematical characterization of the language. A natural way to give a semantic account of a language consists therefore in giving a game semantic characterization of it. A question that we will try to answer in this thesis is: How does a syntactic restriction such as \emph{safety} impact on the on the game model of a language? A substantial part of this thesis is devoted to this question (Chapter \ref{chap:concrete_gamesem} and \ref{chap:model}).
 
 This chapter introduces the basic notions of game semantics including the categorical interpretation, the game interpretation of \pcf\ and \ialgol, and the full abstraction results. It concludes by giving a brief summary of some important results in \emph{Algorithmic game semantics}. For an introduction, we recommend the tutorial by Samson Abramsky  \cite{abramsky:game-semantics-tutorial} on which this chapter is based. Many details and proofs will be omitted; we refer the reader to other literature \cite{hylandong_pcf, abramsky94full} for a complete account. The reader familiar with game semantics may very well consider skipping this chapter altogether as all the definitions and notations introduced here are standard.
 
@@ -57,10 +56,10 @@ tt & tt & tt & tt\\
 ff & $\bot$ & tt & ff\\
 \end{tabular}
 \end{center}
-is not definable by any \pcf\ term. It is possible to define two
+is not definable by any \pcf\ term. Indeed, it is possible to define two
 different \pcf\ terms that have the same behaviour except when
 applied to a term computing p-or. Since p-or is not definable in
-\pcf, these two terms will have the same denotation. Hence the model is not fully abstract.
+\pcf, these two terms will have the same denotation, hence the model is not fully abstract.
 
 
 One solution to the problem is to ``patch'' \pcf\ by adding the p-or operator; the
@@ -70,52 +69,31 @@ domain theoretic model \citep{DBLP:journals/tcs/Plotkin77}. However the language
 Another approach involves the elimination of the undefinable
 elements (like p-or) by strengthening the conditions on the function
 used in the model. This approach was followed by Berry
-who gave a model based on
-stable functions \cite{berry-stable,gberry-thesis}. Stable functions are a class of functions smaller
-than the class of strict and continuous function. Unfortunately this
-approach did not succeed.
+who gave a model based on stable functions \cite{berry-stable,gberry-thesis}, a class of functions smaller than the class of strict and continuous function. Unfortunately this approach did not succeed.
 
 Full abstract models for \pcf\ were found at the same time and independently by three research teams: Abramsky, Jagadeesan and Malacaria \citep{abramsky94full}, Hyland and Ong \citep{hylandong_pcf} and Nickau \citep{Nickau:lfcs94}. These three approaches are all based on game semantics.
 
-The game semantics approach has then been adapted to other varieties of programming paradigms including languages with stores (Idealized Algol), call-by-value \citep{honda99gametheoretic,abramsky98callbyvalue} and call-by-name, general references \citep{DBLP:conf/lics/AbramskyHM98}, polymorphism
+The game semantic approach has then been adapted to other varieties of programming paradigms leading to fully abstract models of languages featuring stores (Idealized Algol), call-by-value \citep{honda99gametheoretic,abramsky98callbyvalue} and call-by-name, general references \citep{DBLP:conf/lics/AbramskyHM98}, polymorphism
 \citep{DBLP:journals/apal/AbramskyJ05}, control features
-(continuation and exception), non determinism, concurrency. In all these cases, the game semantics model provides a syntax-independent fully abstract model of the language considered.
+(continuation and exception), non determinism, concurrency, etc.
 
 \subsection{Definitions}
 \label{sec:catgames}
 
-We now introduce formally the notion of game that will be used in
-the following sections to give a model of the programming languages
-\pcf\ and Idealized Algol. The games we are interested in are two-players games. The players
-are named O for \defname{Opponent} and P for \defname{Proponent}. The game played by O
-and P is constrained by the \emph{arena}. The arena defines the
-possible moves of the game. By analogy with real board games, the
-arena represents the board together with the rules that tell players
-how they can make their moves on the board. The analogy with board
-game will not go beyond that. Instead, it is better to regard our
-games as dialogs between two players: player O interviews player P.
-P's goal is to answer the initial question asked by O. P can also
-ask questions to O if he needs more precision about O's initial
-question. Again, O can ask further question to P. This induces a
-flow of questions and answers between O and P that can continue
-possibly forever. In game semantics the attention is given to the
-study of this flow of questions and answers, the notion of winner of
-the game is not a concern.
+We now introduce formally the notion of game that we will use in
+later sections to model programming languages. We consider a two-player game. The players are named O for \defname{Opponent} and P for \defname{Proponent}. The game played by these two players is constrained by an \emph{arena}. The arena defines the possible moves of the game. By analogy with real board games, the arena represents the board together with rules indicating which are the legal moves for each player. The analogy with board
+game will stop here; instead it is preferable to regard our
+games as dialogs between the two players. The dialog unfolds as follows: the Opponent interviews the Proponent; P's goal is to answer the initial question asked by O. P can also ask intermediary questions to O in order to request more precision about O's initial question; O can subsequently ask further questions to P. We thus distinguish two kinds of moves in our games: the questions and the answers. This process induces a flow of questions and answers between O and P which can possibly last forever. In game semantics, attention is given to the study of this flow of questions and answers; the notion of `winning a game' or `winner of the game' is not a concern.
 
 \subsubsection{Arenas}
 
-
-Our games have two kinds of moves: the questions and the answers.
-We also distinguish moves played by O and those played by P. An arena is
-represented by a directed acyclic graph (DAG) whose internal nodes correspond
-to question moves and leaves correspond to answer moves. It is
-formally defined as follows.
+The arena defines the bases of the game for the players. It is formally given by a directed acyclic graph (DAG) whose internal nodes correspond to question moves and leaves correspond to answer moves.
 \begin{definition}[Arena]
-An arena is a structure $\langle M, \lambda, \vdash \rangle$ where:
+An \defname{arena} is a structure $\langle M, \lambda, \vdash \rangle$ where:
 \begin{itemize}
 \item $M$ is the set of possible moves;
 \item $\lambda : M \rightarrow \{ O, P\} \times \{Q, A\}$ is a labelling function specifying which are the question and answer moves, and which moves can be played by O and P.
-    Formally, it is given by a pair of functions $\lambda^{OP} : M \rightarrow  \{ O, P\}$ and $\lambda^{QA} : M \rightarrow  \{ Q, A\}$ such that $\lambda$ is the pairing $\langle \lambda^{OP},\lambda^{QA} \rangle$. For all $m\in M$ if $\lambda^{OP} (m) = O$  then $m$ is an O-move otherwise it is a P-move, and if $\lambda^{QA} (m) = Q$ then $m$ is a question otherwise it is an answer.
+    Formally, it is given by a pair of functions $\lambda^{OP} : M \rightarrow  \{ O, P\}$ and $\lambda^{QA} : M \rightarrow  \{ Q, A\}$ such that $\lambda$ is the pairing $\langle \lambda^{OP},\lambda^{QA} \rangle$. An element $m$ of $M$ is an O-move if $\lambda^{OP} (m) = O$  and a P-move otherwise; It is a question if $\lambda^{QA} (m) = Q$ and an answer otherwise.
 
 \item $\vdash$ is an \defname{enabling relation} on $M \times M$ such that    $(M,\vdash)$ is a directed acyclic graph (DAG) verifying the following conditions:
     \begin{itemize}
@@ -135,16 +113,13 @@ swapping the role of the Opponent and Proponent in $\lambda$:
 \end{eqnarray*}
 
 The roots of the DAG $(M,\vdash)$ are called the \defname{initial moves}.
-Other moves must be enabled by some other question move.
 
-edges of the DAG induces the enabling relation between moves.
-
-The simplest possible arena, written $\mathbf{1}$, is the arena with an empty set of moves.
+The simplest possible arena is the one with an empty set of moves; it is written $\mathbf{1}$.
 
 \begin{example}[The flat arena]
 \label{exmp:flatarena}
- Let $A$ be any countable set, then the flat arena over $A$
-is defined to be the arena $\langle M, \lambda, \vdash \rangle$ such
+ Let $A$ be any countable set. The flat arena over $A$
+is defined as the arena $\langle M, \lambda, \vdash \rangle$ such
 that $M$ has one move $q$ with $\lambda(q) = OQ$ and for each
 element in $A$, there is a corresponding move $a_i$ in $M$ with
 $\lambda(a_i) = PA$ for some $i \in \nat$. The enabling relation
@@ -167,38 +142,44 @@ child {node {$\ldots$}};
 \end{center}
 \end{example}
 
-Once the arena has been defined, the bases of the game are set and the players have something to play with.
-We now need to describe the state of the game, for that purpose
-we introduce \emph{justified sequences of moves}:
 \begin{definition}[Justified sequence of moves]
 A justified sequence is a sequence of moves $s$ together with an
 associated sequence of pointers. Any move $m$ in the sequence that
 is not initial has a pointer that points to a previous move $n$ that
 enables it (\ie, $n \vdash m$).
 
-(A more formal definition is to regard a justified sequence as a sequence of pairs, each pair encoding an element of the sequence together with an index indicating the position where the element points to.)
+(Formally we can regard a justified sequence as a sequence of pairs, each pair encoding an element of the sequence together with an index indicating the position where the element points to.)
 \end{definition}
 Since initial moves are all O-moves, the first move of a justified
 sequence is necessarily an O-move.
 
 \begin{convention}
-Justification pointers are graphically represented by arrows as in the following example:
-$$\Pstr{ (q4){q^4}\ (q3-q4){q^3}\  (q2-q3){q^2}\ (q3b-q4){q^3}\ (q2b-q3b){q^2}\ (q1){q^1}} \enspace .$$
+Justification pointers are graphically represented with arrows as follows:
+$$\Pstr{ (q4){q^4}\ (q3-q4){q^3}\  (q2-q3){q^2}\ (q3b-q4){q^3}\ (q2b-q3b){q^2}\ (q1-q2b){q^1}} \enspace .$$
 We will sometimes omit the justification pointers altogether if they do not play any role in the argument.
 \end{convention}
 
-\begin{notation} We write $s\, t$ or sometimes $s \cdot
-t$ to denote the sequences obtained by concatenating $s$ and $t$.
+\begin{notation} We write $s \cdot t$, or just $s\, t$, to denote the justified sequence obtained by concatenating $s$ and $t$.
 \indexnotation{$s \cdot s'$}{Concatenation of the (justified) sequences $s$ and $s'$}%
 \indexnotation{$\epsilon$}{The empty (justified) sequence}%
 The empty sequence is written $\epsilon$. Given a justified sequence $s = m_1
-\cdot m_2 \ldots m_n$ (where pointers are not represented) we write $s_{\prefixof m_i}$ for $m_1 \cdot m_2 \ldots m_i$, the prefix sequence of $s$ up to the move $m_i$; and $s_{< m_i}$ for $m_1 \cdot m_2 \ldots m_{i-1}$.
+\cdot m_2 \ldots m_n$ (where pointers are not represented) we write $s_{\prefixof m_i}$ for $m_1 \cdot m_2 \ldots m_i$ (the prefix sequence of $s$ up to the move $m_i$); and $s_{< m_i}$ for $m_1 \cdot m_2 \ldots m_{i-1}$.
 \indexnotation{$s_{\prefixof m}$}{Prefix of the (justified) sequence $s$ ending with the occurrence $m$}%
 \end{notation}
 
+\begin{definition}[Hereditary projection]
+Let $s$ be a justified sequence of moves. We say that a move $m_0$ occurring in $s$ is hereditarily justified by a move $n$ occurring in $s$ if there exist moves $m_1, \ldots, m_q$ occurring in $s$ for $q\geq 0$ such that
+$n$ justifies $m_q$ and $m_k$ justifies $m_{k-1}$ for $1\leq k\leq q$.
+
+Suppose that $n$ is an occurrence of a move in the sequence $s$ then
+$s \filter n$ denotes the subsequence of $s$ consisting of
+the moves hereditarily justified by $n$. If $I$ is a set of initial moves then $s \filter I$ denotes the subsequence of $s$ consisting of the
+moves hereditarily justified by moves in $I$.
+\end{definition}
+
 Justified sequences of moves will be used to record the history of all the
 moves that have been played so far in the (yet to be defined) game.
-Two particular subsequences called the \emph{P-view} and the \emph{O-view} are of interest. These subsequences correspond to local restricted views that each player has of the history of the game.
+Two particular subsequences called the \emph{P-view} and the \emph{O-view} are of interest. These subsequences correspond to restricted views that each player has of the history of the game in a given position.
 \begin{definition}[View]
 \indexnotation{$\pview{s}$}{Proponent view of a justified sequence of move}
 Given a justified sequence of moves $s$, the \index{P-view}\defname[view!P-view]{Proponent view} (P-view) written $\pview{s}$ is defined by induction as follows:
@@ -224,43 +205,27 @@ The \index{O-view}\defname[view!O-view]{O-view} $\oview{s}$ is defined similarly
 \subsubsection{Games}
 \label{sec:games}
 
-Not all justified sequences are of interest for the notion of games that we use. We call \emph{legal position} justified
-sequences that satisfy two additional conditions: alternation and
-visibility. Alternation says that players O and P play
-alternatively. Visibility expresses that each non-initial move is
+Only certain kinds of justified sequences will be of interest in our games: We call \emph{legal position} any justified sequence that satisfies two conditions: alternation and visibility. Alternation says that players O and P play alternatively. Visibility expresses that each non-initial move is
 justified by a move situated in the local context at that point.
 Formally:
 \begin{definition}[Legal position]
-A legal position is a justified sequence of move $s$ respecting the following constraints:
+A legal position is a justified sequence of moves $s$ respecting the following constraints:
 \begin{itemize}
 \item \index{alternation}\emph{Alternation}: For every subsequence $m \cdot n$ of $s$, $\lambda^{OP}(m) \neq \lambda^{OP}(n)$.
-\item \index{visibility}\emph{Visibility}: For every subsequence $t m$ of $s$ where $m$ is not initial, if $m$ is a P-move then $m$ points to a move in $\pview{s}$
-and if $m$ is a O-move then $m$ points to a move in $\oview{s}$.
+\item \index{visibility}\emph{Visibility}: For every subsequence $t \cdot m$ of $s$ where $m$ is not initial, if $m$ is a P-move then $m$ points to a move occurring in $\pview{s}$; and if $m$ is a O-move then $m$ points to a move occurring in $\oview{s}$.
 \end{itemize}
-The set of legal position of an arena $A$ is denoted by $L_A$.
+The set of legal positions of an arena $A$ is denoted by $L_A$.
 \end{definition}
-
-We say that a move $n$ is hereditarily justified by a move $m$ if there is a sequence of move
-$m_1, \ldots, m_q$ such that:
-$$ m \vdash m_1 \vdash m_2 \vdash \ldots m_q \vdash n$$
-If a move has no justification pointer, we says that it is an
-\emph{initial move} (in that case it must be a root of the DAG of the arena).
-
-Suppose that $n$ is an occurrence of a move in the sequence $s$ then
-$s \filter n$ denotes the subsequence of $s$ containing all
-the moves hereditarily justified by $n$. Similarly, $s
-\filter I$ denotes the subsequence of $s$ containing all the
-moves hereditarily justified by moves in $I$.
 
 \begin{definition}[Game]
 A game is a structure $\langle M, \lambda, \vdash, P \rangle$ such that
 \begin{itemize}
 \item $ \langle M, \lambda, \vdash \rangle$ is an arena;
-\item $P$ is called the set of valid positions; it is:
+\item $P$, called the set of \emph{valid positions}, is:
     \begin{itemize}
     \item a non-empty prefix closed subset of the set of legal
     positions,
-    \item closed by initial hereditary projection: if $s$ is a valid position then for every set $I$ of occurrences of initial moves
+    \item closed by initial hereditary projection: If $s$ is a valid position then for every set $I$ of occurrences of initial moves
     in $s$, $s\filter I$ is also a valid position.
     \end{itemize}
 \end{itemize}
@@ -268,14 +233,14 @@ A game is a structure $\langle M, \lambda, \vdash, P \rangle$ such that
 The empty arena $\mathbf{1}$ together with the empty set of valid positions defines the simplest possible game, written $\mathbf{1}$.
 
 \begin{example} Consider the flat arena  $\nat$.
-The set of valid position $P = \{ \epsilon, q \} \union \{ q \cdot
+The set of valid positions $P = \{ \epsilon, q \} \union \{ q \cdot
 a_i \ | i \in \nat \}$ defines a game on the arena $\nat$.
 \end{example}
 
 \subsubsection{Constructions on games}
 \label{sec:gameconstruction}
 
-We now define game constructors that will be useful later on.
+We now present basic transformations that are used to construct games.
 
 Consider the two functions $f : A \rightarrow C$ and $g : B
 \rightarrow C$, we write $[f,g]$ to denote the pairing of $f$ and
@@ -332,7 +297,7 @@ The game $A \& B$ is defined as follows:
 
 Note that a play of the game $A \& B$ is either a play of $A$ or a
 play of $B$, whereas a play of the game $A \otimes B$ may be an
-interleaving of plays on $A$ and plays on $B$.
+interleaving of plays of $A$ and $B$.
 
 \subsubsection{Representation of plays}
 
@@ -357,13 +322,12 @@ q  &&& P\\
 && 9 & P
 \end{array}
 $$
-Whenever necessary the diagram also shows the justification pointers.
-
+We sometimes also represent the justification pointers on the diagrams.
 
 \subsubsection{Strategy}
 
-When a player has to play during the game, he may face several choices
-for his next move. A strategy is a guide telling the player which move to make when the game is in a given position. Formally, it is a partial function mapping legal positions where P has to play to P-moves.
+During the game, a player may face several choices
+when it is his turn to play. A \emph{strategy} is a guide telling the player which move to make when the game is in a given position.
 \begin{definition}
 \label{dfn:strategy}
 A \defname{strategy} for player P on a given game $\langle M, \lambda, \vdash, P \rangle$ is a
@@ -374,6 +338,7 @@ position});
 \item if $sab, sac \in \sigma$ then $b = c$  and $b$ has the same justifier as
 $c$ (\emph{determinacy}).
 \end{enumerate}
+(Alternatively, a strategy can be viewed as a partial function mapping odd-length legal positions to P-moves.)
 \end{definition}
 
 The idea is that the presence of the even-length sequence $s a b$ in
@@ -400,8 +365,8 @@ strategies in which a prefix-closed set is used as opposed to the above definiti
 If $\sigma$ denotes a strategy in the sense of Def.~\ref{dfn:strategy} then the corresponding strategy in the alternative definition is given by
 $\sigma \union \textsf{dom}(\sigma)$ where $\textsf{dom}(\sigma)$ is the domain of $\sigma$ defined as
 $$\textsf{dom}(\sigma) = \{ sa \in P_A^{odd}\ |\ \exists b . sab \in \sigma \}\enspace .$$
-Informally, think of $\textsf{dom}(\sigma)$ as the collection of all paths
-in the sub-tree induced by the strategy in the game tree of all possible moves.
+Think of $\textsf{dom}(\sigma)$ as the collection of paths
+of a tree defining the strategy (a subtree of the tree of all possible moves).
 \end{remark}
 
 

@@ -3,7 +3,8 @@
 We now consider extensions of the safe simply typed lambda calculus.
 
 \subsection{PCF}
-We define \defname[safe!\pcf]{safe \pcf} as the applied safe lambda calculus with types defined over a single atomic type of natural numbers and extended with the basic operators of \pcf: additions, substraction, conditional branching and recursion). Equivalently, it is the restriction of \pcf\ where the application and abstraction rules are constrained similarly as in the safe lambda calculus. The rules are given in Table \ref{tab:safepcf}. The circled rules are those that differ from their \pcf\ counterpart.
+We define the language \defname[safe!\pcf]{safe \pcf} as an applied version of the safe lambda calculus. Its types 
+are the simple types over the single atomic type of natural numbers; It features the basic arithmetic operators of \pcf\ (additions, substraction and conditional branching) as well as recursion. Equivalently, it is the restriction of \pcf\ where the application and abstraction rules are constrained similarly as in the safe lambda calculus. The rules are given in Table \ref{tab:safepcf}. The circled rules are those that differ from their \pcf\ counterpart.
 
 \begin{FramedTable}
  {\bf Functional part}
@@ -47,24 +48,24 @@ $$
 \caption{Formation rules for safe \pcf.}
 \label{tab:safepcf}
 \end{FramedTable}
-We extend the notion of \emph{almost safety} (Sec.\ \ref{sec:almostsafety}) to \pcf: A \pcf\ term is \defname{almost safe} if it can be written $\lambda x_1 \ldots x_n . N_0 \ldots N_p$ for some $n,p \geq 0$ where $N_i$ is safe for all $0\leq i \leq p$.
+We extend the notion of \emph{almost safety} (Sec.\ \ref{sec:almostsafety}) to \pcf: A \pcf\ term is \defname{almost safe} if it can be written $\lambda x_1 \ldots x_n . N_0 \ldots N_p$ for some $n,p \geq 0$ where $N_i$ is safe for every $0\leq i \leq p$.
 
 
 \begin{example}
   The addition function and equality test defined in Sec.\ \ref{sec:pcf} are typable in safe \pcf.
 \end{example}
 
-The Substitution Lemma and No-variable-capture Lemma shown for the safe lambda calculus naturally extend to safe \pcf. The small-step semantics of safe \pcf\ is obtained from the one of \pcf\ by replacing $\beta$-reduction by safe $\beta$-reduction (Def.\ \ref{dfn:saferedex_contraction}) in the definition of the relation $\rightarrow$.  The Subject Reduction Lemma from the safe lambda calculus implies that the relation $\rightarrow$ preserves safety: Suppose that $M \rightarrow N$, then $\Gamma \sentail M:T$ implies $\Gamma \sentail N:T$. It also preserves almost-safety. Finally, a term is safe if and only if its eta-long normal form is safe.
+The Substitution Lemma and No-variable-capture Lemma of the safe lambda calculus naturally extend to safe \pcf. The small-step semantics of safe \pcf\ is given by a relation $\rightarrow$ obtained from the one of \pcf\ after substituting safe $\beta$-reduction (Def.~\ref{dfn:saferedex_contraction}) for $\beta$-reduction. The Subject Reduction Lemma from the safe lambda calculus implies that the relation $\rightarrow$ preserves safety: Suppose that $M \rightarrow N$, then $\Gamma \sentail M:T$ implies $\Gamma \sentail N:T$. Similarly, the small-step reduction preserves almost-safety. Further it can again be proved that a term is safe if and only if its eta-long normal form is safe.
 
 \subsubsection*{Remark concerning recursion}
 There are many ways to introduce recursion in the syntax of a programming language.
-In the presentation of \pcf\ given in Sec.\ \ref{sec:pcf}, recursion is introduced by mean of a set of constants $Y_A$, $A$ ranging over \pcf\ types, incarnating the $Y$-combinator of the lambda calculus. Its syntax is given by the rule \rulenamet{rec} of Table \ref{tab:safepcf}. For instance, the addition function can be represented by the \pcf\ term:
+In the presentation of \pcf\ given in Sec.\ \ref{sec:pcf}, recursion is introduced by mean of a set of constants $Y_A$, $A$ ranging over \pcf\ types, incarnating the $Y$-combinator of the lambda calculus. The syntax is given by the rule \rulenamet{rec} of Table \ref{tab:safepcf}. For instance, the addition function can be represented by the \pcf\ term:
 $$ \userop{plus} \equiv Y (\lambda p\; x\; y. \pcfcond\ x\;y\;(p\ (\pcfpred\ x)\ (\pcfsucc\ y))) \enspace .$$
-Equivalently, we can introduce recursion using the \emph{least upper bound abstractor} `$\mu$' given by the formation rule
+Recursion can be introduced in different ways, however. For instance using the \emph{least upper bound abstractor} `$\mu$' given by the formation rule
 $$ \rulename{\mu} \rulef{\Gamma, f: A \entail M : A}{\Gamma \entail  \mu f^A. M: A}$$
 where the semantics of $\mu$ is given by the rule:
 $ \mu f^A. M \rightarrow M[(\mu f^A. M)/f]$.
-For instance, the addition function can be defined using the $\mu$-construct as:
+Using this $\mu$-construct, the addition function is defined as:
 $$ \userop{plus} \equiv \mu p^{(\iaexp\typear\iaexp)\typear\iaexp} . \lambda x^\iaexp y^\iaexp. \pcfcond\ x\;y\;(p\ (\pcfpred\ x)\ (\pcfsucc\ y)) \enspace .$$
 
 Clearly in the context of \pcf, these two definitions are interchangeable:
@@ -72,24 +73,23 @@ $\mu f^A.M$ is equivalent to $Y_A (\lambda f^A . M)$,
 and $Y_A F$ is eta-equivalent to $Y_A (\lambda f^A. F f)$ for some fresh variable $f$, which is equivalent to $\mu f^A. F f$.
 
 In the context of safe \pcf, however, the distinction is important.
-Indeed, let \emph{safe $\mu$-\pcf} denote the calculus obtain by replacing the rule \rulenamet{rec} by \rulenamet{\mu} in Table \ref{tab:safepcf}. It turns out that safe \pcf\ is strictly contained in safe $\mu$-\pcf.
+Indeed, let \emph{safe $\mu$-\pcf} denote the calculus obtain by replacing the rule \rulenamet{rec} by \rulenamet{\mu} in Table \ref{tab:safepcf}. Then we observe that safe \pcf\ is strictly contained in safe $\mu$-\pcf.
 Indeed, compare the two ways of defining a recursive term:
 \begin{mathpar}
 \inferrule*[Left=\rulenamet{rec}]{\inferrule*[Left=\rulenamet{abs}]{\Gamma, f: A \sentail M : A}{\Gamma\sentail \lambda f^A. M : A\typear A}}{\Gamma \sentail Y_A (\lambda f^A . M)}
 \hspace{2cm}
 \inferrule* [Left=\rulenamet{\mu}]{\Gamma, f: A \sentail M : A}{\Gamma \sentail  \mu f^A. M: A}
 \end{mathpar}
-Both derivations start with the premise $\Gamma, f: A \sentail M : A$ which implies that $\ord{\Gamma} \geq \ord{A}$. In the left derivation, before applying the $Y$ combinator, we need first to abstract the variable $f$. This is done using the abstraction rule whose side-conditions gives $\ord{\Gamma} > \ord{A}$. The right derivation, however, only imposes the condition $\ord{\Gamma} \geq \ord{A}$.
+Both derivations start with the premise $\Gamma, f: A \sentail M : A$ which implies that $\ord{\Gamma} \geq \ord{A}$. But in the left derivation, before applying the $Y$ combinator, we need first to abstract the variable $f$; This is done using the abstraction rule whose side-conditions gives $\ord{\Gamma} > \ord{A}$. The right derivation, however, only imposes the weaker condition $\ord{\Gamma} \geq \ord{A}$.
 
-In fact, safe $\mu$-\pcf\ does not deserve its name because
+In fact, safe $\mu$-\pcf\ does not really deserve its name because
 the No-variable-capture lemma does not hold anymore in this language!
-For instance for every types $A$ and $B$ with $\ord{A}\geq\ord{B}$, the term
-$$ \lambda f^{A \typear B}\; a^A. (\lambda x^B.(\mu f^B.x))(f a)$$
-is a safe $\mu$-\pcf\ term that $\beta$-reduces to
-$$ \lambda f^{A \typear B}\; a^A. (\mu f^B.x)[f a/x] \enspace .$$
-At this point it would not be sound to push the substitution under the $\mu$ without first renaming the variables afresh as it would cause the variable $f$ to be captured by $\mu f$.
-Hence the definition that we really want for safe \pcf\ is the one based on the Y-combinator.
-
+Take for instance the term
+$ \lambda f^{A \typear B}\; a^A. (\lambda x^B.(\mu f^B.x))(f a)$
+for any types $A$ and $B$ verifying $\ord{A}\geq\ord{B}$. This term  
+belongs to safe $\mu$-\pcf\ and it $\beta$-reduces to
+$ \lambda f^{A \typear B}\; a^A. (\mu f^B.x)[f a/x]$.
+But at this point it is not be sound to push the substitution under the $\mu$ without first renaming the variables afresh as it would cause the variable $f$ to be captured by $\mu f$.
 
 Observe that if we were able to distinguish variables that are bound by $\lambda$ from those bound by $\mu$---for instance by tagging their occurrences appropriately---then the clash of variable names would be tolerable in this particular example since the two clashing occurrences of $f$ are bound by a different kind of binder. Unfortunately, this argument cannot be generalized: There are safe $\mu$-\pcf\ terms that, when reduced using capture-permitting substitution, cause clashes between $\lambda$-bound variables. Take for instance:
 \begin{align*}
@@ -101,14 +101,17 @@ The safe $\mu$-\pcf\ term $M$ reduces to:
 $$ \lambda g^3\; h^3\; x^1 . g (x ( h ( \lambda \underline{x}^1 . F (\lambda z^0.z))))[N(F,g,h,\underline{x})/F] \enspace ,$$
 and performing this substitution \emph{capture-permitting} would cause a clash between the two underlined variables.
 
+
+The conclusion of this is that the definition that we really want for safe \pcf\ is the one based on the Y-combinator.
 Another reason why safe $\mu$-\pcf\ is not an interesting language is that the game-semantic characterization of safe \pcf\ that we will establish in Chapter \ref{chap:model} does not hold in safe $\mu$-\pcf.
 %(The above-counter example can illustrate this).
 
 \subsubsection{Expressivity}
 
-In the lambda calculus, the safety condition significantly limits the expressivity of the language. The conditional over Church numerals, for instance, is not definable in the safe lambda calculus. In safe \pcf\, since the arithmetic constructs are built in the language, the conditional operator comes for free. In fact, despite the strong syntactic constraint imposed on the language, the presence of recursion gives safe \pcf\ the computational power of a full-fledged Turing complete language.
+In the lambda calculus, the safety condition significantly limits the expressivity of the language: As we have observed before, the conditional function over Church numerals is for instance not definable in the safe lambda calculus. On the other hand in safe \pcf\,
+the conditional operator comes for free since the arithmetic constructs are built in the language. So the question is: \emph{Does safety genuinely restrict the power of PCF?} We first show that safe \pcf\ is a non-trivial language by proving, using a reduction from the \textsc{Queue-Halting} problem, that the termination problem is not decidable.
+We further observe that despite that safety is a strong constraint imposed on the language, the presence of recursion gives back to safe \pcf\ the computational power of a full-fledged Turing complete language.
 
-We first show that termination of safe \pcf\ term is not decidable by a reduction from the \textsc{Queue-Halting} problem.
 
 \paragraph*{The \textsc{Queue}  programming system}
 We fix a finite alphabet $\Sigma = \{ a_1, \ldots, a_p \}$. A \textsc{Queue} program is a finite sequence of instructions that manipulate a FIFO (First In First Out) queue data-structure.

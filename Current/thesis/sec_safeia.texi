@@ -141,9 +141,9 @@ The \textsc{Queue-Halting} problem  (``Given a \textsc{Queue} program, will it h
 
 Given a \textsc{Queue} program $P$ with $n$ instructions, we construct a safe \pcf\ term $\sentail M_P : \pcfexp$ that simulates $P$ in the sense that $P \Downarrow$ if and only if $M_P \rightarrow^* {\sf halted}$.
 
-We fix a distinguished element $\bot$ denoting the end of the queue. Let $\Sigma^\bot = \Sigma \cup \{ \bot \}$. The queue content $s \in \Sigma^*$ is identified with the infinite sequence $s \bot^\omega \in \Sigma^\omega$. We assume that an injective encoding function $\Sigma^\bot \longrightarrow \nat$ is given. For instance take $\encode{\bot} = 0$ and $\encode{a_k} = k$ for $1 \leq k \leq p$.
+\emph{Queue encoding:} We fix a distinguished element $\bot$ denoting the end of the queue. Let $\Sigma^\bot = \Sigma \cup \{ \bot \}$. We identify each queue content $s \in \Sigma^*$ with the infinite sequence $s \bot^\omega \in \Sigma^\omega$. We assume that an injective encoding function $\Sigma^\bot \longrightarrow \nat$ is given and we write $\encode{a}$ to denote the encoding of an element in $\Sigma^\bot$. (For instance take $\encode{\bot} = 0$ and $\encode{a_k} = k$ for $1 \leq k \leq p$.)
 
-We say that a $\pcf$ term $M$ \emph{computes} the queue content $s$ if and only if $M\, k \eval \encode{s_k}$ for all $k\in \nat$.
+We say that a $\pcf$ term $M$ \emph{computes} the queue content $s$ if and only if $M\, k \eval \encode{s_k}$ for every $k\in \nat$.
 For every queue-content $s \in \Sigma^*$ we define the safe \pcf\ term
 \begin{eqnarray*}
 \sentail \encode{s} \equiv \lambda i^\pcfexp . \sugmatch  i\, \sugwith
@@ -158,7 +158,7 @@ which clearly computes $s$. The length $|s|$ of the queue can then by computed b
 \end{align*}
 verifying $\userop{length}\ \encode{s} \eval |s|$ for all $s\in\Sigma^*$.
 
-Each instruction $c$ of $\mathcal{I}$ is encoded into a unique natural number $\encode{c}$ by some function $\mathcal{I} \rightarrow \nat$. For instance we can use the following injection for $1 \leq i \leq p, 1 \leq l \leq n$:
+\emph{Instruction encoding:} We assume an injective function $\mathcal{I} \rightarrow \nat$ encoding each instruction $c$ of $\mathcal{I}$ as a natural number $\encode{c}$. An example is the following function defined for $1 \leq i \leq p, 1 \leq l \leq n$:
 \begin{center}
 \begin{tabular}{c|c|c|c|c}
 $c \in \mathcal{I}$ & {\tt halt} & {\tt dequeue } & {\tt enqueue} $a_i$ &  {\tt goto} l {\tt if first=} $a_i$ \\ \hline
@@ -166,15 +166,16 @@ $\encode{ c } \in \nat$ & $0$ & $1$ & $1+i$ & $1+p + n.l +i$ \\
 \end{tabular}
 \end{center}
 
-The \textsc{Queue} program $P$ is then represented by the safe \pcf\ term:
+A \textsc{Queue} program $P$ is then compiled to the safe \pcf\ term:
 \begin{equation*}
 \sentail \encode{P} \equiv \lambda i^\pcfexp .  \sugmatch i\, \sugwith
    0 \rightarrow \encode{ P.0 }
   \ | \ldots \ |\ n \rightarrow \encode{ P.n }  |\ \_ \rightarrow \encode{\tt halt} : \pcfexp\typear\pcfexp
 \end{equation*}
-so that for all $i\in\nat$, $\encode{P}\, i$ evaluates to the encoding of the $i^{th}$ instruction of $P$. The following term defines an interpreter for \textsc{Queue}-programs given in ``compiled'' form $\encode{P}$:
+so that for all $i\in\nat$, $\encode{P}\, i$ evaluates to the encoding of the $i^{th}$ instruction of $P$.
+We can now define an interpreter $\userop{Sim}_P$ for \textsc{Queue}-programs given in compiled form $\encode{P}$:
 \begin{align*}
-\sentail \userop{Sim} \equiv & Y ( \lambda f ^{(\pcfexp,(\pcfexp,\pcfexp),\pcfexp)}\ i^\pcfexp \ x^{(\pcfexp,\pcfexp)} . \\
+\sentail \userop{Sim}_P \equiv & Y ( \lambda f ^{(\pcfexp,(\pcfexp,\pcfexp),\pcfexp)}\ i^\pcfexp \ x^{(\pcfexp,\pcfexp)} . \\
 & \sugmatch\ \encode{P}\, i\ \sugwith\\
 & \begin{array}{lcl}
 \ \ \encode{\tt halt }&\rightarrow& 0 \\
@@ -196,7 +197,7 @@ so that for all $i\in\nat$, $\encode{P}\, i$ evaluates to the encoding of the $i
 & )\ 0\ \encode{\epsilon} : \pcfexp \enspace .
 \end{align*}
 
-Clearly the term $\userop{Sim}$ is safe and simulates the \textsc{Queue} program $P$ in the sense that $\userop{Sim} \eval$ if and only if $P \rightarrow^* {\sf halted}$. Hence
+Clearly the term $\userop{Sim}_P$ is safe and simulates the \textsc{Queue} program $P$ in the sense that $\userop{Sim}_P \eval$ if and only if $P \rightarrow^* {\sf halted}$. Hence
 \begin{theorem}
   The \textsc{Halting} problem for (the 2nd order fragment of) safe \pcf\ is undecidable.
 \end{theorem}
@@ -205,17 +206,17 @@ Since the \textsc{Halting} is reducible to the observational equivalence problem
 The reason why these encodings work is because unsafety only appears at order $3$ in \pcf, and the 2nd order fragment of \pcf\ is already Turing complete.
 \smallskip
 
-Loader has shown \cite{loader2001fpn} that observational equivalence for \emph{Finitary} PCF (the fragment with no recursion and finite base types) is already undecidable at order 5. It is unknown whether this result still holds for Finitary safe PCF.
+Loader has shown \cite{loader2001fpn} that observational equivalence for \emph{finitary} PCF (the fragment with no recursion and finite base types) is already undecidable at order 5. It is unknown whether this result still holds for finitary safe PCF.
 
 \subsection{Idealized Algol}
 
 In this section we present two possible approaches to accommodate
 the safety restriction to a language featuring block-variable constructs such as Idealized Algol. This gives rise to two different versions of ``Safe Idealized Algol''. In the first version, all free variables are required to satisfy the safety constraint whereas in the second version, variables declared with a block-allocated construct are not required to satisfy the safety constraint.
-We then show that the nice properties of the safe lambda calculus remain in these two extensions of the safe lambda calculus.
+We then show that the good properties of the safe lambda calculus remain in these two extensions of the safe lambda calculus.
 
 \subsubsection{Strongly Safe \ialgol}
 
- The most immediate way to introduce the safety constraint for \ialgol\ terms consists in adding the typing rules for constants of \ialgol\ to those of the safe lambda calculus.  Equivalently, this means taking the system of rules of \ialgol\ and replacing the application and abstraction rules by those of the safe lambda calculus. We refer to this language as \defname{strongly safe \ialgol}. The rules are formally given in Table \ref{tab:safeia_formrules}. The rules circled in the table are those that differ from their IA counterpart.
+ The most immediate way to introduce the safety constraint for \ialgol\ terms consists in adding the typing rules for \ialgol\ constants to the typing system of the safe lambda calculus.  Equivalently, this means taking the system of rules of \ialgol\ and replacing the application and abstraction rules by those of the safe lambda calculus. We refer to this language as \defname{strongly safe \ialgol}. The rules are formally given in Table \ref{tab:safeia_formrules}. The rules circled in the table are those that differ from their IA counterpart.
 
 \begin{FramedTable}
  {\bf Functional part}
@@ -287,7 +288,7 @@ $$ \rulename{mkvar} \ \rulef{\Gamma \vsiaentail M_1 : \iaexp \rightarrow \iacom 
  $$x: \iavar \vsiaentail (\lambda y^\iaexp. \ianewin{x}{y}) (\iaderef\ x)\equiv M_1   : \iaexp \enspace .$$
 Then we have:
  $$M_1 \betared (\ianewin{x}{y})\subst{(\iaderef\ x)}{y} \enspace .$$
-Performing the substitution without renaming variables afresh causes the variable $x$ to get captured by the innermost $\ianew\ x$ giving: $\ianewin{x}{\iaderef\ x}$. On the other hand the standard substitution gives:
+Performing the substitution without renaming variables afresh causes the variable $x$ to get captured by the innermost $\ianew\ x$ giving $\ianewin{x}{\iaderef\ x}$. On the other hand the standard substitution gives
 $\ianewin{z}{\iaderef\ x}$. These two terms are clearly not observationally equivalent. Conclusion: it is \emph{not} ``safe'' to use capture-permitting substitution on strongly-safe \ialgol\ terms!
 
 A weaker version of the No-variable-capture lemma can be stated though. We can defined an alternative notion of capture-permitting substitution, called \emph{semi-capture permitting substitution}, that behaves like the usual capture-permitting substitution except that it renames block-allocated variables afresh upon performing substitution. The No-variable-capture lemma for strongly safe \ialgol\ then becomes: Substitution can be safely implemented by semi-capture permitting substitution.
@@ -295,10 +296,10 @@ A weaker version of the No-variable-capture lemma can be stated though. We can d
 \subsubsection{Safe \ialgol}
 \label{subsec:safeia_rules}
 
-It turns out that the definition of strongly safe \ialgol\ is too restrictive and that we can identify a larger fragment in which the so-called ``No-variable-capture'' lemma holds.
+It turns out that the definition of strongly safe \ialgol\ is too restrictive and we can identify a larger fragment in which the so-called ``No-variable-capture'' lemma holds.
 Consider the following \ialgol\ term:
 $$ \entail \ianewin{x} \underline{\lambda z^\iaexp . \iaderef\, \underline{x}} : \iaexp\typear \iaexp \enspace .$$
-It is  not strongly safe, because the variables $x:\iavar$ and $z:\iaexp$ have the same order but they are not abstracted together. But since $x$ is a block-allocated variable, no term can ever be substituted for such variables when performing reduction. Therefore there is no point in constraining occurrences of such a variable in the term. So morally, the previous term should be considered safe.
+It is not strongly safe since the variables $x:\iavar$ and $z:\iaexp$ have the same order but they are not abstracted together. However $x$ is a block-allocated variable so no term can ever be substituted for such variable when performing reduction: Morally this term should be considered safe. We thus observe that there is no gain in constraining occurrences of block-allocated variables.
 
 We will therefore distinguish two kinds of variables in a closed term: the ``standard ones''---those that are bound by $\lambda$-abstractions---and the ``imperative'' ones---those that are declared by a block-allocation construct---and we will change the side-condition of the abstraction rule so that only variables of the first kind are constrained.
 
@@ -306,8 +307,8 @@ It is also possible to relax the safety constraint for another class of variable
 Among the lambda-bound variables, we consider the subclass of variables that
 are bound by a lambda node $\lambda x^\iaexp$ inside a term of the form $\iamkvar (\lambda x^\iaexp . M) N$.
 We call these variables $\iamkvar$-\emph{bound variables}. It turns out that it is also possible to relax the safety constraint for this class of variables.
-To see why this is the case, we need to redefine the typing rules for the \iamkvar\ construct: We replace the typing in two steps (first abstracting $x$ in $M$ and then constructing $\iamkvar (\lambda x^\iaexp . M) N$) by a single step typing rule forming $\iamkvar (\lambda x^\iaexp . M) N$ directly from $M$ and $N$.
-These two ways of typing the $\iamkvar$ construct are semantically equivalent because it is always possible to eta-expanded the first argument of $\iamkvar$ into a term of the form $\lambda x^\iaexp. M$.
+To see why this is the case, we need to redefine the typing rules for the \iamkvar\ construct: We replace the typing in two steps (first abstracting $x$ in $M$ and then constructing $\iamkvar (\lambda x^\iaexp . M) N$) by a single typing rule forming $\iamkvar (\lambda x^\iaexp . M) N$ directly from $M$ and $N$.
+These two ways of typing the $\iamkvar$ construct are semantically equivalent because it is always possible to eta-expand the first argument of $\iamkvar$ into a term of the form $\lambda x^\iaexp. M$.
 
 The small step semantics is then redefined by replacing the rule
 $$\iaassign\ (\iamkvar M N)\ n \rightarrow M n $$
@@ -319,19 +320,19 @@ This change ensures that no substitution will ever be done on the term $\lambda 
 There is therefore no need for the term $\lambda x . M$ to be safe; It is sufficient to have that $M$ is safe.
 \bigskip
 
-These remarks lead us a more general notion of safety for \ialgol. We consider new judgments of the form $\Gamma | \Xi  \siaentail M : A$, called a \defname{split terms-in-context} (this terminology is borrowed from Abramsky and McCusker's tutorial on
-game semantics \cite{abramsky:game-semantics-tutorial}), where the context is partitioned into two \emph{disjoint} components: The first component $\Gamma$ will contain the lambda-bound variables
-that are constrained by the safety restriction; the second component will contain block-declared variables as well as \iamkvar-bound variables. The component $\Xi$ contains variables of type \iavar\ and \iaexp\ only, while the
-other component can contain variables of any type including \iavar.  It is straightforward to redefine the typing rule of \ialgol\ in such a way that these two distinct contexts are maintained appropriately. In particular:
+These remarks lead us a more general notion of safety for \ialgol. We consider new judgments of the form $\Gamma | \Xi  \siaentail M : A$, called \defname{split terms-in-context} (this terminology is borrowed from Abramsky and McCusker's tutorial on
+game semantics \cite{abramsky:game-semantics-tutorial}), where the context is partitioned into two \emph{disjoint} components: The first component $\Gamma$ contains the lambda-bound variables
+that are constrained by the safety restriction; the second component contains block-declared variables as well as \iamkvar-bound variables. The component $\Xi$ contains variables of type \iavar\ and \iaexp\ only, while the
+other component may contain variables of any type including \iavar.  It is straightforward to redefine the typing rule of \ialgol\ in such a way that these two distinct contexts are maintained appropriately. In particular:
 \begin{enumerate}[(i)]
-\item the abstraction rules can only abstract variables from the first component of the context;
-\item the \ianew\ and \iamkvar\ constructs can only bind variables from the second context component;
-\item the side-condition in the abstraction rules constrains only variables from the first context component.
+\item The abstraction rules can only abstract variables from the first component of the context;
+\item The \ianew\ and \iamkvar\ constructs can only bind variables from the second context component;
+\item The side-condition in the abstraction rules constrains only variables from the first context component.
 \end{enumerate}
 The typing system for this new judgement is given in Table \ref{tab:safeia_formrules}; The circled rules highlight the important changes from the rules of Table \ref{tab:verysafeia_formrules}.
  A split-term with an empty context $\Xi$ is called a \defname{semi-closed split-term}. We define \defname[safe!\ialgol]{safe \ialgol} to be the set of \emph{semi-closed} split-terms typable with the system of rules of Table \ref{tab:safeia_formrules}. For convenience we introduce the additional rule
 $$ \rulef{\Gamma\, |\, \emptyset \siaentail M : A} {\Gamma \siaentail M : A}$$
-so that safe \ialgol\ is given by the set of terms-in-context $\Gamma \siaentail M : A$.
+so that safe \ialgol\ is equivalently given by the set of terms-in-context $\Gamma \siaentail M : A$.
 
 \begin{FramedTable}
 {\bf Functional part}
@@ -447,19 +448,19 @@ M_2 &\equiv \lambda x^1. (\lambda y^1. (\ianewin{x}{y\ 0})) x\\
 M_3 &\equiv  \lambda f^2 . \ianewin{x}{(\lambda y^1. f (\lambda x^0. y))(\lambda z^0 . \iaderef\ \underline{x})} \\
 M_4 &\equiv  \lambda x^\iacom . (\lambda y^\iacom . \iamkvar\, (\lambda x^\iaexp. y)\, 0 ) x
 \end{align*}
-where the type $n$ is an abbreviation for $n_\iaexp$ for $n\in\nat$.
+where the type $n$, for $n\in\nat$, is an abbreviation for $n_\iaexp$.
 
 All these terms are safe \ialgol\ terms (but only $M_1$ and $M_2$ are strongly safe) and
 contracting the redexes in those terms using capture-permitting substitution causes problematic variable captures:
 \begin{enumerate}[(i)]
-  \item For $M_1$, performing the substitution without renaming variables afresh causes the variable $x$ to get captured by the innermost $\ianew\ x$ giving
+  \item For $M_1$, performing the substitution without renaming variables afresh causes the variable $x$ to get captured by the innermost $\ianew\ x$, giving 
 $\ianewin{x}{\iaseq\ (\iaassign\ x\ 1)\ (\ianewin{x}{\iaderef\ x})}$
-which is observationally equivalent to $0$ (since block-allocated variables are initialized with $0$). On the other hand standard substitution gives:
+which is observationally equivalent to $0$ (since block-allocated variables are initialized with $0$). On the other hand standard substitution gives
 $\ianewin{x}{\iaseq\ (\iaassign\ x\ 1)\ (\ianewin{z}{\iaderef\ x})}$
 which is observationally equivalent to $1$.
 
 \item For $M_2$, the capture-permitting substitution gives
-$\lambda x^1. (\ianewin{x}{x\ 0})$ which is not even a typable in \ialgol;
+$\lambda x^1. (\ianewin{x}{x\ 0})$ which is not even typable in \ialgol;
 
 \item For $M_3$, capture-permitting substitution gives
 $\lambda f^2 . \ianewin{x}{\lambda y^1. f (\lambda x^0. (\lambda x^0 . \iaderef\, x))}$
@@ -467,8 +468,8 @@ which is not a typable \ialgol\ term;
 
 \item Finally for $M_4$, capture-permitting substitution gives
 $(\lambda y^\iacom . \iamkvar\, (\lambda x^\iaexp. x)\, 0 )$ which, again, is not a typable \ialgol\ term
-because the subterm $\lambda x^\iaexp. x$ is of type $\iaexp\typear\iaexp$ instead
-of $\iaexp\typear\iacom$.
+because the subterm $\lambda x^\iaexp. x$ is of type $\iaexp\typear\iaexp$ instead of the required type
+$\iaexp\typear\iacom$.
 \end{enumerate}
 
 To deal with the first two examples, we have no other choice than renaming block-declared variables afresh upon substitution. For the last two kinds of variable capture (which only happen for safe terms that are not strongly safe) we can resolve the problem by adopting the following convention:
@@ -480,7 +481,7 @@ This leads us to the following notion of substitution which performs variable re
 \begin{definition}
 The \defname{semi-capture-permitting substitution} of the term-in-context $\Gamma | \Xi
 \entail N : A$ for $x$ in the term-in-context $\Gamma, x:A | \Xi
-\entail M : B$, written $\Gamma | \Xi \entail M\semicaptsubst{N}{x}$, is defined inductively on $M$ as follows:
+\entail M : B$ is given by $\Gamma | \Xi \entail M\semicaptsubst{N}{x}$ where the operation $\semicaptsubst{N}{x}$ is defined inductively on $M$ as follows:
 \begin{align*}
 x \semicaptsubst{N}{x} &= N \\
 y \semicaptsubst{N}{x} &= y & y\neq x;\\
@@ -502,13 +503,12 @@ It is now possible to state a version of the \emph{No-variable capture lemma} fo
 \label{lem:nocapture_safeia}
 Suppose that $\Gamma | \Xi
 \siaentail N : A$ and $\Gamma, x:A | \Xi
-\siaentail M : B$ then
+\siaentail M : B$. Then the substitution $M\subst{N}{x}$ can be performed semi-capture-permitting:
+$$ M\subst{N}{x} \equiv M\semicaptsubst{N}{x} \enspace, $$
+provided that either
 \begin{enumerate}[(i)]
-\item under convention \ref{conv:orderconsistnaming}
-and \ref{conv:conv_safeia_typing}, the substitution $M\subst{N}{x}$ can be performed semi-capture-permitting:
-$$ M\subst{N}{x} \equiv M\semicaptsubst{N}{x} \enspace .$$
-\item under convention \ref{conv:conv_safeia_typing} and if
-$ \Gamma | \Xi \entail M\captsubst{N}{x} : B$ is a valid (not-necessarily safe) \ialgol\ judgement then $M\subst{N}{x} \equiv M\semicaptsubst{N}{x}$.
+\item convention \ref{conv:orderconsistnaming} and \ref{conv:conv_safeia_typing} are taken;
+\item or convention \ref{conv:conv_safeia_typing} is taken and $ \Gamma | \Xi \entail M\captsubst{N}{x} : B$ is a valid (not-necessarily safe) \ialgol\ judgement.
 \end{enumerate}
 \end{lemma}
 The proof is a trivial extension of Lemma \ref{lem:nocapture}
@@ -551,7 +551,7 @@ for some simple-type $T$, where variables in the context $\Gamma$ and $\Xi$ are 
 \begin{definition} Consider an applied lambda calculus as defined above.
 Its \defname[safe!fragment]{safe fragment} is defined as the system obtained by restricting the pure lambda calculus fragment of the language in such a way that:
 \begin{asparaenum}[(i)]
-\item the restriction of the system to its pure simply-typed fragment coincides with the definition of the safe lambda calculus;
+\item The restriction of the system to its pure simply-typed fragment coincides with the definition of the safe lambda calculus;
 \item The side-condition of the abstraction and application rules
  constrains only $\Gamma$-variables.
 \end{asparaenum}

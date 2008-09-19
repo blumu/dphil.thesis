@@ -1,10 +1,10 @@
 %
-% ociamthesis v2.0
+% Based on ociamthesis v2.0, modified by William Blum September 2008
 % By Keith A. Gillow <gillow@maths.ox.ac.uk>
 % Version 1.0 released 26/11/1997
 %-------------------------- identification ---------------------
 \NeedsTeXFormat{LaTeX2e}
-\ProvidesClass{ociamthesis}[2006/08/18 v2.0 OCIAM thesis class]
+\ProvidesClass{myown}[2006/08/18 v2.0 OCIAM thesis class]
 %-------------------------- initial code -----------------------
 \DeclareOption*{\PassOptionsToClass{\CurrentOption}{report}}
 \ProcessOptions\relax
@@ -62,11 +62,28 @@
 %
 % Define text area of page and margin offsets
 %
-\setlength{\topmargin}{0.0in}
-\setlength{\oddsidemargin}{0.33in}
-\setlength{\evensidemargin}{-0.08in}
-\setlength{\textheight}{9.0in}
-\setlength{\textwidth}{6.0in}
+% original's ociamthesis.cls settings
+% \setlength{\topmargin}{0.0in}
+% \setlength{\oddsidemargin}{0.33in} % 8.382mm
+% \setlength{\evensidemargin}{-0.08in} % 20.32mm
+% \setlength{\textheight}{9.0in} % 228.6mm
+% \setlength{\textwidth}{6.0in} % 152.4mm
+
+\hoffset -1in % readjust the left-hand corner of the page
+\voffset -1in
+
+\topmargin 10mm
+\headheight 10mm
+\headsep 7mm
+\evensidemargin 2cm % for side margins of 2cm
+\oddsidemargin 3cm % for side margins of 2cm
+\textheight 250mm
+\textwidth 160mm
+\marginparsep 5mm
+\marginparwidth 20mm
+%\footheight 1cm
+%\setlength{\footheight}{2cm}
+\footskip 30mm
 
 %
 % Environments

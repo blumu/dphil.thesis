@@ -1,13 +1,13 @@
 This chapter aims to formally define the notion of \emph{model} of the safe lambda calculus and its various extensions.
 We present a categorical interpretation of the safe lambda calculus in the same vein as the characterization of the lambda calculus by Cartesian Closed Categories.
 We then provide such a model by means of game semantics and show that it is fully-abstract when observational equivalence is defined with respect to safe contexts.
-We conclude the chapter by examining the model from an Algorithmic game semantic point of view: We consider the problem of observational equivalence for finitary fragments of safe \ialgol\ and show that up to order $3$, the complexity of deciding observational equivalence is essentially the same as for unrestricted \ialgol\ terms.
-We then give a version of the complete play Characterization Theorem for safe terms: We show that two safe terms are observationally equivalent if and only if
-the sets of complete O-incrementally justified plays of the denotations are equal. This result leads us to conjecture that observational equivalence is decidable for safe \ialgol$_4$.
+We conclude the chapter by examining the model from an algorithmic game semantic point of view: We consider the problem of observational equivalence for finitary fragments of safe \ialgol\ and show that up to order $3$, the complexity of deciding observational equivalence is essentially the same as for unrestricted \ialgol\ terms.
+We then give a version of the complete-play Characterization Theorem for safe terms: We show that two safe terms are observationally equivalent if and only if
+the sets of complete O-incrementally justified plays of the denotations are equal. This result leads us to conjecture that observational equivalence is decidable for safe \ialgol\ up to order $4$.
 
 \section{Categorical model}
 
-It is well-known \cite{lambek1986ccc} that cartesian closed categories (a category with a terminal object, finite product and exponential), CCCs for short, capture the notion of model of typed lambda calculi: Any extensional model of the simply typed lambda calculus is a CCC. Conversely, any CCC induces a typed-lambda calculus.
+It is well-known \cite{lambek1986ccc} that cartesian closed categories (a category with a terminal object, finite products and exponentials), CCCs for short, capture the notion of model of typed lambda calculi: Any extensional model of the simply typed lambda calculus is a CCC. Conversely, any CCC induces a typed-lambda calculus.
 \emph{What is the categorical interpretation of the safe lambda calculus?}
 This section introduces \emph{incremental closed categories} and shows that they capture models of safe lambda calculi.
 
@@ -17,19 +17,26 @@ The safe lambda calculus defined in Chapter \ref{chap:safelambda}
 does not have a product. It is fairly easy to add it to the language.
 The type grammar is given by:
 $$
-T ::= \ B\ | \ T \rightarrow T | \ T \times T
+T ::= \ B\ | \ T \typear T | \ T \times T
 $$
-for some set $B$ of base types. The typing system of the safe lambda calculus is then extended with three rules corresponding to pairing, first projection and second projection (respectively
-$\rulename{\times}$, $\rulename{\pi_1}$ and $\rulename{\pi_2}$ in Table \ref{tab:safelmb_product}). Although this suffices to add product to the safe lambda calculus, we will impose a further restriction. Indeed, consider the following examples:
+for some set $B$ of base types. The \defname{order} of a type is defined by induction as follows:
+\begin{compactitem}
+    \item $\ord(B) = 0$ for every base type $B$,
+    \item $\ord(A\times B) = \max(\ord A,\ord B)$,
+    \item $\ord(A\typear B) = \max(1+\ord A ,\ord B)$.
+\end{compactitem}
+
+
+The typing system of the safe lambda calculus is then extended with three rules corresponding to pairing, first projection and second projection (respectively
+$\rulename{\times}$, $\rulename{\pi_1}$ and $\rulename{\pi_2}$ in Table \ref{tab:safelmb_product}). Although this suffices to add product to the safe lambda calculus, we will impose a further restriction. Indeed, consider the following terms-in-context:
 \begin{align*}
  x:(o\typear o)\times o &\stentail \lambda z^o.\, (\pi_2 x) : (o\typear (o\typear o)) \equiv M_1\\
  x_1:(o\typear o), x_2:o &\sentail \lambda z^o.\, \underline{x_2} : (o\typear (o\typear o)) \equiv M_2 \enspace .
 \end{align*}
-Although these are two equivalent beta-normal terms, only $M_2$ is safe. Indeed, the side condition of the abstraction rule only requires that the \emph{variables} in the context have order greater than the order of the term, therefore $M_2$ is unsafe because of the variable $x_2$. In $M_1$, however, $x_1$ and $x_2$ are combined into a single variable, this has the effect of increasing the order of the variable and therefore the side-condition holds.
+In any model of the lambda calculus, these two terms-in-context have the same denotation; But $M_1$ is safe whereas $M_2$ is unsafe. Indeed, the side condition of the abstraction rule only requires that the \emph{variables} in the context have order greater than the order of the term, therefore $M_2$ is unsafe because it contains the free occurrence $x_2$. In $M_1$, however, $x_1$ and $x_2$ are combined into a single variable, this has the effect of increasing the order of the variable and therefore the side-condition holds.
 
-In the categorical model of the simply typed lambda calculus, a term-in-context $\Gamma \entail M :T$ is modeled by a morphism $\sem{\Gamma}\typear \sem{T}$ where the context $\Gamma$ is identified with the product of the types of the variables in the context: If the context variables are $X_1, \cdots,  X_n$ then $\Gamma$ is identified with $X_1\times \cdots\times X_n$. Thus two contexts $x:A, y:B$ and $xy:A\times B$ will be denoted by the same object in the category. Because variables in the context can be ``combined'', there is no way to tell just by looking a the type $\Gamma$ which subtypes come from which variable.
-Consequently the basic property of the safe lambda calculus---that all the variables in the context have order greater than the order of the term---cannot be expressed
-in the standard categorical model. For this reason we modify slightly the side-condition of the abstraction and application rules to enforce a property stronger than the usual basic property of the safe lambda calculus: Instead of requiring that all variables in the context have order greater than the order of the term, we require that the order of \emph{any prime sub-type of any variable} in the context has order greater than that of the term, where the set of
+In the categorical model of the simply typed lambda calculus, a term-in-context $\Gamma \entail M :T$ is modeled by a morphism $\sem{\Gamma}\typear \sem{T}$ where the context $\Gamma$ is identified with the product of the types of the variables in the context: If the context variables are $X_1, \cdots,  X_n$ then $\Gamma$ is identified with the type $X_1\times \cdots\times X_n$. Thus the contexts $x_1:A, x_2:B$ and $x:A\times B$ will be denoted by the same object in the category. Because variables in the context can be ``combined'', there is no way to tell just by looking at the \emph{type} $\Gamma$ which subtypes come from which variable.
+Consequently the basic property of the safe lambda calculus---that all the variables in the context have order greater than the order of the term---cannot be expressed in the standard categorical model. For this reason we modify slightly the side-condition of the abstraction and application rules to enforce a property stronger than the usual basic property of the safe lambda calculus: Instead of requiring that all variables in the context have order greater than the order of the term, we require that the order of \emph{any prime sub-type of any variable} in the context has order greater than that of the term, where the set of
 \defname[prime!sub-types]{prime sub-types} of a type $A$, written $Pr(A)$, is given by:
 \begin{align*}
 Pr(B) &= \{ B \} & \mbox{ if $B$ is a base type,}\\
@@ -130,21 +137,20 @@ We first recall some basic categorical notions and fix some notations.
 
 A \defname{category} $\mathbf{C}$ is given by a class $\catobj{\mathbf{C}}$ of objects
 and a class $\cathom{\mathbf{C}}$ of morphisms between objects: For each pair of objects $A$, $B$, a set
-of morphisms $\mathbf{C}(A,B)$, written $f:A\typear B$, where $A$ is the domain and $B$ is the codomain
+of morphisms $\mathbf{C}(A,B)$, written $f:A\typear B$, where $A$ is the domain and $B$ is the codomain.
 Further for every three objects $A$, $B$ and $C$, and morphisms $f:A\typear B$ and $g:B\typear C$ there is a composite morphism
-written $f;g$ or $g\circ f$ such that the composition operation is associative and for each object $A$ there is a morphism $id_A$ that is the identity
-for composition.
+written $f;g$ or $g\circ f$ such that the composition operation is associative; and for each object $A$ there is a morphism $id_A$ that is the identity for composition.
 
-A \defname{subcategory} of a category $\mathbf{C}$ is a category whose objects and morphisms are objects and morphisms of $\mathbf{C}$.
+A \defname{subcategory} of a category $\mathbf{C}$ is a category whose objects and morphisms are respectively objects and morphisms of $\mathbf{C}$.
 It is a \emph{lluf} subcategory if it contains all the objects of $\mathbf{C}$.
 
 A object $I$ is \defname{terminal} if for every object $A$ there is a unique morphism from $A$ to $I$.
 
 A category has \defname{products} if for every two objects $A$ and $B$ there is an object $A\times B$ and two morphisms $\pi_1$, $\pi_2$ mapping $A\times B$ to $A$ and $B$ respectively such that for every morphisms $f:C\typear A$, $g:C\typear B$, there is a unique morphism
-$\langle f,g\rangle : C \typear A\times B$, called the \defname{pairing} of $f$ and $g$ such that
-$\pi_2 \circ \langle f,g\rangle = g$ and $ \pi_1 \circ \langle f,g\rangle = f$, where $f \circ g$ denotes the composition of $g$ with $f$ in the category.
+$\langle f,g\rangle : C \typear A\times B$, called the \defname{pairing} of $f$ and $g$, such that
+$\pi_2 \circ \langle f,g\rangle = g$ and $ \pi_1 \circ \langle f,g\rangle = f$.
 
-A category has \defname{exponential} if for every two objects $B$ and $C$ there is a distinguished object $C^B$ and
+A category has \defname{exponential} if for every two objects $B$ and $C$ there is an object $C^B$ and
   a morphism $ev_{B,C} : (C^B\times B) \typear C$ such that for every object $A$ and morphism $f:(A\times B) \typear C$ there is a unique morphism $\Lambda(f) : A \typear C^B$ such that the following diagram commutes:
 \begin{center}
 \begin{tikzpicture}
@@ -268,7 +274,7 @@ An ICC is \defname{rational} if it is isomorphic to a sub-ICC $\mathbf I$ of a r
 \subsection{Categorical semantics}
 
 Consider a typed-lambda calculus extended with a set of constants and function symbols together with a set of reduction rules giving the operational interpretation of these functions.
-A \defname{model} of a type-lambda calculus in a cartesian closed category is specified by giving:
+A \defname{model} of a typed-lambda calculus in a cartesian closed category is specified by giving:
 \begin{compactitem}
   \item For every ground type $T$ an object $\sem{T}$ of the category. This suffices to interpret any simple type $T$ as an object $\sem{T}$ using products and exponentials;
   \item for every constant $k$ of type $T$ a morphism $\sem{K}$ of type $\sem{T}$;
@@ -279,7 +285,7 @@ the structure of the term \cite{CroleRL:catt}. The \defname{model} is said to be
 
 \begin{proposition}[Models of safe typed lambda calculus]
 \label{prop:incrementalcat_model_safelambda}
-Let $\mathcal{L}$ be a type-lambda calculus. Suppose that a CCC $\mathbf{C}$ provides a sound model of $\mathcal{L}$, then the canonical sub-ICC $\mathbf{I}$  of $\mathbf{C}$ provides a sound model of the safe fragment of $\mathcal{L}$.
+Let $\mathcal{L}$ be a typed-lambda calculus. Suppose that a CCC $\mathbf{C}$ provides a sound model of $\mathcal{L}$, then the canonical sub-ICC $\mathbf{I}$  of $\mathbf{C}$ provides a sound model of the safe fragment of $\mathcal{L}$.
 \end{proposition}
 \begin{proof}
 The interpretation $\sem{\cdot}$ of the safe lambda calculus with product in $\mathbf{I}$ is induced by the standard interpretation in the CCC:
@@ -310,7 +316,7 @@ $$\Theta_A = \sem{F:(A\typear A)\typear A \entail \lambda f^{A\typear A}. f(F f)
 
 
 Let $\mathbf{C}$ be a rational CCC. A
-\emphind{precongruence} $\lesssim$ on $\mathbf{C}$ is defined as a family of preorders $\lesssim_{A,B} \subseteq \mathbf{C}(A,B) \times \mathbf{C}(A,B)$ such that $\sqsubseteq_{A,B} \subseteq \lesssim_{A,B}$, composition, pairing, currying are $\lesssim$-monotonous, and the preorders verify a continuity property \cite{abramsky94full}.
+\emphind{precongruence} $\lesssim$ on $\mathbf{C}$ is defined as a family of preorders $\lesssim_{A,B} \subseteq \mathbf{C}(A,B) \times \mathbf{C}(A,B)$ such that $\sqsubseteq_{A,B} \subseteq \lesssim_{A,B}$, composition, pairing, currying are $\lesssim$-monotonous, and the preorders satisfy a continuity property \cite{abramsky94full}.
 Given a precongruence, the quotiented category $\quotient{\mathbf C}{\lesssim}$ is defined as follows:
 the objects are the same as in $\mathbf C$, and a morphism in $\quotient{\mathbf C}{\lesssim}(A,B)$ is an equivalence class $[f]$ of $\mathbf{C}(A,B)$ modulo the equivalence relation induced by $\lesssim_{A,B}$.
 A partial ordering $\leq_{A,B}$ on $\quotient{\mathbf C}{\lesssim}(A,B)$ can then be defined as follows:
@@ -380,7 +386,7 @@ Combining the last two equations with (\ref{eq:equivalence_ccc_lmdcalc}) gives f
 Let $\mathbf{I}$ be an ICC. By definition it is isomorphic to a subcategory $\Pi(\mathbf{I})$ of some CCC $\mathbf{C}$ for some injective functor $\Pi : \mathbf{I} \rightarrow \mathbf{C}$. We define the \emph{intrinsically safe fragment} $LI(\mathbf{I})$ of $L(\mathbf{C})$ as the language consisting of the terms whose denotations in $\mathbf{C} \cong Cl(L(\mathbf{C}))$ are also in $\Pi(\mathbf{I})$:
 $$ LI(\mathbf{I}) \defeq \{\ t \in L(\mathbf{C}) \ | \ \sem{t} \in \cathom{\Pi(\mathbf{I})} \} \enspace .$$
 This definition implies $\sem{LI(\mathbf{I})} = \Pi(\mathbf{I}) \cong I$.
-This language verifies the basic property of the safe lambda calculus:
+This language satisfies the basic property of the safe lambda calculus:
 \begin{lemma}
 Let $\mathbf{I}$ be an ICC. For every term $M$ of $LI(\mathbf{I})$, the free variables of $M$ have order greater than $\ord M$.
 \end{lemma}
@@ -399,12 +405,12 @@ Our aim for the rest of this chapter is to construct a category of games that is
 \smallskip
 
 
-For the rest of this chapter we make the following assumptions on games. Let $\bot$ denote the game with a single initial move and no answers, for every game $A \neq \bot$:
+For the rest of this chapter we make the following assumptions on games. Let $\bot$ denote the game whose arena has a single initial question move and no answers; For every game $A \neq \bot$:
 \begin{itemize}
 \item[\bf (A1)] Each question move in the game enables at least one answer move;
 \item[\bf (A2)] Answer moves do not enable any other move.
 \end{itemize}
-Clearly, \pcf\ and \ialgol\ games all verify these two assumptions. A game is said to be \defname[prime!arena]{prime} if it has a single initial move; a type is prime if its game denotation is prime.
+Clearly, \pcf\ and \ialgol\ games all satisfy these two assumptions. A game is said to be \defname[prime!arena]{prime} if it has a single initial move; a type is prime if its game denotation is prime.
 
 \subsection{Order of a move}
 
@@ -600,7 +606,7 @@ just if
 \begin{enumerate}[(i)]
 \item $s m$ is P-incrementally justified;
 \item and if $m$ is an initial move in $A$ then its justifier $n$ (initial in
-$B$) verifies $\ord_A m \geq \ord_B n$.
+$B$) satisfies $\ord_A m \geq \ord_B n$.
 \end{enumerate}
 
 \noindent A strategy $\sigma$ is \defname[strategy!closed P-incrementally justified]{closed P-i.j.} just if all
@@ -1303,7 +1309,7 @@ we have $n' \in \pview{u_{\prefixof \alpha}\filter A,C}$. By the 3$^{rd}$ and 4$
 \begin{enumerate}[(I)]
 \item $\sigma$ closed P-i.j.\ $\wedge$ $\mu$ P-i.j.
 $\implies$ $\sigma ; \mu$  P-i.j.;
-\item $\sigma, \mu$ closed P-i.j.
+\item $\sigma$ and $\mu$ are closed P-i.j.
 $\implies$ $\sigma ; \mu$ closed P-i.j.
 \end{enumerate}
 \end{proposition}
@@ -1540,7 +1546,7 @@ For closed P-incremental justification, the result is immediate.
 \subsubsection*{Composition}
 
 We recall that the composite of $\sigma :\ !A \lingamear B$,
-and $\mu :\ !B\lingamear C$ in the co-Kleisli category of games $\mathcal{C}$, written $\sigma
+and $\mu :\ !B\lingamear C$ in the co-Kleisli category of games $\mathcal{C}$ (Def.~\ref{def:co-kleisli}), written $\sigma
 \fatcompos \mu$, is defined as:
 $$ \sigma \fatcompos \mu = \sigma^\dag ; \mu \enspace .$$
 From propositions \ref{prop:closedpijcompose} and
@@ -2377,7 +2383,7 @@ ending with an $A$-move.  It is easy to see that P-view of the play $u\filter I,
 the play $u\filter !var, A$ by removing the moves played in $\sem{!var}$.
 Thus because the question moves of the game $\sem{!var}$ are of order $0$, since $u\filter I, A$ is P-i.j., so must be $u\filter !var, A$.
 
-Take $\mu$ to be the strategy obtained by truncating all the plays in $\tau$ that are not P-i.j. Then clearly $\mu$ is P-i.j.\ modulo $In(\sem{!var})$ and verifies $\sigma = cell ; \mu$.
+Take $\mu$ to be the strategy obtained by truncating all the plays in $\tau$ that are not P-i.j. Then clearly $\mu$ is P-i.j.\ modulo $In(\sem{!var})$ and satisfies $\sigma = cell ; \mu$.
 \end{proof}
 
 \begin{remark}
@@ -2414,10 +2420,10 @@ This result follows from the definability result as in the case of safe \pcf.
 \label{sec:algogamesem_safety}
 
 The game model of safe \ialgol\ is greatly simplified since justification pointers are unnecessary.
-By the Characterization Theorem (Sec.\ \ref{sec:algogamesem}), $\obseq$-observational equivalence of \ialgol\ terms is characterized by equality of the set of complete plays. Thus for safe terms, $\obseq$-equivalence is characterized by equality of the set of underlying sequence of moves without justification pointers.
+By the Characterization Theorem (Sec.\ \ref{sec:algogamesem}), observational equivalence of \ialgol\ terms is characterized by equality of the set of complete plays. Thus for safe terms, observational equivalence is characterized by equality of the set of underlying move-sequences without justification pointers.
 This simplification suggests applications in algorithmic game semantics.
 
-We show here that up to order $3$, \ialgol\ is a conservative extension of safe \ialgol. This means that the observational equivalence relations $\obseq_s$ and $\obseq$ coincide. Therefore, all the upper-bounds on the complexity of observational equivalence that are known for the order-$3$ fragments of \ialgol\ also hold for safe \ialgol. We then show that the Characterization Theorem also holds for observational equivalence of safe \ialgol\ with respect to safe contexts: Two terms are $\obseq_s$-equivalent if
+We show here that up to order $3$, \ialgol\ is a conservative extension of safe \ialgol\ in the sense that the observational equivalence relations $\obseq_s$ and $\obseq$ coincide. Therefore, all the upper-bounds on the complexity of observational equivalence that are known for the order-$3$ fragments of \ialgol\ also hold for safe \ialgol. We then show that the Characterization Theorem also holds for observational equivalence of safe \ialgol\ with respect to safe contexts: Two terms are $\obseq_s$-equivalent if
 the sets of complete plays of their denotation are the same. Consequently, we can show that up to order $3$, the complexity lower-bounds that are already known for \ialgol\ also hold in safe \ialgol.
 
 

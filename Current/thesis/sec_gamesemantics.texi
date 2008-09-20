@@ -88,18 +88,18 @@ games as dialogs between the two players. The dialog unfolds as follows: The Opp
 
 The arena defines the bases of the game for the players. It is formally given by a directed acyclic graph (DAG) whose internal nodes correspond to question moves and leaves correspond to answer moves.
 \begin{definition}[Arena]
-An \defname{arena} is a structure $\langle M, \lambda, \vdash \rangle$ where:
+An \defname{arena} is a structure $\langle M, \lambda, \enable \rangle$ where:
 \begin{itemize}
 \item $M$ is the set of possible moves;
 \item $\lambda : M \rightarrow \{ O, P\} \times \{Q, A\}$ is a labelling function specifying which are the question and answer moves, and which moves can be played by O and P.
     Formally, it is given by a pair of functions $\lambda^{OP} : M \rightarrow  \{ O, P\}$ and $\lambda^{QA} : M \rightarrow  \{ Q, A\}$ such that $\lambda$ is the pairing $\langle \lambda^{OP},\lambda^{QA} \rangle$. An element $m$ of $M$ is an O-move if $\lambda^{OP} (m) = O$  and a P-move otherwise; It is a question if $\lambda^{QA} (m) = Q$ and an answer otherwise.
 
-\item $\vdash$ is an \defname{enabling relation} on $M \times M$ such that    $(M,\vdash)$ is a directed acyclic graph (DAG) satisfying the following conditions:
+\item $\enable$ is an \defname{enabling relation} on $M \times M$ such that    $(M,\enable)$ is a directed acyclic graph (DAG) satisfying the following conditions:
     \begin{itemize}
     \item[(e1)] The roots are O-questions: For every DAG's root $r$, $\lambda(r) = OQ$;
-    \item[(e2)] Internal nodes of the DAG are questions: $m \vdash n  \implies \lambda^{QA}(m) = Q$ (thus answers moves are necessarily leaves);
+    \item[(e2)] Internal nodes of the DAG are questions: $m \enable n  \implies \lambda^{QA}(m) = Q$ (thus answers moves are necessarily leaves);
     \item[(e3)] A player move can only enable moves played by the other player:
-         $m\vdash n \implies \lambda^{OP}(m) \neq \lambda^{OP}(n)$.
+         $m\enable n \implies \lambda^{OP}(m) \neq \lambda^{OP}(n)$.
     \end{itemize}
 \end{itemize}
 \end{definition}
@@ -111,18 +111,18 @@ swapping the role of the Opponent and Proponent in $\lambda$:
 \mbox{ and } \overline{\lambda(m)} &=& OA \iff \lambda(m) = PA \enspace .
 \end{eqnarray*}
 
-The roots of the DAG $(M,\vdash)$ are called the \defname{initial moves}.
+The roots of the DAG $(M,\enable)$ are called the \defname{initial moves}.
 
 The simplest possible arena is the one with an empty set of moves; it is written $\mathbf{1}$.
 
 \begin{example}[The flat arena]
 \label{exmp:flatarena}
  Let $A$ be any countable set. The flat arena over $A$
-is defined as the arena $\langle M, \lambda, \vdash \rangle$ such
+is defined as the arena $\langle M, \lambda, \enable \rangle$ such
 that $M$ has one move $q$ with $\lambda(q) = OQ$ and for each
 element in $A$, there is a corresponding move $a_i$ in $M$ with
 $\lambda(a_i) = PA$ for some $i \in \nat$. The enabling relation
-$\vdash$ is defined to be $\{ q \vdash a_i \ | i \in \nat \}$.
+$\enable$ is defined to be $\{ q \enable a_i \ | i \in \nat \}$.
 This arena is represented by the tree \begin{tikzpicture}[baseline=(root.base),level distance=7mm,inner ysep=0.5mm,sibling distance=5mm]
 \node (root) {$q$}
 child {node {$a_0$}}
@@ -145,7 +145,7 @@ child {node {$\ldots$}};
 A justified sequence is a sequence of moves $s$ together with an
 associated sequence of pointers. Any move $m$ in the sequence that
 is not initial has a pointer that points to a previous move $n$ that
-enables it (\ie, $n \vdash m$).
+enables it (\ie, $n \enable m$).
 
 (Formally we can regard a justified sequence as a sequence of pairs, each pair encoding an element of the sequence together with an index indicating the position where the element points to.)
 \end{definition}
@@ -217,9 +217,9 @@ The set of legal positions of an arena $A$ is denoted by $L_A$.
 \end{definition}
 
 \begin{definition}[Game]
-A game is a structure $\langle M, \lambda, \vdash, P \rangle$ such that
+A game is a structure $\langle M, \lambda, \enable, P \rangle$ such that
 \begin{itemize}
-\item $ \langle M, \lambda, \vdash \rangle$ is an arena;
+\item $ \langle M, \lambda, \enable \rangle$ is an arena;
 \item $P$, called the set of \emph{valid positions}, is:
     \begin{itemize}
     \item a non-empty prefix closed subset of the set of legal
@@ -255,20 +255,20 @@ $A \otimes B$ is defined as:
 \begin{eqnarray*}
   M_{A \otimes B} &=& M_A + M_B \\
   \lambda_{A\otimes B} &=& [\lambda_A,\lambda_B] \\
-  \vdash_{A\otimes B} & = & \vdash_{A}\ \union\ \vdash_{B} \\
+  \enable_{A\otimes B} & = & \enable_{A}\ \union\ \enable_{B} \\
   P_{A\otimes B} & = & \{ s \in L_{A\otimes B} | s \filter A \in P_A \wedge s \filter B \in P_B  \} \enspace .
 \end{eqnarray*}
 
 In particular,  $n$ is initial in $A\otimes B$ if and only if $n$ is
-initial in A or B. And $m \vdash_{A\otimes B} n$  holds if and only if $m
-\vdash_{A} n$ or $m \vdash_{B} n$ holds.
+initial in A or B. And $m \enable_{A\otimes B} n$  holds if and only if $m
+\enable_{A} n$ or $m \enable_{B} n$ holds.
 
 \paragraph{Function space}
 The game $A \multimap B$ is defined as follows:
 \begin{eqnarray*}
   M_{A \multimap B} &=& M_A + M_B \\
   \lambda_{A\multimap B} &=& [\overline{\lambda_A},\lambda_B] \\
-  \vdash_{A\multimap B} & = & \vdash_{A}\ \union\ \vdash_{B}\ \union\  \{ (m,n) \ |\ m \mbox{ initial in } B \wedge n \mbox{ initial in } A \} \\
+  \enable_{A\multimap B} & = & \enable_{A}\ \union\ \enable_{B}\ \union\  \{ (m,n) \ |\ m \mbox{ initial in } B \wedge n \mbox{ initial in } A \} \\
   P_{A\otimes B} & = & \{ s \in L_{A\otimes B} | s \filter A \in P_A \wedge s \filter B \in P_B  \} \enspace .
 \end{eqnarray*}
 
@@ -289,7 +289,7 @@ The game $A \& B$ is defined as follows:
 \begin{eqnarray*}
   M_{A \& B} &=& M_A + M_B \\
   \lambda_{A\& B} &=& [\lambda_A,\lambda_B] \\
-  \vdash_{A\& B} & = & \vdash_{A}\ \union\ \vdash_{B} \\
+  \enable_{A\& B} & = & \enable_{A}\ \union\ \enable_{B} \\
   P_{A\& B} & = & \{ s \in L_{A\otimes B} | s \filter A \in P_A \wedge s \ \filter B = \epsilon  \} \\
         &&   \union \{ s \in L_{A\otimes B} | s \filter A \in P_B \wedge s \ \filter A = \epsilon  \} \enspace .
 \end{eqnarray*}
@@ -329,7 +329,7 @@ During the game, a player may face several choices
 when it is his turn to play. A \emph{strategy} is a guide telling the player which move to make when the game is in a given position.
 \begin{definition}
 \label{dfn:strategy}
-A \defname{strategy} for player P on a given game $\langle M, \lambda, \vdash, P \rangle$ is a
+A \defname{strategy} for player P on a given game $\langle M, \lambda, \enable, P \rangle$ is a
 non-empty set of even-length positions from $P$ such that:
 \begin{enumerate}
 \item if $sab \in \sigma$ then $s \in \sigma$ (\emph{no unreachable
@@ -566,7 +566,7 @@ We define a new construction on games: For every game $A$ the \defname[exponenti
 \begin{eqnarray*}
   M_{!A} &=& M_A \\
   \lambda_{!A} &=& \lambda_A \\
-  \vdash_{!A} & = & \vdash_{A} \\
+  \enable_{!A} & = & \enable_{A} \\
   P_{!A} & = & \{ s \in L_{!A} | \mbox{ for each initial move $m$, } s \filter m \in P_A \} \enspace .
 \end{eqnarray*}
 Think of it as the multi-threaded version of the game $A$ in which a new copy the game can be spawned at any time. Plays of $!A$ are thus interleavings of plays of $A$. We have the following identities:
@@ -663,7 +663,7 @@ $$\sem{A \gamear B} =  !\sem{A} \multimap \sem{B} \enspace .$$
 \subsubsection{Lambda calculus fragment}
 
 \indexnotation{$\sem{M}$}{Strategy denotation of a term $M$}%
-A term-in-context $\Gamma \vdash M : A$ is interpreted in the model by a strategy on the game $\sem{\Gamma} \rightarrow \sem{A}$.
+A term-in-context $\Gamma \entail M : A$ is interpreted in the model by a strategy on the game $\sem{\Gamma} \rightarrow \sem{A}$.
 
 For instance take the game $\sem{\iaexp}$. It has only one question (the initial O-question) and P-moves are answers corresponding to each possible value of a natural number. There exist only two kinds of strategies for the game $\sem{\iaexp}$:
 \begin{enumerate}[(i)]
@@ -728,10 +728,10 @@ where $\prefset^{\sf even} X$ denotes the set consisting of the prefixes of even
 \item The predecessor arithmetic operator is denoted by the strategy
 $$\sem{\pcfpred} = \prefset^{\sf even} \left( \{q^0 \cdot q^1 \cdot n^1 \cdot (n-1)^0\ |\ n >0 \} \union \{ q^0 \cdot q^1 \cdot 0^1 \cdot 0^0 \} \right) \enspace .$$
 
-\item Given a term $\Gamma \vdash \pcfsucc\ M : \iaexp$ we
+\item Given a term-in-context $\Gamma \entail \pcfsucc\ M : \iaexp$ we
 define:
-$$\sem{\Gamma \vdash \pcfsucc\  M : \iaexp} = \sem{\Gamma \vdash M} \fatcompos \sem{\pcfsucc} $$
-$$\sem{\Gamma \vdash \pcfpred\  M : \iaexp} = \sem{\Gamma \vdash M} \fatcompos \sem{\pcfpred} \enspace .$$
+$$\sem{\Gamma \entail \pcfsucc\  M : \iaexp} = \sem{\Gamma \entail M : \iaexp} \fatcompos \sem{\pcfsucc} $$
+$$\sem{\Gamma \entail \pcfpred\  M : \iaexp} = \sem{\Gamma \entail M : \iaexp} \fatcompos \sem{\pcfpred} \enspace .$$
 
 \item The conditional operator is denoted by the following strategy on $\sem{\nat^3 \times \nat^2 \times \nat ^1 \typear \nat^0}$:
 $$\sem{\pcfcond} = \prefset^{\sf even}
@@ -740,14 +740,14 @@ $$\sem{\pcfcond} = \prefset^{\sf even}
     \prefset^{\sf even}  \{ q^0 \cdot q^3 \cdot m \cdot q^2 \cdot n^2 \cdot n^0 \ | \ m >0, n \in \nat \} \enspace .
     $$
 
-Given a term $\Gamma \vdash \pcfcond\ M\ N_1\ N_2$ we define:
-$$\sem{\Gamma \vdash \pcfcond\ M\ N_1\ N_2} =
-\langle \sem{\Gamma \vdash M}, \sem{\Gamma \vdash N_1}, \sem{\Gamma
-\vdash N_2} \rangle \fatcompos \sem{\pcfcond} \enspace .$$
+Given a term-in-context $\Gamma \entail \pcfcond\ M\ N_1\ N_2 : \iaexp$ we define:
+$$\sem{\Gamma \entail \pcfcond\ M\ N_1\ N_2 : \iaexp} =
+\langle \sem{\Gamma \entail M: \iaexp}, \sem{\Gamma \entail N_1: \iaexp}, \sem{\Gamma
+\entail N_2: \iaexp} \rangle \fatcompos \sem{\pcfcond} \enspace .$$
 \end{itemize}
 
 The interpretation of the Y-combinator is slightly more
-complicated. Consider the term $\Gamma \vdash M : A \rightarrow A$. Its denotation $f$ is a morphism $\sem{\Gamma} \times \sem{A} \rightarrow
+complicated. Consider the term $\Gamma \entail M : A \rightarrow A$. Its denotation $f$ is a morphism $\sem{\Gamma} \times \sem{A} \rightarrow
 \sem{A}$. We define the chain $g_n$ of morphisms
 $\sem{\Gamma} \rightarrow \sem{A}$ as follows:
 \begin{eqnarray*}
@@ -797,9 +797,9 @@ The game model of \pcf\ is sound for evaluation.
 
 \begin{definition}[Computable terms\index{computable term}] \hfill
 \begin{itemize}
-\item A closed term $\vdash M : B$ of base type is computable if $\sem{M} \neq \bot$ implies $M \eval$.
-\item A higher-order closed term $\vdash M : A\rightarrow B$ is computable if $M N$ is computable for every computable closed term $\vdash  N:A$.
-\item An open term $x_1 : A_1, \ldots, x_n : A_n \vdash M : A\rightarrow B$ is computable if $\vdash M [N_1/x_1, \ldots N_n/x_n]$ is computable
+\item A closed term $\entail M : B$ of base type is computable if $\sem{M} \neq \bot$ implies $M \eval$.
+\item A higher-order closed term $\entail M : A\rightarrow B$ is computable if $M N$ is computable for every computable closed term $\entail  N:A$.
+\item An open term $x_1 : A_1, \ldots, x_n : A_n \entail M : A\rightarrow B$ is computable if $\entail M [N_1/x_1, \ldots N_n/x_n]$ is computable
 for all computable closed terms $N_1:A_1, \ldots, N_n:A_n$.
 \end{itemize}
 \end{definition}
@@ -1038,9 +1038,9 @@ $$
 the \ianew\ operator, it is necessary to introduce non-innocent strategies,
 also called \emphind{knowing strategies}.
 We call \defname{memory-cell strategy} the knowing well-bracketed strategy  written $cell : I \multimap !\iavar$ behaving as follows: It responds to \iawrite\ with \iaok\ and to \iaread\ with the last value written or $0$ if no value has been
-written yet. The denotation of a term-in-context $\Gamma \vdash \ianewin{x}{M} : A$ is then defined as the strategy:
-$$ \sem{\Gamma \vdash \ianewin{x}{M} : A} =
-(id_{\sem{\Gamma}} \otimes cell) \fatcompos \sem{\Gamma,x:\iavar \vdash M : A}
+written yet. The denotation of a term-in-context $\Gamma \entail \ianewin{x}{M} : A$ is then defined as the strategy:
+$$ \sem{\Gamma \entail \ianewin{x}{M} : A} =
+(id_{\sem{\Gamma}} \otimes cell) \fatcompos \sem{\Gamma,x:\iavar \entail M : A}
 : !\Gamma \multimap \iacom \enspace .$$
 \end{asparaitem}
 
@@ -1178,9 +1178,9 @@ Let $s \cdot m$ be a legal well-bracketed position.
 \end{corollary}
 
 \begin{definition}[Order]
-Let $\langle M, \lambda, \vdash \rangle$ be a game. The \defname{height} of a move $m$ in $M$ is the length of the longest chain of enabling moves
-$m \vdash m_2 \vdash \ldots \vdash m_h$. The \defname[order!move]{order} of a move $m$ written $\ord{M}$ is defined as its height minus two.
-The order of a game $\langle M, \lambda, \vdash \rangle$ is defined as $\max_{m \in M} \ord{m}$.
+Let $\langle M, \lambda, \enable \rangle$ be a game. The \defname{height} of a move $m$ in $M$ is the length of the longest chain of enabling moves
+$m \enable m_2 \enable \ldots \enable m_h$. The \defname[order!move]{order} of a move $m$ written $\ord{M}$ is defined as its height minus two.
+The order of a game $\langle M, \lambda, \enable \rangle$ is defined as $\max_{m \in M} \ord{m}$.
 \end{definition}
 
 For instance the initial question in the game $\nat$ has order $0$. Answer moves all have order $-1$. We further make the assumption that in the games that we consider, each question move enables at least one answer move, therefore an order-$0$ move is necessarily a questions enabling answer moves only.
@@ -1197,16 +1197,16 @@ Indeed, since $s$ is well-opened, its first move $m_0$ is the only initial move 
 
 Since $A$ is of order $2$ at most, all the moves in $s$ except $q_0$ are of order $1$ at most.
 We prove by induction on the length of $s$ that $?(s)$ corresponds to one of the cases 0, A, B, C, D shown on the table below, and that the pointers in
-$s$ can be recovered uniquely. Let $L$ denote the language $L = \{\ p q \ | \ q_0 \vdash p \vdash q
+$s$ can be recovered uniquely. Let $L$ denote the language $L = \{\ p q \ | \ q_0 \enable p \enable q
 \wedge \ord{p}=1 \wedge \ord{q} = 0 \}$.
 \begin{center}
 \begin{tabular}{c|c|l|l}
 Case & $\lambda_{OP}(m)$ & $?(s) \in$ & where... \\ \hline
 0 & O & $\{ \epsilon \}$ \\
 A & P & $q_0$ \\
-B & O & $q_0 \cdot L^* \cdot p$     & $q_0 \vdash p, \ord{p}=1$ \\ % $j \in I_1$ \\
-C & P & $q_0 \cdot L^* \cdot p q$ & $q_0 \vdash p \vdash q, \ord{p}=1, \ord{q} = 0$ \\ % $j \in I_1$ \\
-D & O & $q_0 \cdot L^* \cdot q$      & $q_0 \vdash q, \ord{q} = 0$ \\ % $i \in I_0$
+B & O & $q_0 \cdot L^* \cdot p$     & $q_0 \enable p, \ord{p}=1$ \\ % $j \in I_1$ \\
+C & P & $q_0 \cdot L^* \cdot p q$ & $q_0 \enable p \enable q, \ord{p}=1, \ord{q} = 0$ \\ % $j \in I_1$ \\
+D & O & $q_0 \cdot L^* \cdot q$      & $q_0 \enable q, \ord{q} = 0$ \\ % $i \in I_0$
 \end{tabular}
 \end{center}
 
@@ -1292,8 +1292,8 @@ restricting the language \ialgol\ to some finitary fragment.
 They showed that for the second-order finitary fragment of Idealized Algol, written \ialgol$_2$,
 the set of complete plays of the strategy denotation can be expressed as an extended regular expression \cite{ghicamccusker00}:
 \begin{lemma}[Ghica and McCusker, \cite{ghicamccusker00}]
-For every IA$_2$-term $\Gamma \vdash M : T$, the set of complete
-plays of $\sem{\Gamma \vdash M : T}$ is regular.
+For every IA$_2$-term $\Gamma \entail M : T$, the set of complete
+plays of $\sem{\Gamma \entail M : T}$ is regular.
 \end{lemma}
 Since equivalence of regular expressions is decidable with complexity PSPACE, by the Characterization Theorem this gives a decision procedure for observational equivalence of \ialgol$_2$-terms. In the same paper they show that the same result holds for the
 \ialgol$_2 +\textsf{while}$ fragment. At order $2$, this result cannot be extend further as Ong showed that observational equivalence is already undecidable for \ialgol$_2 + \textsf{Y}_1$ \cite{Ong02}.

@@ -112,7 +112,7 @@ We say that a coloured subterm $N$ of $M : (A_1, \ldots, A_n,o)$ is \defname{dea
 \end{example}
 
 The dead code elimination problem is the converse of the \defname{reachability problem}: Given a term $M$ containing a coloured subterm $N$ of $M$, is there a context $C[-]$ such that $C[M]$ is of ground type, and a reduction sequence $C[M] \redar \ldots \redar E[\sigma(N)]$ for some evaluation context $E[-]$ and substitution $\sigma$ of free variables of $N$?
-The reachability problem is clearly not trivial. In fact for \pcf\ it is not decidable since \pcf\ is Turing-complete and the halting problem for \pcf\ can be encoded into a reachability problem.\footnote{When restricted to the finitary fragment, however, reachability is decidable. Luke Ong recently announced a proof of this result based on the theory of traversals.}
+The reachability problem is clearly not trivial. In fact for \pcf\ it is not decidable since the halting problem for \pcf---which is a Turing-complete language---can be encoded into a reachability problem.
 
 
 Let $M$ be a term in eta-long normal form. Occurrences of variables that are in the dead code of $M$ are called \defname{dead occurrences}.  Given a term $M$, we define $M^*$ as the term obtained from the (possibly infinite) $\eta$-long normal form of $M$ by substituting all subterms of the form  $x N_1 \dots N_k$ where $x:(B_1,\ldots, B_k, o)$ is a dead variable occurrence by the constant $\bot$ of type $o$. This process is called \defname{dead variable elimination}. We write $\tau(M)^*$ to denote the equivalent transformation on the computation tree of $M$.
@@ -153,7 +153,7 @@ We call \defname{path} any sequence of nodes such
 that for every two consecutive nodes $a \cdot b$ in the sequence, $a$
 is the parent of $b$. We write $[n_1,n_2]$ to denote, if it exists,
 the unique path going from node $n_1$ to node $n_2$ equipped with
-the justification pointers induced by the enabling relation $\vdash$
+the justification pointers induced by the enabling relation $\enable$
 (A node has a unique enabler in the path to the root
 thus for each occurrence in $[n_1,n_2]$ there is at most one
 occurrence of its enabler in $[n_1,n_2]$). We write $]n_1,n_2]$ for
@@ -162,9 +162,9 @@ all the associated pointers.
 \indexnotation{$[n_1,n_2]$}{Path in a tree from node $n_1$ to node $n_2$}%
 
 The symbol $\theroot$ denotes the root of the computation tree
-$\tau(M)$, $N^{\theroot\vdash}$ denotes the subset of $N$
+$\tau(M)$, $N^{\theroot\enable}$ denotes the subset of $N$
 consisting of nodes that are hereditarily enabled by $\theroot$,
-and $N^{\Sigma\vdash}$ denotes the nodes that are hereditarily enabled by some constant in $\Sigma$.
+and $N^{\Sigma\enable}$ denotes the nodes that are hereditarily enabled by some constant in $\Sigma$.
 \end{notations}
 
 \subsection*{Definition}
@@ -209,7 +209,7 @@ the variable nodes from $A$ are $A$-incrementally-bound
 
 \item  A node (resp.\ a tree) is
 \defname[incremental!node binding]{incrementally-bound} if it is
-\defname[incremental!node binding]{$(N\setminus N^{\Sigma\vdash})$-incrementally-bound} where $N$ is the entire set of nodes of the computation tree and $N^{\Sigma\vdash}$ is the set of nodes hereditarily justified by some constant node.
+\defname[incremental!node binding]{$(N\setminus N^{\Sigma\enable})$-incrementally-bound} where $N$ is the entire set of nodes of the computation tree and $N^{\Sigma\enable}$ is the set of nodes hereditarily justified by some constant node.
 \end{enumerate}
 \end{definition}
 
@@ -223,7 +223,7 @@ B$, $B$-incremental-binding implies $A$-incremental-binding.
 where $\closure{M}$ denotes the closed term obtained by abstracting the free variables in $M$ (see Sec.\ \ref{sec:lambdacalculus}).
 \end{lemma}
 \begin{proof}
-(i) follows immediately from the definition. (ii) This is because the computation trees $\tau(M)$ and $\tau(\closure{M})$ are isomorphic and the enabling relation $\vdash$ is defined identically on these two trees (since free variable nodes are enabled by the root).
+(i) follows immediately from the definition. (ii) This is because the computation trees $\tau(M)$ and $\tau(\closure{M})$ are isomorphic and the enabling relation $\enable$ is defined identically on these two trees (since free variable nodes are enabled by the root).
 \end{proof}
 
 \subsection*{Safety and incremental binding}
@@ -247,7 +247,7 @@ In an applied safe lambda calculus, the $\Gamma$-variables with
 the lowest order must be all abstracted at once when applying the
 abstraction rule. Since the computation tree merges consecutive
 abstractions into a single node, any $\Gamma$-variable $x$ occurring free in
-the subtree rooted at a $\lambda$-node $\lambda \overline{\xi} \not\in N^{\Sigma\vdash}$
+the subtree rooted at a $\lambda$-node $\lambda \overline{\xi} \not\in N^{\Sigma\enable}$
 different from the root must have order greater or equal to
 $\ord{\lambda \overline{\xi}}$. Conversely, if a lambda node
 $\lambda \overline{\xi}$ binds a variable node $x$ then
@@ -255,7 +255,7 @@ its order is $1+\max_{z\in\overline{\xi}} \ord{z} > \ord{x}$.
 
 Let $x$ be a $\Gamma$-variable node in $\tau(\closure{M})$.
 Its enabler necessarily occurs in the path to the root, therefore, according to the previous observation,
-$x$ must be bound by the first $\lambda$-node occurring in $[\theroot,x]\setminus N^{\Sigma\vdash}$
+$x$ must be bound by the first $\lambda$-node occurring in $[\theroot,x]\setminus N^{\Sigma\enable}$
 with order strictly greater than $\ord{x}$. Hence $\tau$ is incrementally-bound.
 
 (ii) We first show the result for closed term. Let $\entail M :T$ be a closed term such that $\tau(M)$ is incrementally-bound. We assume that $M$ is already in $\eta$-long normal form. We prove by induction that $M$ is safe. The
@@ -370,12 +370,12 @@ Let $\Gamma \entail M : T$ be a term-in-context of some applied typed lambda cal
 \item Suppose $M$ is $\beta$-normal. If all the \emph{reachable} input-variable nodes of the computation tree
 $\tau(\Gamma \entail M : T)$ are
 incrementally bound then $\sem{\Gamma
-\vdash M : T}$ is P-incrementally justified.
+\entail M : T}$ is P-incrementally justified.
 
 \item If $\sem{\Gamma \entail M : T}$ is
 P-incrementally justified then all the \emph{reachable}
 input-variable nodes of the computation tree $\tau(\Gamma \entail
-M : T)$ are $N^{\theroot\vdash}$-incrementally bound.
+M : T)$ are $N^{\theroot\enable}$-incrementally bound.
 \end{enumerate}
 \end{proposition}
 \begin{proof}
@@ -400,11 +400,11 @@ $\pview{t\filter r}$ and $\pview{s}$ respectively.
 Further by Lemma \ref{lem:psi_properties}(iii), $\psi_M$ maps nodes of a given order to moves of the same order. Hence showing that $s$ is P-incrementally justified amounts to showing that $n$'s justifier in $t$ is the latest lambda-node in $\pview{t\filter r}$ with order strictly greater than $\ord{n}$.
 
 Let $m$ denote $n$'s justifier in $t$. The term $M$ is closed therefore $x$ is necessarily a bound variable and $n$ is an occurrence of $x$'s binder in $\tau(M)$. The traversal $t$ is incrementally-bound by assumption
-and $n$ belongs to $N\setminus N^{\Sigma\vdash} = N^{\theroot\vdash}$ therefore by definition of incremental binding the occurrence $m$ is the last $\lambda$-node in $[\theroot,n]\ \inter
-N^{\theroot\vdash}$ with order strictly greater than $\ord{n}$.
+and $n$ belongs to $N\setminus N^{\Sigma\enable} = N^{\theroot\enable}$ therefore by definition of incremental binding the occurrence $m$ is the last $\lambda$-node in $[\theroot,n]\ \inter
+N^{\theroot\enable}$ with order strictly greater than $\ord{n}$.
 The Path--P-view correspondence (Prop.\
 \ref{prop:pviewtrav_is_path}) gives  $[\theroot,n] \inter
-N^{\theroot\vdash} = \pview{t} \filter r$ which in turn equals
+N^{\theroot\enable} = \pview{t} \filter r$ which in turn equals
  $\pview{t\filter r}$ by Lemma \ref{lem:betanf_wellbehavedconst_trav_pview_red} (it is applicable because $M$ is a $\beta$-nf and we have assumed that the constant traversals are well-behaved).
 \smallskip
 
@@ -428,27 +428,27 @@ P-visibility $m$ occurs in this subsequence, thus $m$ is
 also the last $\lambda$-node in $\pview{t} \filter r$ with order
 strictly greater than $\ord{x}$. By the Path-P-view correspondence
 (Prop.\ \ref{prop:pviewtrav_is_path}) this means that $m$ is the last $\lambda$-node in $[\theroot,x[\  \inter\
-N^{\theroot \vdash}$ with order strictly greater than $\ord{x}$.
-Hence $\tau(M)$ is $N^{\vdash \theroot}$-incrementally-bound.
+N^{\theroot \enable}$ with order strictly greater than $\ord{x}$.
+Hence $\tau(M)$ is $N^{\theroot\enable}$-incrementally-bound.
 \end{proof}
 
 \begin{corollary}
 \label{cor:Nher_incrbound_iff_incrjustified} Let  $\Gamma \entail
 M : A$ be a term-in-context of some applied typed lambda calculus.
 \begin{enumerate}[(i)]
-\item  If $\tau(\Gamma \vdash M : A)$ is incrementally-bound then $\sem{\Gamma \vdash M : A}$ is P-incrementally justified;
-\item  if $M$ is $\beta$-normal and $\sem{\Gamma \vdash M : A}$ is P-incrementally justified
-then $\tau(\Gamma \vdash M : A)^*$ is incrementally-bound.
+\item  If $\tau(\Gamma \entail M : A)$ is incrementally-bound then $\sem{\Gamma \entail M : A}$ is P-incrementally justified;
+\item  if $M$ is $\beta$-normal and $\sem{\Gamma \entail M : A}$ is P-incrementally justified
+then $\tau(\Gamma \entail M : A)^*$ is incrementally-bound.
 \end{enumerate}
 \end{corollary}
 \begin{proof}
 (i) Let $M'$ denote the beta-normal form of $M$. If $\tau(M)$ is incrementally bound then by Corollary \ref{cor:betasred_preserve_incrbound} so is $\tau(M')$. So in particular all the \emph{reachable} input-variable node of $\tau(M')$ are incrementally bound. Thus by Proposition \ref{prop:Nher_incrbound_iff_incrjustified}(i), $\sem{M} = \sem{M'}$ is P-incrementally justified.
 
 \noindent (ii) Suppose that $\sem{M}$ is P-incrementally justified.
-Consider $\tau(M)^*$.  By definition, a tree is incrementally bound just if it is $N \setminus N^{\Sigma\vdash}$-incrementally bound.
-Since $M$ is $\beta$-normal, variable nodes cannot be hereditarily enabled by an @-node thus $N^{\vdash \theroot} = N \setminus N^{\Sigma\vdash}$. Thus to show that $\tau(M)^*$ is incrementally-bound we just need to show that its variables are $N^{\vdash \theroot}$-incrementally bound.
+Consider $\tau(M)^*$.  By definition, a tree is incrementally bound just if it is $N \setminus N^{\Sigma\enable}$-incrementally bound.
+Since $M$ is $\beta$-normal, variable nodes cannot be hereditarily enabled by an @-node thus $N^{\enable \theroot} = N \setminus N^{\Sigma\enable}$. Thus to show that $\tau(M)^*$ is incrementally-bound we just need to show that its variables are $N^{\enable \theroot}$-incrementally bound.
 But by definition its variable nodes are precisely those of $\tau(M)$ that are reachable. Hence we just need to show that the reachable input variables of
-$\tau(M)$ are $N^{\vdash \theroot}$-incrementally bound. This is precisely
+$\tau(M)$ are $N^{\enable \theroot}$-incrementally bound. This is precisely
 what Proposition \ref{prop:Nher_incrbound_iff_incrjustified}(ii) says.
 \end{proof}
 
@@ -490,7 +490,7 @@ ysep=0.5mm] \node {$\lambda^3$} child {node {$f^2$}
        child {node {$\lambda y^1$} child {node {$x^0$}}}};
 \end{tikzpicture}
 } } Consider the $\beta$-normal term $\Gamma\stentail f (\lambda
-y .x) : o$ where $y:o$ and $\Gamma =f:((o,o),o),~x:o$. The
+y .x) : o$ where $y:o$ and $\Gamma=f:2,~x:o$. The
 figure on the right represents its computation tree with the
 node orders given as superscripts.  The node $x$ is not
 incrementally-bound because the node $x$ of order $0$ is not
@@ -501,7 +501,7 @@ bound by the order 1 node $\lambda y$. Therefore $\tau(f
 justified. Similarly we can check that $\sem{\lambda y. x}$ is
 P-i.j.\ while $\sem{f (\lambda y .x)}$ is not.
 
-\item The previous examples show that the denotations $\sem{\Gamma \stentail f : ((o,o),o)}$ and $\sem{\Gamma \stentail \lambda
+\item The previous examples show that the denotations $\sem{\Gamma \stentail f : 2}$ and $\sem{\Gamma \stentail \lambda
   y. x : (o,o)}$ are both P-i.j.\ whereas
 $\sem{\Gamma \stentail f (\lambda y .x) : o}$ is not. This
 shows that application does not preserve
@@ -596,11 +596,11 @@ We now extend the game-semantic characterization to safe \pcf.
 
 We have already established the correspondence between almost safety and incremental binding in the general setting of an applied simply typed lambda calculus without recursion (Proposition \ref{prop:incrbound_iff_etanf_safe}). $\pcf_1$ can be cast into this setting by considering $\bot_A$ as ordinary constants: In the computation tree of a $\pcf_1$ term,  subterms of the form $\Omega_A$ are represented by the single constant node $\bot_A$. In full \pcf, however, a difficulty arises as computation trees are potentially infinite due to the presence of the Y combinator. Nevertheless the result still holds:
 \begin{proposition}[Almost safety and incrementally-binding]
-\label{prop:incrbound_iff_etanf_safe_pcf} Let $\Gamma \vdash M : A$
+\label{prop:incrbound_iff_etanf_safe_pcf} Let $\Gamma \entail M : A$
 be a PCF term.
 \begin{itemize}
-\item[(i)] If $\Gamma \vdash M : A$ is almost safe then $\tau(\Gamma \vdash M : A)$ is incrementally-bound ;
-\item[(ii)] conversely, if $\tau(\Gamma \vdash M : A)$ is incrementally-bound then the $\eta$-long normal form of $\Gamma \vdash M : A$ is almost safe if $M$ is open and safe if $M$ is closed.
+\item[(i)] If $\Gamma \entail M : A$ is almost safe then $\tau(\Gamma \entail M : A)$ is incrementally-bound ;
+\item[(ii)] conversely, if $\tau(\Gamma \entail M : A)$ is incrementally-bound then the $\eta$-long normal form of $\Gamma \entail M : A$ is almost safe if $M$ is open and safe if $M$ is closed.
 \end{itemize}
 \end{proposition}
 \begin{proof}
@@ -709,11 +709,11 @@ $$ \sem{\sentail M'_\sigma : (\overline{A},B)} \cong \sigma \enspace .$$
 \end{proposition}
 \begin{proof}
 By the standard definability result for $\pcf_c$, there is a \emph{finite} term
-$\overline{x} : \overline{A} \vdash N : B$ such that
-$\sem{\overline{x} :\overline{A} \vdash N : B} = \sigma$. Take
+$\overline{x} : \overline{A} \entail N : B$ such that
+$\sem{\overline{x} :\overline{A} \entail N : B} = \sigma$. Take
 $M_\sigma$ to be $\etalnf{\betanf{N}}^*$.  We have
-$\sem{\overline{x} : \overline{A} \vdash M_\sigma : B} =
-\sem{\overline{x} :\overline{A} \vdash N : B} = \sigma$ and by
+$\sem{\overline{x} : \overline{A} \entail M_\sigma : B} =
+\sem{\overline{x} :\overline{A} \entail N : B} = \sigma$ and by
 Theorem  \ref{thm:almostsafeincrejust_pcf}(ii), $M_\sigma$ is
 almost safe. For the second part, take $M'_\sigma$ to be the closure $\lambda \overline{x}. M_\sigma$ of $M_\sigma$.
 \end{proof}
@@ -806,7 +806,7 @@ $\etalnf{\betanf{N_g [(M_f  \overline{x}) / y]}}^*$ is safe.
 
 \paragraph{A sufficient and necessary condition}
 \begin{lemma}
-Let $\Gamma,y:B \sentail M$ be a safe term in $\eta$-nf and $\Gamma \vdash R : B$ be an almost safe application. Let $N$ denote the set of nodes of the computation tree of $M$ and $\theroot$ be the root. Then:
+Let $\Gamma,y:B \sentail M$ be a safe term in $\eta$-nf and $\Gamma \entail R : B$ be an almost safe application. Let $N$ denote the set of nodes of the computation tree of $M$ and $\theroot$ be the root. Then:
 \begin{align*}
 \Gamma \sentail M[R/y] :A
 \iff&  \forall x \in \freevarset(R) .  \forall y \in N_{\sf fv} .

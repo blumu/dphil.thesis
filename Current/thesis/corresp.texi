@@ -7,9 +7,7 @@ Our approach follows ideas recently introduced by Ong \cite{OngLics2006}, namely
 
 The culmination of this chapter is the \emph{Correspondence Theorem} (Theorem \ref{thm:correspondence}). It states that traversals over the computation tree are just representations of the uncovering of plays in the strategy-denotation of the term. Hence there is an isomorphism between the strategy denotation of a term and its revealed game denotation. In a nutshell, the revealed denotation is computed similarly to the standard strategy denotation except that internal moves are not hidden after composition. In order to make a connection with the standard game denotation, we define an operation that extracts the \emph{core} of a traversal by eliminating occurrences of ``internal nodes''. These node occurrences are the counterparts of internal moves that are hidden when performing strategy composition in game semantics. This leads to a correspondence between the standard game denotation of a term and the set traversal cores over its computation tree.
 
-
-The traversal reduction transformation is such that the syntactical content of traversals is not entirely lost after reduction.
-Together with the Correspondence theorem this makes it possible to analyze the effect that a syntactic restriction has on the strategy denoting a term. This is illustrated in the next chapter where we make use of the Correspondence Theorem to analyze the game semantics of the safety restriction.
+Using this correspondence, it possible to analyze the effect that a syntactic restriction has on the strategy denotation of a term. This is illustrated in the next chapter where we rely on the Correspondence Theorem to analyze the game semantics of the safety restriction.
 
  \bigskip
 
@@ -30,10 +28,10 @@ Asperti et~al.\ introduced \cite{DBLP:conf/lics/AspertiDLR94} a syntactic repres
 
 \section{Computation tree}
 We work in the general setting of the simply typed lambda calculus extended with a fixed set $\Sigma$ of
-higher-order uninterpreted constants.\footnote{A constant $f$ is
+higher-order uninterpreted constants.\footnote{A constant $c \in \Sigma$ is
   \emph{uninterpreted} if the small-step semantics of the language
-  does not contain any rule of the form $f \dots \rightarrow e$. $f$
-  can be regarded as a data constructor.} We fix a simply typed term-in-context $\Gamma \entail M :T$ for the rest of the section.
+  does not contain any rule of the form $c~M_1\ldots M_k \dots \rightarrow f_c(M_1, \ldots, M_k)$ for some function $f_c$ over closed normal terms 
+  $M_1, \ldots, M_k$. Think of such constant as a data constructor.} We fix a simply typed term-in-context $\Gamma \entail M :T$ for the rest of the section.
 
 %%% Section to include in the LMCS paper (not needed in the thesis because eta-long nf are already defined in the background chapter
 %\subsection{Eta-long normal form}
@@ -47,7 +45,7 @@ We define the \emph{computation tree} of a simply typed lambda-term as an abstra
 We recall that a term $M$ in $\eta$-long normal form is of the form $\lambda \overline{x} . s_0 s_1 \ldots s_m$ where $\overline{x} = x_1 \ldots x_n$ for $n\geq 0$ and $s_0 s_1 \ldots s_m$ is of ground type, each
 $s_j$ for $j\in 1..m$ is in $\eta$-long nf, and either
 $s_0$ is a variable or a constant and $m\geq0$; or $s_0$ is an
-abstraction $\lambda\overline{y}.s$ and $m\geq1$ where $s$ is in $\eta$-long nf. If $M$ is of ground type (\ie, $T=o$) then its $\eta$-long nf is of the form  $\lambda . N$; The symbol '$\lambda$' does not correspond to a real lambda-abstraction---we call it `dummy lambda'--- but it will be convenient to keep it in expressions representing eta-long normal forms.
+abstraction $\lambda\overline{y}.s$ and $m\geq1$ where $s$ is in $\eta$-long nf. If $M$ is of ground type then its $\eta$-long nf is of the form  $\lambda . N$; Although the symbol '$\lambda$' does not correspond to a real lambda-abstraction---we call it `dummy lambda'---it will still be convenient to keep it in expressions representing eta-long normal forms.
 
 \begin{definition}
 Let $\Gamma \stentail M:T$ be a simply typed term with variable names from $\mathcal{V}$ and constants from $\Sigma$.
@@ -58,12 +56,12 @@ The \emphind{pre-computation} tree $\tau^-(M)$ with labels taken from $ \{ @ \} 
   \mbox{For $m\geq 0$, $z \in \mathcal{V}\union\Sigma$: } \tau^-(\lambda \overline{x} . z s_1 \ldots s_m : o) &=& \lambda \overline{x} \langle z \langle\tau^-(s_1),\ldots,\tau^-(s_m)\rangle\rangle \\
   \mbox{for $m \geq 1$: } \tau^-(\lambda \overline{x} . (\lambda y.t) s_1 \ldots s_m :o) &=& \lambda \overline{x} \langle @ \langle \tau^-(\lambda y.t),\tau^-(s_1),\ldots,\tau^-(s_m) \rangle \rangle \enspace ,
 \end{eqnarray*}
-where we write $l\langle t_1, \ldots, t_n \rangle$ for $n \geq 0$ to denote the \emph{ordered tree} whose root is labelled $l$ and has $n$ child-subtrees $t_1$, \ldots, $t_n$. These trees are illustrated in Table \ref{tab:defcomptree}.
+where we write $l\langle t_1, \ldots, t_n \rangle$ for $n \geq 0$ to denote the \emph{ordered tree} whose root is labelled $l$ and has $n$ child-subtrees $t_1$, \ldots, $t_n$. The trees from the equations above are illustrated in Table \ref{tab:defcomptree}.
 \end{definition}
 
 By convention the first level of a tree (where the root lies) is numbered 0.
 In the tree $\tau^-(M)$, nodes at odd-levels are
-variable or application nodes, and at even-levels lies the $\lambda$-nodes. A single $\lambda$-node can represent several consecutive abstractions or it can just be a \emphind{dummy lambda} (in which case the corresponding subterm is of ground type).
+variable, constant or application nodes; and at even-levels lies the $\lambda$-nodes. A single $\lambda$-node can represent several consecutive abstractions or it can just be a \emphind{dummy lambda} (if the corresponding subterm is of ground type).
 
 \pdfsyncstop
 \begin{table}
@@ -71,7 +69,7 @@ variable or application nodes, and at even-levels lies the $\lambda$-nodes. A si
 \begin{tabular}{cp{20pt}c}
 \begin{tikzpicture}[baseline=(root.base),level distance=4ex,inner ysep=0.5mm,shape border rotate=90,sibling distance=15mm]
     \node (root) {$\lambda\overline{x}$}
-        child { node{$\alpha$}
+        child { node{$z$}
                 child[child anchor=north]{node[isosceles triangle,draw,anchor=north]{$\tau^-(s_1)$}}
                 child{node{$\ldots$}}
                 child[child anchor=north]{node[isosceles triangle,draw,anchor=north]{$\tau^-(s_m)$}}
@@ -81,16 +79,16 @@ variable or application nodes, and at even-levels lies the $\lambda$-nodes. A si
 \begin{tikzpicture}[baseline=(root.base),level distance=4ex,inner ysep=0.5mm,shape border rotate=90,sibling distance=20mm]
     \node(root){$\lambda\overline{x}$}
         child { node{$@$}
-                child[child anchor=north]{node[isosceles triangle,draw,anchor=north]{$\tau^-(\lambda\overline{y}.s)$}}
+                child[child anchor=north]{node[isosceles triangle,draw,anchor=north]{$\tau^-(\lambda\overline{y}.t)$}}
                 child[child anchor=north]{node[isosceles triangle,draw,anchor=north]{$\tau^-(s_1)$}}
                 child{node{$\ldots$}}
                 child[child anchor=north]{node[isosceles triangle,draw,anchor=north]{$\tau^-(s_m)$}}
         };
 \end{tikzpicture}\\
-$\tau^-( \lambda\overline{x} . \alpha s_1 \ldots s_m : o)$
+$\tau^-( \lambda\overline{x} . z s_1 \ldots s_m : o)$
 & &
-$\tau^-(\lambda\overline{x} . (\lambda\overline{y}.s) s_1 \ldots s_m : o)$ \\
-$m\geq0$ and $\alpha\in\mathcal{V}\union\Sigma$ &&
+$\tau^-(\lambda\overline{x} . (\lambda\overline{y}.t) s_1 \ldots s_m : o)$ \\
+$m\geq0$ and $z\in\mathcal{V}\union\Sigma$ &&
 $m \geq 1$
 \end{tabular}
 \caption{The tree $\tau^-(M)$.}\label{tab:defcomptree}
@@ -108,16 +106,37 @@ possible value $v \in \mathcal{D}$.
 \indexnotation{$\tau(M)$}{Computation tree of the term $M$}%
 \end{definition}
 
-
-The inner nodes of the tree are of three kinds:
+Inner nodes of the tree are thus of three kinds:
 \begin{itemize}
-\item $\lambda$-nodes labelled $\lambda \overline{x}$ (note that a $\lambda$-node represents several consecutive variable abstractions),
+\item $\lambda$-nodes labelled $\lambda \overline{x}$ for some list of variables $\overline{x}$ (Note that a $\lambda$-node represents several consecutive variable abstractions),
 \item application nodes labelled @,
-\item variable or constant nodes labelled $\alpha$ for some constant or variable $\alpha$.
+\item variable or constant nodes with labels in $\Sigma \union \mathcal{V}$.
 \end{itemize}
-A node is said to be \defname[prime!node]{prime} if it is the 0$^{th}$ child of an @-node.
-An inner node whose parent is a @-nodes or a $\Sigma$-node is called a \defname{spawn} node.
+A node is said to be \defname[prime!node]{prime} if it is the 0$^{th}$ child of an @-node. An inner node whose parent is a @-node or a $\Sigma$-node is called a \defname{spawn} node.
 \bigskip
+
+\begin{example} \hfill
+\begin{itemize}
+\item The computation tree of a ground type variable or constant $\alpha$ is
+\begin{tikzpicture}[baseline=(root.base),level distance=5ex,inner ysep=0.5mm,sibling distance=10mm]
+\node (root) {$\lambda$}
+child {node {$\alpha$} };
+\end{tikzpicture};
+
+\item The computation tree of a higher-order variable or constant $\alpha : (A_1,\ldots,A_p,o)$ has the following form:
+\begin{tikzpicture}[baseline=(root.base),level distance=3ex,sibling distance=15mm]
+\node (root) {$\lambda$}
+child {node {$\alpha$}
+    child{node {$\lambda\overline{\xi_1}$}
+          child{node{$\ldots$}}}
+    child{node{$\ldots$}}
+    child{node {$\lambda\overline{\xi_p}$}
+          child{node{$\ldots$}}}
+    };
+\end{tikzpicture};
+\end{itemize}
+\end{example}
+
 
 \begin{example}
 \label{examp:comptree}
@@ -206,11 +225,10 @@ child {node {$@$}
 \end{example}
 
 
-\begin{notations} We write $\theroot$ to denote the root of
-$\tau(M)$.%
-\indexnotation{$\theroot$}{Root of the computation tree}%
-We write $E$ to denote the parent-child relation of the
-tree, $V$ for the set of vertices (leaves and inner nodes) of the
+\begin{notations} \indexnotation{$\theroot$}{Root of the computation tree}%
+We write $\theroot$ to denote the root of
+$\tau(M)$. We write $E$ to denote the parent-child relation of the
+tree, $V$ for the set of vertices (\ie, leaves and inner nodes) of the
 tree, $N$ for the set of inner nodes and $L$ for the set of
 value-leaves. Thus $V = N \union L$.
 
@@ -223,12 +241,26 @@ For $\$$ ranging over $\{@, \lambda, {\sf var}, {\sf fv} \}$,
 we write $L_\$$ to denote the set of value-leaves which are children of nodes from $N_\$$; Formally $L_\$ = \{ v_n \ | \ n \in N_\$, v \in \mathcal{D} \}$. We write $V_\$$ for $N_\$ \union L_\$ $.
 
 For every lambda node $n$ in $N_\lambda$ we write
-$M^{(n)}$ for the subterm rooted at $n$ and $V^{(n)}$ for the set of nodes and leaves of the sub-computation tree $\tau(M^{(n)})$; Formally $V^{(n)} = E^*(\{n\})$ where $E^*$ denotes the transitive, reflexive closure of the parent-child relation $E$.
+$M^{(n)}$ for the subterm rooted at $n$ and $V^{(n)}$ for the set of vertices of the sub-computation tree $\tau(M^{(n)})$; Formally $V^{(n)} = E^*(\{n\})$ where $E^*$ denotes the transitive, reflexive closure of the parent-child relation $E$.
 
 Each subtree of the computation tree $\tau(M)$ represents a subterm of $\elnf{M}$.
 We define the function $\kappa : N \rightarrow \chsystem$ (where $\chsystem$ denotes the set of Church typed lambda-terms) that maps a node $n \in N$ to the subterm of $\elnf{M}$ corresponding to the subtree of $\tau(M)$ rooted at $n$.
-In particular $\kappa(r) = \elnf{M}$.
+In particular $\kappa(\theroot) = \elnf{M}$.
 \end{notations}
+
+\begin{remark}
+Since the computation tree is computed from the eta-long normal form, for every subtree of $\tau(M)$ of the form
+\begin{tikzpicture}[baseline=(root.base),level distance=3ex,sibling distance=15mm]
+\node (root) {$\lambda\overline\varphi$}
+child {node {$n$}
+    child{node {$\lambda\overline{\xi_1}$}
+          child{node{$\ldots$}}}
+    child{node{$\ldots$}}
+    child{node {$\lambda\overline{\xi_p}$}
+          child{node{$\ldots$}}}
+    };
+\end{tikzpicture}, we have $\ord{\kappa(n)}=0$.
+\end{remark}
 
 \begin{definition}[Type and order of a node]
 \label{def:nodeorder}
@@ -242,54 +274,15 @@ The \defname{type} of an inner-node $n \in N$ of $\tau(M)$ written $\typeof{n}$ 
 where the notation $\Gamma \typear T$ is an abbreviation for
 $(A_1,\ldots,A_p, T)$ and $A_1,\ldots, A_p$ are the types of the variables in the context $\Gamma$.
 
-The \defname[order!node]{order} of a node $n$, written $\ord{n}$, is defined as
-follows: A value-leaf $v \in L$ has order $0$ and
+The \defname[order!node]{order} of a node $n$, written $\ord{n}$, is defined as follows: A value-leaf $v \in L$ has order $0$ and
 the order of an inner node $n \in N$ is defined as
-the order of its type.
+the order of its type. In particular, the type of a lambda node different from the root is the type of the term represented by the sub-tree rooted at that node, and the type of a variable-node is the type of the variable labelling it.
 \end{definition}
-In particular, the type of a lambda node different from the root is the type of the term represented by the sub-tree rooted at that node, and the type of a variable-node is the type of the variable labelling it.
 
 Since the computation tree is calculated from the $\eta$-long normal form, all the @-nodes have order $0$ ($\ord{@} = 0$);
 for every lambda node $\lambda \overline{\xi} \neq
 \theroot$ we have $\ord{\lambda \overline{\xi}} = 1+
 \max_{z\in \overline{\xi}} \ord{z}$; and if the root $\theroot$ is labelled $\lambda \overline{\xi}$ then $\ord{\theroot} = 1 + \max_{z\in \overline{\xi}\union \Gamma} \ord{z}$ with the convention $\max \emptyset = -1$.
-
-\begin{remark} \hfill
-\begin{itemize}
-\item In a computation tree, nodes at even level are $\lambda$-nodes and nodes at odd level are either application nodes,
-variable or constant nodes;
-
-\item for every ground type variable or constant $\alpha$,
-\begin{tikzpicture}[baseline=(root.base),level distance=5ex,inner ysep=0.5mm,sibling distance=10mm]
-\node (root) {$\lambda$}
-child {node {$\alpha$} };
-\end{tikzpicture};
-
-\item for every higher-order variable or constant $\alpha : (A_1,\ldots,A_p,o)$, the computation tree $\tau(\alpha)$ has the following form:
-\begin{tikzpicture}[baseline=(root.base),level distance=3ex,sibling distance=15mm]
-\node (root) {$\lambda$}
-child {node {$\alpha$}
-    child{node {$\lambda\overline{\xi_1}$}
-          child{node{$\ldots$}}}
-    child{node{$\ldots$}}
-    child{node {$\lambda\overline{\xi_p}$}
-          child{node{$\ldots$}}}
-    };
-\end{tikzpicture};
-
-\item for every tree of the form
-\begin{tikzpicture}[baseline=(root.base),level distance=3ex,sibling distance=15mm]
-\node (root) {$\lambda\overline\varphi$}
-child {node {$n$}
-    child{node {$\lambda\overline{\xi_1}$}
-          child{node{$\ldots$}}}
-    child{node{$\ldots$}}
-    child{node {$\lambda\overline{\xi_p}$}
-          child{node{$\ldots$}}}
-    };
-\end{tikzpicture}, we have $\ord{\kappa(n)}=0$.
-\end{itemize}
-\end{remark}
 
 \begin{definition}[Binder]
 We say that a variable node $n$ labelled $x$ is \defname{bound} by a node $m$, and $m$ is called the \defname{binder} of $n$, if $m$ is
@@ -303,7 +296,7 @@ labelled $\lambda \overline{\xi}$ with $x\in \overline{\xi}$.
 
 \begin{definition}[Enabling]
 The \defname{enabling relation} $\enable$ is defined on the set of
-nodes and leaves of the computation tree as follows. We write $m \enable n$ and we say that $m$ enables $n$ if and only if
+nodes of the computation tree as follows. We write $m \enable n$ and we say that $m$ enables $n$ if and only if
 $m \in L \union N_\lambda \union N_{\sf var}$
 and one of the following conditions holds:
 \begin{itemize}
@@ -347,7 +340,7 @@ $$
 We say that a node $n_0$ of the computation tree is \defname{hereditarily enabled} by $n_p \in N$ if there are nodes $n_1,\ldots, n_{p-1} \in N$ such that $n_{i+1}$ enables $n_{i}$
 for all $i\in 0..p-1$.
 
-For every set of nodes $S, H \subseteq N$ we write $S^{H\enable}$ to denote
+For every sets of nodes $S, H \subseteq N$ we write $S^{H\enable}$ to denote
 the subset $S \inter \enable^*(H)$ of $S$ consisting of nodes hereditarily enabled by some node in $H$. Formally:
 $$S^{H\enable} = \{ n \in S \ | \exists n_0 \in H \mbox{ s.t. }n_0  \enable^* n \} \enspace .$$
 If $H$ is a singleton $\{n_0\}$ then we abbreviate $S^{\{n_0\}\enable}$ into $S^{n_0\enable}$.
@@ -361,7 +354,7 @@ The elements of $N_{\sf var}^{\theroot\enable}$ (\ie, variable nodes that are he
 \smallskip
 
 We use the following numbering conventions:
-the first child of a @-node---a prime node---is numbered $0$;
+The first child of a @-node---a prime node---is numbered $0$;
 the first child of a variable or constant node is numbered $1$;
 and variables in $\overline{\xi}$ are numbered from $1$ onward ($\overline{\xi} = \xi_1 \ldots \xi_n$).
 We write $n.i$ to denote the $i$th child of node $n$.
@@ -376,11 +369,11 @@ and occurrences of nodes in $N_@ \union N_\Sigma$ do not have pointer.
 If an occurrence $n$ points to an occurrence $m$ in $s$ then we say that $m$ \defname{justifies} $n$.
 If $n$ is an inner node then we represent this pointer in the sequence as \Pstr[0.4cm]{(m){m} \ldots (n-m,45:i) n } where the label indicates that either $n$ is labelled with the $i$th variable abstracted by the
 $\lambda$-node $m$ or that $n$ is the $i^{\sf th}$ child of $m$.
-For leaves, pointers are represented as
+The pointer associated to a leaf $v_m$, for some value $v\in\mathcal{D}$ and internal node $m\in N$, is represented as
 $\Pstr[0.5cm]{ (m){m} \cdot \ldots \cdot (vm-m,40:v){v_m} }$.
 \end{definition}
 
-Thus a pointer in a justified sequence of nodes has
+To sum-up, a pointer in a justified sequence of nodes has
 one of the following forms:
 \smallskip
 
@@ -402,7 +395,7 @@ one of the following forms:
 \\
     or
     & $\Pstr[0.7cm]{ (m){m} \cdot \ldots \cdot (vm-m,40:v){v_m} }$
-    & for some value $v\in \mathcal{D}$\enspace .
+    & for some value $v\in \mathcal{D}$ and internal node $m \in N$\enspace .
 \end{tabular}
 \bigskip
 
@@ -414,26 +407,27 @@ sequence that points to $n$, otherwise we say that $n$ is
 \index{node!pending}\defname{pending node}.  A justified sequence of nodes is
 \defname[well-bracketing]{well-bracketed} if each value-leaf occurring in it is justified by the pending node at that point.
 
-For every justified sequence of nodes and leaves $t$ we write $?(t)$
+For every justified sequence of nodes $t$ we write $?(t)$
 to denote the subsequence of $t$ consisting only of unanswered
 nodes. Formally:
 \begin{align*}
   ?(\Pstr[0.4cm]{u_1 \cdot (n){n} \cdot u_2 \cdot (nv-n){v_n} }  ) &= ?(u_1 \cdot n \cdot u_2) \setminus \{ n \}
-        & \mbox{for some value $v\in\mathcal{D}$} \\
-  ?(u \cdot n)   &= ?(u)\cdot n    & \mbox{for $n\not\in L$}
+        & \mbox{for some value $v\in\mathcal{D}$ \enspace ,} \\
+  ?(u \cdot n)   &= ?(u)\cdot n    & \mbox{for $n\not\in L$ \enspace ,}
 \end{align*}
 where $u \setminus \{ n \}$ denotes the subsequence of $u$ obtained by removing the occurrence $n$.
 
 If $u$ is a well-bracketed sequences then $?(u)$ can be defined as follows:
 \begin{align*}
   ?(\Pstr[0.4cm]{u \cdot (n){n} \ldots (nv-n){v_n} }  ) &= ?(u)
-          & \mbox{for some value $v\in\mathcal{D}$}  \\
+          & \mbox{for some value $v\in\mathcal{D}$\enspace ,}  \\
     ?(u \cdot n) &= ?(u)\cdot n    & \mbox{where $n\not\in L$} \enspace .
 \end{align*}
 
 
-\begin{notations} We write $s = t$ to denote that the justified sequences $t$ and $s$
-have same nodes \emph{and} pointers. \indexnotation{$s \prefixof s'$}{Prefix ordering for (justified) sequences} Justified sequence of nodes can
+\begin{notations}\indexnotation{$s \prefixof s'$}{Prefix ordering for (justified) sequences}%
+We write $s = t$ to denote that the justified sequences $s$ and $t$
+have same nodes \emph{and} pointers. Justified sequence of nodes can
 be ordered using the prefix ordering: $t \prefixof t'$ if and only
 if $t=t'$ or the sequence of nodes $t$ is a finite prefix of $t'$
 (and the pointers of $t$ are the same as the pointers of the
@@ -455,12 +449,12 @@ We define two different projection operations on justified sequences
 of nodes.
 
 \begin{definition}[Projection on a set of nodes]
-Let $A$ be a subset of $V$, the set of nodes and leaves of
+Let $A$ be a subset of $V$, the set of vertices of
 $\tau(M)$, and $t$ be  a justified sequence of nodes then we write
 $t\filter A$ for the subsequence of $t$ consisting of nodes in $A$.
 This operation can cause a node $n$ to lose its pointer. In that
 case we reassign the target of the pointer to the last node in
-$t_{\prefixof n}\filter A$ that hereditarily justifies $n$ (this node can be found by following the pointers from $n$ until we reach a node that appear in $A$). If there is no such node then $n$ just loses its pointer.
+$t_{\prefixof n}\filter A$ that hereditarily justifies $n$ (This node can be found by following the pointers from $n$ until reaching a node appearing in $A$); If there is no such node then $n$ just loses its pointer.
 \end{definition}
 
 
@@ -548,33 +542,28 @@ of a node in $N_{\sf var} \union L_\lambda$, its justifier occur in the P-view a
 \end{itemize}
 \end{definition}
 
-\begin{property}
-\label{proper:pview_visibility}
+We then have the same basic property as in game semantics:
+%\begin{property}
 The P-view (resp.\ O-view) of a justified sequence satisfying P-visibility (resp.\ O-visibility)
 is a well-formed justified sequence satisfying P-visibility (resp.\ P-visibility).
-\end{property}
-This is proved by an easy induction.
+%\end{property}
+(This property follows by an easy induction.)
 
 
 \subsection{Traversal of the computation tree}
 \label{subsec:traversal}
-A \emph{traversal} is a justified sequence of nodes of the computation tree where each node indicates a step that is taken during the evaluation of the term.
+
+We now define the notion of \emph{traversal} over the computation tree $\tau(M)$.  We first consider the simply typed lambda calculus without interpreted constants; Everything remains valid in the presence of \emph{uninterpreted} constants as we can just consider them as free variables. In the second section, we extend the notion of traversal to a more general setting with interpreted constants.
 
 \subsubsection{Traversals for simply typed \texorpdfstring{$\lambda$}{lambda}-terms}
 
-We first consider the simply typed lambda calculus without interpreted constants.
-Everything remains valid in the presence of \emph{uninterpreted} constants as we can just
-consider them as free variables.
-
-We define the notion of traversal over the computation tree $\tau(M)$.
-We will then we show how to extend the notion of traversal to more general settings with interpreted constants.
+Informally, a traversal is a justified sequence of nodes of the computation tree where each node indicates a step that is taken during the evaluation of the term.
 
 \input{traversal_rules_def.texi}
 
-
 \begin{example}
 \label{examp:trav} The following justified sequence is a traversal
-of the computation tree of example \ref{examp:comptree}:
+of the computation tree from Example \ref{examp:comptree}:
 $$\Pstr[1.3cm]{ t= (n0){\lambda f z}
         \cdot (n1){@}
         \cdot (n2-n1){\lambda u v}
@@ -631,20 +620,20 @@ $$\Pstr[1.3cm]{ t= (n0){\lambda f z}
     \overline{\xi}} }.
     \end{description}
     In the rest of this chapter we will prove various resulting
-    by induction on the structure of some traversal and by case
-    analysis on the last rule used to form it. For the sake of
-    these proofs, we will use the above-defined reformulation of
-    \rulenamet{Value} in place of its original definition.
+    by induction on the structure of a traversal and by case
+    analysis on the last rule used to form it. Some of
+    these proofs will rely on the above-defined reformulation of
+    \rulenamet{Value} instead of its original definition.
 
-    \item In the rule \rulenamet{InputValue}, although it is not specified, the last node in the traversal $t_1 \cdot x \cdot t_2$ must necessarily belong to $N_{\sf var} \union L_\lambda$. Indeed, since the pending node $x$ is a variable node, it is of the form
+    \item In the rule \rulenamet{InputValue}, the last node in the traversal $t_1 \cdot x \cdot t_2$ necessarily belongs to $N_{\sf var} \union L_\lambda$. Indeed, since the pending node $x$ is a variable node, the traversal is of the form
 $$\Pstr[0.5cm]{\ldots \cdot x \cdot  (l){\lambda \overline{\eta}_1}\ldots (v-l){v^1_{\lambda \overline{\eta}_1}}
 (l2){\lambda \overline{\eta}_2}\ldots (v2-l2){v^2_{\lambda \overline{\eta}_2}}
 \ldots (lk){\lambda \overline{\eta}_k}\ldots (vk-lk){v^k_{\lambda \overline{\eta}_k}}
-}$$ for some nodes $\lambda \overline{\eta}_k$, values $v^k \in \mathcal{D}$ and $k\geq 0$; thus the last occurrence belongs to $N_{\sf var}$ if $k=0$ and to $L_\lambda$ if $k\geq1$.
+}$$ for some nodes $\lambda \overline{\eta}_k$, values $v^k \in \mathcal{D}$ and $k\geq 0$; Thus the last occurrence belongs to $N_{\sf var}$ if $k=0$ and to $L_\lambda$ if $k\geq1$.
 
     Furthermore, the pending node appears necessarily in the O-view.
 
-    These two observations show that the rule \rulenamet{InputValue} is essentially \rulenamet{InputVar} specialized for value-leaves. The only difference is that \rulenamet{InputVar}
+    These two observations show that the rule \rulenamet{InputValue} is essentially a specialization of \rulenamet{InputVar} to value-leaves. The only difference is that \rulenamet{InputVar}
     allows the visited node to be justified by \emph{any} variable node occurring in the O-view whereas \rulenamet{InputValue} constrains the node
     to be justified by the pending node (which necessarily occurs in the O-view). This restriction is here to ensure that traversals are well-bracketed.
 
@@ -667,7 +656,7 @@ can be made to the node corresponding to the subterm that would be
 substituted for $x$ if all the $\beta$-redexes occurring in the term
 were to be reduced. Let $\lambda \overline{x}$ be $x$'s binder and
 suppose $x$ is the $i$th variable in $\overline{x}$. The binding
-node necessarily occurs previously in the traversal (this will be
+node necessarily occurs previously in the traversal (This will be
 proved in Prop.\ \ref{prop:pviewtrav_is_path}). Since $x$ is not
 hereditarily justified by the root, $\lambda \overline{x}$ is not
 the root of the tree and therefore it is not the first node of the
@@ -718,7 +707,7 @@ child[dotted]{
 
     \item If it is a variable node $y$, then
     the node $\lambda \overline{x}$ was necessarily added to the traversal $t_{\leq y}$ using the \rulenamet{Var} rule.
-    (Indeed, if it was visited using \rulenamet{InputVar} then $\lambda \overline{x}$ would be hereditarily justified by the root. But this is not possible since $x_i$, bound by $\lambda \overline{x}$, is not an input-variable.)
+    (Indeed, if it was visited using \rulenamet{InputVar} then $\lambda \overline{x}$ would be hereditarily justified by the root, but this is not possible since $x_i$, bound by $\lambda \overline{x}$, is not an input-variable.)
     Therefore $y$ is substituted by the term $\kappa(\lambda \overline{x})$ during the evaluation of the term.
 
     Consequently, during reduction, the variable $x$ will be substituted by the subterm represented by
@@ -738,13 +727,13 @@ In his setting:
 \begin{itemize}[-]
     \item computation trees contain (uninterpreted first-order) constants. Here we have not accounted for constants but as previously observed, uninterpreted constants can just be regarded as free variables, thus we do not lose any expressivity here.
 
-    \item constants are restricted to order one at most (terms are used as generators
+    \item constants are restricted to order one at most. (Terms are used as generators
         of trees where first-order constants act as tree-node constructors). Here we do not need this restriction: As long as constants are uninterpreted we can regard them as free variables, even at higher-orders.
 
-    \item one rule (\rulenamet{Sig}) suffices to model the first-order constants. In our setting, however,
-    to account for higher-order variables we have to introduce the more complicated rules \rulenamet{InputValue}, \rulenamet{InputVar}.
+    \item one rule (\rulenamet{Sig}) suffices to model the first-order constants. Our setting, on the other hand,
+    accounts for higher-order variables (using the more complicated rules \rulenamet{InputValue} and \rulenamet{InputVar}).
 
-    \item computation tree do not have value-leaves. These are not necessary to model the pure simply typed lambda calculus. There will be necessary, however, when it comes to model interpreted constants such as those of \pcf\ or \ialgol.
+    \item computation trees do not have value-leaves. These are not necessary to model the pure simply typed lambda calculus. There will be necessary, however, when it comes to model interpreted constants such as those of \pcf\ or \ialgol.
     \end{itemize}
 \end{remark}
 
@@ -840,10 +829,8 @@ and $x_j \in V^{\lambda \overline{\eta}_{i'} \enable}$).
 \subsubsection{Traversal rules for interpreted constants}
 
 The framework that we have established up to now aims at providing
-a computation model of simply typed lambda-terms. It is however
-possible to extend it to other higher-order languages that are based
-on the simply typed lambda calculus. To achieve this, one needs to
-complete the core traversal rules from Table \ref{tab:trav_rules}
+a computation model of simply typed lambda-terms. It is
+possible to extend it to other extensions of the simply typed lambda calculus. This is done by completing the traversal rules from Table \ref{tab:trav_rules}
 with new rules describing the behaviour of the interpreted constants
 of the language considered. For instance in the case of \pcf, we
 need to define rules for the interpreted constant $\pcfcond$ that
@@ -855,21 +842,16 @@ We mentioned before that uninterpreted constants can be regarded as
 free variables. In the same way, we can consider interpreted
 constants as a \emph{generalization} of free variables: For both of
 them, the ``code'' describing their computational behaviour is not
-defined within the scope of the term; it is instead assumed that the
+defined within the scope of the term, it is instead assumed that the
 environment knows how to interpret them. Free variables, however,
-have less power than interpreted constants in that when evaluating
+are more restricted than interpreted constants: When evaluating
 an applicative term with a free variable in head position, the
 evaluation of the head variable does not depend on the result of the
-evaluation of its parameter; whereas for applicative term with an
-interpreted constant in head position, the evaluation can be driven
-by the result of the evaluation of its parameter (\eg, the
-\pcf\ constant $\pcfcond$ is capable of branching between two of its
-parameters depending on the result of the evaluation of its first
-parameter).
+evaluation of its parameters; Whereas for applicative term with an
+interpreted constant in head position, the outcome of the evaluation may depend on the result of the evaluation of its parameters (\eg, the
+\pcf\ constant $\pcfcond$ branches between two control points depending on the result of the evaluation of its first parameter).
 
-Based on these observation, we can define a prototype for constant
-traversal rules inspired by the definition of the rules
-\rulenamet{InputValue} and \rulenamet{InputVar}:
+We can thus derive a prototype for constant traversal rules by generalizing the rules \rulenamet{InputValue} and \rulenamet{InputVar}:
 \begin{definition}[Constant traversal rule]
     \label{def:constant_traversal} A \defname{constant traversal} has
     one of the following two forms:
@@ -1065,17 +1047,17 @@ $$\travset(M)^{\filter \theroot} \defeq \{ t \filter \theroot \ :\  t  \in \trav
 \end{definition}
 
 \begin{example}
-The reduction of the traversal given in example \ref{examp:trav} is:
+The core of the traversal given in example \ref{examp:trav} is:
 $$ \Pstr[0.7cm]{t \filter \lambda f z = (n0){\lambda f z} \cdot (n1-n0){f}\cdot (n2-n1){\lambda }\cdot (n3-n0){z} } \enspace .$$
 \end{example}
 
 
 \begin{remark}\hfill
   \begin{itemize}
-    \item The root occurs at most once in a traversal, therefore if $t$ is a non-empty traversal then the reduction of $t$ is equal to $t\filter r$ where $r$ denotes the only occurrence of $\theroot$ in $t$. Thus we have:
+    \item The root occurs at most once in a traversal, therefore if $t$ is a non-empty traversal then its core is given by $t\filter r$ where $r$ denotes the only occurrence of $\theroot$ in $t$. Thus we have:
         $$\travset(M)^{\filter \theroot} = \{ t \filter r\ :\  t  \in \travset(M) \hbox{ and $r$ is the only occurrence of $\theroot$ in $t$}\} \enspace . $$
 
-    \item Since @-nodes and $\Sigma$-constants do not have pointers, the reduction of traversal contains only nodes in $V_\lambda \union V_{\sf var}$.
+    \item Since @-nodes and $\Sigma$-constants do not have pointers, the traversal cores contains only nodes in $V_\lambda \union V_{\sf var}$.
 \end{itemize}
 \end{remark}
 
@@ -2243,7 +2225,7 @@ $ \pview{t} \filter r = \pview{?(t) \filter  r } = \pview{?(t \filter  r)}
 \end{lemma}
 \begin{proof}
 (a) It is easy to show that $?(t) \filter  r =\ ?(t \filter  r)$. This implies the second equality.
-The third equality can be shown by an easy induction and by observing that in a traversal reduction, variable occurrences are always immediately preceded by a lambda node (and not by a leaf).
+The third equality can be shown by an easy induction and by observing that in a traversal core, variable occurrences are always immediately preceded by a lambda node (and not by a leaf).
 We show the first equality by induction. The base case $t=\epsilon$ is trivial. Consider a traversal $t$ and suppose that the property is verified for all traversals shorter than $t$. Observe that since $t$ contains at most a single occurrence $r$ of the root
 $\theroot$, an occurrence $n$ in $t$ is hereditarily justified by
 $r$ if and only if the corresponding node in $\tau(M)$ is
@@ -2324,7 +2306,7 @@ Otherwise $t =  \Pstr{t' \cdot (m){m} \cdot u \cdot
 \end{itemize}
 
 (b) If $t$'s last occurrence is hereditarily justified by $r$ then the last occurrence of $t\filter r$ is precisely the last occurrence of $t$ and is therefore not a leaf.
-In a traversal reduction, variable nodes are immediately preceded by lambda nodes thus since the last node in $t\filter r$ is not a leaf, an easy induction shows that all the nodes in $\pview{t\filter r}$ are not leaves.
+In a traversal core, variable nodes are immediately preceded by lambda nodes thus since the last node in $t\filter r$ is not a leaf, an easy induction shows that all the nodes in $\pview{t\filter r}$ are not leaves.
 Consequently $?(\pview{t\filter r}) = \pview{t\filter r}$.
 \end{proof}
 
@@ -3216,10 +3198,10 @@ The convention chosen to define the order of the root node (see Def.\ \ref{def:n
 This explains why the order of the root node and other lambda nodes were defined differently.
 \smallskip
 
-By extension, we can define the function $\psi_M$ on $\travset(M)^{\filter \theroot}$, the set of traversal reductions, as follows:
+By extension, we can define the function $\psi_M$ on $\travset(M)^{\filter \theroot}$, the set of traversal cores, as follows:
 \begin{definition}[Mapping sequences of nodes to sequences of moves]
 The function $\psi_M$ maps
-any traversal reduction $u = u_0 u_1 \ldots \in \travset(M)^{\filter \theroot}$ to
+any traversal core $u = u_0 u_1 \ldots \in \travset(M)^{\filter \theroot}$ to
 the following justified sequence of moves of the arena $\sem{\Gamma \gamear T}$: $\psi_M(u) = \psi_M(u_0)\ \psi_M(u_1)\  \psi_M(u_2) \ldots$ where $\psi_M(u)$ is equipped with $u$'s pointers.
 
 The pointer-free function underlying $\psi_M$ is thus a monoid homomorphism.
@@ -3668,7 +3650,7 @@ $\varphi_M$ defines a bijection from $\travset(M)^\star$ to $\syntrevsem{\Gamma 
 \end{theorem}
 
 \begin{remark}
-\label{rem:corresp_proofreduction}
+\label{rem:corresp_proofcore}
     By Corollary \ref{cor:varphi_bij}, we just need to show that
     $\varphi_M$ and $\psi_M$ are \emph{surjective}, that is to
     say: $\varphi_M(\travset(M)^\star) = \syntrevsem{\Gamma \entail M : T}$
@@ -3707,7 +3689,7 @@ child {node {$@$}
 \begin{proof}
 Let $\Gamma \entail M : T$ be a simply typed term where $\Gamma =
 x_1:X_1,\ldots x_n:X_n$. We assume that $M$ is already in
-$\eta$-long normal form. By remark \ref{rem:corresp_proofreduction} we just need to
+$\eta$-long normal form. By remark \ref{rem:corresp_proofcore} we just need to
 show that $\varphi_M(\travset(M)^\star) = \syntrevsem{\Gamma \entail M : T}$.
 We proceed by induction on the structure of $M$:
 \begin{itemize}[$\bullet$]
@@ -3858,7 +3840,7 @@ $\mathcal{M}_{T'}$. We proceed by case analysis on $m$; we either have $m\in C$ 
     $u$ we have $u=q_0$ and the traversal $t=\lambda^{[\theroot]}$ formed with \rulenamet{Root} clearly satisfies $\varphi(t^\star) = u$.
 
     Otherwise $m=v_{q_0}$. This P-move is played by the
-    copy-cat strategy $ev$ therefore it is the copy of some answer $v_{q_0'}$ to the question $q_0'$ from the sub-game $o'$. The move $v_{q_0'}$ is necessarily the immediate predecessor of $m$ in $u$. Indeed the play $u_{\prefixof v_{q_0'}}\filter A,B$ is complete since its  first move $q_0'$ is answered by $v_{q_0'}$, and therefore $u_{\prefixof v_{q_0'}}\filter T^0$ is also complete by Lemma \ref{lem:inter_complete}; thus no profound internal move can be played between $v_{q_0'}$ and $v_{q_0}$, and therefore these two moves are consecutive.
+    copy-cat strategy $ev$ therefore it is the copy of some answer $v_{q_0'}$ to the question $q_0'$ from the sub-game $o'$. The move $v_{q_0'}$ is necessarily the immediate predecessor of $m$ in $u$. Indeed the play $u_{\prefixof v_{q_0'}}\filter A,B$ is complete since its  first move $q_0'$ is answered by $v_{q_0'}$, and therefore $u_{\prefixof v_{q_0'}}\filter T^0$ is also complete by Lemma \ref{lem:inter_complete}; Thus no profound internal move can be played between $v_{q_0'}$ and $v_{q_0}$, and therefore these two moves are consecutive.
 
     Hence by the induction hypothesis the last move in $t'$ is $\varphi(v_{q_0'}) = v_{\lambda y_1}$.
     The rules \rulenamet{Value^{\lambda\mapsto @}} and \rulenamet{Value^{@\mapsto\lambda}} permits us to extend

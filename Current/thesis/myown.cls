@@ -76,7 +76,7 @@
 \headheight 10mm
 \headsep 7mm
 \evensidemargin 2cm % for side margins of 2cm
-\oddsidemargin 3cm % for side margins of 2cm
+\oddsidemargin 3cm % for side margins of 3cm
 \textheight 250mm
 \textwidth 160mm
 \marginparsep 5mm

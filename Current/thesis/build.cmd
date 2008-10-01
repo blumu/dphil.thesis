@@ -1,3 +1,6 @@
+::abstract page
+pdflatex -aux-directory=TeXAux abstract_submission.tex
+
 :default
 del /q TeXAux\*.*
 latex -aux-directory=TeXAux thesis.tex

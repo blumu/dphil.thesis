@@ -21,7 +21,8 @@ We then consider classical typing problems in the setting of the safe lambda cal
 We conclude the chapter by looking at extensions of the simply-typed lambda calculus. We look at how the safety restriction can be defined for languages featuring recursion and imperative feature. This allows us to derive notions of safe sub-language of \pcf\ and Idealized Algol.
 \medskip
 
-\emph{Related work:} A first attempt to adapt the safety restriction to the lambda calculus was made by Aehlig et~al.\ in an unpublished technical report \cite{safety-mirlong2004}. The calculus that we present here is both simpler (the typing system is just a slight variation of the simply-typed lambda calculus) and more general (no condition is imposed on types and use of $\Sigma$-constants of any order is allowed).
+\begin{remark}[Related work] A first attempt to adapt the safety restriction to the lambda calculus was made by Aehlig et~al.\ in an unpublished technical report \cite{safety-mirlong2004}. The calculus that we present here is both simpler (the typing system is just a slight variation of the simply-typed lambda calculus) and more general (no condition is imposed on types and use of $\Sigma$-constants of any order is allowed).
+\end{remark}
 
 
 \section{Definition and properties}
@@ -234,6 +235,10 @@ $z_1,\ldots, z_m \sentail e:o$ is a valid judgment of the homogeneous safe lambd
 all the occurrences of unsafe subterms of $e$ are safe occurrences, which is in turn equivalent to ``$F z_1 \ldots z_m \rightarrow e$ is safe'' by definition of Knapik-safety for grammar rules.
 \end{proof}
 
+\begin{remark}
+This result was first proved by de Miranda \cite{demirandathesis} for a different notion of safe lambda calculus. See Remark~\ref{related:demiranda_safelambda}.
+\end{remark}
+
 \subsubsection*{In what sense is the safe lambda calculus \emph{safe}?}
 It is an elementary fact that when performing $\beta$-reduction in the lambda
 calculus, one must use capture-\emph{avoiding} substitution, which
@@ -257,17 +262,18 @@ Ass(x) &= \emptyset \\
 Ass(M\, N) &= Ass(M) \union Ass(N) \\
 Ass(\lambda x^T . M) &= \{ x: T \} \union Ass(M) \enspace .
 \end{align*}
-
-A Church-like term-in-context $\Gamma \chentail M : T$ is
-said to be \defname{order-consistent} just if the set $Ass(M)$ is, and
-a countable set of terms $M_0, M_1, \ldots$ is
-\defname{order-consistent} just if $\Union_{i\geq 0} Ass(M_i)$ is.
+By extension, the set of type-assignments induced by a term-in-context $\Gamma \chentail M : T$ is given by $Ass(\Gamma \chentail M : T) = \Gamma \union Ass(M)$. A type-annotated term $M$ is said to be \defname{order-consistent} just if the set $Ass(M)$ is; a countable set of terms $M_0, M_1, \ldots$ is \defname{order-consistent} just if $\Union_{i\geq 0} Ass(M_i)$ is. This notion naturally extends to (countable sets of) terms-in-context.
 
 We now adopt the \defname{safe variable typing convention}:
 In any definition, theorem or proof involving countably many terms, it is assumed that the set of terms involved is order-consistent.
 \end{convention}
 
+\begin{example}
+  The set of typing assumptions $\{x:o, x:1\}$ is not order-consistent. Therefore the annotated term $\lambda x^1 . x (\lambda x^o . x)$ is not order-consistent; however, it is alpha-equivalent to the term
+  $\lambda y^1 . y (\lambda x^o . x)$ which is order-consistent.
 
+  The set of terms $\{ \lambda x^0 . x,  \lambda x^1 . x\}$ is not order-consistent.
+\end{example}
 
 In the following, we write $M\captsubst{N}{x}$ to denote
 the capture-\emph{permitting} substitution that textually replaces all free occurrences of $x$ in $M$ by $N$ without performing variable renaming (see Def.~\ref{def:captpermsubst}) and $M\captsubstl {\overline N} / {\overline x}\captsubstr$ to refer to its simultaneous variant (Def.~\ref{def:captpermsimultsubst}).
@@ -306,7 +312,24 @@ Therefore:
 which gives us a contradiction.
 \end{proof}
 
-Alternatively, one can state a slight variation of the No-variable capture Lemma that does not rely on Convention \ref{conv:orderconsistnaming}:
+
+\begin{example}
+\begin{enumerate}[(i)]
+\item
+  In order to contract the $\beta$-redex in
+\[f:(o,o,o),x:o
+  \chentail (\lambda \varphi^{(o,o)} x^o . \varphi \, x) (\underline{f \,
+    \underline{x}}) : (o,o)\] one should rename afresh the bound variable $x$ to prevent the capture of the free occurrence of $x$ in the underlined subterm during substitution. Consequently, by the previous lemma,  the term is not safe. And indeed the basic property of the safe lambda calculus is not satisfied because $\ord{x} = 0 < 1
+  = \ord{f x}$.
+\item
+  Adopting the safe variable typing convention is crucial for the lemma to hold. For instance take the safe terms $M \equiv \lambda y^o . x$ and
+   $N \equiv y$. We have $ x: 1 \sentail M : o\typear 1$ and
+   $y:1 \sentail N : 1$. But
+   $$M\captsubst{N}{x} \equiv \lambda y^o.y \not\equiv \lambda x^o . y \equiv M\subst{N}{x} \enspace .$$
+\end{enumerate}
+\end{example}
+
+Alternatively, the following version of the No-variable capture Lemma does not rely on Convention \ref{conv:orderconsistnaming}:
 \begin{lemma}
 \label{lem:nocapture_noconvention}
 Let $\Gamma, \overline{x}:\overline{B} \sentail M : A$, $\Gamma \sentail  N_1:B_1,  \cdots ,\Gamma \sentail  N_n : B_n$, with $|\overline x| = n$, be valid judgements of the safe lambda calculus \ala Church. Then if further $\Gamma \chentail M\{{\overline N} / {\overline x}\} : A$ is a valid Church simply-typed term-in-context (not-necessarily safe) then
@@ -329,15 +352,6 @@ $\lambda \overline{y}^{\overline C}$. Consequently its type must be $C_j$. Hence
   paper \cite{KNU02}.
 \end{remark}
 
-\begin{example}
-  In order to contract the $\beta$-redex in
-\[f:(o,o,o),x:o
-  \chentail (\lambda \varphi^{(o,o)} x^o . \varphi \, x) (\underline{f \,
-    \underline{x}}) : (o,o)\] one should rename the bound variable $x$ to a fresh name to
-  prevent the capture of the free occurrence of $x$ in the underlined subterm during substitution. Consequently, by the previous lemma,
-  the term is not safe. And indeed the basic property of the safe lambda calculus is not satisfied because $\ord{x} = 0 < 1
-  = \ord{f x}$.
-\end{example}
 
 Note that lambda-terms that do not require variable-capture
 when being reduced are not necessarily safe. For instance the $\beta$-redex in
@@ -386,7 +400,7 @@ implies $\Gamma \asappentail M[N_1/x_1, \ldots, N_n/x_n] : B$.
 \item Observe that the \emph{type} substitution lemma of the simply-typed lambda calculus does not hold in the safe lambda calculus. This is because type substitution allows one to alter the order of the variables occurring in the term. For instance take
     $M \equiv \lambda f y. f (\lambda x.y)$. Its principal type in the lambda calculus is $A \equiv ((\alpha\typear\beta)\typear\gamma)\typear\beta\typear\gamma$ for some atomic types $\alpha$, $\beta$ and $\gamma$.
     Then the judgement $\stentail M : A$ is unsafe (because $\ord y = \ord x$), the judgment
-    $\stentail M : A\subst{\beta}{\beta\typear\beta}$ is safe, and the judgment $\stentail M : A\subst{\beta}{\beta\typear\beta}\subst{\alpha}{\alpha\typear\alpha}$
+    $\stentail M : A\subst{\beta\typear\beta}{\beta}$ is safe, and the judgment $\stentail M : A\subst{\beta\typear\beta}{\beta}\subst{\alpha\typear\alpha}{\alpha}$
     is unsafe.
 \end{enumerate}
 \end{remark}

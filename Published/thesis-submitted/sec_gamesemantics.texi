@@ -1,0 +1,1323 @@
+ \label{sec:gamesem}
+
+Game semantics is a very powerful paradigm for giving models of programming languages. It was the first kind of semantics able to provide a \emph{fully abstract model} of the language \pcf, a result which was subsequently extended to other languages. In a nutshell, the term ``full abstraction'' means that the model provides a faithful mathematical characterization of the language. A natural way to give a semantic account of a language consists therefore in giving a game-semantic characterization of it. A question that we will try to answer in this thesis is: How does a syntactic restriction such as \emph{safety} impact on the on the game model of a language? A substantial part of this thesis is devoted to this question (Chapter \ref{chap:concrete_gamesem} and \ref{chap:model}).
+
+This chapter introduces the basic notions of game semantics including the categorical interpretation, the game interpretation of \pcf\ and \ialgol, and the full abstraction results. It concludes by giving a brief summary of some important results in \emph{algorithmic game semantics}. For an introduction, we recommend the tutorial by Samson Abramsky  \cite{abramsky:game-semantics-tutorial} on which this chapter is based. Many details and proofs will be omitted; we refer the reader to other literature \cite{hylandong_pcf, abramsky94full} for a complete account. The reader familiar with game semantics may very well consider skipping this chapter altogether as all the definitions and notations introduced here are standard.
+
+\subsection{Historical remarks}
+
+We give an outline of the history of game semantics. Cardone and Hindley
+gave a more detailed survey \cite{cardone2006hlc}.
+
+\subsubsection*{Logic}
+% 1 Lorenzen, 2 berry+curien, 3 Blass, 4 Joyal
+Game semantics finds its origin in various works \cite{lor61,DBLP:journals/tcs/BerryC82,blass1992gsl,Joyal1977}. Paul Lorenzen introduced a game semantics for logic in the 1950s to study intuitionistic logic \citep{lor61} where the notion of logical truth is modeled using game-theoretic concepts such as the existence of a winning strategy. Four decades later, this approach was used by Andreas Blass \cite{blass1992gsl} to establish a connection with Girard's linear logic. Joyal \cite{Joyal1977} later presented his ``combinatorial'' calculus of strategies, establishing the first categorical account of two-player games.
+%The work of Berry and Curien \cite{DBLP:journals/tcs/BerryC82} on characterizations of sequentiality at higher-types by concrete data structures, has also contributed to the development of game semantics although the concept of game is not explicitly mentioned in this work.
+In the 1990s, Samson Abramsky and Radha Jagadeesan \cite{abramsky92games} on one hand, Martin Hyland and Luke Ong \cite{HO93a} on the other hand, used game semantics to prove full completeness of Multiplicative Linear Logic (MLL).
+
+\subsubsection*{Models of programming languages}
+
+Subsequently, game semantics emerged as a new paradigm for the study of formal models for programming languages. Three different independent research groups: Samson
+Abramsky, Radhakrishnan Jagadeesan and Pasquale Malacaria
+\citep{abramsky94full}; Martin Hyland and Luke Ong
+\citep{hylandong_pcf}; and Nickau \citep{Nickau:lfcs94} introduced
+a new kind of model based on game semantics in order to solve a long
+standing problem in the semanticists community: finding a fully
+abstract model for \pcf.
+
+Many approaches were used to define models for programming languages before the
+introduction of game models. Among the successful ones were the:
+\begin{itemize}
+\item \emph{operational semantics}: The meaning of a program is defined by describing the behaviour of a machine executing it. This is formally done by means of a state transition system;
+\item \emph{axiomatic semantics}: The behaviour of the program is defined by means of axioms. This kind of semantics lends itself well to proving correctness of the program by static analysis of the program code;
+\item \emph{denotational semantics}: Programs are mapped to mathematical objects with good properties (such as compositionality). This mapping is done by structural induction on the syntax of the program.
+\end{itemize}
+
+In \emph{game semantics}, the idea is to model the program as a game played by two protagonists: the Opponent, representing the environment, and the Proponent, representing the program. The meaning of the program is then modeled by a strategy for the Proponent.
+
+\subsubsection*{The problem of full abstraction for \pcf}
+
+The problem of the Full Abstraction for \pcf\ goes back to the
+1970s. Scott constructed a model of \pcf\ based on domain theory \citep{scott93} which gives a sound interpretation of observational equivalence: if two terms have the same domain
+theoretic interpretation then they are observationally equivalent.
+However the converse is not true: There exist two \pcf\ terms
+which are observationally equivalent but have different domain
+theoretic denotations---we say that the model is not \emph{fully abstract}.
+
+The reason why the domain theoretic model is not fully
+abstract lies in the fact that the \emph{parallel-or} operator defined by the following
+truth table
+\begin{center}
+\begin{tabular}{l|lll}
+p-or  & $\bot$ & tt & ff \\ \hline
+$\bot$ & $\bot$ & tt & $\bot$\\
+tt & tt & tt & tt\\
+ff & $\bot$ & tt & ff\\
+\end{tabular}
+\end{center}
+is not definable by any \pcf\ term. Indeed, it is possible to define two
+different \pcf\ terms that have the same behaviour except when
+applied to a term computing p-or. Since p-or is not definable in
+\pcf, these two terms will have the same denotation, hence the model is not fully abstract.
+
+
+One solution to the problem is to ``patch'' \pcf\ by adding the p-or operator. The resulting language ``\pcf+p-or'' was shown to be fully-abstracted by Scott
+domain theoretic model \citep{DBLP:journals/tcs/Plotkin77}. The language that we are now dealing with, however, is strictly more powerful than \pcf---it allows parallel execution of commands whereas \pcf\ only permits sequential execution.
+
+Another approach involves the elimination of the undefinable
+elements (like p-or) by strengthening the conditions on the function
+used in the model. This approach was followed by Berry
+who gave a model based on stable functions \cite{berry-stable,gberry-thesis}, a class of functions smaller than the class of strict and continuous function. Unfortunately this approach did not succeed.
+
+Fully abstract models for \pcf\ were found at the same time and independently by three research teams: Abramsky, Jagadeesan and Malacaria \citep{abramsky94full}, Hyland and Ong \citep{hylandong_pcf} and Nickau \citep{Nickau:lfcs94}. These three approaches are all based on game semantics.
+
+The game-semantic approach has subsequently been adapted to other varieties of programming paradigms leading to fully abstract models of languages featuring stores (Idealized Algol), call-by-value \citep{honda99gametheoretic,abramsky98callbyvalue} and call-by-name, general references \citep{DBLP:conf/lics/AbramskyHM98}, polymorphism
+\citep{DBLP:journals/apal/AbramskyJ05}, control features
+(continuation and exception), non determinism, concurrency, etc.
+
+\subsection{Definitions}
+
+We now introduce formally the notion of game that we will use in
+later sections to model programming languages. We consider a two-player game. The players are named O for \defname{Opponent} and P for \defname{Proponent}. The game played by these two players is constrained by an \emph{arena}. The arena defines the possible moves of the game. By analogy with real board games, the arena represents the board together with rules indicating which are the legal moves for each player. The analogy with board
+game will stop here; instead it is preferable to regard our
+games as dialogs between the two players. The dialog unfolds as follows: The Opponent interviews the Proponent; P's goal is to answer the initial question asked by O. P can also ask intermediary questions to O in order to request more precision about O's initial question; O can subsequently ask further questions to P. We thus distinguish two kinds of moves in our games: the questions and the answers. This process induces a flow of questions and answers between O and P which can possibly last forever. In game semantics, attention is given to the study of this flow of questions and answers; the notion of `winning a game' or `winner of the game' is not a concern.
+
+\subsubsection{Arenas}
+
+The arena defines the bases of the game for the players. It is formally given by a directed acyclic graph (DAG) whose internal nodes correspond to question moves and leaves correspond to answer moves.
+\begin{definition}[Arena]
+An \defname{arena} is a structure $\langle M, \lambda, \enable \rangle$ where:
+\begin{itemize}
+\item $M$ is the set of possible moves;
+\item $\lambda : M \rightarrow \{ O, P\} \times \{Q, A\}$ is a labelling function specifying which are the question and answer moves, and which moves can be played by O and P.
+    Formally, it is given by a pair of functions $\lambda^{OP} : M \rightarrow  \{ O, P\}$ and $\lambda^{QA} : M \rightarrow  \{ Q, A\}$ such that $\lambda$ is the pairing $\langle \lambda^{OP},\lambda^{QA} \rangle$. An element $m$ of $M$ is an O-move if $\lambda^{OP} (m) = O$  and a P-move otherwise; it is a question if $\lambda^{QA} (m) = Q$ and an answer otherwise.
+
+\item $\enable$ is an \defname{enabling relation} on $M \times M$ such that    $(M,\enable)$ is a directed acyclic graph (DAG) satisfying the following conditions:
+    \begin{itemize}
+    \item[(e1)] The roots are O-questions: For every DAG's root $r$, $\lambda(r) = OQ$;
+    \item[(e2)] Internal nodes of the DAG are questions: $m \enable n  \implies \lambda^{QA}(m) = Q$ (thus answers moves are necessarily leaves);
+    \item[(e3)] A player move can only enable moves played by the other player:
+         $m\enable n \implies \lambda^{OP}(m) \neq \lambda^{OP}(n)$.
+    \end{itemize}
+\end{itemize}
+\end{definition}
+
+We abbreviate the set $\{O,P\} \times \{Q,A\}$ as $\{OQ,OA,PQ,PA\}$. $\overline{\lambda}$ denotes the labelling function obtained by
+swapping the role of the Opponent and Proponent in $\lambda$:
+\begin{eqnarray*}
+\overline{\lambda(m)} &=& OQ \iff \lambda(m) = PQ \\
+\mbox{ and } \overline{\lambda(m)} &=& OA \iff \lambda(m) = PA \enspace .
+\end{eqnarray*}
+
+The roots of the DAG $(M,\enable)$ are called the \defname{initial moves}.
+
+The simplest possible arena is the one with an empty set of moves; it is written $\mathbf{1}$.
+
+\begin{example}[The flat arena]
+\label{exmp:flatarena}
+ Let $A$ be any countable set. The flat arena over $A$
+is defined as the arena $\langle M, \lambda, \enable \rangle$ such
+that $M$ has one move $q$ with $\lambda(q) = OQ$ and for each
+element in $A$, there is a corresponding move $a_i$ in $M$ with
+$\lambda(a_i) = PA$ for some $i \in \nat$. The enabling relation
+$\enable$ is defined to be $\{ q \enable a_i \ | i \in \nat \}$.
+This arena is represented by the tree \begin{tikzpicture}[baseline=(root.base),level distance=7mm,inner ysep=0.5mm,sibling distance=5mm]
+\node (root) {$q$}
+child {node {$a_0$}}
+child {node {$a_1$}}
+child {node {$\ldots$}};
+\end{tikzpicture}
+ whose vertices represent the moves and edges represent the enabling relation. In the rest of this thesis we will just write $\nat$ to mean the flat arena over $\nat$:
+ \begin{center}
+\begin{tikzpicture}[baseline=(root.base),level distance=7mm,inner ysep=0.5mm,sibling distance=5mm]
+\node (root) {$q$}
+child {node {$0$}}
+child {node {$1$}}
+child {node {$2$}}
+child {node {$\ldots$}};
+\end{tikzpicture}
+\end{center}
+\end{example}
+
+\begin{definition}[Justified sequence of moves]
+A justified sequence is a sequence of moves $s$ together with an
+associated sequence of pointers. Any move $m$ in the sequence that
+is not initial has a pointer that points to a previous move $n$ that
+enables it (\ie, $n \enable m$).
+
+(Formally we can regard a justified sequence as a sequence of pairs, each pair encoding an element of the sequence together with an index indicating the position where the element points to.)
+\end{definition}
+Since initial moves are all O-moves, the first move of a justified
+sequence is necessarily an O-move.
+
+\begin{convention}
+Justification pointers are graphically represented with arrows as follows:
+$$\Pstr{ (q4){q^4}\ (q3-q4){q^3}\  (q2-q3){q^2}\ (q3b-q4){q^3}\ (q2b-q3b){q^2}\ (q1-q2b){q^1}} \enspace .$$
+We will sometimes omit the justification pointers altogether if they do not play any role in the argument.
+\end{convention}
+
+\begin{notation} We write $s \cdot t$, or just $s\, t$, to denote the justified sequence obtained by concatenating $s$ and $t$.
+\indexnotation{$s \cdot s'$}{Concatenation of the (justified) sequences $s$ and $s'$}%
+\indexnotation{$\epsilon$}{The empty (justified) sequence}%
+The empty sequence is written $\epsilon$. Given a justified sequence $s = m_1
+\cdot m_2 \ldots m_n$ (where pointers are not represented) we write $s_{\prefixof m_i}$ for $m_1 \cdot m_2 \ldots m_i$ (the prefix sequence of $s$ up to the move $m_i$); and $s_{< m_i}$ for $m_1 \cdot m_2 \ldots m_{i-1}$.
+\indexnotation{$s_{\prefixof m}$}{Prefix of the (justified) sequence $s$ ending with the occurrence $m$}%
+\end{notation}
+
+\begin{definition}[Hereditary projection]
+Let $s$ be a justified sequence of moves. We say that a move $m_0$ occurring in $s$ is hereditarily justified by a move $n$ occurring in $s$ if there exist moves $m_1, \ldots, m_q$ occurring in $s$ for $q\geq 0$ such that
+$n$ justifies $m_q$ and $m_k$ justifies $m_{k-1}$ for $1\leq k\leq q$.
+
+Suppose that $n$ is an occurrence of a move in the sequence $s$ then
+$s \filter n$ denotes the subsequence of $s$ consisting of
+the moves hereditarily justified by $n$. If $I$ is a set of initial moves then $s \filter I$ denotes the subsequence of $s$ consisting of the
+moves hereditarily justified by moves in $I$.
+\end{definition}
+
+Justified sequences of moves will be used to record the history of all the
+moves that have been played so far in the (yet to be defined) game.
+Two particular subsequences called the \emph{P-view} and the \emph{O-view} are of interest. These subsequences correspond to restricted views that each player has of the history of the game in a given position.
+\begin{definition}[View]
+\indexnotation{$\pview{s}$}{Proponent view of a justified sequence of move}
+Given a justified sequence of moves $s$, the \index{P-view}\defname[view!P-view]{Proponent view} (P-view) written $\pview{s}$ is defined by induction as follows:
+\begin{align*}
+\pview{\epsilon} &= \epsilon, \\
+\pview{s \cdot m} &= \pview{s} \cdot \ m && \mbox{ if $m$ is a P-move}, \\
+\pview{s \cdot m} &= m && \mbox{ if $m$ is initial (O-move) }, \\
+\pview{ \Pstr{ s \cdot (m){m} \cdot t \cdot (n-m){n}} } &=
+     \Pstr{ \pview{s} \cdot (m2){m} \cdot (n2-m2){n}} && \mbox{ if $n$ is a non initial O-move
+ }.
+\end{align*}
+\indexnotation{$\oview{s}$}{Opponent view of a justified sequence of move}
+The \index{O-view}\defname[view!O-view]{O-view} $\oview{s}$ is defined similarly:
+\begin{align*}
+\oview{\epsilon} &= \epsilon, \\
+\oview{s \cdot m} &= \oview{s} \cdot \ m && \mbox{ if $m$ is a O-move}, \\
+\oview{ \Pstr{ s \cdot (m){m} \cdot t \cdot (n-m){n} } } &=
+\Pstr{ \pview{s} \cdot (m2){m} \cdot (n2-m2){n} } && \mbox{ if $n$ is a P-move
+ }.
+\end{align*}
+\end{definition}
+
+\subsubsection{Games}
+\label{sec:games}
+
+Only certain kinds of justified sequences will be of interest in our games. We call \emph{legal position} any justified sequence that satisfies two conditions: alternation and visibility. Alternation says that players O and P play alternatively. Visibility expresses that each non-initial move is
+justified by a move situated in the local context at that point.
+Formally:
+\begin{definition}[Legal position]
+A legal position is a justified sequence of moves $s$ respecting the following constraints:
+\begin{itemize}
+\item \index{alternation}\emph{Alternation}: For every subsequence $m \cdot n$ of $s$, $\lambda^{OP}(m) \neq \lambda^{OP}(n)$.
+\item \index{visibility}\emph{Visibility}: For every subsequence $t \cdot m$ of $s$ where $m$ is not initial, if $m$ is a P-move then $m$ points to a move occurring in $\pview{s}$; and if $m$ is a O-move then $m$ points to a move occurring in $\oview{s}$.
+\end{itemize}
+The set of legal positions of an arena $A$ is denoted by $L_A$.
+\end{definition}
+
+\begin{definition}[Game]
+A game is a structure $\langle M, \lambda, \enable, P \rangle$ such that
+\begin{itemize}
+\item $ \langle M, \lambda, \enable \rangle$ is an arena;
+\item $P$, called the set of \emph{valid positions}, is:
+    \begin{itemize}
+    \item a non-empty prefix closed subset of the set of legal
+    positions,
+    \item closed by initial hereditary projection: If $s$ is a valid position then for every set $I$ of occurrences of initial moves
+    in $s$, $s\filter I$ is also a valid position.
+    \end{itemize}
+\end{itemize}
+\end{definition}
+The empty arena $\mathbf{1}$ together with the empty set of valid positions defines the simplest possible game; we will also denote it by $\mathbf{1}$.
+
+\begin{example} Consider the flat arena  $\nat$.
+The set of valid positions $P = \{ \epsilon, q \} \union \{ q \cdot
+a_i \ | i \in \nat \}$ defines a game on the arena $\nat$.
+\end{example}
+
+\subsubsection{Constructions on games}
+\label{sec:gameconstruction}
+
+We now present basic transformations that are used to construct games.
+
+Consider the two functions $f : A \rightarrow C$ and $g : B
+\rightarrow C$, we write $[f,g]$ to denote the pairing of $f$ and
+$g$ defined on the direct sum $A + B$. Given a game $A$ with a set
+of moves $M_A$, we use the projection operator $s \filter A$ to
+denote the subsequence of $s$ consisting of all moves in $M_A$.
+Although this notation conflicts with the hereditary projection
+operator, it should not cause any confusion.
+
+\paragraph{Tensor product}
+Given two games $A$ and $B$ the tensor product
+$A \otimes B$ is defined as:
+\begin{eqnarray*}
+  M_{A \otimes B} &=& M_A + M_B \\
+  \lambda_{A\otimes B} &=& [\lambda_A,\lambda_B] \\
+  \enable_{A\otimes B} & = & \enable_{A}\ \union\ \enable_{B} \\
+  P_{A\otimes B} & = & \{ s \in L_{A\otimes B} | s \filter A \in P_A \wedge s \filter B \in P_B  \} \enspace .
+\end{eqnarray*}
+
+In particular,  $n$ is initial in $A\otimes B$ if and only if $n$ is
+initial in A or B. And $m \enable_{A\otimes B} n$  holds if and only if $m
+\enable_{A} n$ or $m \enable_{B} n$ holds.
+
+\paragraph{Function space}
+The game $A \multimap B$ is defined as follows:
+\begin{eqnarray*}
+  M_{A \multimap B} &=& M_A + M_B \\
+  \lambda_{A\multimap B} &=& [\overline{\lambda_A},\lambda_B] \\
+  \enable_{A\multimap B} & = & \enable_{A}\ \union\ \enable_{B}\ \union\  \{ (m,n) \ |\ m \mbox{ initial in } B \wedge n \mbox{ initial in } A \} \\
+  P_{A\otimes B} & = & \{ s \in L_{A\otimes B} | s \filter A \in P_A \wedge s \filter B \in P_B  \} \enspace .
+\end{eqnarray*}
+
+%Graphically if we draw a triangle to represent an arena $A$ then the
+%arena for $A \multimap B$ is represented as:
+%\begin{center}
+%\begin{tikzpicture}[baseline=(A.base),inner ysep=0.5mm,shape border rotate=90, isosceles triangle]
+%\path  node[draw] (A)  {$B$}
+%(-1.5cm,-0.7cm) node[draw] (B) {$A$} ;
+%\path (A.north) edge (B.north);
+%\end{tikzpicture}
+%\end{center}
+%
+
+
+\paragraph{Cartesian product}
+The game $A \times B$ is defined as follows:
+\begin{eqnarray*}
+  M_{A \times B} &=& M_A + M_B \\
+  \lambda_{A\times B} &=& [\lambda_A,\lambda_B] \\
+  \enable_{A\times B} & = & \enable_{A}\ \union\ \enable_{B} \\
+  P_{A\times B} & = & \{ s \in L_{A\otimes B} | s \filter A \in P_A \wedge s \ \filter B = \epsilon  \} \\
+        &&   \union \{ s \in L_{A\otimes B} | s \filter A \in P_B \wedge s \ \filter A = \epsilon  \} \enspace .
+\end{eqnarray*}
+
+Note that a play of the game $A \times B$ is either a play of $A$ or a
+play of $B$, whereas a play of the game $A \otimes B$ may be an
+interleaving of plays of $A$ and $B$.
+
+\subsubsection{Representation of plays}
+
+Plays of the game are usually represented in a table diagram. The
+columns of the table correspond to the different components of the
+arena and each row corresponds to one move in the play. The first
+row always represents an O-move, this is because O is the only
+player who can open a game (since roots of the arena are O-moves).
+
+For example the play
+$\Pstr[0.5cm]{ (q1){q}\
+ (q2-q1){q}
+ \ (a2-q2){8}
+\  (a1-q1){9}}$ on the game $\nat \multimap
+\nat$ is represented by the following diagram:
+$$
+\begin{array}{cccc}
+\nat & \multimap & \nat & \\
+&& q & O\\
+q  &&& P\\
+8  &&& O\\
+&& 9 & P
+\end{array}
+$$
+We sometimes also represent the justification pointers on the diagrams.
+
+\subsubsection{Strategy}
+
+During the game, a player may face several choices
+when it is his turn to play. A \emph{strategy} is a guide telling the player which move to make when the game is in a given position.
+\begin{definition}
+\label{dfn:strategy}
+A \defname{strategy} for player P on a given game $\langle M, \lambda, \enable, P \rangle$ is a
+non-empty set of even-length positions from $P$ such that:
+\begin{enumerate}
+\item if $sab \in \sigma$ then $s \in \sigma$ (\emph{no unreachable
+position});
+\item if $sab, sac \in \sigma$ then $b = c$  and $b$ has the same justifier as
+$c$ (\emph{determinacy}).
+\end{enumerate}
+(Alternatively, a strategy can be viewed as a partial function mapping odd-length legal positions to P-moves.)
+\end{definition}
+
+The idea is that the presence of the even-length sequence $s a b$ in
+$\sigma$ tells the player P that whenever the game is in position
+$s$ and player O plays the move $a$ then it must respond by playing
+the move $b$. The first condition ensures that the strategy $\sigma$ only
+considers positions that the strategy itself could have led to in a
+previous move. The second condition in the definition requires that
+this choice of move is deterministic (\ie, there is a function $f$
+from the set of odd length position to the set of moves $M$ such
+that $f(s a) = b$).
+
+
+For every game $A$, the smallest possible strategy is called the
+\emph{empty strategy} and written $\bot$. It is formally defined by
+$\{ \epsilon \}$, which corresponds to a strategy that never
+responds.
+
+
+
+\begin{remark}
+\label{rem:atlern_strategy} There is an alternative definition for
+strategies in which a prefix-closed set is used as opposed to the above definition which relies on \emph{even-length prefix}-closed sets.
+If $\sigma$ denotes a strategy in the sense of Def.~\ref{dfn:strategy} then the corresponding strategy in the alternative definition is given by
+$\sigma \union \textsf{dom}(\sigma)$ where $\textsf{dom}(\sigma)$ is the domain of $\sigma$ defined as
+$$\textsf{dom}(\sigma) = \{ sa \in P_A^{odd}\ |\ \exists b . sab \in \sigma \}\enspace .$$
+\end{remark}
+
+
+\paragraph{Copy-cat strategy}
+
+For every game $A$ there is a strategy $id_A$ on the game $A \multimap A$
+called the \emphind{copy-cat strategy}. We write $A_1$ and $A_2$ to
+denote the first and second copies of the sub-game $A$ of $A
+\multimap A$.
+
+Let $A$ be one of the arena $A_1$ or $A_2$. We write $A^\perp$ to denote the game $A_1$ if $A=A_2$ and $A_2$ otherwise. The copy-cat strategy proceeds as follows: Whenever P has to respond to an O-move played in $A$, it first replicates this move in the game $A^{\perp}$. O then responds in $A^{\perp}$ and finally P replicates O's response back in $A$.
+
+It is formally defined by:
+$$ id_A = \{ s \in P^{\textsf{even}}_{A \multimap A} \ | \ \forall t \prefixof^{\textsf{even}} s\ .\ t \filter A_1 = t \filter A_2 \}\enspace , $$
+where $P^{\textsf{even}}_A$ denotes the set of valid positions of
+even length in the game $A$, and `$t \prefixof^{\textsf{even}} s$'
+denotes that $t$ is an even-length prefix of $s$.
+
+The copy-cat strategy is also called the \defname{identity strategy} on $A$ because it acts as the unit for the operation of strategy composition defined in the next paragraph.
+
+\begin{example}
+\begin{enumerate}[(a)]
+\item
+The copy-cat strategy on $\nat$ is given by the following generic play:
+$$\begin{array}{ccc}
+\nat & \multimap & \nat \\
+&& q\\
+q \\
+n \\
+&& n
+\end{array}
+$$
+(This type of diagram was originally introduced to represent plays but as we see here, by giving a generic play, it can also be used to represent a strategy.)
+
+\item The copy-cat strategy on $\nat\multimap\nat$ is given
+by the following diagram:
+$$\begin{array}{ccccccc}
+(\nat & \multimap & \nat) & \multimap & (\nat & \multimap & \nat) \\
+&&&& && q\\
+&& q\\
+q \\
+&&&& q \\
+&&&& m \\
+m\\
+&& n \\
+&&&& && n
+\end{array}$$
+\end{enumerate}
+\end{example}
+
+\subsubsection{Composition}
+\label{sec:strategy_composition}
+
+One of the salient features of game-semantic models is \emph{compositionality}, the ability to compute the denotation of a composite program by composing the denotation of its constituent programs. This notion of composition happens at the level of strategies. We now formally define this operation.
+
+\begin{definition}[Interaction sequence]
+Let $u$ be a sequence of moves from games $A$, $B$ and $C$ together with justification pointers attached to all moves except those that are initial in $C$. The \defname{projection} of $s$ on the game $A \multimap B$, written $u \filter A,B$ is the subsequence of $s$ obtained by removing from $u$ the moves in $C$ and pointers to moves in $C$. The projection on $B \multimap
+C$ is defined similarly.
+
+An \defname{interaction sequence} is a sequence of moves with pointers from $A$, $B$ and $C$ such that $u\filter A,B$ and $u\filter B,C$ are legal positions of the game $A\gamear B$ and $B\gamear C$ respectively. We write $Int(A,B,C)$ for the set of all such sequences.
+\end{definition}
+
+We define the projection on the game $A \multimap C$ as follows: $u \filter A,C$ is the subsequence of $u$ consisting of the moves from $A$ and $C$ with some additional pointers: we add a pointer from $a \in A$ to $c\in C$ whenever $a$ points to some move $b \in B$ itself pointing to $c$; all the pointers to moves in $B$ are removed.
+
+
+
+%For a given legal position $s$ in the game $A \multimap C$, there is a particular sequence called the \defname{uncovering} of $s$.
+%It is formally defined as the maximal justified sequence of moves $u$
+%from the games $A$, $B$ and $C$ such that:
+%\begin{itemize}
+%\item The sequence $s$, considered as a pointer-less sequence, is a subsequence of
+%$u$;
+%\item the projection of $u$ on the game $A \multimap B$ belongs to the
+%strategy $\sigma$;
+%\item the projection of $u$ on the game $B \multimap C$ belongs
+%to the strategy $\tau$;
+%\item and the projection of $u$ on the game $A \multimap C$ is a subsequence of $s$ (here the term ``subsequence'' refers to the sequence of nodes together with the auxiliary sequence of pointers).
+%\end{itemize}
+%This uncovering, written $uncover(s, \sigma, \tau)$, is
+%defined uniquely for given strategies $\sigma$, $\tau$ and legal
+%position $s$ (this is proved in part II of the seminal paper by Hyland and Ong on full abstraction of PCF \cite{hylandong_pcf}).
+
+Given two strategies $\sigma : A \multimap B$ and $\tau : B \multimap C$, the \defname{interaction} $\sigma \| \tau $ of $\sigma$ and $\tau$ is defined as
+%the set of uncovering of legal positions in $A \multimap C$:
+%$$ \sigma \| \tau = \{ uncover(s, \sigma, \tau) \ | \ s \mbox{ is a legal position in } A \multimap C \}$$
+$$ \sigma \| \tau = \{ u \in Int(A,B,C) \ | \ u \filter A,B \in \sigma \zand u\filter B,C \in \tau \} \enspace .$$
+%The composition of $\sigma$ and $\tau$ is defined to be the set of
+%projections of uncovering of legal positions in $A \multimap C$:
+
+Strategy composition is performed by ``parallel composition plus hiding'' as defined in the trace semantics of CSP \citep{hoare_csp}. Formally,
+\begin{definition}[Strategy composition\index{strategy composition}\index{composition of strategy}]
+\indexnotation{$\sigma;\tau$}{Linear strategy composition}%
+\label{def:strategy_composition}%
+Let $\sigma : A \multimap B$ and  $\tau : B \multimap C$ be two
+strategies. The \defname{composite} $\sigma ; \tau$ is defined as:
+$$ \sigma ; \tau = \{ u \filter A,C \ | \ u \in \sigma \|
+\tau \} \enspace .$$
+\end{definition}
+It can be verified that composition is well-defined, associative and that the copy-cat strategy $id_A$ is the identity for composition \citep{hylandong_pcf}.
+
+\subsubsection{Constraint on strategies}
+
+Different classes of strategies will be considered depending on the
+features of the language that we want to model. Here is a list of
+restrictions that are commonly considered:
+\begin{itemize}
+\item  \index{well-bracketing|see{strategy well-bracketed}}\index{strategy!well-bracketed}\emph{Well-bracketing:}
+We call \emphind{pending question} the last question in a sequence that has not been answered.
+A strategy $\sigma$ is well-bracketed if for every play $s \cdot m \in \sigma$ where $m$ is an answer, $m$ points to the pending question in $s$.
+
+\item \index{strategy!history-free}\emph{History-free strategies:} a strategy is history-free if the Proponent's move at any position of the game where he has to play is determined by the last move of the Opponent (\ie, P ignores the complete history up the last move).
+
+\item \index{strategy!history-sensitive}\emph{History-sensitive strategies:} The Proponent follows a history-sensitive strategy if he needs to have access to the full
+history of the moves in order to decide which move to make.
+
+\item \index{innocence|see{strategy innocent}}\index{strategy!innocent}\emph{Innocence:} In these strategies, the Proponent determines his next move based solely on a restricted view of the history of the play, namely the P-view at that point. It always plays the same move for a given P-view. Innocence plays an important role in the modeling of purely functional languages.
+\end{itemize}
+
+The formal definition of innocence is:
+\begin{definition}[Innocence]
+Given positions $sab, ta \in L_A$ where $sab$ has even length and
+$\pview{sa} = \pview{ta}$, there is a unique extension of $ta$ by
+the move $b$ together with a justification pointer such that
+$\pview{sab} = \pview{tab}$. We write this extension
+$\textsf{match}(sab,ta)$.
+
+The strategy $\sigma:A$ is \index{innocence}\defname[strategy!innocent]{innocent} if and only if:
+$$ \left(
+     \begin{array}{c}
+       \pview{sa} = \pview{ta} \\
+       sab \in \sigma \\
+       t\in \sigma \wedge ta \in P_A \\
+     \end{array}
+   \right)
+\quad \imp\quad  \textsf{match}(sab,ta) \in \sigma \enspace .$$
+\end{definition}
+
+Since the next move is determined by the P-view, an innocent strategy induces a partial function mapping P-views to P-moves called the \defname{view function}. Not every partial function from P-views to P-moves gives
+rise to an innocent strategy, however. (Hyland and Ong \cite{hylandong_pcf} gave a sufficient condition.)
+
+
+\subsection{Categorical interpretation}
+\label{sec:catgames}
+
+This section recalls briefly the categorical interpretation of games \cite{McC96b,hylandong_pcf,abramsky94full}.
+We consider the category \cite{CroleRL:catt} $\mathcal{G}$ whose objects are games and morphisms are strategies. A morphism from $A$ to $B$ is a strategy on the game $A \multimap B$. Composition of morphisms is given by strategy composition. We also consider sub-categories of $\mathcal{G}$ corresponding to various restrictions imposed on strategies: $\mathcal{G}_i$
+is the sub-category whose morphisms are the innocent strategies, $\mathcal{G}_b$ has only the well-bracketed strategies and $\mathcal{G}_{ib}$ has the innocent and well-bracketed strategies.
+
+\begin{proposition}
+$\mathcal{G}$, $\mathcal{G}_i$, $\mathcal{G}_b$ and $\mathcal{G}_{ib}$ are categories.
+\end{proposition}
+In particular this means that composition of strategies is
+well-defined, associative, has a unit (the copy-cat strategy),
+preserves innocence and well-bracketedness \cite{hylandong_pcf,abramsky94full}.
+
+
+\subsubsection{Monoidal structure}
+\label{sec:monoidal}
+
+In Sec.~\ref{sec:gameconstruction} we have defined the tensor product on games. We now define the corresponding transformation on morphisms. Given two strategies $\sigma : A
+\multimap B$ and $\tau : C \multimap D$ the strategy $\sigma \otimes
+\tau : (A \otimes C) \multimap (B\otimes D)$ is defined by:
+$$ \sigma \otimes \tau = \{ s \in L_{A \otimes C \multimap B\otimes D} \ s \filter A,B \in \sigma
+\wedge s \filter C,D \in \tau \} \enspace .$$
+
+It can be shown that the tensor product is associative, commutative
+and has $I = \langle \emptyset, \emptyset,\emptyset, \{ \epsilon \}
+\rangle $ as identity. Hence the game category $\mathcal{G}$ is a
+symmetric monoidal category. Moreover $\mathcal{G}_i$ and
+$\mathcal{G}_b$ are sub-symmetric monoidal categories of
+$\mathcal{G}$, and $\mathcal{G}_{ib}$ is a sub-symmetric monoidal
+category of $\mathcal{G}_i$, $\mathcal{G}_b$ and $\mathcal{G}$.
+
+\subsubsection{Closed structure}
+
+Let $A$, $B$ and $C$ be three games. Given a strategy on $A\otimes B \multimap C$ we can clearly convert it into a strategy on $A \multimap (B \multimap C)$ by performing the appropriate retagging of the moves. This transformation defines an isomorphism written $\Lambda_B$ and called \defname{currying}. Thus the hom-set $\mathcal{G}(A\otimes B, C)$ is isomorphic to the hom-set $\mathcal{G}(A,B\multimap C)$, which makes $\mathcal{G}$ an autonomous (\ie, symmetric monoidal closed) category. The categories $\mathcal{G}_i$ and  $\mathcal{G}_b$ are sub-autonomous categories of $\mathcal{G}$,
+and $\mathcal{G}_{ib}$ is a sub-autonomous category of $\mathcal{G}_i$, $\mathcal{G}_b$ and $\mathcal{G}$.
+
+We write $ev_{A,B} : (A \multimap B) \otimes A \rightarrow B$ to denote the \defname{evaluation strategy} obtained by uncurrying the
+identity map on $A \rightarrow B$. The evaluation strategy is in fact the copy-cat strategy for the game $(A \multimap B) \otimes A \rightarrow B$.
+
+
+
+\subsubsection{Cartesian product}
+\label{sec:pairing}
+The cartesian product from Sec.~\ref{sec:gameconstruction} defines indeed a cartesian product in the category $\mathcal{G}$, $\mathcal{G}_i$, $\mathcal{G}_b$ and $\mathcal{G}_{ib}$.
+The projections $\pi_1:A \times B \typear A$ and $\pi_1:A \times B
+\rightarrow B$ are given by the obvious copy-cat strategies. Given
+two category morphisms $\sigma :C \rightarrow A$ and $\tau : C
+\rightarrow B$, the \defname{pairing} morphism $\langle \sigma, \tau \rangle : C \rightarrow A \times B$ is given by:
+\begin{eqnarray*}
+\langle \sigma, \tau \rangle &=& \{ s \in L_{C\multimap A\times B} \ | \ s \filter C,A \in \sigma \wedge s \filter B = \epsilon  \} \\
+&\union& \{ s \in L_{C\multimap A\times B} \ | \ s \filter C,B \in \tau \wedge s \filter A = \epsilon  \} \enspace .
+\end{eqnarray*}
+
+\subsubsection{Cartesian closed structure}
+To obtain a cartesian closed category it remains to define a \emph{terminal} object as well as the \emph{exponential} construct for every two games $A$ and $B$. The category $\mathcal{G}$ itself is not cartesian closed but it is possible to define a new category of games that is cartesian closed.
+
+For every game $A$ the \defname[exponential!game]{exponential} game $!A$ is given by:
+\begin{eqnarray*}
+  M_{!A} &=& M_A \\
+  \lambda_{!A} &=& \lambda_A \\
+  \enable_{!A} & = & \enable_{A} \\
+  P_{!A} & = & \{ s \in L_{!A} | \mbox{ for each initial move $m$, } s \filter m \in P_A \} \enspace .
+\end{eqnarray*}
+Think of it as the multi-threaded version of the game $A$ in which a new copy the game can be spawned at any time. Plays of $!A$ are thus interleavings of plays of $A$. We have the following identities:
+\begin{eqnarray*}
+  !(A \times B) &=& !A \otimes !B\\
+  \mathbf{1} &=& !\mathbf{1} \enspace .
+\end{eqnarray*}
+
+A game $A$ is said to be \defname{well-opened} if for every position $s \in P_A$ the only initial move in $s$ is the first one. In a well-opened game, plays contain a single ``thread'' of moves. Given a strategy on a well-opened game, one can turn it into a ``multi-threaded'' strategy using the \emphind{promotion} operator:
+\begin{definition}[Promotion]
+Consider a well-opened game $B$. Given a strategy on ${!A} \multimap
+B$, its \defname{promotion} $\sigma^\dagger : {!A} \multimap {!B}$
+is the strategy which plays several copies of $\sigma$. Formally:
+$$ \sigma^\dagger = \{ s \in L_{{!A} \multimap !B} \ | \ \mbox{ for all initial $m$, } s \filter m \in \sigma  \} \enspace .$$
+\end{definition}
+It can be shown that promotion is a well-defined strategy and that it preserves innocence and well-bracketing. We now introduce the category of well-opened games:
+\begin{definition}[Category of well-opened games]
+\label{def:co-kleisli}
+\indexnotation{$\sigma\fatcompos\tau$}{Strategy composition}%
+The category $\mathcal{C}$ of well-opened games, also called the
+\emphind{co-Kleisli category} of $\mathcal{G}$, is defined as
+follows:
+\begin{itemize}[-]
+\item The objects are the well-opened games.
+\item A morphism $\sigma : A \rightarrow B$ is a strategy for the game $!A \multimap B$,
+\item The identity map for $A$ is the copy-cat strategy on $!A \multimap A$ (which is well-defined for well-opened games).
+It is called dereliction, denoted by
+$\textsf{der}_A$ and defined formally by:
+$$ \textsf{der}_A = \{ s \in P^{\textsf{even}}_{{!A} \multimap A} \ | \ \forall t \prefixof^{\textsf{even}} s \ . \ t \filter {!A} = t \filter A \}\enspace .$$
+\item Composition of morphisms $\sigma : {!A} \multimap B$ and $\tau : {!B} \multimap C$ denoted by $\sigma \fatcompos \tau : {!A} \multimap C$ is defined as $\sigma^\dagger;\tau$.
+\end{itemize}
+\end{definition}
+$\mathcal{C}$ is a well-defined category and has three sub-categories
+$\mathcal{C}_i$, $\mathcal{C}_b$, $\mathcal{C}_{ib}$ corresponding respectively to sub-category of innocent, well-bracketed, and innocent well-bracketed strategies.
+
+
+The empty game $\mathbf{1}$ is a terminal object for the category $\mathcal{C}$. Further for every two games $A$ and $B$,
+we define their product as $A \times B$ and their exponential as $!A \multimap B$. The hom-sets $\mathcal{C}(A \times B,C)$ and $\mathcal{C}(A,!B \multimap C)$ are isomorphic. Indeed:
+\begin{eqnarray*}
+\mathcal{C}(A\times B,C) &=& \mathcal{G}(!(A\times B),C) \\
+&=& \mathcal{G}({!A}\otimes {!B},C) \\
+&\cong& \mathcal{G}({!A}, {!B} \multimap C) \qquad  \mbox{($\mathcal{G}$ is a closed monoidal category)}\\
+&=& \mathcal{C}(A, {!B} \multimap C) \enspace .
+\end{eqnarray*}
+Hence $\mathcal{C}$ is a cartesian closed category. Furthermore $\mathcal{C}_i$ and $\mathcal{C}_b$ are sub-cartesian closed categories of $\mathcal{C}$, and $\mathcal{C}_{ib}$ is as sub-cartesian closed category of each of $\mathcal{C}$, $\mathcal{C}_i$ and $\mathcal{C}_b$.
+
+
+\subsubsection{Order enrichment}
+
+Strategies can be ordered using the inclusion ordering. Under this
+ordering, the set of strategies on a given game $A$ is a pointed
+directed complete partial order; the least upper bound is given by
+the set-theoretic union and the least element is the empty strategy
+$\{ \epsilon \}$.
+
+Moreover all the operators on strategies that we have defined so far
+(composition, tensor product, etc.) are continuous. Hence the categories $\mathcal{C}$ and $\mathcal{G}$ are cpo-enriched.
+
+
+\subsubsection{Intrinsic preorder}
+\label{sec:intrinsic}
+
+Let $\Sigma$ denote the \emphind{Sierpinski game} with a single question $q$ and single answer $a$. There are only two strategies on $\Sigma$: $\bot = \{
+\epsilon \}$ and $\top = \{ \epsilon, q a \}$, both innocent and well-bracketed. For every object $A$, the \defname{intrinsic preorder} $\lesssim_A$ on the set of strategies on the game $A$ is defined by:
+$$ \sigma \lesssim_A \tau \quad \iff \quad \forall \alpha : A \rightarrow \Sigma.\ \sigma \fatcompos \tau = \top \implies \tau \fatcompos \alpha = \top \enspace .$$
+This indeed defines a preorder \cite{abramsky94full}.
+The \defname{quotiented category} $\quotient{\mathcal C}{\lesssim}$ is defined as follows. The objects of $\quotient{\mathcal C}{\lesssim}$ are those of $\mathcal{C}$, and the morphisms are the equivalence classes of morphisms in $\mathcal{C}$ modulo the equivalence relation induced by $\lesssim$.
+
+
+We will consider the quotiented categories
+$\quotient{\mathcal{C}_\$}{\lesssim_\$}$ where $\$$ ranges in $\{ i, b, ib \}$. (The full abstraction of the game-semantic model of \pcf\ holds in the quotiented category $\quotient{\mathcal{C}_{ib}}{\lesssim_{ib}}$ rather than  $\mathcal{C}_{ib}$.)
+
+
+\subsection{The fully abstract game model of \pcf}
+\label{subsec:pcfgamemodel}
+In this section we show how game semantics can be used to  model the programming language PCF and we recall the full abstraction result \cite{hylandong_pcf}.
+
+It is well known that cartesian closed categories are models of typed
+lambda calculi. We have just seen in the previous section that games and strategies form a cartesian closed category, they can therefore be used to model typed lambda-calculi.
+
+The idea is as follows. The game played is induced by the type of the term. The Opponent (O) incarnates the environment while the Proponent (P) incarnates the term to model. The Proponent's strategy is determined by the term itself; it is computed inductively on its syntax. This means that O is responsible of providing the values of the term's input parameters, whereas P is responsible for performing the computation of the term itself. A play of the game unfolds as follows: The Opponent opens the game by asking the question ``What is the result of the execution of the term?''. The Proponent may then request further information by asking questions such as ``What is the input given to the term?''; O can provide P with an answer---the value of the input---or can continue by asking another question. This dialog goes on until O obtains an answer to his initial question.
+
+\subsubsection{Modeling the simple types}
+\indexnotation{$\sem{T}$}{Game denotation of a type $T$}%
+Each simple type $A$ is interpreted by a game from the
+category $\mathcal{C}$ denoted $\sem{A}$. A program context $\Gamma = x_1 :A_1, \ldots x_n:A_n$ is interpreted by the game $\sem{\Gamma} = \sem{A_1} \times \ldots \times \sem{A_n}$. The empty context is interpreted by the terminal object $\textbf{1}$ of the cartesian closed category $\mathcal{C}$: $\sem{\emptyset} = \textbf{1}$.
+
+The base type \iaexp\ is interpreted by the flat game
+$\nat$ over the natural number. Given the interpretation of the base type, the interpretation
+of the function space type $A\rightarrow B$ is given by the exponential object of $\sem{A}$ and $\sem{B}$ in the cartesian closed category $\mathcal{C}$:
+$$\sem{A \gamear B} =  !\sem{A} \multimap \sem{B} \enspace .$$
+
+
+\subsubsection{Lambda calculus fragment}
+
+\indexnotation{$\sem{M}$}{Strategy denotation of a term $M$}%
+A term-in-context $\Gamma \entail M : A$ is interpreted in the model by a strategy on the game $\sem{\Gamma} \rightarrow \sem{A}$.
+
+For instance take the game $\sem{\iaexp}$. It has only one question (the initial O-question) and P-moves are answers corresponding to each possible value of a natural number. There exist only two kinds of strategies for the game $\sem{\iaexp}$:
+\begin{enumerate}[(i)]
+\item The empty strategy where P never answer the initial question. This corresponds to a non terminating computation;
+\item The strategies where P always answers by playing the same number $n$. This models a numerical constant of the language.
+\end{enumerate}
+
+
+\noindent The strategy denotation of a term-in-context is defined inductively on the structure of the term:
+
+\begin{compactitem}
+  \item Variables are interpreted by projection:
+    $$\sem{x_1 : A_1, \ldots, x_n:A_n \entail x_i : A_i} = \pi_i : \sem{A_i} \times \ldots \times \sem{A_i} \times \ldots \times \sem{A_n} \rightarrow  \sem{A_i} \enspace .$$
+
+\item Abstraction: The term-in-context $\Gamma \entail \lambda x^A.M : A \rightarrow B$ is modeled by a morphism $\sem{\Gamma} \rightarrow
+(!\sem{A}\multimap\sem{B})$ obtained by currying:
+$$\sem{\Gamma \entail \lambda x^A.M : A \rightarrow B} = \Lambda( \sem{\Gamma, x :A \entail M : B}) \enspace .$$
+
+\item Application is modeled using the evaluation
+map $ev_{A,B} : (!A\multimap B)\times A \rightarrow B$:
+$$\sem{\Gamma \entail M N : B} = \langle \sem{\Gamma \entail M : A \typear B, \Gamma \entail N : A} \rangle \fatcompos ev_{A,B} \enspace .$$
+\end{compactitem}
+
+
+\begin{example}[Kierstead terms]
+In Sec.~\ref{subsec:pointer_necessary} we
+have shown that there exist two different strategies on the game
+$\sem{((\nat^1 \typear \nat^2) \typear \nat^3) \typear \nat^4}$ containing
+a play whose underlying sequence of move is $q^4 q^3 q^2 q^3 q^2
+q^1$ but whose justification pointers differ.
+
+These two strategies are precisely the denotation of the \emphind{Kierstead terms} defined as follows:
+\begin{align*}
+M_1 &\equiv \lambda f . f (\lambda x . f (\lambda y .y )) : ((\nat \typear \nat) \typear \nat) \typear \nat \\
+M_2 &\equiv \lambda f . f (\lambda x . f (\lambda y .x )) : ((\nat \typear \nat) \typear \nat) \typear \nat \enspace .
+\end{align*}
+
+Suppose that $q^1$ is justified by the first
+occurrence of $q^2$ then it means that the Proponent is requesting
+the value of the variable $x$ bound in the subterm $\lambda x . f (
+\lambda y. ... )$. If P needs to know the value of $x$, this means that P follows the strategy induced by the subterm $\lambda y . x$: this corresponds to a play of the strategy $\sem{M_2}$. Otherwise $q^1$ is justified by the second occurrence of $q^2$, which corresponds to a play of $\sem{M_1}$.
+\end{example}
+
+
+\subsubsection{\pcf\ fragment}
+
+We now show how to model \pcf\ constructs. In the following, we tag the sub-arenas of the games considered to make it possible to distinguish identical arenas from different components of the game. We also tag moves (in exponent)
+to identify the component in which the move belongs. We will
+omit the pointers in the play when no ambiguity arise.
+\smallskip
+
+The arithmetic constants of PCF are interpreted as follows:
+\begin{itemize}
+\item The successor arithmetic operator is modeled by the following
+strategy on $\sem{\nat^1 \typear \nat^0}$:
+$$\sem{\pcfsucc} = \prefset^{\sf even} \{q^0 \cdot q^1 \cdot n^1 \cdot (n+1)^0\ |\ n \in \nat \} \enspace .$$
+where $\prefset^{\sf even} X$ denotes the set consisting of the prefixes of even length of plays of $X$.
+
+\item The predecessor arithmetic operator is denoted by the strategy
+$$\sem{\pcfpred} = \prefset^{\sf even} \left( \{q^0 \cdot q^1 \cdot n^1 \cdot (n-1)^0\ |\ n >0 \} \union \{ q^0 \cdot q^1 \cdot 0^1 \cdot 0^0 \} \right) \enspace .$$
+
+\item Given a term-in-context $\Gamma \entail \pcfsucc\ M : \iaexp$ we
+define:
+$$\sem{\Gamma \entail \pcfsucc\  M : \iaexp} = \sem{\Gamma \entail M : \iaexp} \fatcompos \sem{\pcfsucc} $$
+$$\sem{\Gamma \entail \pcfpred\  M : \iaexp} = \sem{\Gamma \entail M : \iaexp} \fatcompos \sem{\pcfpred} \enspace .$$
+
+\item The conditional operator is denoted by the following strategy on $\sem{\nat^3 \times \nat^2 \times \nat ^1 \typear \nat^0}$:
+$$\sem{\pcfcond} = \prefset^{\sf even}
+    \{ q^0 \cdot q^3 \cdot 0 \cdot q^2 \cdot n^2 \cdot n^0 \ | \ n \in \nat \}
+    \union
+    \prefset^{\sf even}  \{ q^0 \cdot q^3 \cdot m \cdot q^2 \cdot n^2 \cdot n^0 \ | \ m >0, n \in \nat \} \enspace .
+    $$
+
+Given a term-in-context $\Gamma \entail \pcfcond\ M\ N_1\ N_2 : \iaexp$ we define:
+$$\sem{\Gamma \entail \pcfcond\ M\ N_1\ N_2 : \iaexp} =
+\langle \sem{\Gamma \entail M: \iaexp}, \sem{\Gamma \entail N_1: \iaexp}, \sem{\Gamma
+\entail N_2: \iaexp} \rangle \fatcompos \sem{\pcfcond} \enspace .$$
+\end{itemize}
+
+The interpretation of the Y combinator is slightly more
+complicated. Consider the term $\Gamma \entail M : A \rightarrow A$. Its denotation $f$ is a morphism $\sem{\Gamma} \times \sem{A} \rightarrow
+\sem{A}$. We define the chain $g_n$ of morphisms
+$\sem{\Gamma} \rightarrow \sem{A}$ as follows:
+\begin{eqnarray*}
+g_0 &=& \perp \\
+g_{n+1} &=&  F(g_n) = \langle id_{\sem{\Gamma}}, g_n\rangle \fatcompos f
+\end{eqnarray*}
+
+where $\perp$ denotes the empty strategy $\{ \epsilon \}$. It is easy to see that $(g_n)_{n\in\nat}$ forms a chain. The denotation
+$\sem{Y\, M}$ is defined as the least upper bound of the chain $g_n$
+which is also the least fixed point of $F$. Its existence is guaranteed by
+the fact that the category of games is cpo-enriched.
+
+Since all the strategies encountered up to now are innocent and
+well-bracketed, the game model of \pcf\ can be interpreted in any of
+the four categories $\mathcal{C}$, $\mathcal{C}_i$, $\mathcal{C}_b$,
+$\mathcal{C}_{ib}$. The category $\mathcal{C}_{ib}$ is referred as the \defname{intentional game model} of \pcf.
+
+\subsubsection{Observational preorder}
+
+\indexnotation{$C[-]$}{Context with a hole denoted by $-$}%
+A context denoted $C[-]$ is a term containing a hole denoted by the symbol `$-$'. If $C[-]$ is a context then $C[M]$ denotes the term obtained after
+replacing the hole by the term $M$. $C[M]$ is well-formed provided
+that $M$ has the appropriate type. This substitution is done capture-permitting, as opposed to the capture-avoiding
+substitution used to contract beta-redexes in the lambda calculus.
+
+\begin{definition}
+The \defname{observational preorder} is a relation $\obspre$ on terms defined as follows: For every two closed terms $M$ and $N$ of the same type,
+\begin{eqnarray*}
+M \obspre N &\iff& \parbox[t]{10cm}{for all context $C[-]$ such that
+                $C[M]$ and $C[N]$ are well-formed closed \pcf\ term of type \iaexp, $C[M] \eval$ implies $C[N] \eval$ \enspace .}
+\end{eqnarray*}
+The reflexive closure of $\obspre$, denoted $\obseq$, is called the \defname{observational equivalence} relation.
+\end{definition}
+
+The intuition behind this definition is that two terms are observationally equivalent if there is no context that distinguishes them; in which case they can be safely interchanged in any program context.
+
+\subsubsection{Soundness}
+We say that a model is \emphind{sound for evaluation} if
+the denotation of a term is preserved by the evaluation
+relation $\eval$ of the big-step semantics of the language. For every term $M$ and value $V$ we have:
+$$M \eval V \quad \implies \quad \sem{M} = \sem{V} \enspace .$$
+
+\begin{lemma}[\cite{abramsky:game-semantics-tutorial}]
+\label{lem:evalsoundness}
+The game model of \pcf\ is sound for evaluation.
+\end{lemma}
+
+\begin{definition}[Computable terms\index{computable term}] \hfill
+\begin{itemize}
+\item A closed term $\entail M : B$ of base type is computable if $\sem{M} \neq \bot$ implies $M \eval$.
+\item A higher-order closed term $\entail M : A\rightarrow B$ is computable if $M N$ is computable for every computable closed term $\entail  N:A$.
+\item An open term $x_1 : A_1, \ldots, x_n : A_n \entail M : A\rightarrow B$ is computable if $\entail M [N_1/x_1, \ldots N_n/x_n]$ is computable
+for all computable closed terms $N_1:A_1, \ldots, N_n:A_n$.
+\end{itemize}
+\end{definition}
+
+A model is \defname{computationally adequate} if all terms are computable.
+\begin{lemma}[\cite{abramsky:game-semantics-tutorial}]
+\label{lem:computadequacy}
+The game model of PCF is computationally adequate.
+\end{lemma}
+
+
+A model of a programming language is said to be \defname{sound} if whenever the denotation of two programs are equal then the two programs are observationally
+equivalent; formally for every closed terms $M$ and $N$ of the same type we have:
+$$ \sem{M} = \sem{N} \implies M \obseq N \enspace .$$
+Soundness is the least condition one can require from a model of
+programming language: it guarantees that we can reason about terms
+by manipulating objects in the denotational model.
+
+The model is said to be \defname{inequationally sound} if the following stronger condition holds
+$$ \sem{M} \subseteq \sem{N} \implies M \obspre N \enspace .$$
+
+The inequational soundness of the game model of \pcf\ follows from the last two lemmas:
+\begin{proposition} \label{prop:ineqsoundness}
+The game model of \pcf\ is \emph{inequationally sound}.
+\end{proposition}
+\begin{proof}
+Take two closed \pcf\ terms $M$ and $N$. Suppose that $\sem{M} \subseteq \sem{N}$ then by compositionality of the model we have $\sem{C[M]} \subseteq \sem{C[N]}$. Suppose that $C[M] \eval$ for some context $C[-]$ then
+by soundness (Lemma \ref{lem:evalsoundness}) we have $\sem{C[M]} \neq \bot$, which implies $\sem{C[N]} \neq \bot$.
+The adequacy of the model (Lemma \ref{lem:computadequacy}) then gives us $C[N] \eval$. Hence $M \obspre N$.
+\end{proof}
+
+\subsubsection{Definability}
+\label{sec:pcfdefinability}
+We now work in the category $\mathcal{C}_{ib}$ of innocent and well-bracketed strategies.
+The \emphind{definability} property is the key to the full-abstraction result. It says that every \emph{compact} element of the model is the denotation of some term.
+In $\mathcal{C}_{ib}$, the \defname{compact morphisms} are the innocent strategies with finite view-function.
+Due to its economical syntax, \pcf\ does not satisfy the definability result: there are strategies that are not the
+denotation of any term in \pcf. For instance consider the \emph{ternary conditional} strategy acting as follows: It tests the value of its first parameter, if it is equal to $0$ or $1$ then it returns the value of the second or third parameter respectively, otherwise it returns the value of the fourth parameter.
+This is illustrated in the left diagram of Fig.~\ref{fig:casek_denotation}. Such computation can be \emph{operationally} simulated in \pcf\ by the term $T_3 = \pcfcond\ M\
+N_1 (\pcfcond\ (\pcfpred\  M)\  N_2\ N_3)$. The term $T_3$, however, is not denoted by the ternary conditional strategy. Its denotation
+is instead given by the right diagram on Fig.~\ref{fig:casek_denotation}.
+
+\begin{figure}[htbp]
+$$
+\begin{array}{ccccccccc}
+!\bf N & \otimes & !\bf N & \otimes & !\bf N & \otimes & !\bf N & \multimap & !\bf N \\
+&&&&&&&&q \\
+q \\
+0 \\
+&& q \\
+&& n \\
+&&&&&&&&n \\
+\hline
+&&&&&&&&q \\
+q \\
+1 \\
+&&&& q \\
+&&&& n \\
+&&&&&&&&n \\
+\hline
+&&&&&&&&q \\
+q \\
+m>1 \\
+&&&&&& q \\
+&&&&&& n \\
+&&&&&&&&n \\
+\end{array}
+\hspace{0.3cm}
+\begin{array}{ccccccccc}
+!\bf N & \otimes & !\bf N & \otimes & !\bf N & \otimes & !\bf N & \multimap & !\bf N \\
+&&&&&&&&q \\
+q \\
+0 \\
+&& q \\
+&& n \\
+&&&&&&&&n \\
+\hline
+&&&&&&&&q \\
+q \\
+1 \\
+q \\
+0 \\
+&&&& q \\
+&&&& n \\
+&&&&&&&&n \\
+\hline
+&&&&&&&&q \\
+q \\
+m>1 \\
+q \\
+m-1>0 \\
+&&&&&& q \\
+&&&&&& n \\
+&&&&&&&&n \\
+\end{array}
+$$
+\label{fig:casek_denotation}
+\caption[Strategy denotation of the case construct.]{Strategy denotation of $case_3$ (left) and $T_3$ (right).}
+\end{figure}
+
+In \pcf$_c$, however, the ternary conditional strategy is definable by the term $case_3$. In fact, the definability result holds for \pcf$_c$:
+\begin{proposition}[Definability]
+\label{prop:definability} Let $A$ be a \pcf\ type and $\sigma$ be a compact innocent and well-bracketed
+strategy on $A$. There exists a \pcf$_c$ term $M$ such that $\sem{M} = \sigma$.
+\end{proposition}
+
+The definability only holds for \pcf$_c$ but this suffice to prove full abstraction of \pcf. This is because the $\pcfcase_k$ constructs of \pcf$_c$ can all be simulated by \pcf\ terms with the same operational semantics, and consequently \pcf$_c$ is a conservative extension of \pcf\ (\ie, if $M$ and $N$ are terms such that for every \pcf-context $C[-]$, $C[M] \eval \implies C[N] \eval$ then the same is true for every \pcf$_c$-context.)
+
+\subsubsection{Full abstraction}
+The converse of soundness is called \emph{completeness}. A model is \defname[complete model]{complete} if:
+$$ M \obseq N \ \implies\ \sem{M} = \sem{N} \enspace .$$
+Further, if the stronger relation
+$$ M \obspre N \ \implies \ \sem{M} \subseteq \sem{N}$$
+holds then the model is said to be \defname{inequationally complete}.
+
+A model is \defname{fully abstract} if it is both sound and complete, and
+\defname{inequationally fully abstract} if it is inequationally sound and inequationally complete.
+
+
+Full abstraction of \pcf\ cannot be stated directly in the category $\mathcal{C}_{ib}$. Instead we need to consider the quotiented category
+$\quotient{\mathcal{C}_{ib}}{\lesssim_{ib}}$. But first we need to make sure that $\quotient{\mathcal{C}_{ib}}{\lesssim_{ib}}$ is a
+model of \pcf. $\quotient{\mathcal{C}_{ib}}{\lesssim_{ib}}$ is a poset-enriched
+cartesian closed category. The denotation of the basic types and
+constants of \pcf\ can be transposed from $\mathcal{C}_{ib}$ to
+$\quotient{\mathcal{C}_{ib}}{\lesssim_{ib}}$. Although it is not known
+whether $\quotient{\mathcal{C}_{ib}}{\lesssim_{ib}}$ is enriched over the
+category of CPOs, it can be proved that it satisfies a condition called \emph{rationality} \citep{abramsky94full} and this suffices to ensure that
+$\quotient{\mathcal{C}_{ib}}{\lesssim_{ib}}$ is indeed a model of \pcf. This category will
+be referred as the \defname{extensional game model} of \pcf. The full abstraction of the game model then follows from Proposition
+\ref{prop:ineqsoundness} and \ref{prop:definability}:
+\begin{theorem}[Full abstraction \cite{abramsky94full,hylandong_pcf,Nickau:lfcs94}]
+Let $M$ and $N$ be two closed \pcf\ terms.
+$$\sem{M} \lesssim_{ib} \sem{N} \ \iff \ M \obspre N \enspace ,$$
+where $\lesssim_{ib}$ denotes the intrinsic preorder of the category $\mathcal{C}_{ib}$.
+\end{theorem}
+
+\subsection{The fully abstract game model of Idealized Algol}
+\label{sec:ia_gamemodel}
+
+We now describe the fully abstract game model of \ialgol\ \cite{abramsky99full}.
+
+All the strategies used to model \pcf\ are well-bracketed and
+innocent. To obtain a model of \ialgol, however we need to
+introduce strategies that are not innocent. This is necessary to
+model the memory cell variable created with the \ianew\ operator.
+The intuition is that a cell needs to remember the last value which
+was written in it in order to be able to return it when it is subsequently read, and this can only be done by looking at the whole history of moves,
+not only those present in the P-view. We therefore restrict our attention to the categories $\mathcal{C}$ and $\mathcal{C}_b$.
+
+\subsubsection*{Base types}
+
+The type \iacom\ is modeled by the flat game with a single initial question \iarun\ and a single answer
+\iadone. The idea is that O can request the execution of a command by playing \iarun, P then executes the command
+and if it terminates, acknowledges it by playing \texttt{done}.
+
+The variable type \iavar\ is modeled by the game $\iacom^\omega \times \iaexp$ illustrated below:
+\begin{center}
+\begin{tikzpicture}[baseline=(root.base),level distance=10mm,inner ysep=0.5mm]%,sibling distance=5mm
+ \node{\tt{ok}}  [grow'=up]
+    child {node {$\tt{write}_0$}}
+    child {node {$\tt{write}_1$}}
+    child {node {$\tt{write}_2$}}
+    child {node {$\ldots$}}
+;
+\draw +(5,+10mm) node {\tt{read}}
+    child {node {$0$}}
+    child {node {$1$}}
+    child {node {$2$}}
+    child {node {$\ldots$}}
+;
+\end{tikzpicture}
+\end{center}
+
+\subsubsection*{Modelling the constants}
+
+\begin{asparaitem}
+\item The constant \iaskip\ is interpreted by the strategy $\{ \epsilon, \iarun \cdot \iadone \}$.
+\item Sequential composition $\tt{seq_{exp}}$ is interpreted by the following strategy:
+$$
+\begin{array}{ccccc}
+!\iacom & \otimes & ! \iaexp & \stackrel{\iaseq_{\iaexp}}{\multimap} & \iaexp\\
+&&&&q\\
+\iarun\\
+\iadone\\
+&&q\\
+&&n\\
+&&&&n
+\end{array}
+$$
+
+\item Assignment \iaassign\ and dereferencing \iaderef\ are denoted  by the
+following strategies:
+$$
+\begin{array}{ccccc}
+!\iavar & \otimes & ! \iaexp & \stackrel{\iaassign}{\multimap} & \iacom\\
+&&&&q\\
+&&q\\
+&&n\\
+\iawrite_n\\
+\iaok\\
+&&&&\iadone
+\end{array}
+\hspace{3cm}
+\begin{array}{ccccc}
+!\iavar & \stackrel{\iaderef}{\multimap} & \iaexp\\
+&&q\\
+\iaread\\
+n\\
+&&n
+\end{array}
+$$
+
+\item \iamkvar\ is modeled by the paired strategy $\langle \iamkvar_{acc} , \iamkvar_{exp}
+\rangle$ where $\iamkvar_{acc}$ and $\iamkvar_{exp}$ are the following strategies:
+$$
+\begin{array}{ccccccc}
+!(!\iaexp & \multimap & \iacom) & \otimes & !\iaexp & \stackrel{\iamkvar_{acc}}{\multimap} & \iacom^\omega\\
+&&&&&&\iawrite_n\\
+&&\iarun\\
+q\\
+n\\
+&&\iadone \\
+&&&&&&\iaok
+\end{array}
+\hspace{0.2cm}
+\begin{array}{ccccccc}
+!(!\iaexp & \multimap & \iacom) & \otimes & !\iaexp & \stackrel{\iamkvar_{exp}}{\multimap} & \iaexp\\
+&&&&&&\iaread\\
+&&&&q\\
+&&&&n\\
+&&&&&&n \\ \  \\ \
+\end{array}
+$$
+
+\item Block-allocated variable (\ianew): The strategies introduced until now are all innocent. In order to model
+the \ianew\ operator, it is necessary to introduce non-innocent strategies,
+also called \emphind{knowing strategies}.
+We call \defname{memory-cell strategy} the knowing well-bracketed strategy written $cell : I \multimap !\iavar$ behaving as follows: It responds to \iawrite\ with \iaok\ and to \iaread\ with the last value written or $0$ if no value has been
+written yet. The denotation of a term-in-context $\Gamma \entail \ianewin{x}{M} : A$ is then defined as the strategy:
+$$ \sem{\Gamma \entail \ianewin{x}{M} : A} =
+(id_{\sem{\Gamma}} \otimes cell) \fatcompos \sem{\Gamma,x:\iavar \entail M : A}
+: !\Gamma \multimap \iacom \enspace .$$
+\end{asparaitem}
+
+
+\subsubsection*{Full abstraction}
+
+Inequational soundness can also be shown for \ialgol.
+Proving soundness of the evaluation requires slightly more work than in
+the \pcf\ case due to the fact that stores need to be made explicit. Also, one
+needs to define an appropriate notion of \emph{computable term} that
+takes into account the presence of stores in the evaluation
+semantics. It is also possible to prove that the model is computational
+adequate. We then have:
+\begin{proposition}[Abramksy and McCusker \cite{abramsky94full}]
+\label{prop:ia_ineqsoundness} The game model of \ialgol\ is inequationally sound.
+\end{proposition}
+
+A result called the Innocent Factorization Theorem \cite{AM97a} shows that the strategies in $\mathcal{G}_b$ can all be obtained by composing the
+non-innocent strategy $cell$ with some innocent strategy. The strategy $cell$ can therefore be viewed as a generic non-innocent strategy. Using this factorization argument,
+it is possible to prove the definability result:
+\begin{proposition}[Definability]
+\label{prop:ia_definability} For every compact well-bracketed
+strategy $\sigma$ on a game $A$ denoting a \ialgol\ type, there exists an \ialgol-term $M$ such that $\sem{M} = \sigma$.
+\end{proposition}
+
+
+Full abstraction for the model $\mathcal{C}_b$ is then a consequence of inequational soundness and definability:
+\begin{theorem}[Full abstraction]
+Let $M$ and $N$ be two closed IA-terms.
+$$\sem{M} \lesssim_b \sem{N} \ \iff \ M \obspre N \enspace ,$$
+where $\lesssim_b$ denotes the intrinsic preorder of the category
+$\mathcal{C}_b$.
+\end{theorem}
+
+
+
+\subsection{On the necessity of justification pointers}
+\label{subsec:pointer_necessary}
+
+For every legal justified sequence of moves $s$, we write $?(s)$ to denote
+the subsequence consisting of the unanswered question moves of $s$. It is easy to check that if $s$ satisfies alternation then so does $?(s)$.
+
+\begin{lemma}
+  If $s\cdot q$ is a legal position (\ie, a justified sequence satisfying visibility and alternation) satisfying well-bracketing and $q$ is a non-initial question then $q$ points in $?(s)$.
+\end{lemma}
+\begin{proof}
+    By induction on the length of $s \cdot q$. The base case $s=\epsilon$ is trivial.
+    Let $s = s\cdot q$, where $q$ is not initial.
+
+    Suppose $q$ is a P-move. We prove that $q$ cannot point to an O-question that has been answered.
+    Suppose that an O-move $q'$ occurs before $q$ and is answered by the move $a$ also occurring before $q$.
+    Then we have $s = s_1 \cdot q'^O \cdot s_2 \cdot a^P \cdot s_3 \cdot q^P$ where $a$ is justified by $q'$.
+    $a$ is not in the P-view $\pview{s_{<q}}$. Indeed this would imply that some O-move occurring in $s_3$ points to $a$, but this is impossible
+    since answer moves are not enablers. Hence the move $a$ must be situated underneath an O-to-P link. Let $m$ denote the link's origin, the P-view of $s$ has the following form: $\pview{s} = \pview{s_1\cdot q'^O \cdot s_2 \cdot a^P \ldots m^O} \ldots q^P$ where $m$ is an O-move pointing before $a$.
+
+    If $m$ is an answer move then it must point to the last unanswered move (the last move in $?(s_{<m})$).
+    If $m$ is a question move then it is not initial since there is a link going from $m$. Therefore by the induction hypothesis, $m$ must point
+    to a move in $?(s_{<m})$.
+
+    Since $s$ is well bracketed, all the questions in the segment $q'\ldots a$ are answered.
+    Therefore since $m$ points to an unanswered question occurring before $a$, $m$ must
+    point to a move occurring strictly before $q'$. Consequently $q'$ does not occur in the P-view $\pview{s}$.
+    By visibility, $q$ must point in the P-view $\pview{s}$ therefore $q$ does not point to $q'$.
+
+    A similar argument holds if $q$ is an O-move.
+\end{proof}
+
+This means that in a well-bracketed legal position $s\cdot m$ where
+$m$ is not initial, $m$'s justifier is a question occurring in
+$?(s)$. Also if $m$ is an answer then its justifier is precisely the
+\emph{last} question in $?(s)$. Furthermore, if $m$ is a P-move then
+by visibility it should point to an unanswered question in
+$\pview{m}$ therefore it should also point in $?(\pview{m})$.
+Similarly, if $m$ is a non initial O-move then it points in
+$?(\oview{m})$.
+
+\begin{lemma}
+\label{lem:views_and_questionmarkfilter} Let $s$ be a legal
+well-bracketed position.
+\begin{enumerate}[(i)]
+\item If $s=\epsilon$ or if the last move in $s$ is not a P-answer then $?(\pview{s}) = \pview{?(s)}$;
+\item If $s=\epsilon$ or if the last move in $s$ is not an O-answer then $?(\oview{s}) = \oview{?(s)}$.
+\end{enumerate}
+\end{lemma}
+\begin{proof}
+(i) By induction on the length of $s$. The base case is trivial.
+Step case: Suppose that $s \cdot m$ is a legal well-bracketed position.
+\begin{asparaitem}
+\item If $m$ is an initial O-question then $?(\pview{s \cdot m}) = ?(m) = m = \pview{?(s) \cdot m} = \pview{?(s \cdot m)}$.
+
+\item If $m$ is a non initial O-question then
+$s \cdot m^O = s' \cdot q^P \cdot s'' \cdot m^O$ where $m$ is justified by $q$.
+We have $?(\pview{s}) = ?(\pview{s'} \cdot q \cdot  m) = ?(\pview{s'}) \cdot q \cdot m$.
+If $s'$ is not empty then its last move must be an O-move (by alternation), therefore by the induction hypothesis
+$?(\pview{s'})= ?(\pview{?(s')})$.
+By the previous lemma, $m$'s justified occurs in $?(s)$ therefore
+$?(s \cdot m) = ?(s') \cdot q^P \cdot u \cdot m^O$ for some sequence $u$ and thus $\pview{?(s \cdot m)} = \pview{?(s')} \cdot q^P \cdot m^O$.
+
+\item If $m$ is an O-answer then $s \cdot m = s' \cdot q^P \cdot s'' \cdot m^O$ where $m$ is justified by $q$.
+We then have $?(\pview{s\cdot m}) = ?(\pview{s'} q a) = ?(\pview{s'})$
+and since $s$ is well-bracketed, we have $?(s) = ?(s')$.
+The induction hypothesis permits us to conclude.
+
+\item If $m$ is a P-question then $\pview{s \cdot m} = \pview{s} \cdot m$
+and $?(\pview{s \cdot m}) = ?(\pview{s}) \cdot m$. Moreover
+$\pview{?(s \cdot m)} = \pview{?(s) \cdot m} = \pview{?(s)} \cdot
+m$. By alternation if $s$ is not empty it must end with an O-move
+so we can conclude using the induction hypothesis.
+\end{asparaitem}
+
+(ii) The argument is similar to (i).
+\end{proof}
+
+Note that in (i) and (ii), it is important that $s$
+does not end with a P-answer. For instance consider the legal
+position
+    $$\Pstr{s = (q0){q_0^O} \  (q1-q0){q_1^P} \ (q2-q1){q_2^O} \  (q3-q2){q_3^P} \ (q4-q1){q_4^O}
+    (a-q4){a^P} }$$
+ ending with a P-answer. We have $\pview{?(s)} =
+\pview{q_0 \cdot q_1 \cdot q_2 \cdot q_3} = q_0 \cdot q_1 \cdot q_2
+\cdot q_3$ but $?(\pview{s}) = ?(q_0 \cdot q_1 \cdot q_4 \cdot a) =
+q_0 \cdot q_1 \cdot q_4$.
+\bigskip
+
+
+By the previous remark and lemma we obtain the following corollary:
+\begin{corollary}
+\label{cor:pendingview}
+Let $s \cdot m$ be a legal well-bracketed position.
+\begin{enumerate}[(i)]
+\item If $m$ is a P-move then it points in $?(\pview{s}) = \pview{?(s)}$.
+\item If $m$ is a non initial O-move then it points in $?(\oview{s}) = \oview{?(s)}$.
+\end{enumerate}
+
+\end{corollary}
+
+\begin{definition}[Order]
+\label{def:move_order}
+Let $\langle M, \lambda, \enable \rangle$ be a game.
+The \defname[order!move]{order} of a question move $q \in M$, written $\ord q$, is given by the length ($l$) of the longest enabling chain of question moves starting from $q$ ($q = q_1 \enable q_2 \enable \ldots \enable q_l$) minus one (\ie, $\ord q = l-1$); the order of an answer move is defined as $-1$.
+The order of a game $\langle M, \lambda, \enable \rangle$, written $\ord \langle M, \lambda, \enable \rangle$, is defined as $\max_{m \in M} \ord{m}$ with the convention $\max \emptyset = -1$.
+\end{definition}
+
+For instance the initial question in the game $\nat$ has order $0$.
+%Since in a game, answer moves are necessarily leaves of the tree $(M,\enable)$, they all have order $-1$.
+
+\begin{proposition}[Pointers are superfluous up to order 2]
+\label{prop:ptr_superfluous_atorder2} Let $A$ be a game of order at
+most $2$ where each question move enables at least one answer move (Therefore an order-$0$ move is necessarily a question enabling answer moves only). Let $s$ be a justified sequence of moves in the game $A$
+satisfying  alternation, visibility, well-openedness and well-bracketing. If $s$ contains a single initial move then
+the pointers of the sequence $s$ can be uniquely reconstructed from the underlying sequence of moves.
+\end{proposition}
+\begin{proof}
+Let $A$ be an arena of order $2$ at most and let $s$ be a legal well-bracketed position in $L_A$. W.l.o.g.\ we can assume that the game $A$ has a single initial move $q_0$.
+Indeed, since $s$ is well-opened, its first move $m_0$ is the only initial move in the sequence, thus $m_0$ is the root of some sub-arena $A'$ of $A$. Hence $s$ can be seen as a play on the game $A'$ instead of $A$.
+
+Since $A$ is of order $2$ at most, all the moves in $s$ except $q_0$ are of order $1$ at most.
+We prove by induction on the length of $s$ that $?(s)$ corresponds to one of the cases 0, A, B, C, D shown on the table below, and that the pointers in
+$s$ can be recovered uniquely. Let $L$ denote the language $L = \{\ p q \ | \ q_0 \enable p \enable q
+\wedge \ord{p}=1 \wedge \ord{q} = 0 \}$.
+\begin{center}
+\begin{tabular}{c|c|l|l}
+Case & $\lambda_{OP}(m)$ & $?(s) \in$ & where... \\ \hline
+0 & O & $\{ \epsilon \}$ \\
+A & P & $q_0$ \\
+B & O & $q_0 \cdot L^* \cdot p$     & $q_0 \enable p, \ord{p}=1$ \\ % $j \in I_1$ \\
+C & P & $q_0 \cdot L^* \cdot p q$ & $q_0 \enable p \enable q, \ord{p}=1, \ord{q} = 0$ \\ % $j \in I_1$ \\
+D & O & $q_0 \cdot L^* \cdot q$      & $q_0 \enable q, \ord{q} = 0$ \\ % $i \in I_0$
+\end{tabular}
+\end{center}
+
+\noindent \emph{Base cases:}
+If $s$ is the empty play then there is no pointer to recover and $s$ corresponds to case 0.
+If $s$ is a singleton then it must be the initial question $q_0$, so
+there is no pointer to recover. This corresponds to case A.
+
+\noindent \emph{Step case:}
+If $s = u \cdot m$ for some non empty legal well-bracketed position $u$ and move $m \in M_A$
+then by the induction hypothesis the pointers in $u$ can all be recovered and $u$ corresponds to one of the
+cases 0, A, B, C or D.
+We proceed by case analysis:
+\begin{asparadesc}
+\item[case 0] $?(u) = \epsilon$. By Corollary \ref{cor:pendingview}, $m$ points in $\pview{?(u)} = \epsilon$. Hence this case is impossible.
+
+\item[case A] $?(u) = q_0$ and the last move $m$ is played by P.
+    By Corollary \ref{cor:pendingview}, $m$ points to $q_0$.
+    If $m$ is an answer to the initial question $q_0$ then $s$ is a complete play and $?(s) = \epsilon$, which corresponds to case 0.
+    If $m$ is a first order question then $?(s)= q_0 p$ and it is O's turn to play after $s$ therefore $s$ falls into category B.
+    If $m$ is an order 0 question then $s$ falls into category D.
+
+\item[case B] $?(u) \in q_0 \cdot L^* \cdot p$ where $\ord{p} = 1$ and $m$ is an O-move.
+By Corollary \ref{cor:pendingview}, $m$ points in $\pview{?(u)} = q_0 p$. Since $m$ is an O-move it can only point to $p$.
+If $m$ is an answer to $p$ then $?(s) = ?(u \cdot m) \in q_0 \cdot L^*$ which is covered by case A and C.
+If $m$ is an order 0 question pointing to $p$ then we have $?(s) = ?(u) \cdot m \in q_0 \cdot L^* \cdot p m$ and $s$ falls into category C.
+
+
+\item[case C] $?(u) \in q_0 \cdot L^* \cdot p q$ where $\ord{p} = 1$, $\ord{q} = 0$, $q_0$ justifies $p$, $p$ justifies $q$
+                 and $m$ is played by $P$.
+
+Suppose that $m$ is an answer, then the well-bracketing condition implies that
+$q$ is answered first. The move $m$ therefore points to $q$ and we have $?(s) = ?(u \cdot m) \in  q_0 \cdot L^* \cdot p$. This corresponds to case B.
+
+Suppose that $m$ is a question, then it is a P-move and therefore is cannot be justified by $p$.
+It cannot be justified by $q$ either because $q$ is an order $0$ question and therefore enables answer moves only.
+Similarly $m$ is not justified by any move in $L^*$.
+Hence $m$ must point to the initial question $q_0$.
+There are two sub-cases, either $m$ is an order $0$ move and then $s$ falls into category D
+or $m$ is an order $1$ move and $s$ falls into category B.
+
+
+\item[case D] $?(u) \in q_0 \cdot L^* \cdot q$ where $\ord{q} = 0$ and $m$ is played by $O$.
+
+Again by Corollary \ref{cor:pendingview}, $m$ points in $\oview{?(u)} = q_0 q$. Since $m$ is a P-move it can only point to $q$.
+Since $q$ is of order 0, it only enables answer moves therefore $m$ is an answer to $q$.
+Hence $?(s) = ?(u\cdot m) \in q_0 \cdot L^* $ and $s$ falls either into category A or C.
+\qedhere
+\end{asparadesc}
+\end{proof}
+
+Consequently for order-2 games, plays are entirely determined by the underlying pointer-less sequence of moves. At order 3, however, eliminating pointers causes ambiguities. Take for instance the game $((\nat^1 \typear \nat^2) \typear \nat^3) \typear \nat^4$ and  sequence of moves $s = q^4 q^3 q^2 q^3 q^2 q^1$, where the superscripts indicate the component of the game in which each move is played. What are the valid plays whose underlying sequence of moves is $s$? By the visibility condition,  the pointers of the first five moves are uniquely determined:
+$$s = \Pstr[0.4cm]{ (q4){q^4}\ (q3-q4){q^3}\ (q2-q3){q^2}\
+(q3b-q4){q^3}\ (q2b-q3b){q^2}\ (q1){q^1} } \enspace .$$
+For the last move, however, there is an ambiguity: its justifier can be any of the two occurrences of $q^2$. The visibility condition does not eliminate this ambiguity since both occurrences of $q^2$ appear in
+the P-view $\pview{s} = s$. These two possibilities correspond to two different strategies for the Proponent.
+
+\subsection{Algorithmic game semantics}
+\label{sec:algogamesem}
+
+Game semantics has proved to be a very successful paradigm in fundamental computer science. Following the resolution of the full abstraction problem for \pcf, game semantics was subsequently used to obtain fully abstract models of a variety of programming languages. More recently, game semantics has emerged as a new approach to program verification and program analysis. Ghica and McCusker identified a fragment of Idealized Algol for which the game denotation of programs can be expressed using regular expressions. Consequently, the observational equivalence problem for this fragment is decidable \cite{ghicamccusker00,Ghica2003}. This development opened up a new branch of research called \emph{Algorithmic game semantics} which has interesting applications in program verification \cite{agom2003,DBLP:conf/sas/DimovskiGL05}. This section gives a quick overview of some important results in the field.
+
+\subsubsection{Effective presentability}
+The starting point of \emph{algorithmic game semantics} is a result shown by Abramsky and McCusker called the Characterization Theorem \citep[Theorem 25]{AM97a}.
+We say that a play is \emph{complete}\index{complete play} if it is maximal and all questions have been answered. One can show that for every \ialgol\ type $T$, the complete plays on the game $\sem{T}$ are precisely those in which the initial question has been answered. A game satisfying this condition is said to be \emph{simple}\index{simple game} \cite{AM97a}. The characterization theorem can then be stated as follows:
+\begin{theorem}[Characterization Theorem for simple games (Abramsky, McCusker \cite{AM97a})]
+\label{thm:abramskycusker_charac}
+Let $\sigma$ and $\tau$ be strategies on a simple game $A$. Then:
+$$\sigma \leq \tau \iff \textit{comp}(\sigma) \subseteq \textit{comp}(\tau) \enspace .$$
+\end{theorem}
+Thus in the game model of Idealized Algol, observational equivalence is characterized by equality of the set of complete plays.
+
+This result implies that the fully abstract model of Idealized Algol is \emph{effectively presentable} \cite{loader1998upd} (\ie, the denotation of a term can be computed by a Turing Machine). The proof crucially relies on the presence of imperative features in \ialgol. Indeed, Loader has shown that even on compact strategies, observation equivalence of \pcf\ is undecidable \cite{loader2001fpn}. This implies that there is no fully abstract model of \pcf\ that is effectively representable.
+
+Algorithmic game semantics is concerned with deriving decision procedures for the observational equivalence problem for various
+fragments of \ialgol. This problem can be stated as follows: \emph{Given two
+$\beta$-normal forms $M$ and $N$ in a given fragment of \ialgol, does $M \obseq N$ hold?} By the Characterization Theorem \ref{thm:abramskycusker_charac}, this problem reduces to comparing the set of complete plays of two given terms. Observational equivalence is undecidable in the general case, but it becomes decidable when restricted to some lower-order fragments of \ialgol. This question has now been fully investigated and there is now a complete classification of decidability results for the finitary fragments of \ialgol.
+
+\subsubsection{The order-\texorpdfstring{$2$}{2} fragment of \ialgol}
+
+Ghica and McCusker were the first to show that the observational equivalence problem becomes decidable when
+restricting the language \ialgol\ to some finitary fragment.
+They showed that for the second-order finitary fragment of Idealized Algol, written \ialgol$_2$,
+the set of complete plays of the strategy denotation can be expressed as an extended regular expression \cite{ghicamccusker00}:
+\begin{lemma}[Ghica and McCusker, \cite{ghicamccusker00}]
+For every IA$_2$-term $\Gamma \entail M : T$, the set of complete
+plays of $\sem{\Gamma \entail M : T}$ is regular.
+\end{lemma}
+Since equivalence of regular expressions is decidable with complexity PSPACE, by the Characterization Theorem this gives a decision procedure for observational equivalence of \ialgol$_2$-terms. In the same paper they show that the same result holds for the
+\ialgol$_2 +\textsf{while}$ fragment. At order $2$, this result cannot be extend further as Ong showed that observational equivalence is already undecidable for \ialgol$_2 + \textsf{Y}_1$ \cite{Ong02}.
+
+\subsubsection{Other fragments of IA}
+
+Other finitary fragments were subsequently considered. Ong considered the order-$3$ finitary fragment, denoted \ialgol$_3$. He showed that the set of complete plays is a context-free language, thus
+observational equivalence reduces to the \emph{Deterministic
+Pushdown Automata Equivalence} (DPDA) problem \cite{Ong02}. This problem was shown to be decidable \cite{DBLP:journals/tcs/Senizergues01} but its complexity is still unknown; we only know that it is primitive recursive \citep{stirling02}.
+
+Even for \ialgol$_3 + \textsf{while}$, the fragment obtained by throwing in iteration, the problem remains decidable. Moreover the problem lies in EXPTIME \citep{DBLP:conf/fossacs/MurawskiW05}. For the fragments \ialgol$_i +Y_0$ for $i = 1, 2, 3$, observational equivalence is as difficult as DPDA equivalence (\ie, there is a reduction in both directions) \cite{DBLP:conf/icalp/MurawskiOW05}. Finally, Murawski showed that the problem becomes undecidable beyond order $3$ (\ialgol$_i$ with $i\geq4$) \cite{Murawski2003}.
+
+The complete classification of complexity results for \ialgol\ is recapitulated in Table \ref{tab:IAcomplexity_classification}. Undefined fragments are marked with the symbol $\times$.
+
+\begin{table}[htbp]
+  \centering
+\begin{tabular}{rcccc}
+Fragment  & pure & +while & +Y0 & +Y1 \\ \hline \hline
+\ialgol$_0$ & PTIME & $\times$ & $\times$ & $\times$  \\
+\ialgol$_1$ & coNP & PSPACE & DPDA EQUIV & $\times$ \\
+\ialgol$_2$ & PSPACE & PSPACE & DPDA EQUIV & undecidable \\
+\ialgol$_3$ &EXPTIME & EXPTIME & DPDA EQUIV & undecidable \\
+\ialgol$_i, i \geq 4$  & undecidable & undecidable & undecidable
+& undecidable
+\end{tabular}
+\caption{The complete complexity classification for observational equivalence in \ialgol.}
+\label{tab:IAcomplexity_classification}
+\end{table}
+
+The coNP and PSPACE results are due to Murawski \citep{Mur04b}.

@@ -183,7 +183,7 @@ have a notion of safety for second-order typed terms.
 \newcommand{\openedof}[2]{{\rm Op}(#1,#2)} % notation for the set of open terms M such that \fatlambda{M} in \openedof
 
 \newcommand\wordnum[1]{\mathbf{#1}} % Zaionc's encoding of numbers as words
-\newcommand\safedefset{$\lambda^{safe}${\rm def}}
+\newcommand\safedefset{$\lambda^{{\rm safe}}${\rm def}}
 
 \newcommand\fatlambda{\lambda\kern-0.7em\lambda}
 \newcommand\wordapp{\mathop{app}}
@@ -200,74 +200,103 @@ zaionc:csl94}. In this section we consider the case of word
 functions expressible in the safe lambda calculus.
 \smallskip
 
+\subsubsection*{Word functions.}  We consider a binary alphabet $\Sigma = \{a,b\}$. The result of this section naturally extends to all finite alphabets. We consider the set $\Sigma^*$ of all words over
+$\Sigma$. The empty words is denoted $\epsilon$. We write $|w|$ to
+denote the length of the word $w\in\Sigma^*$. For any $k\in \nat$ we
+write $\wordnum{k}$ to denote the word $a \ldots a$ with $k$
+occurrences of $a$, so that $|\wordnum{k}| = k$. For any $n\geq 1$
+and $k\geq 0$, we write $c(n,k)$ for the $n$-ary function
+$(\Sigma^*)^n \rightarrow \Sigma^*$ that maps all inputs to the word
+$\wordnum{k}$. We consider various word functions. Let $x,y,z$ be words over $\Sigma$:
+\begin{itemize}
+\item Concatenation $\wordapp : (\Sigma^*)^2 \rightarrow
+\Sigma^*$. The word $\wordapp(x,y)$ is the concatenation of $x$ and $y$. 
+\item Substitution $\wordsub : (\Sigma^*)^3 \rightarrow \Sigma^*$. The word $\wordsub(x,y,z)$ is obtained from $x$ by substituting the word $y$ for all occurrences of $a$ and $z$ for all
+occurrences of $b$. Formally:
+\begin{align*}
+  \wordsub(\epsilon, y, z) &= \epsilon\enspace, \\
+  \wordsub(ax, y, z) &= \wordapp(y,\wordsub(x,y,z))\enspace, \\
+  \wordsub(bx, y, z) &= \wordapp(z,\wordsub(x,y,z))\enspace .
+\end{align*}
+
+\item Prefix-cut $\mathop{cut_a} : \Sigma^* \rightarrow
+\Sigma^*$. The word $\mathop{cut_a} x$ is the maximal prefix of $x$ containing only the letter 'a'. Formally:
+\begin{align*}
+  \mathop{cut_a}(\epsilon) &= \epsilon\enspace, \\
+  \mathop{cut_a}(ax) &= \wordapp(a,\mathop{cut_a}(x))\enspace, \\
+  \mathop{cut_a}(bx) &= \epsilon\enspace .
+\end{align*}
+  \item Projections $\pi_k : (\Sigma^*)^n \rightarrow
+\Sigma^*$ for $n\geq 1$, $1\leq k \leq n$ defined as $\pi_k(x_1,\ldots,x_k,\ldots,x_n) = x_k$.
+  \item Constant functions $\mathop{cons}_w : \Sigma^* \rightarrow
+\Sigma^*$ mapping constantly onto a given word $w \in \Sigma^*$.
+\end{itemize}
+Additional operations can be obtained by combining the above functions \cite{DBLP:journals/apal/Zaionc91}:
+\begin{itemize}
+    \item Prefix-cut $\mathop{cut_b} : \Sigma^* \rightarrow
+\Sigma^*$ is defined by $\mathop{cut_b}(x) = \wordsub(\mathop{cut_a}(\wordsub(x,b,a)),b,a)$.
+
+  \item Non-emptiness check $\mathop{\overline{sq}} : \Sigma^* \rightarrow \Sigma^*$ (\ie, returns $\wordnum{0}$ if the word is $\epsilon$ and $\wordnum{1}$ otherwise) is defined by $\mathop{\overline{sq}}(x) = \mathop{cut_a}(\wordapp(\wordsub(x,b,b),a)$.
+  
+  \item Emptiness check $\mathop{sq} : \Sigma^* \rightarrow \Sigma^*$ is defined by
+    $\mathop{sq}(x) = \mathop{\overline{sq}}(\mathop{\overline{sq}}(x))$.
+  
+  \item Occurrence check $\mathop{occ_l} : \Sigma^* \rightarrow \Sigma^*$ of the letter $l\in\Sigma$ (\ie, returns $\wordnum{1}$ if the word contain an occurrence of $l$ and $\wordnum{0}$ otherwise) is defined by
+      $\mathop{occ_l}(x) = \mathop{sq}(\wordsub(x,l,\epsilon))$.
+\end{itemize}
+
+\subsubsection*{Representability}
 We consider equality of terms modulo $\alpha$,
 $\beta$ and $\eta$ conversion, and we write $M=_{\beta\eta} N$ to
 denote this equality. For every simple type $\tau$, we write
 $\closedof{\tau}$ for the set of closed terms of type $\tau$ (modulo
-$\alpha$, $\beta$ and $\eta$ conversion). We consider a binary
-alphabet $\Sigma = \{a,b\}$. The result that we are about to show naturally extends to all
-finite alphabets. We consider the set $\Sigma^*$ of all words over
-$\Sigma$. The empty word is denoted $\epsilon$. We write $|w|$ to
-denote the length of the word $w\in\Sigma^*$. For every $k\in \nat$ we
-write $\wordnum{k}$ to denote the word $a \ldots a$ with $k$
-occurrences of $a$, so that $|\wordnum{k}| = k$. For every $n\geq 1$
-and $k\geq 0$, we write $c(n,k)$ for the $n$-ary function
-$(\Sigma^*)^n \rightarrow \Sigma^*$ that maps all inputs to the word
-$\wordnum{k}$. The function $\wordapp : (\Sigma^*)^2 \rightarrow
-\Sigma^*$ is the usual concatenation function: $\wordapp(x,y)$ is
-the word obtain by concatenating $x$ and $y$. The substitution
-function $\wordsub : (\Sigma^*)^3 \rightarrow \Sigma^*$ is defined
-as follows: $\wordsub(x,y,z)$ is the word obtained from $x$ by
-substituting the word $y$ for all occurrences of $a$ and $z$ for all
-occurrences of $b$.
+$\alpha$, $\beta$ and $\eta$ conversion).
 
 Take the type $\zaiwordtyp = (o\typear o)\typear (o\typear o)\typear
 o\typear o$, called \index{type!binary word}\emph{the binary word type}
 \cite{DBLP:journals/tcs/Zaionc87}. There is a 1-1 correspondence
 between words over $\Sigma$ and closed terms of type $\zaiwordtyp$:
-The empty word $\epsilon$ is represented by $\lambda u v x.x$, and
+the empty word $\epsilon$ is represented by $\lambda u v x.x$, and
 if $w\in \Sigma^*$ is represented by a term $W \in
 \closedof{\zaiwordtyp}$ then $a \cdot w$ is represented by $\lambda
 u v x. u(W uvx)$ and $b \cdot w$ is represented by $\lambda u v x.
-v(W uvx)$. The term representing the word $w$ is denoted by
-$\zaioncencode{w}$. A closed term of type $\zaiwordtyp^n \typear
-\zaiwordtyp$ is called a \defname{word function}. We say that the
-function on words $h:(\Sigma^*)^n \rightarrow \Sigma^*$ is
-\defname{represented} by the term $H \in \closedof{\zaiwordtyp^n
+v(W uvx)$. We write $\zaioncencode{w}$ to denote the term representing the word $w$ obtained that way. We say that the
+word function $h:(\Sigma^*)^n \rightarrow \Sigma^*$ is
+\defname[represented!word function]{represented} by a closed term $H \in \closedof{\zaiwordtyp^n
 \typear \zaiwordtyp}$ just if for all $x_1, \ldots, x_n \in
-\zaiwordtyp^*$, $H \zaioncencode{x_1} \ldots \zaioncencode{x_n} =
-\zaioncencode{h x_1 \ldots x_n}$. \bigskip
+\zaiwordtyp^*$, $H \zaioncencode{x_1} \ldots \zaioncencode{x_n} =_{\beta\eta}
+\zaioncencode{h x_1 \ldots x_n}$.
 
-Zaionc showed that there exists a finite base of word functions in the sense that every
-$\lambda$-definable word function is some composition of functions
-from the base \cite{DBLP:journals/tcs/Zaionc87}:
+\begin{example}
+\label{ex:wordfunc_repres}
+  The word functions $\wordapp, \wordsub, \mathop{cut_a}, \mathop{cut_b}, 
+  \mathop{sq}, \mathop{\overline{sq}}, 
+    \mathop{occ_a}, \mathop{occ_b}$ defined above are respectively represented by the following lambda terms:
+\begin{align*}
+  {\rm APP} &\equiv \lambda c d u v x.c u v(d u v x), & {\rm SUB} &\equiv \lambda x d e u v x.c(\lambda y.d u v y)(\lambda y . e u v y) x, \\
+  {\rm CUT}_a &\equiv \lambda c u v x . c u (\lambda y.x) x,  & {\rm CUT}_b &\equiv \lambda c u v x . c (\lambda y.x) v x, \\
+  {\rm SQ} &\equiv \lambda c u v x . c (\lambda y.u x) (\lambda y.u x) x, & \overline{{\rm SQ}} &\equiv \lambda c u v x . c (\lambda y.x) (\lambda y.x) (u x), \\
+  {\rm OCC}_a &\equiv \lambda c u v x . c (\lambda y.u x) (\lambda y.y) x, & {\rm OCC}_b &\equiv \lambda c u v x . c (\lambda y.y) (\lambda y.u x) x.
+\end{align*}
+\end{example}
+
+Zaionc \cite{DBLP:journals/tcs/Zaionc87} showed that 
+the $\lambda$-definable word functions are generated by a finite base in the following sense:
 \begin{theorem}[Zaionc \cite{DBLP:journals/tcs/Zaionc87}]
-The set of $\lambda$-definable word functions is the minimal set containing the following word functions and closed by composition:
-\begin{itemize}
+The set of $\lambda$-definable word functions is the minimal set containing:
+\begin{inparaenum}[(i)]
+  \item the constant functions;
+  \item the projections;
   \item concatenation $\wordapp$;
   \item substitution $\wordsub$;
-  \item extraction of the maximal prefix containing only a given letter;
-  \item non-emptiness check: returns $\wordnum{0}$ if the word is $\epsilon$ and $\wordnum{1}$ otherwise, as well as emptiness check;
-  \item occurrence check: returns $\wordnum{1}$ if the word contain an occurrence of a given letter and $\wordnum{0}$ otherwise;
-  \item first-occurrence check: tests whether the word begins with a given letter;
-  \item all the projections;
-  \item all the constant functions.
-\end{itemize}
+  \item prefix-cut $\mathop{cut_a}$;
+\end{inparaenum}
+and closed by composition.
 \end{theorem}
-The lambda-terms representing the base functions are:
-\begin{align*}
-  {\rm APP} &\equiv \lambda c d u v x.c u v(d u v x) & {\rm SUB} &\equiv \lambda x d e u v x.c(\lambda y.d u v y)(\lambda y . e u v y) x \\
-  {\rm CUT}_a &\equiv \lambda c u v x . c u (\lambda y.x) x & {\rm CUT}_b &\equiv \lambda c u v x . c (\lambda y.x) v x \\
-  {\rm SQ} &\equiv \lambda c u v x . c (\lambda y.u x) (\lambda y.u x) x & \overline{{\rm SQ}} &\equiv \lambda c u v x . c (\lambda y.x) (\lambda y.x) (u x) \\
-  {\rm BEG}_a &\equiv \lambda c u v x . c (\lambda y.u x) (\lambda y.x) x & {\rm BEG}_b &\equiv \lambda c u v x . c (\lambda y.x) (\lambda y.u x) x \\
-  {\rm OCC}_a &\equiv \lambda c u v x . c (\lambda y.u x) (\lambda y.y) x & {\rm OCC}_b &\equiv \lambda c u v x . c (\lambda y.y) (\lambda y.u x) x \enspace .
-\end{align*}
-where {\rm APP} represents concatenation, {\rm SUB} substitution,
-{\rm SQ} and $\overline{{\rm SQ}}$ non-emptiness and emptiness checking, ${\rm BEG}_a$ and
-${\rm BEG}_b$ first-occurrence test, and ${\rm OCC}_a$ and ${\rm OCC}_a$ occurrence test.
 
-We observe that among these terms only {\rm APP} and {\rm SUB} are
-safe. All the other terms are unsafe because they contain terms of
+The terms representing these basic operations are given in Example \ref{ex:wordfunc_repres}.
+We observe that among them, only {\rm APP} and {\rm SUB} are
+safe; the other terms are all unsafe because they contain terms of
 the form $ N (\lambda y .x)$ where $x$ and $y$ are of the same
 order. It turns out that {\rm APP} and {\rm SUB} constitute a base
 of terms generating all the functions definable in the safe lambda
@@ -275,23 +304,22 @@ calculus as the following theorem states:
 \begin{theorem}
 \label{thm:wordfunctions_safely_definable}
 Let \safedefset\ denote the minimal set containing the following word functions and closed by composition:
-\begin{itemize}
+\begin{asparaenum}[(i)]
+  \item the projections;
+  \item the constant functions;
   \item concatenation $\wordapp$;
-  \item substitution $\wordsub$;
-  \item all the projections;
-  \item all the constant functions.
-\end{itemize}
-The set of word-functions definable in the safe lambda calculus is
+  \item substitution $\wordsub$.
+\end{asparaenum}
+The set of word functions definable in the safe lambda calculus is
 precisely \safedefset.
 \end{theorem}
 
 The proof follows the same steps as Zaionc's proof. The first
-direction is immediate: The terms {\rm APP} and {\rm SUB} are safe
-and represent concatenation and substitution. Projections are
+direction is immediate: Projections are
 represented by safe terms of the form $\lambda x_1 \ldots x_n . x_i$
 for some $i\in\{1..n\}$, and constant functions by $\lambda x_1
-\ldots x_n . \zaioncencode{w}$ for some $w\in\Sigma^*$. For
-composition, take a functions $g:(\Sigma^*)^n \rightarrow \Sigma^*$
+\ldots x_n . \zaioncencode{w}$ for some $w\in\Sigma^*$. The terms {\rm APP} and {\rm SUB} are safe and represent concatenation and substitution. For
+closure by composition: take a function $g:(\Sigma^*)^n \rightarrow \Sigma^*$
 represented by safe term $G\in \closedof{\zaiwordtyp^n \typear
 \zaiwordtyp}$ and functions $f_1,\ldots,f_n : (\Sigma^*)^p
 \rightarrow \Sigma^*$ represented by safe terms $F_1,\ldots F_n$
@@ -435,7 +463,7 @@ $(c(n,0),c(n,i))$. \emph{Step case:} Suppose $T\in
 %
    &=_{\beta\eta}  \zaioncencode{w}~u~v~ x_i
  \end{alignat*}
-where the word-function $w$ is defined as
+where the word function $w$ is defined as
 $$w: w_1,\ldots,w_n \mapsto \wordapp(\wordsub(w_j,w_e(w_1,\ldots,w_n),w_f(w_1,\ldots,w_n)),w_g(x_1,\ldots,w_n)) \enspace .$$
   Hence $\widetilde \delta^k_j (E,F,G)$ represents the pair $(w,c(n,i))$.
 

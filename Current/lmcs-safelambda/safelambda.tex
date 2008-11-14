@@ -298,8 +298,8 @@ Knapik et al.'s definition \cite{KNU02}.
 %   \defname{unsafe} if the righthand term $e$ has a subterm $t$ such
 %   that
 % \begin{enumerate}[(i)]
-% \item $t$ occurs in an {\em operand} ({\it i.e.}~second) position of some
-%   occurrence of the implicit application operator {\it i.e.}~$e$ has the
+% \item $t$ occurs in an {\em operand} (\ie,~second) position of some
+%   occurrence of the implicit application operator {\ie,~$e$ has the
 %   form $\cdots (s \, t) \cdots $ for some $s$
 % \item $t$ contains an occurrence of a parameter $z_i$ (say) whose
 %   order is less than that of $t$.
@@ -482,7 +482,7 @@ lambda calculus captures the original notion of safety due to Knapik
   of the \emph{homogeneous} safe lambda calculus.
 \end{proposition}
 \begin{proof}
-We show by induction that \begin{asparaenum}
+We show by induction that \begin{asparaenum}[(i)]
 \item  $z_1,\ldots, z_m \asappentail t:A$ is a valid judgment of the homogeneous safe lambda calculus containing no abstraction if and only if in the Knapik sense, all the occurrences of unsafe subterms of $t$ are safe occurrences.
 \item $z_1,\ldots, z_m \sentail t:A$ is a valid judgment of the homogeneous safe lambda calculus containing no abstraction if and only if in the Knapik sense, all the occurrences of unsafe subterms of $t$ are safe occurrences, and all parameters occurring in $t$ have order greater than $\ord{t}$. \end{asparaenum}
 The constant and variable rule are trivial. Application case: By definition, a term $t_0 \ldots t_n$ is Knapik-safe iff for all $0\leq i \leq n$, all the occurrences of unsafe subterms of $t_i$ are safe occurrences (in the Knapik sense), and for all $1\leq j \leq n$, the operands occurring in $t_j$ have order greater than $\ord{t_j}$. The \rulenamet{app_{as}} rule and the induction hypothesis permit us to conclude.
@@ -723,8 +723,8 @@ is obtained by hereditarily $\eta$-expanding the body of every
 lambda abstraction as well as every subterm occurring in an
 \emph{operand position} (\ie, occurring as the second argument of
 some occurrence of the binary application operator). Formally the
-\defname{$\eta$-long form}, written $\elnf{M}$, of a term $M:
-(A_1,\ldots,A_n,o)$ with $n \geq 0$ is defined by cases according to
+\defname{$\eta$-long form}, written $\elnf{M}$, of a (type-annotated) term $M$ of type
+$(A_1,\ldots,A_n,o)$ with $n \geq 0$ is defined by cases according to
 the syntactic shape of $M$:
 \begin{eqnarray*}
   \elnf{\lambda x^\tau . N } &\equiv& \lambda x^\tau . \elnf{N} \\
@@ -732,6 +732,8 @@ the syntactic shape of $M$:
   \elnf{(\lambda x^\tau . N) N_1 \ldots N_p } &\equiv& \lambda \overline{\varphi}^{\overline{A}} . (\lambda x^\tau . \elnf{N}) \elnf{N_1} \ldots \elnf{N_p} \elnf{\varphi_1} \ldots \elnf{\varphi_n}
 \end{eqnarray*}
 where $m \geq 0$, $p\geq 1$, $x$ is either a variable or constant, $\overline{\varphi} = \varphi_1 \ldots \varphi_n$ and each $\varphi_i : A_i$ is a fresh variable.
+The binder notation `$\lambda \overline{\varphi}^{\overline A}$' stands for 
+`$\lambda \varphi_1^{A_1} \ldots \varphi_n^{A_n}$' if $n\geq 1$, and for `$\lambda$' (called the \emph{dummy lambda}) in the case $n=0$. The base case of the above inductive definition lies in the second clause for $m=n=0$: $\elnf{x} \equiv \lambda. x$.
 
 \begin{remark}
   This transformation does not introduce
@@ -772,13 +774,13 @@ If a term is long-safe then it is safe.
 \end{lemma}
 \smallskip
 
-In general, long-safety is not preserved by $\eta$-expansion; For
+In general, long-safety is not preserved by $\eta$-expansion. For
 instance we have
 % $f:o,o \lsentail f$ but $f:o,o \not \lsentail \lambda x^o . f x$.
 %This remark remains true for closed terms, for instance
 $\lsentail \lambda y^o z^o . y : (o,o,o)$ but
-$\not \lsentail\lambda x^o . (\lambda y^o z^o . y) x : (o,o,o)$.
-On the other hand, $\eta$-reduction preserves long-safety:
+performing one eta-expansion produces the term $\lambda x^o . (\lambda y^o z^o . y) x : (o,o,o)$ which is not long-safe.
+On the other hand, $\eta$-reduction (of one variable) preserves long-safety:
 
 \begin{lemma}[$\eta$-reduction of one variable preserves long-safety]
 \label{lem:etared_preserve_longsafety}
@@ -833,26 +835,25 @@ $N$ of type $C$ and is not an abstraction. The induction hypothesis gives $\Gamm
 \rulenamet{abs_l} we get $\Gamma \lsentail \lambda \overline{\eta} . \elnf{N} \equiv \elnf{M} : A$.  \qedhere
 \end{compactitem}
 \end{proof}
+\smallskip
 
 \begin{remark}\hfill
-\begin{enumerate}
+\begin{enumerate}[(i)]
 \item
-The converse of this lemma does not hold in general: Performing
+The converse of this lemma does not hold: performing
 $\eta$-reduction over a large abstraction does not in general
-preserve long-safety. This does not contradict Lemma
+preserve long-safety. (This does not contradict Lemma
   \ref{lem:etared_preserve_longsafety} which states that safety is
   preserved when performing $\eta$-reduction on an abstraction
-  of a \emph{single} variable. The simplest counter-example is
-  the
- term $f^{(o,o,o)} \stentail \lambda x^o . f \underline{x}$ which is not long-safe and
-whose eta-long normal form $f^{(o,o,o)} \lsentail \lambda x^o y^o .
-f x y$ is long-safe. Even for closed terms the converse does not
-hold: $\lambda f^{(o,o,o)} g^{((o,o,o),o)} . g(\lambda x^o . f
-\underline{x})$ is not long-safe but its eta-normal form $\lambda f^{(o,o,o)}
-g^{((o,o,o),o)} . g(\lambda x^o y^o. f x y)$ is long-safe. In fact
-even the closed $\beta\eta$-normal term $\lambda
+  of a \emph{single} variable.) A counter-example is
+ $\lambda f^{(o,o,o)} g^{((o,o,o),o)} . g(\lambda x^o . f
+\underline{x})$, which is not long-safe but whose eta-normal form $\lambda f^{(o,o,o)}
+g^{((o,o,o),o)} . g(\lambda x^o y^o. f x y)$ is long-safe. 
+There are also closed terms \emph{in eta-normal form}
+that are not long-safe but have an $\eta$-long normal form that is long-safe!
+Take for instance the closed $\beta\eta$-normal term  $\lambda
 f^{(o,(o,o),o,o)} g^{((o,o),o,o,o),o)} . g(\lambda y^{(o,o)} x^o
-. f \underline{x} y)$ which is not long-safe has a long-safe $\eta$-long normal form!
+. f \underline{x} y)$.
 
   \item After performing $\eta$-long expansion of a term, all the occurrences of the application rule are made long-safe. Thus if a term remains not long-safe after $\eta$-long expansion, this means that
   some variable occurrence is not bound by the

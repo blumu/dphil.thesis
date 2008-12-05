@@ -17,7 +17,7 @@ defined by:
 \towerexp{h+1}{m} &= 2^{\towerexp{h}{m}} \enspace .
 \end{align*}
 A program is \defname{elementary recursive} if its run-time can be bounded by
-$\towerexp{K}{n}$ for some constant $K$ where $n$ is the length of 
+$\towerexp{K}{n}$ for some constant $K$ where $n$ is the length of
 the input.
 We recall the definition of finite type
 theory. We define $\mathcal{D}_0 =
@@ -57,7 +57,7 @@ that another non-elementary problem is encodable in the safe lambda
 calculus.
 
 \subsection{Mairson's encoding}
-\label{sec:mairsonenc} 
+\label{sec:mairsonenc}
 We refer the reader to Mairson's original paper \cite{mairson1992spt} for a detailed account of his encoding. We show here why Mairson's encoding does not work in the safe lambda calculus. We then introduce a variation that eliminates some of the unsafety. Although the resulting encoding does not suffice to interpret type theory in the safe lambda calculus, it enables another interesting encoding: that of the True Quantifier Boolean Formula (TQBF) problem. This implies that deciding beta-eta equality of safe terms is PSPACE-hard.
 
 \subsubsection{Sources of unsafety}
@@ -66,7 +66,7 @@ $\booltype = \sigma \typear \sigma\typear \sigma$ for some type
 $\sigma$, and variables of order $k \geq 0$ are encoded by terms of
 type $\Delta_k$ defined as $\Delta_0 \equiv \booltype$ and
 $\Delta_{k+1} \equiv (\Delta_k \typear \tau \typear \tau)\typear \tau \typear
-\tau$ for some type $\tau$. Using this encoding, unsafety manifests
+\tau$ for any type $\tau$. Using this encoding, unsafety manifests
 itself in three different places:
 \begin{enumerate}[(i)]
   \item \emph{Set membership:} The prime formula ``$x^k \in y^{k+1}$'' is encoded as
@@ -75,12 +75,12 @@ for some terms $OR$, $F$, $eq_k$.
 This term is unsafe because of the underline occurrence of $x^k$ which is not abstracted together with $y^k$.
 
 \item \emph{Quantifier elimination} is implemented using a list iterator $\mathbf{D}_{k+1}$ of type $\Delta_{k+2}$ which acts like the {\tt foldr} function (from functional programming) over the list of all elements of $\mathcal{D}_k$.
-Nested quantifiers in the formula are encoded by nested list iterations; this can be source of unsafety, for instance the formula ``$\forall x^0 . \exists y^0 . x^0 \zor y^0$'' is encoded as $$\stentail \mathbf{D}_0 (\lambda
+Thus nested quantifiers in the formula are encoded by nested list iterations. This can be source of unsafety, for instance the formula ``$\forall x^0 . \exists y^0 . x^0 \zor y^0$'' is encoded as $$\stentail \mathbf{D}_0 (\lambda
 x^{\Delta_0}. AND (\mathbf{D}_0 (\lambda y^{\Delta_0}. OR
 (\underline{x} \zor y)) F))\ T : \booltype$$
 for some terms $AND$, $OR$, $F$ and $T$ and where the type
 $\tau$ is instantiated as $\booltype$. This term is unsafe due to
-the underlined occurrence which is unsafely bound. 
+the underlined occurrence which is unsafely bound.
 
 More generally, nested binding will be encoded safely if and only if every variable $x$ in the formula is bound by the first quantifier $\exists z$ or
 $\forall z$ satisfying $\ord{z} \geq \ord{x}$ in the path to the root of the formula AST. So for example if set-membership
@@ -94,11 +94,11 @@ would be safe.
 
 The second source of unsafety can be easily overcome, the idea is as follows. We introduce multiple domains of representation for a given formula. An element of $\mathcal{D}_k$ is thereby represented by countably many terms of type $\Delta_k^n$ where $n\in\nat$ indicates the level of the domain of representation. The type $\Delta_k^n$ is defined in such a way that its order strictly increases as $n$ grows. Furthermore, there exists a term that can lower the domain of representation of a given term. Thus each formula variable can have a different domain of representation, and since there are infinitely many such domains, it is always possible to find an assignment of representation domains to variables such that the resulting encoding term is safe.
 
-There is no obvious way to eliminate unsafety in the two other cases however. 
+There is no obvious way to eliminate unsafety in the two other cases however.
 For instance in the case of set-membership, Mairson's encoding (\ref{eqn:setmembership}) could be made safe by appealing to a term that changes the domain of representation of an encoded higher-order value of the type-hierarchy. Unfortunately, such transformation is intrinsically unsafe!
 \smallskip
 
-In the following paragraphs we present in details a variation over Mairson's encoding in which quantifier elimination is safely encoded.
+In the following paragraphs we present in detail a variation over Mairson's encoding in which quantifier elimination is safely encoded.
 
 \subsubsection{Encoding basic boolean operations}
 
@@ -107,7 +107,7 @@ Let $o$ be a base type and define the family of types $\sigma_0
 $\ord{\sigma_n} = n$. Booleans are encoded over domains $\booltype_n
 \equiv \sigma_n\typear o\typear o\typear o$ for $n\geq0$, each type
 $\booltype_n$ being of order $n+1$. We write $\underline{i}_{n+1}$
-to denote the term $\lambda x^{\sigma_n}.x : \sigma_{n+1}$ for
+to denote the term $\lambda x^{\sigma_n}.x$ of type $\sigma_{n+1}$ for
 $n\geq0$. The truth values $\mathbf{true}$ and $\mathbf{false}$ are
 represented by the following closed terms parameterized by $n \in \nat$:
 \begin{align*}
@@ -124,7 +124,7 @@ It is then possible to change the domain of representation of a Boolean value fr
 $$ \mathbf{C}^{n+1\mapsto n'}_0 \equiv \lambda m^{\booltype_{n+1}} u^{\sigma_{n'}}. m~\underline{i}_{n+1} : \booltype_{n+1} \typear \booltype_{n'}$$
 so that if a term $M$ of type $\booltype_n$, for $n\geq1$, is beta-eta convertible to $T^n$ (resp.\ $F^n$) then $\mathbf{C}^{n\mapsto n'}_0~M$ of type $\booltype_{n'}$ is beta-eta convertible to $T^{n'}$ (resp.\ $F^{n'}$).
 
-Observe that although $\mathbf{C}^{n+1\mapsto n'}_0$ is safe for all $n,n'\geq 0$, if we apply a variable to it then the resulting term
+Observe that although $\mathbf{C}^{n+1\mapsto n'}_0$ is safe for all $n,n'\geq 0$, if we apply a variable to it then the resulting term-in-context
 $$ x:B_{n+1} \stentail \mathbf{C}_0^{n+1\mapsto n'}~x : B_{n}$$
 is safe if and only if $\ord{B_{n+1}}\geq\ord{B_{n'}}$, that is to say if and only if the transformation decreases the domain of representation of $x$.
 
@@ -161,13 +161,11 @@ where
  &: \alpha \typear \alpha^{**} \typear \alpha^{**} \enspace .
 \end{align*}
 (In the definition of $\mathbf{D}_{k+1}^n$, to see why it is possible
-to apply $powerset_{\Delta_k^n}$ and $\mathbf{D}_k^n$ one needs to understand that the term $\mathbf{D}_k^n$ is of type $\Delta^n_{k+1}$ \emph{polymorphic in $\tau$}. The application can thus by typed by taking $\tau \equiv \Delta^n_{k+2}$ in the term
+to apply $powerset_{\Delta_k^n}$ and $\mathbf{D}_k^n$ one needs to understand that the term $\mathbf{D}_k^n$ is of type $\Delta^n_{k+1}$ \emph{polymorphic in $\tau$}. The application can thus be typed by taking $\tau \equiv \Delta^n_{k+2}$ in the term
 $\mathbf{D}_k^n$.)
 
-Observe that the term $double$ is unsafe because the underlined variable occurrence $x$ is not bound together with $c'$. 
-Consequently for all $n\geq0$, $\mathbf{D}_k^n$ is safe if and
-only if $k=0$.
-
+Observe that the term $double$ is unsafe because the underlined variable occurrence $x$ is not bound together with $c'$.
+Consequently for all $n\geq0$, $\mathbf{D}_0^n$ is safe and $\mathbf{D}_k^n$ is unsafe for all $k>0$.
 
 \subsubsection{Quantifier elimination}
 Terms of type $\Delta_{k+1}^n$ are now used as iterators over lists of elements of type $\Delta_k^n$ and we set $\tau \equiv \booltype_n$ in the type $\Delta_{k+1}^n$ in order to iterate a level-$n$ Boolean function. Since $\ord{\Delta_k^n} \geq \ord{\booltype_n}$ for all $n$, all the instantiations of the terms $\mathbf{D}_k^n$ will be safe

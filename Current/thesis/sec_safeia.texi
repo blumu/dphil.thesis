@@ -43,7 +43,7 @@ $$ \rulename{const} \ \rulef{}{\sentail n :\iaexp}
 
 $$
 \rulename{cond} \ \rulef{\Gamma\sentail M : \iaexp \quad \Gamma\sentail N_1 : \iaexp \quad \Gamma\sentail N_2 : \iaexp }{\Gamma \sentail \pcfcond\ M\ N_1\ N_2}
-\quad  \rulename{rec} \ \rulef{\Gamma \sentail M : A\rightarrow A }{ \Gamma \sentail Y_A M : A}$$
+\quad  \rulename{rec} \ \rulef{\Gamma \sentail M : A\rightarrow A }{ \Gamma \sentail \ycomb_A M : A}$$
 \caption{Formation rules for safe \pcf.}
 \label{tab:safepcf}
 \end{FramedTable}
@@ -58,8 +58,8 @@ The Substitution Lemma and No-variable-capture Lemma of the safe lambda calculus
 
 \subsubsection*{Remark concerning recursion}
 There are many ways to introduce recursion in the syntax of a programming language.
-In the presentation of \pcf\ given in Sec.~\ref{sec:pcf}, recursion is introduced by mean of a set of constants $Y_A$, $A$ ranging over \pcf\ types, incarnating the $Y$-combinator of the lambda calculus. The syntax is given by the rule \rulenamet{rec} of Table \ref{tab:safepcf}. For instance, the addition function can be represented by the \pcf\ term:
-$$ \userop{plus} \equiv Y (\lambda p\; x\; y. \pcfcond\ x\;y\;(p\ (\pcfpred\ x)\ (\pcfsucc\ y))) \enspace .$$
+In the presentation of \pcf\ given in Sec.~\ref{sec:pcf}, recursion is introduced by mean of a set of constants $\ycomb_A$, $A$ ranging over \pcf\ types, incarnating the $\ycomb$ combinator of the lambda calculus. The syntax is given by the rule \rulenamet{rec} of Table \ref{tab:safepcf}. For instance, the addition function can be represented by the \pcf\ term:
+$$ \userop{plus} \equiv \ycomb (\lambda p^{\pcfexp\typear\pcfexp\typear\pcfexp} x^{\pcfexp} y^{\pcfexp}. \pcfcond\ x\;y\;(p\ (\pcfpred\ x)\ (\pcfsucc\ y))) \enspace .$$
 Recursion can be introduced in different ways, however. For instance using the \emph{least upper bound abstractor} `$\mu$' given by the formation rule
 $$ \rulename{\mu} \rulef{\Gamma, f : A \entail M : A}{\Gamma \entail  \mu f^A. M : A}$$
 where the semantics of $\mu$ is given by the rule:
@@ -68,18 +68,18 @@ Using this $\mu$-construct, the addition function is defined as:
 $$ \userop{plus} \equiv \mu p^{(\iaexp\typear\iaexp)\typear\iaexp} . \lambda x^\iaexp y^\iaexp. \pcfcond\ x\;y\;(p\ (\pcfpred\ x)\ (\pcfsucc\ y)) \enspace .$$
 
 Clearly in the context of \pcf, these two definitions are interchangeable:
-$\mu f^A.M$ is equivalent to $Y_A (\lambda f^A . M)$,
-and $Y_A F$ is eta-equivalent to $Y_A (\lambda f^A. F f)$ for some fresh variable $f$, which is equivalent to $\mu f^A. F f$.
+$\mu f^A.M$ is equivalent to $\ycomb_A (\lambda f^A . M)$,
+and $\ycomb_A F$ is eta-equivalent to $\ycomb_A (\lambda f^A. F f)$ for some fresh variable $f$, which is equivalent to $\mu f^A. F f$.
 
 In the context of safe \pcf, however, the distinction is important.
 Indeed, let \emph{safe $\mu$-\pcf} denote the calculus obtained by replacing the rule \rulenamet{rec} by \rulenamet{\mu} in Table \ref{tab:safepcf}. Then we observe that safe \pcf\ is strictly contained in safe $\mu$-\pcf.
 Indeed, compare the two ways of defining a recursive term:
 \begin{mathpar}
-\inferrule*[Left=\rulenamet{rec}]{\inferrule*[Left=\rulenamet{abs}]{\Gamma, f : A \sentail M : A}{\Gamma\sentail \lambda f^A. M : A\typear A}}{\Gamma \sentail Y_A (\lambda f^A . M)}
+\inferrule*[Left=\rulenamet{rec}]{\inferrule*[Left=\rulenamet{abs}]{\Gamma, f : A \sentail M : A}{\Gamma\sentail \lambda f^A. M : A\typear A}}{\Gamma \sentail \ycomb_A (\lambda f^A . M)}
 \hspace{2cm}
 \inferrule* [Left=\rulenamet{\mu}]{\Gamma, f : A \sentail M : A}{\Gamma \sentail  \mu f^A. M : A}
 \end{mathpar}
-Both derivations start with the premise $\Gamma, f : A \sentail M : A$ which implies that $\ord{\Gamma} \geq \ord{A}$. But in the left derivation, before applying the $Y$ combinator, we need first to abstract the variable $f$; this is done using the abstraction rule whose side-conditions gives $\ord{\Gamma} > \ord{A}$. The right derivation, however, only imposes the weaker condition $\ord{\Gamma} \geq \ord{A}$.
+Both derivations start with the premise $\Gamma, f : A \sentail M : A$ which implies that $\ord{\Gamma} \geq \ord{A}$. But in the left derivation, before applying the $\ycomb$ combinator, we need first to abstract the variable $f$; this is done using the abstraction rule whose side-conditions gives $\ord{\Gamma} > \ord{A}$. The right derivation, however, only imposes the weaker condition $\ord{\Gamma} \geq \ord{A}$.
 
 In fact, safe $\mu$-\pcf\ does not really deserve its name because
 the No-variable-capture lemma does not hold anymore in this language!
@@ -101,7 +101,7 @@ $$ \lambda g^3\; h^3\; x^1 . g (x ( h ( \lambda \underline{x}^1 . F (\lambda z^0
 and performing this substitution \emph{capture-permitting} would cause a clash between the two underlined variables.
 
 
-The conclusion of this is that the definition that we really want for safe \pcf\ is the one based on the Y combinator.
+The conclusion of this is that the definition that we really want for safe \pcf\ is the one based on the $\ycomb$ combinator.
 Another reason why safe $\mu$-\pcf\ is not an interesting language is that the game-semantic characterization of safe \pcf\ that we will establish in Chapter \ref{chap:model} does not hold in safe $\mu$-\pcf.
 %(The above-counter example can illustrate this).
 
@@ -199,7 +199,7 @@ Clearly the term $\userop{Sim}_P$ is safe and simulates the \textsc{Queue} progr
 \begin{theorem}
   The \textsc{Halting} problem for (the 2nd order fragment of) safe \pcf\ is undecidable.
 \end{theorem}
-Since the \textsc{Halting} is reducible to the observational equivalence problem, this also implies that observational equivalence for the 2nd-order fragment of safe $\pcf$ (with $Y_1$ recursion and unbounded base types) is undecidable. This result is not surprising: it is easy to see that the partial recursive functions are computable in the order $2$ fragment of safe \pcf, and hence safe \pcf\ is Turing complete. (This can also be proved by simulating Turing machines in safe \pcf\ using an encoding similar to the one used above.)
+Since the \textsc{Halting} is reducible to the observational equivalence problem, this also implies that observational equivalence for the 2nd-order fragment of safe $\pcf$ (with $\ycomb_1$ recursion and unbounded base types) is undecidable. This result is not surprising: it is easy to see that the partial recursive functions are computable in the order $2$ fragment of safe \pcf, and hence safe \pcf\ is Turing complete. (This can also be proved by simulating Turing machines in safe \pcf\ using an encoding similar to the one used above.)
 
 The reason why these encodings work is because unsafety only appears at order $3$ in \pcf, and the 2nd order fragment of \pcf\ is already Turing complete.
 \smallskip
@@ -255,7 +255,7 @@ $$ \rulename{const} \ \rulef{}{\vsiaentail n :\iaexp}
 
 $$
 \rulename{cond} \ \rulef{\Gamma\vsiaentail M : \iaexp \quad \Gamma\vsiaentail N_1 : \iaexp \quad \Gamma\vsiaentail N_2 : \iaexp }{\Gamma \vsiaentail \pcfcond\ M\ N_1\ N_2}
-\quad  \rulename{rec} \ \rulef{\Gamma \vsiaentail M : A\rightarrow A }{ \Gamma \vsiaentail Y_A M : A}$$
+\quad  \rulename{rec} \ \rulef{\Gamma \vsiaentail M : A\rightarrow A }{ \Gamma \vsiaentail \ycomb_A M : A}$$
 
 {\bf Imperative constructs}
 $$ \rulename{seq} \ \rulef{\Gamma \vsiaentail M : \iacom \quad \Gamma \vsiaentail N :A}
@@ -295,8 +295,8 @@ A weaker version of the No-variable-capture lemma can be stated though. We can d
 
 It turns out that the definition of strongly safe \ialgol\ is too restrictive and we can identify a larger fragment in which the so-called ``No-variable-capture'' lemma holds.
 Consider the following \ialgol\ term:
-$$ \entail \ianewin{x} \underline{\lambda z^\iaexp . \iaderef\, \underline{x}} : \iaexp\typear \iaexp \enspace .$$
-It is not strongly safe since the variables $x:\iavar$ and $z:\iaexp$ have the same order but they are not abstracted together. However $x$ is a block-allocated variable so no term can ever be substituted for such variable when performing reduction: morally this term should be considered safe. We thus observe that there is no gain in constraining occurrences of block-allocated variables.
+$$ \entail \ianewin{x} (\underline{\lambda z^\iaexp . \iaderef\, \underline{x}})\, 0 : \iaexp \enspace .$$
+It is not strongly safe since the variables $x:\iavar$ and $z:\iaexp$ have the same order but are not abstracted together. However $x$ is a block-allocated variable so no term can ever be substituted for such variable when performing reduction: morally this term should be considered safe. We thus observe that there is no gain in constraining occurrences of block-allocated variables.
 
 We will therefore distinguish two kinds of variables in a closed term: the ``standard ones''---those that are bound by $\lambda$-abstractions---and the ``imperative'' ones---those that are declared by a block-allocation construct---and we will change the side-condition of the abstraction rule so that only variables of the first kind are constrained.
 
@@ -374,7 +374,7 @@ $$ \rulename{const} \ \rulef{}{\emptyset | \emptyset \siaentail n :\iaexp}
 
 $$
 \rulename{cond} \ \rulef{\Gamma| \Xi \siaentail M : \iaexp \quad \Gamma| \Xi \siaentail N_1 : \iaexp \quad \Gamma| \Xi \siaentail N_2 : \iaexp }{\Gamma| \Xi \siaentail \pcfcond\ M\ N_1\ N_2}
-\qquad  \rulename{rec} \ \rulef{\Gamma| \Xi \siaentail M : A\rightarrow A }{ \Gamma| \Xi \siaentail Y_A M : A}$$
+\qquad  \rulename{rec} \ \rulef{\Gamma| \Xi \siaentail M : A\rightarrow A }{ \Gamma| \Xi \siaentail \ycomb_A M : A}$$
 
 {\bf Imperative constructs}
 $$ \rulename{seq} \ \rulef{\Gamma| \Xi \siaentail M : \iacom \quad \Gamma| \Xi \siaentail N :A}

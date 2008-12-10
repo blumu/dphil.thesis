@@ -104,12 +104,12 @@ The \defname{long safe fragment} of a type-calculus is the subclass of the safe 
 \begin{remark}[Alternative definition]
 Our definition of the safe lambda calculus with product conveys the syntactic notion of safety appropriately but there is still a mismatch between syntax and semantics: there exist pairs of terms, one safe and the other unsafe, that are denoted by the same (up to isomorphism) morphism in the categorical model of the simply-typed lambda calculus. For instance the two simply-typed terms:
 \begin{align*}
- x:(o\typear o)\times o &\stentail \lambda z^o.\, (\pi_1 x) : (o\typear (o\typear o)) \equiv N_1\\
- x_1:(o\typear o), x_2:o &\sentail \lambda z^o.\, x_1 : (o\typear (o\typear o)) \equiv N_2
+ x:(o\typear o)\times o &\stentail \lambda z^o.\, (\pi_1 x) \equiv N_1 : (o\typear (o\typear o)) \\
+ x_1:(o\typear o), x_2:o &\sentail \lambda z^o.\, x_1 \equiv N_2 : (o\typear (o\typear o)) 
 \end{align*}
 are denoted by isomorphic morphisms in the categorical model, but $N_1$ is unsafe whereas $N_2$ is safe. (This is because in $N_1$, the variable $x$ has to be introduced first in the derivation tree, whereas in $N_2$, although $x_1$ needs to be introduced first,  $x_2$ can be added to the context at the end of the derivation using the weakening rule.)
 
-To solve this kind of problems we can define an alternative notion of safe lambda calculus with product. One way is to require that for every context-variable of type $A \times B$ the equality $\ord A = \ord B$ holds. Another solution is to forbid the use of variables of product type and only allow product types for terms created with the pairing rule. But these two approaches are rather restrictive. A better approach consists in changing the system to allow the formation of terms like $N_2$. This can be done by adding a new kind of weakening rule that alters the type of context-variables rather than adding new variables to the context:
+To avoid this kind of problem we can define an alternative notion of safe lambda calculus with product. One way is to require that for every context-variable of type $A \times B$ the equality $\ord A = \ord B$ holds. Another solution is to forbid the use of variables of product type and only allow product types for terms created with the pairing rule. But these two approaches are rather restrictive. A better approach consists in changing the system to allow the formation of terms like $N_2$. This can be done by adding a new kind of weakening rule that alters the type of context-variables rather than adding new variables to the context:
 $$
 \rulename{wk^\times} \ \rulef{\Gamma, x:A \sentail s : C}{\Gamma, x:A\times B \sentail s\subst{(\pi_1 x)}{x} : C} \enspace .
 $$
@@ -150,7 +150,7 @@ A category has \defname{products} if for every two objects $A$ and $B$ there is 
 $\langle f,g\rangle : C \typear A\times B$, called the \defname{pairing} of $f$ and $g$, such that
 $\pi_2 \circ \langle f,g\rangle = g$ and $ \pi_1 \circ \langle f,g\rangle = f$.
 
-A category has \defname{exponential} if for every two objects $B$ and $C$ there is an object $C^B$ and
+A category has \defname{exponentials} if for every two objects $B$ and $C$ there is an object $C^B$ and
   a morphism $ev_{B,C} : (C^B\times B) \typear C$ such that for every object $A$ and morphism $f:(A\times B) \typear C$ there is a unique morphism $\Lambda(f) : A \typear C^B$ such that the following diagram commutes:
 \begin{center}
 \begin{tikzpicture}
@@ -190,7 +190,7 @@ for all objects $A, B$:
 %The image by $\dro$ is then defined as $\dro(\Pi_{i\in I} X_i) = \min_{i\in I} \ord A_i$.
 
 We say that a morphism $f:A\typear B$ is \defname[incremental!morphism]{incremental} if
-we have $\dro(A)<\ord(B)$. This property is preserved by composition:
+we have $\dro(A)\geq\ord(B)$. This property is preserved by composition:
 \begin{lemma}
 \label{lem:increm_transitive}
 For every objects $A$, $B$ and $C$ of a pre-incremental closed category $(\mathbf{C}, \ord, \dro)$, if $\dro(A) \geq \ord(B)$ and $\dro(B) \geq \ord(C)$ then $\dro(A) \geq \ord(C)$.
@@ -313,7 +313,7 @@ $\sem{M}_{\mathbf{I}} \defeq \sem{M}_{\mathbf{C}}$. The soundness of the ICC mod
 \begin{example}[Model of safe \pcf]
 It is a well-known fact that any rational CCC in which we have fixed an interpretation for base types, \pcf\ constants and function symbols provides a sound model of \pcf\ \cite{abramsky94full}.
 Therefore any rational ICC provides a sound model of safe \pcf.
-The interpretation of safe \pcf\ in the ICC coincides with its interpretation in the ambient pre-incremental closed category \cite{abramsky94full}: Each constant and first-order function of \pcf\ of type $T$ is interpreted by some morphism $c:I\typear \sem{T}$, and because the category is rational, the Y combinator $Y_A$ for every object $A$ can be interpreted by the morphism $\Theta_A^\triangledown : I \typear A^{A^A}$ where
+The interpretation of safe \pcf\ in the ICC coincides with its interpretation in the ambient pre-incremental closed category \cite{abramsky94full}: Each constant and first-order function of \pcf\ of type $T$ is interpreted by some morphism $c:I\typear \sem{T}$, and because the category is rational, the $\ycomb$ combinator $\ycomb_A$ for every object $A$ can be interpreted by the morphism $\Theta_A^\triangledown : I \typear A^{A^A}$ where
 $$\Theta_A = \sem{F:(A\typear A)\typear A \entail \lambda f^{A\typear A}. f(F f) : (A\typear A)\typear A} \enspace . $$
 \end{example}
 
@@ -1610,9 +1610,9 @@ $I \lingamear (A\lingamear B)$ obtained by {\it currying} is closed P-i.j.\ alth
 Take for instance the two simply-typed terms $\stentail \lambda x^o\, y^o . y$ and $y :o \stentail \lambda x^o . y$. These two terms have isomorphic denotations in $\mathcal{C}$. But the denotation of the first term is closed P-i.j.\ while the second is only P-i.j.
 
 
-We define the \defname{intentional category} $\mathcal I$ as the co-Kleisli category of the category defined above.
+We define the \defname{intensional category} $\mathcal I$ as the co-Kleisli category of the category defined above.
 
-\subsubsection*{Intentional category}
+\subsubsection*{Intensional category}
 
 Let $\mathcal C$ denote the co-Kleisli category of games defined in Sec.~\ref{sec:intrinsic}.
 \begin{lemma}
@@ -1640,7 +1640,7 @@ projections are closed P-i.j., and closed P-i.j.\ strategies are closed under pa
 Hence $(\mathcal C, \mathcal I, \ord, \dro)$ is an ICC.
 \end{proof}
 
-The category $\mathcal{I}$ will be used to give the intentional game model of safe \pcf\ and safe \ialgol. We write $\mathcal{I}_{ib}$, $\mathcal{I}_{b}$ and $\mathcal{I}_i$ to denote its lluf subcategories of innocent, well-bracketed and innocent and well-bracketed strategies respectively.
+The category $\mathcal{I}$ will be used to give the intensional game model of safe \pcf\ and safe \ialgol. We write $\mathcal{I}_{ib}$, $\mathcal{I}_{b}$ and $\mathcal{I}_i$ to denote its lluf subcategories of innocent, well-bracketed and innocent and well-bracketed strategies respectively.
 
 \subsubsection*{Extensional category}
 \indexnotation{$\sigma \intrpre \tau$}{Intrinsic preorder in the category of games $\mathcal{C}$}
@@ -1716,8 +1716,8 @@ P-incrementally justified strategies.
 \end{proposition}
 \begin{proof}
 We first prove the result for \pcf$_1$---the fragment of \pcf\
-containing terms of the form $\Omega_A = Y (\lambda x^A.x)$ but
-where no other use of Y is allowed \cite{abramsky:game-semantics-tutorial}. The proof is by structural induction over the structure of the term:
+containing terms of the form $\Omega_A = \ycomb (\lambda x^A.x)$ but
+where no other use of $\ycomb$ is allowed \cite{abramsky:game-semantics-tutorial}. The proof is by structural induction over the structure of the term:
 \begin{asparaitem}
 \item The strategy $\sem{\Omega_A} = \bot$ is
 clearly closed P-i.j.;
@@ -1733,8 +1733,8 @@ We now lift the result to full PCF using the technique of
 \emph{syntactic approximant} \cite{abramsky:game-semantics-tutorial}. We have \cite[lemma 16]{abramsky:game-semantics-tutorial}:
 $$ \sem{M} = \Union_{n\in\omega} \sem{M_n}$$
 where $M_n$ is the \pcf$_1$ term obtained from $M$ by replacing each
-subterm of the form $Y N$ with $Y^n N_n$, and $Y^n F$ denotes the
-$n^{th}$ approximant of $Y F$. Since the $M_n$s are \pcf$_1$ terms, by
+subterm of the form $\ycomb N$ with $\ycomb^n N_n$, and $\ycomb^n F$ denotes the
+$n^{th}$ approximant of $\ycomb F$. Since the $M_n$s are \pcf$_1$ terms, by
 the previous result each $\sem{M_n}$ is closed P-i.j.\ and since
 closed P-incremental justification is clearly a continuous property,
 $\sem{M}$ is also closed P-i.j.
@@ -2527,31 +2527,31 @@ Consequently, observational equivalence of safe \ialgol\ terms with respect to s
 
 \paragraph{Upper bounds}
 By Proposition \ref{prop:unsafe_conservative_uptoord3}, all the known upper-bound for \ialgol\ are also valid for safe \ialgol\ up to order $3$:
-safe \ialgol$_2$ + while is decidable in PSPACE \cite{ghicamccusker00}, \ialgol$_3$ + while is decidable in EXPTIME for terms in $\beta$-nf \cite{DBLP:conf/fossacs/MurawskiW05}, and \ialgol$_3 + Y_0$ is decidable with a complexity that is at most doubly exponentially larger than that of the DPDA equivalence problem \cite{DBLP:conf/icalp/MurawskiOW05}.
+safe \ialgol$_2$ + while is decidable in PSPACE \cite{ghicamccusker00}, \ialgol$_3$ + while is decidable in EXPTIME for terms in $\beta$-nf \cite{DBLP:conf/fossacs/MurawskiW05}, and \ialgol$_3 + \ycomb_0$ is decidable with a complexity that is at most doubly exponentially larger than that of the DPDA equivalence problem \cite{DBLP:conf/icalp/MurawskiOW05}.
 
 
 \paragraph{Lower bounds}
 
 \begin{theorem}[Ong \cite{Ong02}]
-Observational equivalence of \ialgol$_2 + Y_1$ is undecidable.
+Observational equivalence of \ialgol$_2 + \ycomb_1$ is undecidable.
 \end{theorem}
-The proof of this theorem proceeds by reduction of the \textsc{Queue-Halting} problem to the observational equivalence of two \ialgol$_2 + Y_1$ programs: Given a
-\textsc{Queue} program $P$, a term $\entail M_P :\iacom$ of \ialgol$_2 + Y_1$ is defined such that $M_P$ simulates $P$ in the sense that $P$ terminates if and only if $M_P$ is equivalent to $\iaskip$. It turns out that the encoding term $M_P$ \cite{Ong02} is safe therefore:
+The proof of this theorem proceeds by reduction of the \textsc{Queue-Halting} problem to the observational equivalence of two \ialgol$_2 + \ycomb_1$ programs: Given a
+\textsc{Queue} program $P$, a term $\entail M_P :\iacom$ of \ialgol$_2 + \ycomb_1$ is defined such that $M_P$ simulates $P$ in the sense that $P$ terminates if and only if $M_P$ is equivalent to $\iaskip$. It turns out that the encoding term $M_P$ \cite{Ong02} is safe therefore:
 \begin{corollary}
-Observational equivalence of safe \ialgol$_2 + Y_1$ is undecidable.
+Observational equivalence of safe \ialgol$_2 + \ycomb_1$ is undecidable.
 \end{corollary}
 
 
 For \ialgol$_3$ + while, it was shown that
 the Containment Problem for DPDA can be reduced to observational approximation in
-\ialgol$_1 + Y_0$ \cite[Proposition 1]{DBLP:conf/icalp/MurawskiOW05}. Therefore observational approximation is undecidable for \ialgol$_1 + Y_0$ terms, and observational equivalence is at least as hard as DPDA Equivalence.
+\ialgol$_1 + \ycomb_0$ \cite[Proposition 1]{DBLP:conf/icalp/MurawskiOW05}. Therefore observational approximation is undecidable for \ialgol$_1 + \ycomb_0$ terms, and observational equivalence is at least as hard as DPDA Equivalence.
 
 \begin{corollary}
-For safe \ialgol$_2 + Y_0$, observational approximation is undecidable and observational equivalence is
+For safe \ialgol$_2 + \ycomb_0$, observational approximation is undecidable and observational equivalence is
 at least as hard as DPDA Equivalence.
 \end{corollary}
 \begin{proof}
-The original encoding \cite{DBLP:conf/icalp/MurawskiOW05} is not safe because it contains an occurrence of a variable $x: \iaexp$ occurring in the body of a $\mu$-abstraction $\mu z$ with $\ord z = \ord x$. An equivalent safe encoding can be obtained by replacing the free variable $x: \iaexp$ by a variable of type $\iaexp\typear\iaexp$, thus giving an encoding in safe \ialgol$_2 + Y_0$.
+The original encoding \cite{DBLP:conf/icalp/MurawskiOW05} is not safe because it contains an occurrence of a variable $x: \iaexp$ occurring in the body of a $\mu$-abstraction $\mu z$ with $\ord z = \ord x$. An equivalent safe encoding can be obtained by replacing the free variable $x: \iaexp$ by a variable of type $\iaexp\typear\iaexp$, thus giving an encoding in safe \ialgol$_2 + \ycomb_0$.
 
 Let $\mathcal{B}$ be a DPDA over an alphabet $\Sigma$. We write $N(\mathcal{B})$ to denote the language accepted by $\mathcal{B}$.
 We identify values of type $\iaexp$ with $\Sigma \union \{ 0 \}$ and we consider the game $G=(\iaexp^2\typear\iaexp^1) \typear \iacom$ whose set of moves
@@ -2564,7 +2564,7 @@ We have $\widehat L_1 = \widehat L_2$ iff $L_1 = L_2$.
 the set of underlying sequence of moves of the complete plays of $\sem{z: \iaexp^2\typear\iaexp^1 \sentail Q_\mathcal{B} : \iacom}$
 is equal to $\widehat N(\mathcal{B})$. This term $Q_\mathcal{B}$ is obtained from the term $M_\mathcal{B}$ used in the original encoding, by
 replacing the free variable $x: \iaexp$ in $M_\mathcal{B}$ by a variable $z$ of type $\iaexp\typear\iaexp$ and by replacing the subterm ``$CH:= x$'' by
-``$CH:= z\, 0$''. We can then conclude as in the proof for \ialgol$_1 + Y_0$ \cite{DBLP:conf/icalp/MurawskiOW05}.
+``$CH:= z\, 0$''. We can then conclude as in the proof for \ialgol$_1 + \ycomb_0$ \cite{DBLP:conf/icalp/MurawskiOW05}.
 \end{proof}
 
 For \ialgol$_3$ + while, Murawski et~al.\ showed that observational equivalence is EXPTIME-hard by a reduction from the equivalence problem of nondeterministic automata on binary trees \cite[Corollary 2]{DBLP:conf/fossacs/MurawskiW05}. The encoding used in the paper is unsafe but it can be easily changed into an equivalent safe term of the same order using the same trick as in the previous proof. (The variable $y:\iaexp$ is replaced by $y:\iaexp\typear\iaexp$ and ``$Z:=y$'' is replaced by ``$Z:=y\, 0$''). Hence:
@@ -2598,7 +2598,7 @@ All the previous results are recapitulated in Table \ref{tab:ia_obseq_complexity
     \cline{3-7}
   \multicolumn{2}{c|}{}  & \multicolumn{5}{c|}{Finitary fragments} \\ \hline
   \multirow{2}{*}{$L$} & \multirow{2}{*}{Obs.\ eq.} &   order 2          &  order 2       & order 3     & order 3 & \multirow{2}{*}{order 4}  \\
-                       &                          &    + while         &   + $Y_1$      & + while     & +$Y_0$  &          \\ \hline \hline
+                       &                          &    + while         &   + $\ycomb_1$      & + while     & +$\ycomb_0$  &          \\ \hline \hline
 
   \multirow{4}{*}{IA}  & \multirow{2}{*}{$\obseq$}      & \multirow{8}{1.95cm}{PSPACE$^{(1)}$\\{\small $\preccurlyeq$ DFA}} & \multirow{8}{*}{U$^{(2)}$} & \multirow{8}{3.2cm}{EXPTIME-hard$^{(3)}$ \\ EXPTIME-complete for $\beta$-nf\\ {\small $\preccurlyeq$ VPA} }  & \multirow{8}{2cm}{D$^{(4)}$ \\ {\small $\preccurlyeq_{exp}$ DPDA\\ $\succcurlyeq$ DPDA} } & \multirow{2}{*}{U$^{(5)}$}\\
                        &                          &                    &                & & & \\

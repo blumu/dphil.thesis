@@ -61,7 +61,7 @@ written $M\captsubst{N}{x}$, is defined by induction as follows:
 \indexnotation{$M\captsubst{N}{x}$}{Capture-permitting substitution of $N$ for $x$ in $M$}%
 \begin{eqnarray*}
 %c \captsubst{N}{x} &\equiv& c \quad \mbox{where $c$ is a $\Xi$-constant},\\
- x_i \captsubst{N}{x} &\equiv& N_i\\
+ x \captsubst{N}{x} &\equiv& N\\
  y \captsubst{N}{x} &\equiv& y \quad \mbox{if } x \not \equiv y,\\
 (M_1 M_2) \captsubst{N}{x} &\equiv& (M_1 \captsubst{N}{x}) (M_2 \captsubst{N}{x})\\
 (\lambda x . M) \captsubst{N}{x} &\equiv& \lambda x . M \\
@@ -71,7 +71,7 @@ written $M\captsubst{N}{x}$, is defined by induction as follows:
 
 Although this definition is valid, it is not adequate in the sense that is not sound with respect to syntactical equality:
 take the terms $M_1\equiv \lambda y .x$, $M_2\equiv \lambda z .x$ and $N \equiv y$. We have $M_1\captsubst{N}{x} \equiv \lambda y . y$
-and $M_2\captsubst{N}{x} \equiv \lambda z$. Thus although $M_1$ and $M_2$ are syntactically equivalent, performing the same substitution on both terms gives terms that are not syntactically equivalent.
+and $M_2\captsubst{N}{x} \equiv \lambda z.N$. Thus although $M_1$ and $M_2$ are syntactically equivalent, performing the same substitution on both terms gives terms that are not syntactically equivalent.
 
 The source of the problem lies the last equation: in the abstraction case, when pushing the substitution under the lambda, some care needs to be taken so that the free-variables in $M$ do not get ``captured'' by the abstraction. This is traditionally achieved by renaming all the free variables in $M$ afresh before continuing with the substitution:
 \begin{definition}
@@ -131,11 +131,13 @@ all } i \mbox{ and where $z$ is a fresh variable}.
 
 
 \subsection{Conversion}
-A binary relation $R$ over $\Lambda$ is \defname{compatible} if
-$M\ R\ M'$ implies $M N \betared M' N$, $N M \betared N M'$
- and $\lambda x . M\betared \lambda x . M'$ for all $M, M', N \in \Lambda$.
-It is \defname{transitive} if $M \betared N$ and $N \betared Q$ implies $M \betared Q$; \defname{reflexive} if $M \betared M$;
-and \defname{symmetric} if $M \betared N$ implies $N \betared M$,
+\newcommand\somerel{\mathop{R}}
+
+A binary relation $\somerel$ over $\Lambda$ is \defname{compatible} if
+$M\somerel M'$ implies $M N\somerel M' N$, $N M\somerel N M'$
+ and $\lambda x . M\somerel\lambda x . M'$ for all $M, M', N \in \Lambda$.
+It is \defname{transitive} if $M\somerel N$ and $N\somerel Q$ implies $M\somerel Q$; \defname{reflexive} if $M\somerel M$;
+and \defname{symmetric} if $M\somerel  N$ implies $N\somerel M$,
 for all $M,N,Q\in \Lambda$.
 
 The concept of computation in the lambda calculus is incarnated by a term-rewriting rule called \defname{$\beta$-reduction}:
@@ -290,8 +292,10 @@ $$ \Gamma \cuentail M : A \implies \Gamma \cuentail M' : A \enspace .$$
 
 
 \begin{definition}[Principality]
-A term $M$ has \defname{principal type} $A$ if for every possible derivation $\cuentail M : A'$, $A'$ is an instance of $A$. A \defname{principal deduction} for a term $M$ is a deduction $\Delta$ of the term-in-context $\Gamma \cuentail M : T$ such that every other deduction with the same conclusion is an instance of $\Delta$, so in particular $T$ is a \emph{principal type} of $M$.
+A term $M$ has \defname{principal type} $A$ if $\Gamma \cuentail M : A$ for some context $\Gamma$, and for every possible derivation $\Gamma' \cuentail M : A'$, $A'$ is an instance of $A$. A \defname{principal deduction} for a term $M$ is a deduction $\Delta$ of the term-in-context $\Gamma \cuentail M : T$ such that every other deduction with the same conclusion is an instance of $\Delta$, so in particular $T$ is a \emph{principal type} of $M$.
 \end{definition}
+
+The principal type is unique up to variable renaming \cite{Hindley1997}.
 
 \begin{theorem}[PT Theorem, Curry, Hindley, Milner]
 \label{thm:pt}
@@ -317,7 +321,7 @@ The set of annotated-types $\Lambda_\mathbb{T}$ is formally given by the followi
 $$ \Lambda_\mathbb{T} = \mathcal V \ | \ \Lambda_\mathbb{T}\, \Lambda_\mathbb{T} \ |\  \lambda_\mathbb{T} \mathcal V : \mathbb{T} . \Lambda_\mathbb{T} \enspace .$$
 Observe that in the abstraction case, the binder is annotated with a type. This is the only difference with untyped terms from $\Lambda$. For every annotated term $M \in \Lambda_\mathbb{T}$, the \emph{untyped term underlying} $M$, written $|M|$, is obtained by erasing all the type annotations from $M$.
 
-We can now introduce new judgments of the form $$\Gamma\chentail M:A \in \Gamma$$ where $M$ ranges over \emph{annotated terms} $\Lambda_\mathbb{T}$.
+We can now introduce new judgments of the form $$\Gamma\chentail M:A$$ where $M$ ranges over \emph{annotated terms} $\Lambda_\mathbb{T}$.
 The simply-typed lambda calculus \ala Church, written $\chsystem$, is then given by the following typing system:
 $$ \rulef{}{\Gamma\chentail x : A}\ x:A \in \Gamma
 \qquad

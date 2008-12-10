@@ -6,12 +6,12 @@ The set of types is $\mathbb{T}_\iaexp$, the simple types generated from the ato
 \begin{eqnarray*}
  M ::= x\ |\ \lambda x^A. M \ |\ M M \ |\ \\
 \ |\ n \ |\ \pcfsucc\  M \ |\  \pcfpred\  M \\
-\ |\ \pcfcond\  M M M \ |\ \texttt{Y}_A\ M
+\ |\ \pcfcond\  M M M \ |\ \ycomb_A\ M
 \end{eqnarray*}
 where $x$ ranges over a set of countably many variables, $n$
 represents an integer constant ranging over the set of natural numbers,
 \pcfsucc\ represents the successor function on integer, \pcfpred\ is the predecessor function, \pcfcond\ the conditional (\ie, if-then-else branching) and
-$Y_A : (A\rightarrow A)\rightarrow A$ for every type $A$ is the recursion
+$\ycomb_A : (A\rightarrow A)\rightarrow A$ for every type $A$ is the recursion
 combinator.
 
 The language is formally given by terms-in-context of the form $\Gamma \entail M : A$ defined by induction over the rules of Table \ref{tab:pcf_formrules}.
@@ -26,7 +26,7 @@ $$ \rulename{const} \rulef{}{\Gamma \entail n :\iaexp}
 
 $$
 \rulename{cond} \rulef{\Gamma \entail M : \iaexp \quad \Gamma \entail N_1 : \iaexp \quad \Gamma \entail N_2 : \iaexp }{\Gamma \entail \pcfcond\ M\ N_1\ N_2 : \iaexp}
-\qquad  \rulename{rec} \rulef{\Gamma \entail M : A\rightarrow A }{ \Gamma \entail Y_A M : A}$$
+\qquad  \rulename{rec} \rulef{\Gamma \entail M : A\rightarrow A }{ \Gamma \entail \ycomb_A M : A}$$
 
 \caption{Formation rules for \pcf\ terms.}
 \label{tab:pcf_formrules}
@@ -35,12 +35,12 @@ $$
 
 \begin{example}
 The integer addition function is definable in \pcf\ by:
-$$ \userop{plus} \equiv Y (\lambda p\; x\; y. \pcfcond\ x\;y\;(p\ (\pcfpred\ x)\ (\pcfsucc\ y))) $$
+$$ \userop{plus} \equiv \ycomb_{\pcfexp\typear\pcfexp\typear\pcfexp} (\lambda p^{\pcfexp\typear\pcfexp\typear\pcfexp} x^{\pcfexp}y^{\pcfexp}. \pcfcond\ x\;y\;(p\ (\pcfpred\ x)\ (\pcfsucc\ y))) $$
 so that for terms $M$ and $N$, if $M\eval m$ and $N\eval n$, $m,n\in\nat$ then $\userop{plus}\, M\, N \eval m+n$.
 
 Equality on integer is also definable by:
 \begin{align*}
-\userop{Eq} = Y ( \lambda f^{\iaexp\typear\iaexp\typear\iaexp}\, x^\iaexp\,  y^\iaexp .\  & \pcfcond\ a \\
+\userop{Eq} = \ycomb ( \lambda f^{\iaexp\typear\iaexp\typear\iaexp}\, x^\iaexp\,  y^\iaexp .\  & \pcfcond\ a \\
 &\qquad (\pcfcond\ b\ 1\ 0) \\
 &\qquad (\pcfcond\ b\ 0\ (f\ (\pcfpred\ a)\ (\pcfpred\ b) )) )
 \end{align*}
@@ -59,7 +59,7 @@ terms only, the context $\Gamma$ is omitted in the rules.
 \begin{table}[htbp]
 $$\rulef{}{V \eval V} \quad \mbox{ provided that $V$ is in canonical form.} $$
 
-$$ \rulef{M \eval \lambda x. M' \quad M'\subst{x}{N} \eval V}{M N \eval V}$$
+$$ \rulef{M \eval \lambda x. M' \quad M'\subst{N}{x} \eval V}{M N \eval V}$$
 
 $$\rulef{M \eval n}{\pcfsucc\ M \eval n+1}
 \qquad \rulef{M \eval n+1}{\pcfpred\ M \eval n}
@@ -69,7 +69,7 @@ $$\rulef{M \eval 0 \quad N_1 \eval V}{\pcfcond\ M N_1 N_2  \eval V}
 \qquad
  \rulef{M \eval n+1 \quad N_2 \eval V}{\pcfcond\ M N_1 N_2  \eval V}$$
 
-$$\rulef{M (\mathrm{Y} M) \eval V }{\texttt{Y} M \eval V}$$
+$$\rulef{M (\ycomb M) \eval V }{\ycomb M \eval V}$$
 \caption{Big-step operational semantics of \pcf.}
 \label{tab:bigstep_pcf}
 \end{table}
@@ -110,7 +110,7 @@ Its types is given by the simple types over the basis
 
 The most basic command is given by the constant \iaskip\ of type \iacom\
 which performs no computation. Commands can be composed using the sequential composition operator $\iaseq_A$ for every base type $A$.
-The sequential composition of two terms $N_0 : \iacom$ and $N_1:A$ is given by the term $M = \iaseq_A N_0 N_1 : \iacom$ which is interpreted operationally as follows: $N_0$ is evaluated first and if it terminates then the term $N_1$ is evaluated. In the case where $A = \iaexp$, the result of the evaluation of $N_1$ is returned; otherwise $A = \iacom$ and the command $N_1$ is just evaluated after $N_0$ and the expression yields no result.
+The sequential composition of two terms $N_0 : \iacom$ and $N_1:A$ is given by the term $M \equiv \iaseq_A N_0 N_1 : \iacom$ which is interpreted operationally as follows: $N_0$ is evaluated first and if it terminates then the term $N_1$ is evaluated. In the case where $A = \iaexp$, the result of the evaluation of $N_1$ is returned; otherwise $A = \iacom$ and the command $N_1$ is just evaluated after $N_0$ and the expression yields no result.
 Terms formed with the operator $\iaseq_\iaexp$ are called \emphind{active expressions}.
 
 Local variables are declared using the \ianew\ operator, their content is modified using \iaassign\ and retrieved using \iaderef. Operationally, these variables behave like memory cells.
@@ -160,8 +160,8 @@ consisting of the collection of $i^{th}$-order terms is denoted \ialgol$_i$ and 
 If we add the iteration construct defined as
 $$  \rulef{\Gamma \entail M : \iabool \qquad \Gamma \entail N : \iacom}{\Gamma \entail \iawhile\ M\ \iado\ N : \iacom } \quad \mbox{where } \forall x \in \Gamma : \ord{x} < i $$
 we obtain the fragments \ialgol$_i + \textsf{while}$ for $i\in\nat$.
-Finally \ialgol$_i + \textsf{Y}_j$ for $j< i$ denotes the fragment \ialgol$_i$ augmented with a set of fixed-point iterators $\textsf{Y}_A : (A\typear A ) \typear A$ for every type $A$ of order $j$ at most, whose syntax is defined by the rule:
-$$  \rulef{\Gamma \entail \lambda x^A . M : A\typear A}{\Gamma \entail Y_A M : A} \quad \mbox{where } \forall x \in \Gamma : \ord{x} < i \mbox{ and } \ord{A} \leq j. $$
+Finally \ialgol$_i + \ycomb_j$ for $j< i$ denotes the fragment \ialgol$_i$ augmented with a set of fixed-point iterators $\ycomb_A : (A\typear A ) \typear A$ for every type $A$ of order $j$ at most, whose syntax is defined by the rule:
+$$  \rulef{\Gamma \entail \lambda x^A . M : A\typear A}{\Gamma \entail \ycomb_A M : A} \quad \mbox{where } \forall x \in \Gamma : \ord{x} < i \mbox{ and } \ord{A} \leq j. $$
 
 
 \subsubsection*{Operational semantics of \ialgol}
@@ -222,7 +222,7 @@ $M'$ denotes \ialgol\ terms.
 The relation $\rightarrow$ is defined by the following rules (We write
 $M \rightarrow M'$ as an abbreviation for $s,M \rightarrow s',M'$.):
 \begin{itemize}
-\item \emph{$\beta$-reduction:} If $M \beta M'$ then $M \rightarrow M'$;
+\item \emph{$\beta$-reduction:} If $M \mathrel{\beta} M'$ then $M \rightarrow M'$;
 \item \emph{\pcf\ constants:}
 \begin{eqnarray*}
 \pcfsucc\ n &\rightarrow& n+1 \\
@@ -230,7 +230,7 @@ $M \rightarrow M'$ as an abbreviation for $s,M \rightarrow s',M'$.):
 \pcfpred\ 0 &\rightarrow& 0 \\
 \pcfcond\ 0\ N_1 N_2 &\rightarrow& N_1 \\
 \pcfcond\ (n+1)\ N_1 N_2 &\rightarrow& N_2 \\
-Y\ M &\rightarrow& M (Y M) \enspace ;
+\ycomb M &\rightarrow& M (\ycomb M) \enspace ;
 \end{eqnarray*}
 \item \emph{\ialgol\ constants:}
 \begin{eqnarray*}

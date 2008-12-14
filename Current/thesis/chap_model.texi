@@ -29,8 +29,8 @@ for some set $B$ of base types. The \defname{order} of a type is defined by indu
 The typing system of the safe lambda calculus is then extended with three rules corresponding to pairing, first projection and second projection (respectively
 $\rulename{\times}$, $\rulename{\pi_1}$ and $\rulename{\pi_2}$ in Table \ref{tab:safelmb_product}). This suffices to add product constructs to the safe lambda calculus but there is now a little problem. Consider the following terms-in-context:
 \begin{align*}
- x:(o\typear o)\times o &\stentail \lambda z^o.\, (\pi_2 x) : (o\typear (o\typear o)) \equiv M_1\\
- x_1:(o\typear o), x_2:o &\sentail \lambda z^o.\, \underline{x_2} : (o\typear (o\typear o)) \equiv M_2 \enspace .
+ x:(o\typear o)\times o &\stentail \lambda z^o.\, (\pi_2 x) \equiv M_1 : (o\typear o) \\
+ x_1:(o\typear o), x_2:o &\sentail \lambda z^o.\, \underline{x_2} \equiv M_2 : (o\typear o)  \enspace .
 \end{align*}
 In any model of the lambda calculus, these two terms-in-context have isomorphic denotations, but $M_1$ is safe whereas $M_2$ is unsafe. Indeed, the side-condition of the abstraction rule only requires that the \emph{variables} in the context have order greater than the order of the term, therefore $M_2$ is unsafe because it contains the free occurrence $x_2$. In $M_1$, however, $x_1$ and $x_2$ are combined into a single variable, this has the effect of increasing the order of the variable and therefore the side-condition holds.
 
@@ -288,7 +288,7 @@ A \defname{model} of a typed lambda calculus in a cartesian closed category is s
   \item for every function symbol $f$ of type $A_1 \times \cdots \times A_n \rightarrow B$,  a morphism $\sem{f}$ of type $\sem{A_1}\times \cdots \times \sem{A_n} \typear \sem{B}$.
 \end{compactitem}
 It is then possible to specify the interpretation of any term-in-context $\Gamma \entail M : T$ by induction on
-the structure of the term \cite{CroleRL:catt}. The \defname{model} is said to be \index{model!sound}\emphind{sound} if whenever $M$ reduces to $N$ with the small-step semantics of the language then $M$ and $N$ have the same denotation in the model.
+the structure of the term \cite{CroleRL:catt}. The \defname{model} is said to be \index{model!sound}\emphind{sound} if whenever $M$ reduces to $N$ using the small-step semantics of the language then $M$ and $N$ have the same denotation in the model.
 
 \begin{proposition}[Models of safe typed lambda calculi]
 \label{prop:incrementalcat_model_safelambda}
@@ -855,9 +855,9 @@ The \defname[P-view!interaction sequence]{P-view} of an interaction sequence $u 
 as:
 \begin{align*}
 \pview{u\cdot \extomove{n}} &= \extomove{n} &
-\mbox{ if \extomove{$m$} is an \extomove{external O-move} initial in C,}\\
-\pview{\Pstr{u\cdot (m)m\cdot v \cdot (n-m,45){\extomove{n}} }} &= \extomove{n} &\mbox{ if \extomove{$m$} is an \extomove{external O-move} non initial in C,}\\
-\pview{u \cdot \genpmove{m}} &= \pview{u}\cdot \genpmove{m}  & \mbox{ if \genpmove{$m$} is a \genpmove{generalised P-move}.}\\
+\mbox{ if \extomove{$n$} is an \extomove{external O-move} initial in C,}\\
+\pview{\Pstr{u\cdot (m)m\cdot v \cdot (n-m,45){\extomove{n}} }} &= \pview{u\cdot m}\cdot \extomove{n} &\mbox{ if \extomove{$n$} is an \extomove{external O-move} non initial in C,}\\
+\pview{u \cdot \genpmove{n}} &= \pview{u}\cdot \genpmove{n}  & \mbox{ if \genpmove{$n$} is a \genpmove{generalised P-move}.}\\
 \end{align*}
 
 \begin{lemma}
@@ -914,7 +914,7 @@ say that $s$ is a suffix of $t$.
 
 
 \subsection{Preliminary results}
-In this section, we prove several preliminary lemmas which will help us to study compositionality of P-i.j.\ strategies.
+In this section, we prove several preliminary lemmas which will help us study compositionality of P-i.j.\ strategies.
 
 \begin{lemma}
 \label{lem:interjump}
@@ -934,9 +934,9 @@ Then $n \not\in \pview{u \filter A, C}$.
 \begin{proof}
 Since $\alpha$ is an O-move, $\alpha$ and $\beta$ are necessarily
 played in the same arena ($A$ or $C$). Take $v=u$ if $m$ is a
-generalized O-move in $X$ and $v=u_{<z}$ otherwise (if $m$ is a
+generalized O-move in $X$ and $v=u_{<m}$ otherwise (if $m$ is a
 generalized P-move in $X$). The third assumption implies
-$\alpha,\beta\in \pview{v}$. The last move in $v$ is necessarily a
+$\alpha,\beta\in \pview{v\filter X}$. The last move in $v$ is necessarily a
 generalized O-move in component $X$ (see diagram of Fig.~\ref{fig:interseq}) therefore by Lemma \ref{lem:harmer_core_projection_lemma} we
 have $\pview{v \filter X} = \pview{\overline{v} \filter X} \subseqof
 \overline{v} \subseqof \overline{u}$. Thus $\alpha,\beta \in
@@ -1919,7 +1919,7 @@ and $C_2\leftarrow !\iavar$ gives us the desired result.
 \iamkvar\ (\lambda x.M_1) M_2}$. We have
 $\sigma = \langle \Delta(\sigma_1), \sigma_2 \rangle ; mkvar$
 where $\sigma_1 = \sem{\Gamma | \Xi ,x:\iaexp \siaentail M_1:\iacom}$ and $\sigma_2 = \sem{\Gamma | \Xi \siaentail M_2 : \iaexp}$. By the I.H., $\sigma_1$ is closed P-i.j.\ modulo $In(\sem{\Xi,x:\iaexp})$
-and $\sigma_2$ is closed P-i.j.\ modulo $In(\sem{\Xi})$ therefore the strategy $\langle \Delta(\sigma_1), \sigma_2 \rangle : \sem{\Gamma\times\Xi \typear (\iaexp^1\typear\iacom)\times\iaexp}$ is closed P-i.j.\ modulo $In(\sem{\Xi} \union \sem{\iaexp^1})$.
+and $\sigma_2$ is closed P-i.j.\ modulo $In(\sem{\Xi})$ therefore since $\ord \Gamma \geq 1$ (by the side-condition of the \rulenamet{mkvar} rule) the strategy $\langle \Delta(\sigma_1), \sigma_2 \rangle : \sem{\Gamma\times\Xi \typear (\iaexp^1\typear\iacom)\times\iaexp}$ is closed P-i.j.\ modulo $In(\sem{\Xi} \union \sem{\iaexp^1})$.
 Hence by Lemma \ref{lem:mkvarcomposition_preserve_pijmodulo}, $\sigma$ is closed P-i.j.\ modulo $In(\sem{\Xi})$.
 \qedhere
 \end{asparaitem}
@@ -2254,14 +2254,14 @@ Plugging a term in the context is done via capture-permitting substitution: $C[M
 
 \begin{lemma}
 \label{lem:safecontext_substitution}
-$M \in {\sf Trm_s}(\Gamma,T) \zand C[-] \in {\sf Ctxt_s}(\Gamma,T) \implies \sem{C[M]} = \sem{C[-]} ; \sem{M}$.
+$M \in {\sf Trm_s}(\Gamma,T) \zand C[-] \in {\sf Ctxt_s}(\Gamma,T) \implies \sem{C[M]} = \sem{M} ; \sem{C[-]}$.
 \end{lemma}
 \begin{proof}
-By the previous lemma, plugging $M$ in $C[-]$ can be done using the capture-permitting substitution therefore $\sem{C[M]} = \sem{C[-]};\sem{M}$.
+By the previous lemma, plugging $M$ in $C[-]$ can be done using the capture-permitting substitution therefore $\sem{C[M]} = \sem{M};\sem{C[-]}$.
 \end{proof}
 
 Note that this lemma does not hold for unsafe context. For instance with
-$C[-]\equiv (\lambda x^\iaexp . -) \Omega$ we have $\sem{C[-]};\sem{M}=id_A;\sem{M} = \sem{M}$ but $\sem{C[x]} = \bot$.
+$C[-]\equiv (\lambda x^\iaexp . -) \Omega$ we have $\sem{x};\sem{C[-]}=\sem{x};id_A = \sem{x}$ but $\sem{C[x]} = \bot$.
 \smallskip
 
 \begin{remark}
@@ -2406,12 +2406,12 @@ follows immediately from Theorem \ref{thm:fullabs_pcfstar} since for every safe 
 \subsection*{Full abstraction of Safe Idealized Algol}
 The proof of full abstraction of Idealized Algol is based on the Innocent Factorization theorem:
 \begin{theorem}[Innocent Factorization \cite{AM97a}]
-  For every strategy $\sigma$ on an a \ialgol\ game $A$, there exists an innocent strategy $\tau : !var \lingamear A$ such that $\sigma = cell ; \tau$.
+  For every strategy $\sigma$ on an \ialgol\ game $A$, there exists an innocent strategy $\tau : !var \lingamear A$ such that $\sigma = cell ; \tau$.
 \end{theorem}
 
 A version of this theorem also holds for safe \ialgol:
 \begin{lemma}
-For every closed P-i.j.\ strategy $\sigma$ on an a \ialgol\ game $A$, there is an innocent strategy $\mu : !var \lingamear A$ which is closed P-i.j.\ modulo $In(\sem{!var})$ and such that $\sigma = cell ; \mu$.
+For every closed P-i.j.\ strategy $\sigma$ on an \ialgol\ game $A$, there is an innocent strategy $\mu : !var \lingamear A$ which is closed P-i.j.\ modulo $In(\sem{!var})$ and such that $\sigma = cell ; \mu$.
 \end{lemma}
 \begin{proof}
 By the Factorization Theorem we have that $\sigma = cell ; \tau$ for some innocent strategy $\tau : !var \lingamear A$.

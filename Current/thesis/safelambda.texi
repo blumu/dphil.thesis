@@ -543,7 +543,7 @@ The \defname[safe!$\beta$-reduction]{safe $\beta$-reduction}, written $\betasred
 (ii) This is because $\betasred \subset \betaredtr$, and $\betared$ is
 strongly normalizing in the simply-typed lambda calculus. (iii) It is easy to see that a safe term has a beta-redex if and only if it has a safe beta-redex (Because a beta-redex can always be ``widen'' into consecutive beta-redexes of the shape of those in Def.~\ref{dfn:saferedex_contraction}). Therefore the set
 of $\beta_s$-normal forms is equal to the set of $\beta_s$-normal
-forms. The uniqueness of $\beta$-normal form then implies the uniqueness 
+forms. The uniqueness of $\beta$-normal form then implies the uniqueness
 of $\beta_s$-normal form. (iv) is a consequence of (i) and (ii).
 \end{proof}
 
@@ -762,7 +762,7 @@ Abstraction: $M$ has the form $\lambda \overline y . M_0 \ldots M_p$ for some sa
 By the subject reduction lemma we have $\Gamma_M \sentail M:(A_1,\ldots,A_l,o)$
 where $\Gamma_M$ is the subset of $\Gamma$ containing only typing for free variables in $M$. The $\eta$-long expansion of $M$ is $\lambda \overline y x_1 .. x_l . \elnf{M} \elnf{x_1} \dots \elnf{x_l}$ for some variables
 $x_1:A_1, \ldots, x_l:A_l$ fresh in $M$.
-Let $k$ range in $\{1..l\}$. By Lemma \ref{lem:longsafe_imp_elnf_longsafe} and \ref{lem:longsafe_imp_safe}, each $\elnf{x_k}$ is safe, and by the I.H.\ $\elnf{M}$ is also safe. Therefore by $\rulename{app_{as}}$, so is $\elnf{M} \elnf{x_1} \ldots \elnf{x_l}$.
+Let $k$ range in $\{1..l\}$. By Lemma \ref{lem:longsafe_imp_elnf_longsafe} and \ref{lem:longsafe_imp_safe}, each $\elnf{x_k}$ is safe, and by the I.H.\ $\elnf{M}$ is also safe. Therefore by $\rulename{app_{as}}$, $\elnf{M} \elnf{x_1} \ldots \elnf{x_l}$ is an almost safe application.
 By Lemma \ref{lem:ordfreevar}, all the free variables of $M$ have order greater than $\ord{(A_1,\ldots,A_l,o)}$, hence we can use the abstraction rule to form the judgment
 $ \Gamma_M \sentail \lambda \overline y x_1 .. x_l . \elnf{M} \elnf{x_1} \ldots \elnf{x_l} : (A_1,\ldots,A_l,o)$ and the weakening rule permits us to conclude.
 The application case is treated identically.
@@ -772,7 +772,7 @@ The application case is treated identically.
 trivial. Suppose that $M$ is an application of the form $x N_1
 \ldots N_m : A$ for $m\geq 1$. Its $\eta$-long normal form is $x \elnf{N_1} \ldots \elnf{N_m} \elnf{\varphi_1} \ldots
 \elnf{\varphi_m}: o$ for some fresh variables $\varphi_1$, \ldots
-$\varphi_m$. By assumption this term is long-safe term therefore we
+$\varphi_m$. By assumption this term is long-safe therefore we
 have $\ord{A}\leq\ord{\Gamma}$ and for $1\leq i \leq m$,
 $\elnf{N_i}$ is also long-safe. By the induction hypothesis this
 implies that each $N_i$ is safe. We can then form the judgment
@@ -900,12 +900,11 @@ An annotated term is almost safe if and only if its eta-long normal form is safe
 We proceed by induction on $M$.
 Suppose that the last rule used is \rulenamet{\delta'}.
 Then by Lemma \ref{lem:almostsafe_is_appplicative_safe}
-$M$ is an application $N_0 N_1 \ldots N_k : (A_1,\ldots,A_n)$ with $k\geq 0$. Let $\varphi_i$ for $i\in\{1..n\}$ be fresh variables, using the rules \rulenamet{var_{as}}, \rulenamet{wk_{as}}, \rulenamet{app_{as}} and \rulenamet{abs_{as}} we can build the almost safe term $\Gamma \asentail \lambda \varphi_1^{A_1} \ldots \varphi_n^{A_n} . N_0 N_1 \ldots N_k \varphi_1 \ldots \varphi_n :T$.
+$M$ is an application $N_0 N_1 \ldots N_k : (A_1,\ldots,A_n,B)$ with $k\geq 0$. Let $\varphi_i$ for $i\in\{1..n\}$ be fresh variables, using the rules \rulenamet{var_{as}}, \rulenamet{wk_{as}}, \rulenamet{app_{as}} and \rulenamet{abs_{as}} we can build the almost safe term $\Gamma \asentail \lambda \varphi_1^{A_1} \ldots \varphi_n^{A_n} . N_0 N_1 \ldots N_k \varphi_1 \ldots \varphi_n :T$.
 
 If the last rule used is \rulenamet{\delta} then
 $M$ is safe therefore by Proposition \ref{prop:safe_iff_elnfsafe}, its eta-long normal form is safe and therefore by \rulenamet{\delta} it is also almost safe.
-
-If the last rule used is \rulenamet{abs_{as}} then by the induction hypothesis the eta-long nf of the premise is almost safe so we can conclude using \rulenamet{abs_{as}}.
+Otherwise the last rule used is \rulenamet{abs_{as}}, so by the induction hypothesis the eta-long nf of the premise is almost safe and we can conclude using \rulenamet{abs_{as}}.
 
 \emph{If:} It is again a proof by structural induction on the eta-long normal form. The basic idea is that we can ``peel-off'' applications of the rules \rulenamet{abs_{as}} and \rulenamet{app_{app}} introduced during the eta-expansion.
 \end{proof}
@@ -928,39 +927,64 @@ The second case is when the redex is $N_1 \ldots N_q$ for some $1 \leq q\leq m$.
 \subsection{Safety with respect to other type-ranking functions}
 
 We call \defname{type-ranking function} any function
-${\sf rank} : \mathbb{T} \funto (L, \leq)$ mapping the set $\mathbb{T}$ of simple types over a set of atomic types $\mathbb{A}$ to some preorder $(L,\leq)$.
+$\mathop{rank} : \mathbb{T} \funto (L, \leq)$ mapping the set $\mathbb{T}$ of simple types over a set of atomic types $\mathbb{A}$ to some preorder $(L,\leq)$.
 \begin{example}
 The followings are examples of type-ranking functions $\mathbb{T} \funto (\nat,\leq)$:
+
 \begin{itemize}
-\item The type-order defined by $\ord(\alpha) = 0$
+\item Type-order defined by $\ord(\alpha) = 0$
 for $\alpha\in \mathbb{A}$, and $\ord(A \typear B) = \max(\ord(A)+1, \ord(B))$;
-\item The height defined by $\slheight(A \typear B) = 1 + \max(\slheight(A), \slheight(B))$ and
-$\slheight(\alpha) = 0$ for $\alpha \in \mathbb{A}$;
-\item The type-arity defined by $\arity(A \typear B) = 1 + \arity(B)$ and
+\item Height defined by $\oprm{height}(A \typear B) = 1 + \max(\oprm{height}(A), \oprm{height}(B))$ and
+$\oprm{height}(\alpha) = 0$ for $\alpha \in \mathbb{A}$;
+\item Type-arity defined by $\arity(A \typear B) = 1 + \arity(B)$ and
 $\arity(\alpha) = 0$ for $\alpha \in \mathbb{A}$;
-\item The size defined by ${\rm size}(\alpha) = 1$ for $\alpha \in \mathbb{A}$
-and ${\rm size}(A \typear B) = {\rm size}(A) + {\rm size}(B)$.
+\item Size defined by $\oprm{size}(\alpha) = 1$ for $\alpha \in \mathbb{A}$
+and $\oprm{size}(A \typear B) = 1 + \oprm{size}(A) + \oprm{size}(B)$;
+\item Number of atomic sub-types defined by $\oprm{natoms}(\alpha) = 1$ for $\alpha \in \mathbb{A}$
+and $\oprm{natoms}(A \typear B) = \oprm{natoms}(A) + \oprm{natoms}(B)$.
+\item Number of function space sub-types defined by $\oprm{narrows}(\alpha) = 0$ for $\alpha \in \mathbb{A}$
+and $\oprm{narrows}(A \typear B) = 1 + \oprm{narrows}(A) + \oprm{narrows}(B)$.
 \end{itemize}
 The pairing of two type-ranking functions is also a type-ranking function. For instance the pairing $\langle \ord, \arity \rangle : \mathbb{T} \funto (\nat \times \nat,\leq)$ is a type-ranking function
 where $\leq$ denotes the lexicographic ordering.
 \end{example}
 
-We have defined the safe lambda calculus as a restriction on the simply-typed lambda calculus obtained by restricting the occurrences of variables according to their \emph{order}. \emph{Would it make sense to define a version of the safe lambda calculus where the constraint relies on a different type-ranking function?}
-
+We have defined the safe lambda calculus as a sub-language of the simply-typed lambda calculus obtained by restricting the occurrences of variables according to their \emph{order}. \emph{Does it make sense to define a version of the safe lambda calculus where the constraint relies on a different type-ranking function?}
 
 In the safe lambda calculus, the application and abstraction rules permit us to perform multiple abstraction or application at a time.
 For the abstraction rule, the idea is that the side-condition might not be satisfied after one abstraction but it may become after consecutive abstractions, and similarly for the application rule. So by design, the typing system implicitly assumes that abstracting variables increases the order of the term's type, and inversely performing application decreases its order:
 \begin{eqnarray}
- {\sf rank}(A\typear B) \geq {\sf rank}(B)\enspace . \label{eqn:rankprop1}
+\oprm{rank}(A\typear B) \geq \oprm{rank}(B)\enspace . \label{eqn:rankprop1}
 \end{eqnarray}
 
 On the other hand, in order to prove the No-variable-capture Lemma we need the following property:
 \begin{eqnarray}
-{\sf rank}(A\typear B) > {\sf rank}(A)\enspace . \label{eqn:rankprop2}
+\oprm{rank}(A\typear B) > \oprm{rank}(A)\enspace . \label{eqn:rankprop2}
 \end{eqnarray}
+A type-ranking function verifying the above two conditions is said to be \defname{proper}.
 
-The minimal function satisfying the two previous equations is precisely the function $\ord$ (\ie,~any function ${\sf rank} : \mathbb{T} \funto (L, \leq)$ satisfying (\ref{eqn:rankprop1}) and (\ref{eqn:rankprop2}) is greater than $\ord$ by pointwise ordering). Hence the typing-system defining the safe lambda calculus is only of interest if the ranking function used is the type-order function $\ord$.
+\begin{example}
+The type-ranking function $\arity$ is not proper.
+The type-ranking functions $\ord$, $\oprm{height}$, $\oprm{size}$, $\oprm{natoms}$ and $\oprm{narrows}$ are all proper. Moreover $\ord$ is by definition the \emph{minimal} proper function: any other proper function $\oprm{rank} : \mathbb{T} \funto (L, \leq)$ is greater than $\ord$ by pointwise ordering.
+\end{example}
+
+In turns out that this condition suffices to define a notion of safe lambda calculus verifying all the properties that we have proven up to now, including the No-variable-capture property. We can thus define a family of safe lambda calculi as follows: given a proper function $\oprm{rank}$, we define the $\oprm{rank}$-safe lambda calculus as the calculus obtained by replacing the reference to the function $\ord$ by the function $\oprm{rank}$ in the typing rules of Table \ref{tab:safelambda_curry}.
+We say that a term is $\oprm{rank}$-safe if it is typable in the $\oprm{rank}$-safe lambda calculus.
+
+\begin{example}
+  Consider the simply-typed term $g:\alpha \chentail \lambda f^\beta . g : \beta \typear \alpha$
+  for some types $\alpha,\beta$. This term is $\oprm{rank}$-safe if and only if $\oprm{rank}(\alpha) > \oprm{rank}(\beta)$.   Now take the types $\mu = o\typear o\typear o\typear o$ and $\tau= (o \typear o) \typear o$. We have $\ord \mu = 1 < 2 = \ord \tau$ but $\oprm{natoms}(\mu) > 4 > 3 = \oprm{natoms}(\tau)$.
+Hence $g:\tau \chentail \lambda f^\mu . g : \mu \typear \tau$
+is $\ord$-safe but $\oprm{natoms}$-unsafe. Conversely, $g:\mu \chentail \lambda f^\tau . g : \tau \typear \mu$ is $\oprm{natoms}$-safe but $\ord$-unsafe.
+  
+  This example shows that there is no hierarchy of $\oprm{rank}$-safe lambda calculi:
+  although proper type-ranking functions are comparable, the safe lambda calculi that they generate are not comparable.
+\end{example}
+
+In this thesis we will only consider the $\ord$-safe lambda calculus.
+
+%When studying higher-order languages such as the simply-typed lambda calculus, the type-ordering function $\ord$
+%Other ranking function may give rise to interesting
 
 %It is even possible to generalize the homogeneity condition to other type-ranking function:
-% We say that a type is {\sf rank}-homogeneous if it is in $\mathbb{A}$ or if it is $(A_1, \cdots, A_n, \alpha)$ where $\rank{A_1} \geq \rank{A_2}\geq \cdots \geq \rank{A_n}$ and each $A_1$, \ldots, $A_n$ is {\sf rank}-homogeneous. This gives rise to the homogeneous fragment of the $\sf rank$-safe lambda calculus.
-
+% We say that a type is $\oprm{rank}$-homogeneous if it is in $\mathbb{A}$ or if it is $(A_1, \cdots, A_n, \alpha)$ where $\rank{A_1} \geq \rank{A_2}\geq \cdots \geq \rank{A_n}$ and each $A_1$, \ldots, $A_n$ is $\oprm{rank}$-homogeneous. This gives rise to the homogeneous fragment of the $\sf rank$-safe lambda calculus.

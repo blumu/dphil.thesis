@@ -1,34 +1,31 @@
 % -*- TeX -*- -*- Soft -*-
-
 This chapter is an independent part of the thesis that concerns game semantics only.
 One of the key features of game models is that they abstract the syntax: if two syntactically different terms are equivalent then they have the same denotation, thus the denotation of a term does not carry any information about its syntax. Here we rework the innocent game semantics of Hyland-Ong \cite{hylandong_pcf} in a more concrete way. We establish an explicit correspondence between the game denotation of a term and its syntax. Our approach follows ideas recently introduced by Ong \cite{OngLics2006}, namely the notion of \emph{computation tree} of a simply-typed lambda-term and \emph{traversals} over the computation tree. A computation tree is just an abstract syntax tree (AST) representation of the $\eta$-long normal form of a term. Traversals are justified sequences of nodes of the computation tree respecting some formation rules. They provide a way to perform \emph{local computation} of $\beta$-reductions as opposed to a global approach where $\beta$-redexes are contracted using substitution; they can be viewed as an implementation of the \emph{linear head reduction strategy} \cite{danos-head}. A traversal carries syntactic information about the traversed term: its \emph{P-view}---computed in the same way as in game semantics---is a path in the computation tree.
 
 The culmination of this chapter is the \emph{Correspondence Theorem} (Theorem \ref{thm:correspondence}). It states that traversals over the computation tree are just representations of the uncovering of plays in the strategy-denotation of the term. Hence there is an isomorphism between the strategy denotation of a term and its revealed game denotation. In a nutshell, the revealed denotation is computed similarly to the standard strategy denotation except that internal moves are not hidden after composition. In order to make a connection with the standard game denotation, we define an operation that extracts the \emph{core} of a traversal by eliminating occurrences of ``internal nodes''. These node occurrences are the counterparts of internal moves that are hidden when performing strategy composition in game semantics. This leads to a correspondence between the standard game denotation of a term and the set traversal cores over its computation tree.
 
-The main difference with the traditional presentation of game semantics lies in the fact that the traversal theory is a top-down approach: the computation tree is traversed from the root and jumps occur from one subterm to another when necessary. In contrast in game semantics the denotation of a term is obtained by appealing to compositionality: the denotation of a term is calculated bottom-up by composing the denotations of its subterms. Intuitively, the latter approach is less efficient as it requires one to compute the denotation of every subterm even though some of its behaviour will never be exhibited when used as part of the whole term.
+The main difference with the traditional presentation of game semantics lies in the fact that the traversal theory is a top-down approach: the computation tree is traversed from the root and jumps occur from one subterm to another when necessary. In contrast in game semantics the denotation of a term is obtained by appealing to compositionality: the denotation of a term is calculated bottom-up by composing the denotations of its subterms. (Intuitively, the latter approach is less efficient as it requires one to compute the denotation of every subterm even though some of its behaviour will never be exhibited when used as part of the whole term.)
+
+The traversal theory is flexible enough to accommodate to other functional languages: it is possible to throw in various constants while retaining the game semantic correspondence. At the end of the chapter we show how to adapt the setting to languages like \pcf\ and Idealized Algol.
+
+We already know that there is a strong correspondence between beta-normal terms and their game denotation: by the definability result of game semantics, given a strategy one can extract from it a term in beta-normal form whose denotation is this particular strategy. The correspondence theorem make this syntax--semantics relation more precise and generalizes it to terms that are not in beta-normal form.
+It is thus possible to analyze the effect that a syntactic restriction has on the strategy denotation of a term. This is illustrated in the next chapter where we make use of the Correspondence Theorem to analyze the game semantics of the safety restriction. (In Chapter \ref{chap:model} we will give a full analysis of the game semantics of safety without appealing to any syntactic argument.)
+
+Although subsequent results of the thesis rely on the Correspondence Theorem, this chapter is of independent interest. The traversal theory is a new approach to a local analysis of beta reduction \cite{DanosRegnier-Localandasynchronou}. It has been applied in a number of different places:
+\begin{itemize}
+\item Ong originally introduced the traversal theory to show decidability of monadic second-order theories of infinite structures generated by higher-order grammars \cite{OngLics2006};
+\item Stirling showed that the higher-order matching problem is decidable. His proof introduced the concept of tree-checking games that are closely related to the theory of traversals \cite{DBLP:conf/icalp/Stirling06};
+\item In a preprint, Ong and Tzevelekos use the traversal theory to study various versions of the Reachability Problem for functionnal programming languages \cite{ongnik_pcfreachability}.
+\end{itemize}
 
 Further the inductive definition of traversals lends itself well to automaton characterizations.
 For instance Hague \emph{et al.} considered the case of higher-order recursion schemes. They show that
 the set of traversals of the computation tree induced by a recursion scheme can be computed by
 a \emph{collapsible higher-order pushdown automaton} \cite{hmos-lics08}.
-
-The traversal theory is flexible enough to accommodate to other functional languages: it is possible to throw in various constants while retaining the game semantic correspondence. At the end of the chapter we show how to adapt the setting to languages like \pcf\ and Idealized Algol.
-
-% correspondence is a definability result for revealed semantics
-
-Using this correspondence, it possible to analyze the effect that a syntactic restriction has on the strategy denotation of a term. This is illustrated in the next chapter where we make use of the Correspondence Theorem to analyze the game semantics of the safety restriction.
-% The Correspondence Theorem can be used as tool to analyze 
-% In Chapter \ref{chap:model} we will give a full analysis of the game semantics of safety without appealing to any syntactic 
-
-
  \bigskip
 
  \emph{Related works}:
- The useful transference technique between plays and traversals was
-originally introduced by Ong for studying
-the decidability of monadic second-order theories of infinite structures generated by higher-order grammars \cite{OngLics2006}.
-In this setting, the $\Sigma$-constants or terminal symbols are at most order 1, and are \emph{uninterpreted}.
-Here we present an extension of this framework to the
+The useful transference technique between plays and traversals was originally introduced by Ong for studying the decidability of monadic second-order theories of infinite structures generated by higher-order grammars \cite{OngLics2006}. In this setting, the $\Sigma$-constants or terminal symbols are at most order 1, and are \emph{uninterpreted}. Here we present an extension of this framework to the
 general case of the simply-typed lambda calculus with free variables
 of any order. Further the term considered is not required to be of ground type
 contrary to higher-order grammars. This requires us to add new traversal rules to handle variables whose value is undetermined (\ie, those that cannot be resolved through redex-contraction). We also extend computation trees with additional nodes accounting for answer moves of game semantics. This enables our framework to be extended to languages with interpreted constants such as \pcf\ and Idealized Algol.
@@ -1945,7 +1942,9 @@ $\oview{ t \filterplus r_0 } = \Pstr[0.7cm]{(n0){\lambda f g}\ (n1-n0){f}\ (n2-n
 
 \subsubsection{Subterm projections are sub-traversals}
 
-We now show an important result that relies on all the lemmas and propositions from the previous two sections:
+The following proposition is a key step in relating the
+bottom-up presentation of game semantics with the top-down approach provided by the traversal theory.
+It states that the subterm projection of a traversal (see Sec.~\ref{sec:tstar}) is a traversal of the (computation tree of the) subterm. The proof relies on all the lemmas and propositions from the previous two sections.
 \begin{proposition}[Subterm projections are sub-traversals]
     \label{prop:trav_projection}
     Let $t \in \travset(M)$. For every occurrence $r_0$ in $t$ of some lambda node
@@ -1953,29 +1952,23 @@ We now show an important result that relies on all the lemmas and propositions f
 \end{proposition}
 \begin{proof}
     We proceed by induction on the traversal rules. The base cases \rulenamet{Empty} and
-    \rulenamet{Root} are trivial. \emph{Step case:} Take a traversal $t \in \travset(M)$ and suppose that the result holds for every traversal shorter than $t$.
-
-    Suppose that $t^\omega$ does not appear in $t \filterplus r_0$ then
-    the result follows by applying the induction hypothesis on the immediate prefix of $t$.
-    Suppose that $t^\omega$ appears in $t \filterplus r_0$ then we do a case analysis on the last traversal rule used to form $t$:
+    \rulenamet{Root} are trivial. \emph{Step case:} Take a traversal $t \in \travset(M)$ and suppose that the result holds for every traversal shorter than $t$. Suppose that $t^\omega$ does not appear in $t \filterplus r_0$ then    the result follows by applying the induction hypothesis on the immediate prefix of $t$. Suppose that $t^\omega$ appears in $t \filterplus r_0$ then we do a case analysis on the last traversal rule used to form $t$:
     \begin{asparaitem}
     \item \rulenamet{Lam}
-        We have  $t = t' \cdot n$ with $t' = \ldots \cdot \lambda \overline{\xi}$. By the induction hypothesis, $t' \filterplus r_0 \in  \travset(M^{(r)})$.
-
-        Since $n$ is a variable node appearing in $t\filterplus r_0$, by definition of $t\filterplus r_0$ its immediate predecessor
+        We have  $t = t' \cdot n$ with $t' = \ldots \cdot \lambda \overline{\xi}$. By the induction hypothesis, $t' \filterplus r_0 \in  \travset(M^{(r)})$. Since $n$ is a variable node appearing in $t\filterplus r_0$, by definition of $t\filterplus r_0$ its immediate predecessor
         $\lambda \overline{\xi}$ must occur in $t\filterplus r_0$ and therefore must be the last occurrence in $t'\filterplus r_0$. Thus we can use the rule \rulenamet{Lam} in $\tau(M^{(r)})$ to produce the traversal $u = (t'\filterplus r_0) \cdot n$ of $M^{(r)}$.
 
-        We have $t \filterplus r_0 = (t'\filterplus r_0) \cdot n$, but in order to state that $u = t \filterplus r_0$ it remains to prove that $n$ has the same link in $t \filterplus r_0$ and in $u$.
+        We have $t \filterplus r_0 = (t'\filterplus r_0) \cdot n$, but in order to state the equality $u = t \filterplus r_0$ it remains to prove that $n$ has the same link in $t \filterplus r_0$ and in $u$.
 
-        Suppose $n \in \INodes_@ \union \INodes_\Sigma$ then $n$ has no justifier in both $u$ and $t\filterplus r_0$. Otherwise $n \in \INodes_{\sf var}$. Let $m_u$ denote the occurrence in $t$ of $n$'s justifier in $u$, $m_t$ for the occurrence in $t$ of $n$'s justifier in $t$, and $m$ for the occurrence in $t$ of $n$'s justifier in $t \filterplus r_0$. We want to show that $m_u = m$.
+        In the case $n \in \INodes_@ \union \INodes_\Sigma$, $n$ has no justifier in both $u$ and $t\filterplus r_0$. Otherwise $n \in \INodes_{\sf var}$, let $m_u$ denote the occurrence in $t$ of $n$'s justifier in $u$, $m_t$ for the occurrence in $t$ of $n$'s justifier in $t$, and $m$ for the occurrence in $t$ of $n$'s justifier in $t \filterplus r_0$. We want to show that $m_u = m$.
         By the rule \rulenamet{Var}, $m_u$ is defined as the only occurrence of $n$'s enabler in $\pview{t'\filterplus r_0}$ and $m_t$ is the only occurrence of $n$'s enabler in $\pview{t'}$.
 
-        If $r_0$ occurs before $m_t$ then by Lemma \ref{lem:pviewproj_traversal}(ii), $m_t$ appears in $t \filterplus r_0$ thus by definition of $\_ \filterplus$ we have $m = m_t$. Moreover, since $m_t$ appears in $t\filterplus r_0$, it must appear
+        There are two cases:
+         (i) If $r_0$ occurs before $m_t$ then by Lemma \ref{lem:pviewproj_traversal}(ii), $m_t$ appears in $t \filterplus r_0$ thus by definition of $\_ \filterplus$ we have $m = m_t$. Moreover, since $m_t$ appears in $t\filterplus r_0$, it must appear
         after $r_0$ by Lemma \ref{lem:pviewproj_traversal}(i.a), thus since it is in the P-view at $t'$, it must be
         in $\pview{t}_{\suffixof r_0}$ which is equal to $\pview{t'\filterplus r_0}$ by Lemma \ref{lem:pviewproj_traversal}(i.b).
         Hence we necessarily have $m_u = m_t$ (since $r$ occurs only once in the P-view $\pview{t'\filterplus r_0}$).
-
-        If $r_0$ occurs after $m_t$ then $m_t$ does not appear in $t\filterplus r_0$ thus $m = r_0$ by definition of $\_ \filterplus$. Moreover by Lemma \ref{lem:pviewproj_traversal}(i), $n$'s binder occurs in the path from $r$ to the root $\theroot$. Thus $n$ is a free variable in $\tau(M^{(r)})$ and consequently the only enabler of $n$ occurring in $\pview{t'\filterplus r_0}$ is necessarily $r_0$: $m_u = r_0$.
+          (ii) If $r_0$ occurs after $m_t$ then $m_t$ does not appear in $t\filterplus r_0$ thus $m = r_0$ by definition of $\_ \filterplus$. Moreover by Lemma \ref{lem:pviewproj_traversal}(i), $n$'s binder occurs in the path from $r$ to the root $\theroot$. Thus $n$ is a free variable in $\tau(M^{(r)})$ and consequently the only enabler of $n$ occurring in $\pview{t'\filterplus r_0}$ is necessarily $r_0$: $m_u = r_0$.
 
         This proves the equality $t \filterplus r_0 = u$ and thus $t \filterplus r_0$ is a valid traversal of $M^{(r)}$.
 
@@ -1985,9 +1978,7 @@ We now show an important result that relies on all the lemmas and propositions f
 
     \item \rulenamet{Value^{@\mapsto\lambda}} Take \Pstr[0.5cm]{t = t' \cdot (lmd){\lambda
         \overline{\xi}} \cdot (x){@}  \ldots  (xv-x,50:v){v}_@  \cdot
-        (lmdv-lmd,30:v){v}_{\lambda \overline{\xi}} }.
-
-        The occurrence $v_{\lambda \overline{\xi}}$ appears
+        (lmdv-lmd,30:v){v}_{\lambda \overline{\xi}} }. The occurrence $v_{\lambda \overline{\xi}}$ appears
         $t\filterplus r_0$ therefore since $r_0$ is not a lambda
         node, its justifier $\lambda \overline{\xi}$ also appears in
         $t\filterplus r_0$. Moreover since $@$ and $v_@$ are hereditarily justified by $\lambda \overline{\xi}$, they must also appear in

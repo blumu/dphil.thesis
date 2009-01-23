@@ -143,11 +143,9 @@ NOT^n &\equiv \lambda p^{\booltype_n} u^{\sigma_n} x^o \lambda y^o . p~u~y~x : \
 For every $n\in\nat$ we define the hierarchy of type $\Delta_k^n$ as
 follows: $\Delta_0^n \equiv \booltype_n$ and $\Delta_{k+1}^n \equiv
 {\Delta_k^n}^*$ where for a given type $\alpha$, $\alpha^* = (\alpha
-\typear \tau \typear \tau)\typear \tau \typear \tau$ for \emph{any} type $\tau$. We encode an occurrence of a formula variable $x^k$ by a term variable $x^k$
-of type $\Delta_{k}^n$ for some level of domain representation
-$n\in\nat$. Following Mairson's  encoding, each set $\mathcal{D}_k$
-is represented by a list $\mathbf{D}_k^n$ consisting of all its
-elements:
+\typear \tau \typear \tau)\typear \tau \typear \tau$ for \emph{any} type $\tau$. We encode an occurrence $x^k$ of a \emph{formula variable} by a \emph{term variable} $x^k$ of type $\Delta_{k}^n$ for some level of domain representation
+$n\in\nat$. Following Mairson's encoding, each set $\mathcal{D}_k$
+is represented by a term $\mathbf{D}_k^n$ encoding the list of all its elements:
 \begin{align*}
 \mathbf{D}_0^n &\equiv \lambda c^{\booltype_n \typear \tau \typear \tau} e^\tau . c~T^n~(c~F^n~e) : \Delta_1^n \\
 \mathbf{D}_{k+1}^n &\equiv powerset_{\Delta_k^n}\,\mathbf{D}_k^n : \Delta_{k+2}^n
@@ -178,34 +176,32 @@ and $n$ is the representation level chosen for the variable $x^k$. Similarly we 
 
 \subsubsection{Encoding the formula}
 
-Given a formula of type theory, it is possible to encode it in the lambda calculus by inductively applying the above encodings of boolean operations and quantifiers on the formula; each variable occurrence in the formula being assigned some domain of representation.
+Given a formula of type theory, it is possible to encode it in the lambda calculus by inductively applying on the formula the above encodings of boolean operations and quantifiers, each variable occurrence in the formula being assigned some domain of representation.
 
-We now show that there exists an assignment of representation domains for each variable occurrence such that the resulting term is safe. Let $x^{k_p}_p \ldots x^{k_1}_1$ for $p\geq1$ be the list of variables appearing in the formula, given in order of appearance of their binder in the formula (\ie,~$x^{k_p}_p$ is bound by the leftmost binder). We fix the domain of representation of each variable as follows. The right-most variable $x^{k_1}_1$ will be encoded in the domain $\Delta^0_{k_1}$; and if for $1\leq i< p$ the domain of representation of $x^{k_i}_i$ is $\Delta^l_{k_l}$ then the domain of representation of $x^{k_{i+1}}_{i+1}$ is defined as
+We now show that there exists an assignment of representation domains for each variable occurrence such that the resulting term is safe. Let $x^{k_p}_p \ldots x^{k_1}_1$ for $p\geq1$ be the list of variables appearing in the formula, given in order of appearance of their binder in the formula (\ie,~$x^{k_p}_p$ is bound by the leftmost binder). We fix the domain of representation of each variable as follows. The right-most variable $x^{k_1}_1$ is encoded in the domain $\Delta^0_{k_1}$; and if for $1\leq i< p$ the domain of representation of $x^{k_i}_i$ is $\Delta^l_{k_l}$ then the domain of representation of $x^{k_{i+1}}_{i+1}$ is defined as
  $\Delta^{l'}_{k_{i+1}}$ where $l'$ is the smallest natural number such that $\ord{\Delta^{l'}_{k_{i+1}}}$ is strictly greater than $\ord{\Delta^{l}_{k_i}}$.
 
-This way, since variables that are bound first have higher order, variables that are bound in nested list-iterations (corresponding to nested quantifiers in the formula) are guaranteed to be safely bound.
+This way, since variables that are bound first have higher order, variables that are bound in nested list-iterations---corresponding to nested quantifiers in the formula---are guaranteed to be safely bound.
 
 \begin{example}
 The formula  $\forall x^0 . \exists y^0 . x^0 \zor y^0$, which is
 encoded by an unsafe term in Mairson's encoding, is represented in
-our encoding by the safe term:
+our encoding by the safe term
  $$\sentail \mathbf{C}_0^{1\mapsto 0} \left( \mathbf{D}_0^1~(\lambda x^{\Delta_0^1}. AND^0 ( \mathbf{D}_0^0 ~(\lambda y^{\Delta_0^0}. OR^0 (OR^0~(\mathbf{C}_0^{1\mapsto 0}~x)~y))~F^0))~T^1 \right) : \booltype_0 \enspace .$$
 \end{example}
 
 
 \subsubsection{Set-membership}
-To complete the interpretation of prime formulae, we would need to show how to encode set membership. The use of multiple domains of representation does not suffice to turn Mairson's encoding into a safe term. We would further need to have a version of the Booleans conversion term $\mathbf{C}^{n+1\mapsto n'}_0$ generalized to higher-order sets.
-This transformation can be interpreted as the simply-typed term:
-$$ \mathbf{C}^{n\mapsto n'}_{k+1} \equiv \lambda m^{\Delta_{k+1}^n} u^{\Delta_k^n\typear \tau\typear \tau} v^\tau. m (\lambda z^{\Delta_k^n} w^\tau . \underline{u (\underline{\mathbf{C}^{n\mapsto n'}_k z}) w}) v : \Delta_{k+1}^n \typear \Delta_{k+1}^{n'} \enspace .$$
-Unfortunately this term is safe if and only if $n=n'$---the largest
-underlined subterm is safe just when $n\geq n'$ and the other
-underline subterm is safe just when $n'\geq n$---in which case the transformation is of no interest.
+To complete the interpretation of prime formulae, we need to show how to encode set membership. Unfortunately, the introduction of multiple domains of representation does not permit us to completely eliminate the unsafety of Mairson's encoding of set membership.
 
-This leads us to conjecture that the set-membership function is intrinsically unsafe.
+Indeed, adapting Mairson's encoding of set membership requires the ability to perform conversion of domains of representation for higher-order sets (not only for Boolean values). The conversion term $\mathbf{C}^{n+1\mapsto n'}_0$ can be generalized to higher-order sets as follows:
+$$ \mathbf{C}^{n\mapsto n'}_{k+1} \equiv \lambda m^{\Delta_{k+1}^n} u^{\Delta_k^n\typear \tau\typear \tau} v^\tau. m (\lambda z^{\Delta_k^n} w^\tau . \underline{u (\underline{\mathbf{C}^{n\mapsto n'}_k z}) w}) v : \Delta_{k+1}^n \typear \Delta_{k+1}^{n'}$$
+where $k\geq 0$. Unfortunately this term is safe if and only if $n=n'$ (The largest underlined subterm is safe just when $n\geq n'$ and the other
+underline subterm is safe just when $n'\geq n$). Hence at higher-orders, all the non-trivial conversion terms are unsafe.
 \smallskip
 
 
-If $\mathbf{C}^{n\mapsto n'}_{k+1}$ were safely representable then the encoding would go as follows: We set $\tau \equiv \booltype_0$ in the types  $\Delta_{k+1}^n$ for all $n,k\geq 0$ in order to iterate a level-$0$ Boolean function.
+If the terms $\mathbf{C}^{n\mapsto n'}_{k+1}$, $k\geq 0$, $n\neq n'$ were safely representable then the encoding would go as follows: We set $\tau \equiv \booltype_0$ in the types  $\Delta_{k+1}^n$ for all $n,k\geq 0$ in order to iterate a level-$0$ Boolean function.
 Firstly, the formulae ``$\mathbf{true} \in y^1$'' and ``$\mathbf{false} \in y^1$'' can be encoded by the safe terms $y^1 (\lambda x^0 . OR^0~x^0) F^0$ and $y^1 (\lambda x^0. OR^0(NOT^0~x^0)) F^0$ respectively.
 For the general case ``$x^k\in y^{k+1}$''
  we proceed as in Mairson's proof \cite{mairson1992spt}: we introduce lambda-terms encoding set equality, set membership and subset tests, and we further parameterize these encodings by a natural number $n$.
@@ -238,15 +234,13 @@ $$x:\Delta_k^n, y:\Delta_{k+1}^{n'}\stentail member_{k+1}^{u}~ (\mathbf{C}_k^{n\
 for some $n,n'\geq 2$ and $u = \min(n,n')+1$.
 
 Unfortunately, this encoding is not completely safe because it uses
-the unsafe conversion terms $\mathbf{C}_k^{n\mapsto n'}$ for
-$k\geq1$.
-
-
+the unsafe conversion terms $\mathbf{C}_k^{n\mapsto u}$ for
+$k\geq1$, $n\neq u$. We conjecture that the set-membership function is intrinsically unsafe.
 
 \subsection{PSPACE-hardness}
 We observe that instances of the True Quantified Boolean Formulae
 satisfaction problem (TQBF) are special instances of the decision
-problem for finite type theory. These instances corresponds to
+problem for finite type theory. These instances correspond to
 formulae in which set membership is not allowed and variables are
 all taken from the base domain $\mathcal{D}_0$. As we have shown in
 the previous section, such restricted formulae can be safely encoded
@@ -330,14 +324,12 @@ At present, no upper bound is known for the equivalence problem for safe terms.
 \subsubsection{Beta-eta equivalence for terms limited to a finite set of types}
 Statman showed \cite{Statman:1979:TLE} that there exists a finite
 set of types such that the beta-eta equivalence problem restricted to terms
-of these types is PSPACE-hard.
-
-The picture is different in the safe lambda calculus since our
+of these types is PSPACE-hard. The picture is different in the safe lambda calculus since our
 encoding of TQBF requires the full type hierarchy. It
 was indeed necessary to introduce variables of higher-order in order
 to eliminate `unsafety'. Consequently, we had to use simple types of
-unbounded order (the order is linear in the size of the QBF
-formula). We suspect the decidability problem for safe terms
+unbounded order. (The order is linear in the size of the QBF
+formula.) We suspect the decidability problem for safe terms
 restricted to any finite set of types to have a complexity lower
 than PSPACE.
 

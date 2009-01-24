@@ -1,9 +1,9 @@
 % -*- TeX -*- -*- Soft -*-
 This chapter is an independent part of the thesis that concerns game semantics only.
-One of the key features of game models is that they abstract the syntax: two syntactically different terms that are equivalent have the same denotation, thus the denotation of a term does not carry any information about its syntax. Here we rework the innocent game semantics of Hyland-Ong \cite{hylandong_pcf} in a more concrete way. We establish an explicit correspondence between the game denotation of a term and its syntax. Our approach follows ideas recently introduced by Ong \cite{OngLics2006}, namely the notion of \emph{computation tree} of a simply-typed lambda-term and \emph{traversals} over the computation tree. A computation tree is just an abstract syntax tree (AST) representation of the $\eta$-long normal form of a term. Traversals are justified sequences of nodes of the computation tree respecting some formation rules. They provide a way to perform \emph{local computation} of $\beta$-reductions as opposed to a global approach where $\beta$-redexes are contracted using substitution; they can be viewed as an implementation of the \emph{linear head reduction strategy} \cite{danos-head}. 
+One of the key features of game models is that they abstract the syntax: two syntactically different terms that are equivalent have the same denotation. Here we rework the innocent game semantics of Hyland-Ong \cite{hylandong_pcf} in a more concrete way. We establish an explicit correspondence between the game denotation of a term and its syntax. Our approach follows ideas recently introduced by Ong \cite{OngLics2006}, namely the notion of \emph{computation tree} of a simply-typed lambda-term and \emph{traversals} over the computation tree. A computation tree is just an abstract syntax tree (AST) representation of the $\eta$-long normal form of a term. Traversals are justified sequences of nodes of the computation tree respecting some formation rules. They provide a way to perform \emph{local computation} of $\beta$-reductions as opposed to a global approach where $\beta$-redexes are contracted using substitution; they can be viewed as an implementation of the \emph{linear head reduction strategy} \cite{danos-head}.
 %A traversal carries syntactic information about the traversed term: its \emph{P-view}---in game semantic sense---is a path in the computation tree.
 
-The culmination of this chapter is the \emph{Correspondence Theorem} (Theorem \ref{thm:correspondence}) which is in two parts. First it states that traversals over the computation tree are just representations of the uncovering of plays of the strategy-denotation of the term. More precisely there is an isomorphism between the set of traversals and the \emph{revealed} game denotation, where the revealed denotation is computed similarly to the standard strategy denotation except that internal moves are not hidden after composition. To internal moves in plays of game semantics---those hidden when performing strategy composition---correspond ``internal nodes'' in the traversal setting. The subsequence of a traversal consisting of non-internal nodes only is called the \emph{core} of the traversal. 
+The culmination of this chapter is the \emph{Correspondence Theorem} (Theorem \ref{thm:correspondence}) which is in two parts. First it states that traversals over the computation tree are just representations of the uncovering of plays of the strategy-denotation of the term. More precisely there is an isomorphism between the set of traversals and the \emph{revealed} game denotation, where the revealed denotation is computed similarly to the standard strategy denotation except that internal moves are not hidden after composition. To internal moves in plays of game semantics---those hidden when performing strategy composition---correspond ``internal nodes'' in the traversal setting. The subsequence of a traversal consisting of non-internal nodes only is called the \emph{core} of the traversal.
 The second part of the theorem states that the standard game denotation of a term is isomorphic to the set traversal cores over its computation tree.
 
 The traversal theory is a top-down approach: the computation tree is traversed from the root and jumps occur from one subterm to another when necessary. This contrasts with the traditional presentation of game semantics where the denotation of a term is calculated bottom-up by composing the denotations of its subterms. Intuitively, the latter approach is less efficient as it requires one to compute the denotation of every subterm even though some of its behaviour will never be exhibited when used as part of the whole term. Another advantage of the traversal theory is that it is flexible enough to accommodate to other functional languages: it is possible to throw in various constants while retaining the game semantic correspondence. At the end of the chapter we show how to adapt the setting to languages like \pcf\ and Idealized Algol.
@@ -20,44 +20,38 @@ Although subsequent results of the thesis rely on the Correspondence Theorem, th
 Further the inductive definition of traversals lends itself well to automaton characterizations.
 For instance Hague \emph{et al.} considered the case of higher-order recursion schemes. They show that
 the set of traversals of the computation tree induced by a recursion scheme can be computed by
-a \emph{collapsible higher-order pushdown automaton} \cite{hmos-lics08}. This suggests potential applications in algorithmic game semantics where such characterization can be used to reduce the observational equivalence problem to an automata equivalence problem.
+a \emph{collapsible higher-order pushdown automaton} \cite{hmos-lics08}. This suggests potential applications in algorithmic game semantics where such characterization permits one to reduce the observational equivalence problem to an automata equivalence problem.
 
 
  \bigskip
 
  \emph{Related works}:
-The useful transference technique between plays and traversals was originally introduced by Ong for studying the decidability of monadic second-order theories of infinite structures generated by higher-order grammars \cite{OngLics2006}. In this setting, the $\Sigma$-constants or terminal symbols are at most order 1, and are \emph{uninterpreted}. Here we present an extension of this framework to the
+The useful transference technique between plays and traversals was originally introduced by Ong for studying the decidability of monadic second-order theories of infinite structures generated by higher-order grammars \cite{OngLics2006}. In this setting, the $\Sigma$-constants or terminal symbols are at most first-order, and are \emph{uninterpreted}. Here we present an extension of this framework to the
 general case of the simply-typed lambda calculus with free variables
-of any order. Further the term considered is not required to be of ground type
-contrary to higher-order grammars. This requires us to add new traversal rules to handle variables whose value is undetermined (\ie, those that cannot be resolved through redex-contraction). We also extend computation trees with additional nodes accounting for answer moves of game semantics. This enables our framework to be extended to languages with interpreted constants such as \pcf\ and Idealized Algol.
+of any order. Further the term considered is not required to be of ground type contrary to higher-order grammars. This is achieved by adding new traversal rules to handle term variables whose `value' is undetermined (\ie, those that cannot be resolved through redex-contraction). We also augment computation trees with additional nodes that account for answer moves of game semantics. This enables our framework to be extended to languages with interpreted constants such as \pcf\ and Idealized Algol.
 
 A notion of local computation of $\beta$-reduction has also been investigated through the use of special graphs called ``virtual nets'' that embed the lambda calculus \cite{DanosRegnier-Localandasynchronou}.
 
 Asperti et~al.\ introduced \cite{DBLP:conf/lics/AspertiDLR94} a syntactic representation of lambda-terms based on Lamping's graphs \citep{lamping}. They unified various notions of paths (regular, legal, consistent and persistent paths) that have appeared in the literature as ways to implement graph-based reduction of lambda-expressions. We can regard a traversal as an alternative notion of path adapted to the graph representation of lambda-expressions given by computation trees.
 
 \section{Computation tree}
-We work in the general setting of the simply-typed lambda calculus extended with a fixed set $\Sigma$ of
-higher-order uninterpreted constants.\footnote{A constant $c \in \Sigma$ is
-  \emph{uninterpreted} if the small-step semantics of the language
-  does not contain any rule of the form $c~M_1\ldots M_k \dots \rightarrow f_c(M_1, \ldots, M_k)$ for some function $f_c$ over closed normal terms
-  $M_1, \ldots, M_k$. Think of such constant as a data constructor.} We fix a simply-typed term-in-context $\Gamma \entail M :T$ for the rest of the section.
+We work in the general setting of the simply-typed lambda calculus extended with a fixed set $\Sigma$ of higher-order constants. 
+For now we assume that the $\Sigma$-constants are \emph{uninterpreted}, so we can just think of them as data constructors. (Formally a constant $c \in \Sigma$ is \defname[uninterpreted constant]{uninterpreted} if the small-step semantics of the language does not contain any rule of the form $c\,M_1\ldots M_k \rightarrow f_c(M_1, \ldots, M_k)$ for some function $f_c$ over terms $M_1, \ldots, M_k$.) We fix a simply-typed term-in-context $\Gamma \entail M :T$ for the rest of the section.
 
 %%% Section to include in the LMCS paper (not needed in the thesis because eta-long nf are already defined in the background chapter
 %\subsection{Eta-long normal form}
-
-
 
 \subsection{Definition}
 
 We define the \emph{computation tree} of a simply-typed lambda-term as an abstract syntax tree representation of its \emph{$\eta$-long normal form} (Def.~\ref{dfn:etalongnf}). Our definition generalizes the notion of computation tree for higher-order recursion schemes \cite{OngLics2006}.
 
 Recall that an $\eta$-long normal form is of the form $\lambda \overline{x} . s_0 s_1 \ldots s_m$ where
-\begin{inparaenum}[i.]
+\begin{inparaenum}[(i)]
 \item $\overline{x} = x_1 \ldots x_n$ for $n\geq 0$ and $s_0 s_1 \ldots s_m$ is of ground type,
 \item each $s_j$ for $j\in 1..m$ is in $\eta$-long nf;
 \item either $s_0$ is a variable or a constant and $m\geq0$, or $s_0$ is an
 abstraction $\lambda\overline{y}.s$ and $m\geq1$ where $s$ is in $\eta$-long nf.
-\end{inparaenum} Note that for terms of ground type the $\eta$-long nf is of the form  $\lambda . N$; although the symbol '$\lambda$' does not correspond to a real lambda-abstraction---we call it `dummy lambda'---it will still be convenient to keep it in expressions representing eta-long normal forms.
+\end{inparaenum} Note that for terms of ground type the $\eta$-long nf is of the form  $\lambda . N$. Although the symbol '$\lambda$' does not correspond to a real lambda-abstraction---we call it `dummy lambda'---it will still be convenient to keep it in expressions representing eta-long normal forms.
 
 \begin{definition}
 Let $\Gamma \stentail M:T$ be a simply-typed term with variable names from $\mathcal{V}$ and constants from $\Sigma$.
@@ -72,8 +66,9 @@ where we write $l\langle t_1, \ldots, t_n \rangle$, for $n \geq 0$, to denote th
 \end{definition}
 
 By convention the first level of a tree (where the root lies) is numbered 0.
-In the tree $\tau^-(M)$, nodes at odd-levels are
-variable, constant or application nodes; and at even-levels lies the $\lambda$-nodes. A single $\lambda$-node can represent several consecutive abstractions or it can just be a \emphind{dummy lambda} (if the corresponding subterm is of ground type).
+In the tree $\tau^-(M)$, odd-levels contain
+variable, constant and application nodes; even-levels 
+contain only $\lambda$-nodes. A single $\lambda$-node can represent several consecutive abstractions or it can just be a \emphind{dummy lambda} (if the corresponding subterm is of ground type).
 
 \pdfsyncstop
 \begin{table}
@@ -112,7 +107,7 @@ $m \geq 1$
 Let $M$ be a simply-typed term not necessarily in $\eta$-long normal
 form. Let $\mathcal{D}$ denote the set of values of the base type $o$.
 The \defname{computation tree} of $M$, written $\tau(M)$ is the tree
-obtained from $\tau^-(\elnf{M})$ by attaching leaves to each node as follows: for every node $n \in \tau^-(M)$, the corresponding node in $\tau(\elnf{M})$ has a
+obtained from $\tau^-(M)$ by attaching leaves to each node as follows: for every node $n \in \tau^-(M)$, the corresponding node in $\tau(M)$ has a
 child leaf labelled $v_n$, called \defname{value-leaf}, for every
 possible value $v \in \mathcal{D}$.
 \indexnotation{$\tau(M)$}{Computation tree of the term $M$}%
@@ -250,7 +245,7 @@ and $\INodes_{\sf spawn}$ for the set of spawn nodes.
 For $\$$ ranging over $\{@, \lambda, {\sf var}, {\sf fv} \}$,
 we write $\LNodes_\$$ to denote the set of value-leaves which are children of nodes from $\INodes_\$$; formally $\LNodes_\$ = \{ v_n \ | \ n \in \INodes_\$, v \in \mathcal{D} \}$. We write $\Nodes_\$$ for $\INodes_\$ \union \LNodes_\$ $.
 
-We partition the set of nodes in two subsets: the \index{node!P-}\defname{P-nodes}
+ Further we partition the set of nodes in two subsets: the \index{node!P-}\defname{P-nodes}
 $\INodes_{\sf var} \union \INodes_\Sigma \union \INodes_@ \union \LNodes_\lambda$,
 and the \index{node!O-}\defname{O-nodes} $\LNodes_{\sf var} \union \LNodes_\Sigma \union \LNodes_@\union \INodes_\lambda$.
 
@@ -319,7 +314,7 @@ $$ \begin{array}{lcl}
   \enable & = & \{ (\theroot,n) \ | n \in \INodes_{\sf fv} \} \\
 &&\union\  \{ (\lambda \overline{x},x) \ | x \in \INodes_{\sf var}\setminus \INodes_{\sf fv} \zand \lambda\overline{x} \mbox{ is $x$'s binder} \} \\
 && \union\ \{ (m,\lambda\overline\eta) \ | \ m \mbox{ is $\lambda\overline\eta$'s parent and } \lambda\overline\eta \in \INodes_\lambda \} \\
-&& \union\ \{ (m,v_m) \ | \ v \in \mathcal{D}, m \in \INodes  \}
+&& \union\ \{ (m,v_m) \ | \ v \in \mathcal{D}, m \in \INodes  \} \enspace .
 \end{array}$$
 Note that in particular, free variable nodes are enabled by the root.
 Table \ref{tab:enabler_type} recapitulates the possible node types for the enabler node depending on the type of $n$.
@@ -386,7 +381,7 @@ one of the following forms:
 
 \begin{tabular}{cll}
     & \Pstr[0.7cm]{ (m){r} \cdot \ldots \cdot (n-m,40){z} }
-    & for some occurrences $r$ of $\tau(M)$'s root and $z \in \INodes_{\sf fv}$\enspace ;
+    & for some occurrence $r$ of $\tau(M)$'s root and $z \in \INodes_{\sf fv}$\enspace ;
 \\
     or
     & \Pstr[0.7cm]{ (m){\lambda \overline{\xi}} \cdot \ldots \cdot (n-m,40:i){\xi_i} }
@@ -497,7 +492,7 @@ called the \defname{initial occurrence of the thread of $n$}.
 \subsubsection{Views}
 The notion of \index{view!P-view}\defname{P-view} $\pview{t}$ of a justified sequence
 of nodes $t$ is defined the same way as the P-view of a justified
-sequences of moves in Game Semantics:
+sequences of moves in game semantics:
 
 \begin{definition}[P-view of justified sequence of nodes]
 The P-view of a justified sequence of nodes $t$ of $\tau(M)$, written $\pview{t}$, is defined as follows:
@@ -513,9 +508,9 @@ $$\begin{array}{rcll}
  \pview{s \cdot \theroot }  &=&  \theroot \enspace .
 \end{array}$$
 The equalities in the definition determine pointers implicitly. For
-instance in the second clause, if in the left-hand side, $n$ points
+instance in the second clause, if in the left-hand side $n$ points
 to some node in $s$  that is also present in $\pview{s}$ then in the
-right-hand side, $n$ points to that occurrence of the node in
+right-hand side $n$ points to that occurrence of the node in
 $\pview{s}$.
 \end{definition}
 
@@ -540,11 +535,11 @@ $$\begin{array}{rcll}
 We borrow some terminology from game semantics:
 \begin{definition} Let $s$ be a justified sequence of nodes. We list the following axioms:
 \begin{itemize}[-]
-\item \defname{Alternation} for every pair of consecutive nodes in $s$, one is a P-node and the other is an O-node;
-\item \defname[visibility]{P-visibility} for every occurrence in $s$
+\item \defname{Alternation}: for every pair of consecutive nodes in $s$, one is a P-node and the other is an O-node;
+\item \defname[visibility]{P-visibility}: for every occurrence in $s$
 of a non-initial P-node, its justifier occurs in the P-view at that point;
-\item  \defname[visibility]{O-visibility} for every occurrence in $s$
-of a non-initial O-node, its justifier occurs in the O-view at that point;
+\item  \defname[visibility]{O-visibility}: for every occurrence in $s$
+of a non-initial O-node, its justifier occurs in the O-view at that point.
 \end{itemize}
 \end{definition}
 
@@ -628,8 +623,7 @@ $$\Pstr[1.3cm]{ t= (n0){\lambda f z}
     In the rest of this chapter we will prove various resulting
     by induction on the structure of a traversal and by case
     analysis on the last rule used to form it. Some of
-    these proofs will rely on the above-defined reformulation of
-    \rulenamet{Value} instead of its original definition.
+    these proofs will rely on the above reformulation rather than the original definition of \rulenamet{Value}.
 
     \item In the rule \rulenamet{InputValue}, the last node in the traversal $t_1 \cdot x \cdot t_2$ necessarily belongs to $\INodes_{\sf var} \union \LNodes_\lambda$. Indeed, since the pending node $x$ is a variable node, the traversal is of the form
 $$\Pstr[0.5cm]{\ldots \cdot x \cdot  (l){\lambda \overline{\eta}_1}\ldots (v-l){v^1_{\lambda \overline{\eta}_1}}
@@ -640,12 +634,12 @@ $$\Pstr[0.5cm]{\ldots \cdot x \cdot  (l){\lambda \overline{\eta}_1}\ldots (v-l){
     Furthermore, the pending node appears necessarily in the O-view.
 
     These two observations show that the rule \rulenamet{InputValue} is essentially a specialization of \rulenamet{InputVar} to value-leaves. The only difference is that \rulenamet{InputVar}
-    allows the visited node to be justified by \emph{any} variable node occurring in the O-view whereas \rulenamet{InputValue} constrains the node
-    to be justified by the pending node (which necessarily occurs in the O-view). This restriction is here to ensure that traversals are well-bracketed.
+    allows the visited node to be justified by \emph{any} variable node occurring in the O-view whereas \rulenamet{InputValue} constrains the node to be justified by the pending node (which necessarily occurs in the O-view). This additional restriction is required to ensure that traversals are well-bracketed.
 
 \item In the rule
-\rulenamet{Value}, it is possible to replace the condition ``$n\in \INodes$'' by the stronger ``$n\in \INodes\setminus \INodes_{\lambda}^{\theroot\enable}$''. Indeed a later result (Lemma \ref{lem:trav_oview_single_threaded}) will show that if $n$ belongs to $\INodes_{\lambda}^{\theroot\enable}$ then the preceding occurrence $m$ is necessarily an input-variable.
-Furthermore, another result (Prop.~\ref{prop:pviewtrav_is_path}) shows that traversals are well-bracketed, therefore $m$ is necessarily the pending node. Hence the rule \rulenamet{InputValue} can be use in place of
+\rulenamet{Value}, it is possible to replace ``$n\in \INodes$'' by the stronger condition ``$n\in \INodes\setminus \INodes_{\lambda}^{\theroot\enable}$''. Indeed a later result (Lemma \ref{lem:trav_oview_single_threaded}) will show that if $n$ belongs to $\INodes_{\lambda}^{\theroot\enable}$ then the preceding occurrence $m$ is necessarily an input-variable.
+Furthermore, another result (Prop.~\ref{prop:pviewtrav_is_path}) shows that traversals are well-bracketed, therefore $m$ is necessarily the pending node. Thus in this particular case 
+we can use the rule \rulenamet{InputValue} in place of
 \rulenamet{Value} to visit $v_m$.
 
 
@@ -657,8 +651,7 @@ The advantage of this alternative formulation is that the traversal rules have d
 A traversal always starts with the root node and mainly follows the
 structure of the tree. The exception is the \rulenamet{Var} rule
 which permits the traversal to jump across the computation tree. The
-idea is that after visiting a non-input variable node $x$, a jump
-can be made to the node corresponding to the subterm that would be
+idea is that after visiting a non-input variable node $x$, a traversal can jump to the node corresponding to the subterm that would be
 substituted for $x$ if all the $\beta$-redexes occurring in the term
 were to be reduced. Let $\lambda \overline{x}$ be $x$'s binder and
 suppose $x$ is the $i^{th}$ variable in $\overline{x}$. The binding
@@ -715,15 +708,13 @@ child[dotted]{
     the node $\lambda \overline{x}$ was necessarily added to the traversal $t_{\leq y}$ using the \rulenamet{Var} rule.
     (Indeed, if it was visited using \rulenamet{InputVar} then $\lambda \overline{x}$ would be hereditarily justified by the root, but this is not possible since $x_i$, bound by $\lambda \overline{x}$, is not an input-variable.)
     Therefore $y$ is substituted by the term rooted at $\lambda \overline{x}$ during the evaluation of the term.
-
-    Consequently, during reduction, the variable $x$ will be substituted by the subterm represented by
-    the $i^{th}$ child node of $y$. Hence the following justified sequence is also a traversal:
+    Consequently, during reduction, the variable $x$ will be substituted by the subterm represented by the $i^{th}$ child node of $y$. We therefore have the traversal
     $$\Pstr[18pt]{ t' \cdot
             (y){y} \cdot
             (lx){\lambda \overline{x}} \cdot \ldots \cdot
             (x-lx,40:i){x} \cdot
             (mi-y,40:i){\lambda \overline{\eta_i}} \cdot \ldots
-    }
+    } 
     $$
     \end{itemize}
 
@@ -731,15 +722,15 @@ child[dotted]{
 Our notions of computation tree and traversal differ slightly from the original definitions by Ong \cite{OngLics2006}.
 In his setting:
 \begin{itemize}[-]
-    \item computation trees contain (uninterpreted first-order) constants. Here we have not accounted for constants but as previously observed, uninterpreted constants can just be regarded as free variables, thus we do not lose any expressivity here.
+    \item computation trees contain (uninterpreted first-order) constants. Here we do not consider constants but, as previously observed, they are automatically accounted for since uninterpreted constants can just be regarded as free variables.
 
     \item constants are restricted to order one at most. (Terms are used as generators
         of trees where first-order constants act as tree-node constructors). Here we do not need this restriction: as long as constants are uninterpreted we can regard them as free variables, even at higher-orders.
 
-    \item one rule (\rulenamet{Sig}) suffices to model the first-order constants. In contrast our setting
+    \item a single rule \rulenamet{Sig} suffices to model the first-order constants. In contrast our setting
     accounts for higher-order variables, thus the more complicated rules \rulenamet{InputValue} and \rulenamet{InputVar} are required.
 
-    \item computation trees do not have value-leaves. These are not necessary to model the pure simply-typed lambda calculus. There will be necessary, however, when it comes to model interpreted constants such as those of \pcf\ or \ialgol.
+    \item computation trees do not have value-leaves. These are not necessary to model the pure simply-typed lambda calculus. There will be necessary, however, when it comes to model \emph{interpreted} constants such as those of \pcf\ or \ialgol.
     \end{itemize}
 \end{remark}
 
@@ -840,8 +831,7 @@ The framework that we have established up to now aims at providing
 a computation model of simply-typed lambda-terms. It is
 possible to extend it to other extensions of the simply-typed lambda calculus. This is done by completing the traversal rules from Table \ref{tab:trav_rules}
 with new rules describing the behaviour of the interpreted constants
-of the language considered. For instance in the case of \pcf, we
-need to define rules for the interpreted constant $\pcfcond$ that
+of the language considered. For instance extending the framework to \pcf\ requires one to define rules for the interpreted constant $\pcfcond$ that
 replicate the behaviour of the conditional operation. (In a
 forthcoming section of this chapter we will give a complete
 definition of the constant traversal rules for \pcf\ and \ialgol.)
@@ -956,9 +946,7 @@ following shape:
 \fi
 }
 \end{center}
-for some value-leaf $v_{\lambda'}$ of $\lambda'$.
-
-Again, the node following $v_{\lambda'}$ must be a dummy lambda node
+for some value-leaf $v_{\lambda'}$ of $\lambda'$. Again, the node following $v_{\lambda'}$ must be a dummy lambda node
 pointing to $\alpha$. By iterating the same argument we obtain that
 the segment $u$ is a repetition of segments of the form
 \Pstr[0.5cm]{(lp){\lambda'} \cdot  \ldots (v-lp){v_{\lambda'}}}.
@@ -1032,7 +1020,7 @@ $m$ and $n$ are in the same thread in $t$: they are hereditarily justified by th
 \begin{proof}
 Clearly (b) follows immediately from (a) due to the way the O-view is computed. We show (a) by induction on the last traversal rule used to form $t$. The results trivially hold for the base cases \rulenamet{Empty} and \rulenamet{Root}.
 Step case: Take $t = t' \cdot n$. If $n \in \INodes_\lambda\union \LNodes_{\sf var} \union \LNodes_\Sigma \union \LNodes_@$ then we do not need to show (a).
-Otherwise $n$ is an O-node. By O-visibility, $n$ points in $\oview{t'}$, thus by the I.H., it must belong to the same thread as all the nodes in $\oview{t'}$ and in particular to the thread of $t'^\omega$. Therefore both (i) and (ii) hold.
+Otherwise $n$ is an O-node. By O-visibility, $n$ points in $\oview{t'}$, thus by the I.H.\ it must belong to the same thread as all the nodes in $\oview{t'}$ and in particular to the thread of $t'^\omega$. Therefore both (i) and (ii) hold.
 \end{proof}
 
 
@@ -1041,7 +1029,7 @@ Otherwise $n$ is an O-node. By O-visibility, $n$ points in $\oview{t'}$, thus by
 
 
 Occurrences of input-variable nodes correspond to points in the computation where the term interacts with its context.
-At these points, a traversal can be extended in a non-deterministic way. In contrast, at a node that is hereditarily enabled by an @-node or by a constant node, the next visited node is uniquely determined. We can therefore think of such nodes as being ``internal'' to the computation: their semantics is predefined and cannot be altered by the context in which the term appears. If we want to extract the essence of the computation from a traversal, a natural way to proceed thus consists in keeping only occurrences of nodes that are hereditarily enabled by the root:
+At these points, a traversal can be extended in a non-deterministic way. In contrast, at a node that is hereditarily enabled by an @-node or by a constant node, the next visited node is uniquely determined. We can therefore think of such nodes as being ``internal'' to the computation: their semantics is predetermined and cannot be altered by the context in which the term appears. If we want to extract the essence of the computation from a traversal, a natural way to proceed thus consists in keeping only occurrences of nodes that are hereditarily enabled by the root:
 \begin{definition}
 The \defname{core of a traversal} $t$, written $t\filter \theroot$, is defined as $t\filter \Nodes^{\theroot \enable}$ (\ie, the subsequence of $t$ consisting of the occurrences of nodes that are hereditarily enabled by the root $\theroot$ of the computation tree). The set of traversal cores of $M$ is denoted by $\travset(M)^{\filter \theroot}$:
 $$\travset(M)^{\filter \theroot} \defeq \{ t \filter \theroot \ :\  t  \in \travset(M) \} \enspace . $$
@@ -1072,7 +1060,7 @@ certain form of alternation between lambda nodes and non-lambda
 nodes. Application nodes are however redundant in the sense that
 they do not play any role in the computation of the term. In fact it
 will be necessary to filter them out in order to establish the
-correspondence with interaction game semantics.
+correspondence with game semantics.
 
 \begin{definition}[@-free traversal]
 \label{dfn:appnode_filter} Let $t$ be a traversal of $\tau(M)$. We
@@ -1201,7 +1189,7 @@ as follows:
 \begin{definition}
 \label{def:subterm_trav_projection}
   Let $t$ be a traversal such that $t^\omega\not\in \LNodes_@\union \LNodes_\Sigma$ and
-  $n \Nodes_\lambda$ be a lambda-node. The projection $t^\star \filter \Nodes^{(n)}$ is
+  $n \in \Nodes_\lambda$ be a lambda-node. The projection $t^\star \filter \Nodes^{(n)}$ is
 defined as the subsequence of $t^\star$ consisting of nodes of
 $\Nodes^{(n)}$ only. If a variable node loses its pointer in $t^\star
 \filter \Nodes^{(n)}$ then its justifier is reassigned to the only

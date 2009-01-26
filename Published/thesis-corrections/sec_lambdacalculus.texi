@@ -1,0 +1,364 @@
+
+We assume that the reader is familiar with the simply-typed lambda calculus, but for precision and to fix notations we give here  a brief overview of the basic definitions. For a detailed account the reader is referred to the standard textbooks on the subject \cite{Hindley1997,DBLP:books/cu/HindleyS86,Barendregt:92}.
+
+\subsection{Terms}
+
+We fix a countable set of variables $\mathcal V$.
+\begin{definition}
+The set $\Lambda$ of \defname[term]{terms} of the \emphind{untyped lambda calculus} is given by the set of derivations of the following grammar:
+$$ \Lambda = \mathcal V \ | \ \Lambda\, \Lambda \ |\  \lambda \mathcal V . \Lambda \enspace .$$
+\end{definition}
+These three basic formation rules are used to construct terms that are respectively \emph{variables}, \emph{applications} and \emph{lambda-abstractions}.
+
+A term is represented by an expression representing its derivation tree.
+ It is computed as follows: The leaves of the derivation tree are concatenated from left to right and additional parentheses are added to indicate the order of the derivation. Parentheses ensure that the representation is unique. For instance they allow us to distinguish the five different derivations whose underlying concatenation of leaves is given by ``$\lambda x. M N Q$''; these derivations are $\lambda x. ((M N) Q)$, $\lambda x. (M (N Q))$, $(\lambda x. M) (N Q)$, $(\lambda x. (M N)) Q$, and $((\lambda x. M) N) Q$.
+We further use the following conventions:
+ \begin{enumerate}[(i)]
+\item We use symbols $x,y,\ldots$ to denote variables in $\mathcal{V}$
+and $M,N,\ldots$ to denote other terms;
+\item Application associates to the left: $M N Q$
+stands for the term $((M N) Q)$;
+\item Nested lambda abstractions are combined into a single one:
+$\lambda x y z . x$ stands for $\lambda x . \lambda y . \lambda z . x$. Also if $\overline{x}$ denotes a sequence of variables $x_1 \ldots x_n$ then we write $\lambda \overline x . M$ as a short-hand for $\lambda x_1 \ldots x_n . M$.
+\end{enumerate}
+\begin{example}
+$\lambda x . x$, $\lambda x . x y$, $(\lambda x . x x) (\lambda x .x x)$ are all valid terms.
+\end{example}
+
+\begin{definition}
+\indexnotation{$\freevarset(M)$}{Set of free variables of the term $M$}
+  The set of \defname{free variables} $\freevarset(M)$ of a term $M$ is given inductively by:
+  \begin{align*}
+    \freevarset(x) &= \{ x \} \\
+    \freevarset(M N) &= \freevarset(M) \union \freevarset(N) \\
+    \freevarset(\lambda x. M) &= \freevarset(M) \setminus \{ x \} \enspace .
+  \end{align*}
+  An \emph{occurrence} of a variable $x$ in $M$ is said to be \defname[variable!free]{free} if it belongs to $\freevarset(M)$. Otherwise it is said to be \defname[variable!bound]{bound}.
+  A term $M$ is \index{term!closed}\defname[closed term]{closed} if it has no free variable (\ie, $\freevarset(M) = \emptyset$).
+\end{definition}
+
+We write $\closure{M}$ to denote the closed term obtained from $M$ by abstracting all its free variables by order of appearance in the term.
+
+A variable is \index{variable!fresh}\defname[fresh variable]{fresh} if it does not occur anywhere in the terms that we are considering.
+Two terms $M$ and $N$ are \defname{$\alpha$-convertible} if one can be obtained from the other by renaming bound variables to fresh names.\indexnotation{$M\equiv N$}{Syntactic equality of terms (modulo $\alpha$-conversion)} We consider syntactic equality of terms modulo $\alpha$-conversion and we write $M\equiv N$ to denote this equality.
+
+
+The set $\subterm(M)$ of \defname{sub-terms} of $M$ is given by induction as:
+\begin{align*}
+  \subterm(x) & = \{ x \} \\
+  \subterm(M N) & = \{ M N\} \union \subterm(M) \union \subterm(N) \\
+  \subterm(\lambda x . M) &= \{ \lambda x . M \} \union \subterm(M)  \enspace .
+\end{align*}
+
+\subsection{Substitution}
+
+\emph{Substitution} refers to the transformation that replaces a free variable in a term by another term. The naive way to implement substitution consists in textually replacing all free occurrences of $x$ in $M$ by $N$.
+This is called \emph{capture-permitting substitution}:
+\begin{definition}
+\label{def:captpermsubst}
+The \defname[substitution!capture-permitting]{capture-permitting substitution} of $N$ for $x$ in $M$,
+written $M\captsubst{N}{x}$, is defined by induction as follows:
+\indexnotation{$M\captsubst{N}{x}$}{Capture-permitting substitution of $N$ for $x$ in $M$}%
+\begin{eqnarray*}
+%c \captsubst{N}{x} &\equiv& c \quad \mbox{where $c$ is a $\Xi$-constant},\\
+ x \captsubst{N}{x} &\equiv& N\\
+ y \captsubst{N}{x} &\equiv& y \quad \mbox{if } x \not \equiv y,\\
+(M_1 M_2) \captsubst{N}{x} &\equiv& (M_1 \captsubst{N}{x}) (M_2 \captsubst{N}{x})\\
+(\lambda x . M) \captsubst{N}{x} &\equiv& \lambda x . M \\
+(\lambda y . M) \captsubst{N}{x} &\equiv& \lambda y . M\captsubst{N}{x} \mbox{if $y \not\equiv x$ \enspace .}
+\end{eqnarray*}
+\end{definition}
+
+Although this definition is valid, it is not adequate in the sense that is not sound with respect to syntactical equality:
+take the terms $M_1\equiv \lambda y .x$, $M_2\equiv \lambda z .x$ and $N \equiv y$. We have $M_1\captsubst{N}{x} \equiv \lambda y . y$
+and $M_2\captsubst{N}{x} \equiv \lambda z.N$. Thus although $M_1$ and $M_2$ are syntactically equivalent, performing the same substitution on both terms gives terms that are not syntactically equivalent.
+
+The source of the problem lies the last equation: in the abstraction case, when pushing the substitution under the lambda, some care needs to be taken so that the free-variables in $M$ do not get ``captured'' by the abstraction. This is traditionally achieved by renaming all the free variables in $M$ afresh before continuing with the substitution:
+\begin{definition}
+\label{dfn:subst}
+The \defname[substitution!definition]{substitution} of $N$ for $x$ in $M$ written $M\subst{N}{x}$ is defined by induction as follows:
+\indexnotation{$M\subst{N}{x}$}{Substitution of $N$ for $x$ in $M$}%
+\begin{eqnarray*}
+%c \subst{t}{x} &\equiv& c \quad \mbox{where $c$ is a $\Xi$-constant},\\
+x \subst{t}{x} &\equiv& t\\
+ y\subst{t}{x} &\equiv& y \quad \mbox{if } x \not\equiv y,\\
+(M_1 M_2) \subst{t}{x} &\equiv& (M_1 \subst{t}{x}) (M_2 \subst{t}{x})\\
+(\lambda x . M) \subst{t}{x} &\equiv& \lambda x . M\\
+(\lambda y . M) \subst{t}{x} &\equiv& \lambda z . M \subst{z}{y}
+\subst{t}{x} \mbox{if $x\not\equiv y$ and where $z$ is a fresh variable}.
+\end{eqnarray*}
+\end{definition}
+Observe that only the last equation differs from the previous definition.
+
+The obvious generalization to multiple variables is called \emphind{simultaneous substitution}:
+\begin{definition}
+\label{def:captpermsimultsubst}
+The \defname[substitution!simultaneous capture-permitting]{simultaneous capture-permitting substitution} of $N_1$, \ldots, $N_n$ for
+the (distinct) variables $x_1$,\ldots $x_n$ in $M$, written $M\captsubstl N_1/x_1, \ldots, N_n/x_n\captsubstr$ and abbreviated here as
+$M\captsubst{\overline{N}}{\overline{x}}$ is defined by induction as follows:
+\begin{eqnarray*}
+%c \captsubst{\overline{N}}{\overline{x}} &\equiv& c \quad \mbox{where $c$ is a $\Xi$-constant},\\
+ x_i \captsubst{\overline{N}}{\overline{x}} &\equiv& N_i\\
+ y \captsubst{\overline{N}}{\overline{x}} &\equiv& y \quad \mbox{if } x \not \neq y_i \mbox{ for all } i,\\
+(M_1 M_2) \captsubst{\overline{N}}{\overline{x}} &\equiv& (M_1 \captsubst{\overline{N}}{\overline{x}}) (M_2 \captsubst{\overline{N}}{\overline{x}})\\
+(\lambda x_i . M) \captsubst{\overline{N}}{\overline{x}} &\equiv& \lambda x_i
+. M
+\captsubst{N_1 \ldots N_{i-1} N_{i+1}\ldots N_n}{x_1 \ldots x_{i-1} x_{i+1}\ldots x_n} \\
+(\lambda y . M) \captsubst{\overline{N}}{\overline{x}} &\equiv& \lambda y . M
+\captsubst{\overline{N}}{\overline{x}} \mbox{if $y \not \equiv x_i$ for
+all $i$.}
+\end{eqnarray*}
+\end{definition}
+
+\begin{definition}
+\label{dnf:simsubst}
+The \defname[substitution!simultaneous]{simultaneous substitution} of $N_1$, \ldots, $N_n$ for the (distinct) variables $x_1$,\ldots $x_n$ in $M$, written $M\substl N_1/x_1, \ldots, N_n/x_n\substr$ and abbreviated here as $M\subst{\overline{N}}{\overline{x}}$ is defined by induction as follows:
+\begin{eqnarray*}
+%c \subst{\overline{N}}{\overline{x}} &\equiv& c \quad \mbox{where $c$ is a $\Xi$-constant},\\
+x_i \subst{\overline{N}}{\overline{x}} &\equiv& N_i\\
+ y \subst{\overline{N}}{\overline{x}} &\equiv& y \quad \mbox{ if } y \not \equiv x_i \mbox{ for all } i,\\
+(M N) \subst{\overline{N}}{\overline{x}} &\equiv& (M \subst{\overline{N}}{\overline{x}}) (N \subst{\overline{N}}{\overline{x}}) \\
+(\lambda x_i . M) \subst{\overline{N}}{\overline{x}} &\equiv& \lambda x_i
+. M
+\subst{N_1 \ldots N_{i-1} N_{i+1}\ldots N_n}{x_1 \ldots x_{i-1} x_{i+1}\ldots x_n} \\
+(\lambda y . M)
+\subst{\overline{N}}{\overline{x}} &\equiv& \lambda z . M \subst{z}{y} \subst{\overline{N}}{\overline{x}} \\
+&& \mbox{if } y \not\equiv x_i \mbox{ for
+all } i \mbox{ and where $z$ is a fresh variable}.
+\end{eqnarray*}
+\end{definition}
+
+
+\subsection{Conversion}
+\newcommand\somerel{\mathop{R}}
+
+A binary relation $\somerel$ over $\Lambda$ is \defname{compatible} if
+$M\somerel M'$ implies $M N\somerel M' N$, $N M\somerel N M'$
+ and $\lambda x . M\somerel\lambda x . M'$ for all $M, M', N \in \Lambda$.
+It is \defname{transitive} if $M\somerel N$ and $N\somerel Q$ implies $M\somerel Q$; \defname{reflexive} if $M\somerel M$;
+and \defname{symmetric} if $M\somerel  N$ implies $N\somerel M$,
+for all $M,N,Q\in \Lambda$.
+
+The concept of computation in the lambda calculus is incarnated by a term-rewriting rule called \defname{$\beta$-reduction}:
+\begin{definition}
+We call \defname[beta-redex]{$\beta$-redex} any term of the form
+$(\lambda x.M) N$. Its \emphind{contraction} is defined as $M\subst{N}{x}$.
+We define $\beta$ as the relation mapping a redex to its contraction:
+$$ \beta = \{ ( (\lambda x. M) N,\  M\subst{N}{x} ) \ | M,N \in \Delta, x \in\mathcal{V} \}\enspace .$$
+
+\indexnotation{$\betared$}{Beta-reduction}%
+The \defname{one-step $\beta$-reduction} relation $\betared$ is defined as the compatible closure of the relation $\beta$. The relation $\betaredtr$ denotes the reflexive transitive closure of $\betared$, and the relation $\betaconv$, called \defname[beta-equality]{$\beta$-equality} or also $\beta$-conversion, denotes the reflexive symmetric transitive closure of $\betared$.
+\end{definition}
+
+In addition to the $\beta$-reduction rule the \defname[eta-reduction]{$\eta$-reduction} $\etared$ is defined as the smallest compatible relation satisfying:
+$$ \lambda z . M z \etared M \quad \mbox{if } z \not\in \freevarset(M) \enspace .$$
+
+We define \index{eta-conversion}\emph{$\eta$-conversion} $\etaconv$ as the reflexive symmetric transitive closure of $\etared$.
+
+
+\begin{definition}[Normal form] A term
+\begin{enumerate}[(i)]
+\item
+is a \defname[beta-normal form]{$\beta$-normal form}, $\beta$-nf for short, if it does not contain any $\beta$-redex;
+
+\item \emph{has} a $\beta$-normal form, or is \defname{normalizable}, if it is $\beta$-equal to a $\beta$-normal form;
+
+\item is \defname{strongly normalizable} if every sequence of reduction starting from it is finite (and therefore ends with a normal form).
+\end{enumerate}
+The notions of $\eta$ and $\beta\eta$-normal form are defined similarly.
+\end{definition}
+
+
+\subsection{Properties}
+
+A reduction is \defname{weakly normalizing} if every term is normalizable and
+\defname{strongly normalizing} if every term is strongly normalizable.
+The (untyped) lambda calculus is not even weakly normalizing with respect to $\beta$-reduction since for instance the term $\Omega \equiv (\lambda x. x\, x) (\lambda x. x\, x)$ $\beta$-reduces to itself.
+
+The lambda calculus satisfies the so-called \emphind{Church-Rosser} theorem:
+\begin{theorem}[Church-Rosser Theorem]
+  If $M \betaredtr N_1$ and $M\betaredtr N_2$ then
+  for some $N$ we have $N_1 \betaredtr N$ and $N_2\betaredtr N$.
+\end{theorem}
+This is sometimes summarized as ``$\betaredtr$ satisfies the diamond property''.
+A consequence of this theorem is that a term has at most one $\beta$-normal form. Furthermore:
+\begin{theorem}[Normalization Theorem \cite{Barendregt84}]
+The leftmost reduction strategy is normalizing (\ie, if $M$ has a normal form then the reduction strategy consisting in contracting the leftmost redex leads to that normal form).
+\end{theorem}
+
+\subsection{Simple types}
+\label{sec:simpletype}
+
+Simple types are objects that are constructed from atomic types using
+the function space arrow operator $\typear$. Formally, we fix a set $\mathbb{A}$ of \defname{atomic types} and we define the set $\mathbb{T}_{\mathbb{A}}$ of \defname[simple  type]{simple types} over $\mathbb A$ as the set generated from the following grammar:
+\begin{align*}
+\mathbb{T}_{\mathbb{A}} \, &::= \, \mathbb{A} \; |\;  \mathbb{T}_\mathbb{A} \typear \mathbb{T}_\mathbb{A} \enspace .
+\end{align*}
+
+We will use the Greek letter symbols $\alpha$, $\beta$, \ldots to refer to atomic types and capital letters $A$, $B$, \ldots to refer to other types.
+We further assume that $\mathbb{A}$ has a distinguished atomic type denoted by the symbol $o$.
+
+By convention, $\typear$ associates to the right. Thus every type can be written as $A_1 \typear \cdots \typear A_n \typear \alpha$ for some atomic type $\alpha$, which we shall abbreviate to $(A_1, \cdots, A_n, \alpha)$ (in case $n = 0$, we identify $(\alpha)$ with $\alpha$).
+The number $n$ is called the \index{type!arity}\defname{arity} of the type, it is written $\arity(T)$ for every type $T$.
+
+\begin{convention} We use the following abbreviations for types:
+\begin{enumerate}[(i)]
+\item For every atom $a$ and natural number $n\in\nat$, we define the types $n_a$ as follows: $0_a = a$ and $(n+1)_a = n_a \typear a$;
+\item For every types $A, B$ and positive natural number $n>0$, the type $A^n \typear B$ is defined by induction as:     $A^1 \typear B = A \typear B$  and $A^{n+1} \typear B = A\typear (A^n \typear B)$. In other words:
+    $A^n \typear B = \overbrace{A \typear \ldots \typear  A}^{\mbox{ $n$ times}} \typear B$;
+\end{enumerate}
+\end{convention}
+
+The \defname[order!type]{order} of a type is given by $\ord{\alpha} = 0$ for every atomic type $\alpha$ and $\ord{(A \typear B)} = \max(1+\ord{A}, \ord{B})$. We assume an infinite set of typed variables. The order of a typed term or symbol is defined to be the order of its type.
+
+
+\begin{definition}[Type substitution]
+\label{def:typesubstitution}
+  A \defname{type substitution} is an expression   $[T_1/a_1, \ldots, T_n/a_n]$ where $a_1,\ldots,a_n$ are distinct atomic types in $\mathbb{A}$ and
+  $T_1,\ldots,T_n \in\mathbb{T}$.
+
+  For every type $T\in\mathbb{T}$ and type substitution $[T_1/a_1, \ldots, T_n/a_n]$
+  we define $T[T_1/a_1, \ldots, T_n/a_n]$ to be the type obtained from $T$ by substituting $T_1$ for $a_1$, \ldots, $T_n$ for $a_n$. The resulting type is called an \defname[instance!of a type]{instance of} the type $T$.
+\end{definition}
+
+
+\subsection{Simply-typed lambda calculus \ala Curry}
+There exist two styles of presentation of the simply-typed lambda calculus.
+In the Curry style, typing is implicit. This means that each untyped term is assigned
+either no type or infinitely many types. The other presentation, called Church style, makes the typing information explicit in the structure of the term by introducing type annotations in it. Thus terms of this system have a unique type. We present here the Curry version of the simply-typed lambda calculus.
+
+
+We write $M:A$ to denote that the term $M$ can be assigned the type $A \in \mathbb{T}$ in the typing-system.
+A set $\Gamma$ of \emphind{typing assumptions} is a set of typing-assignments of the form $x:T$ where $x$ is a variable in $\mathcal V$ and $T \in \mathbb{T}$.
+It is \index{consistent typing assumptions}\emphind{consistent} if all the variables names are distinct (\ie, each variable name is assigned a unique type). The underlying set of variable names is called the domain $\Gamma$ and is written $dom(\Gamma)$. We will write $\Gamma, x:A$ to denote the set of typing assumptions $\Gamma \union \{ x:A \}$.
+We consider judgements of the form $\Gamma \cuentail M : A$ called \defname[term-in-context]{terms-in-context} where
+$\Gamma$ is a \emph{consistent} set of typing assumptions
+called the \defname{typing context}, $A$ is a simple type and $M$ is a term.
+
+
+\begin{definition}
+\label{def:lambdacalculus_alacurry}
+The \defname{simply-typed lambda calculus} \ala Curry, denoted by $\cusystem$, is defined as the set of terms-in-context of the form $\Gamma \cuentail M : A$ that are derivable from the variable, application and abstraction rules defined as follows:
+$$ \rulef{}{\Gamma\cuentail x : A}\ x:A \in \Gamma
+\qquad
+\rulef{\Gamma \cuentail M : A\typear B \quad \Gamma \cuentail N : A} {\Gamma \cuentail M\, N : B}
+\qquad
+\rulef{\Gamma, x : A \cuentail M : B} {\Gamma \cuentail \lambda x . M : A\typear B}$$
+
+Whenever the context is empty we just write $\cuentail M:A$ instead of $\emptyset\cuentail M:A$.
+\end{definition}
+In the literature, the second and third rules are sometimes called the $\typear$-elimination and $\typear$-introduction rules respectively.
+
+
+The notion of ``derivability'' used in the above definition can be made more precise: A \emph{typing derivation} or \defname{typing deduction} $\Delta$ of $\cusystem$ is a tree labelled by terms-in-context of the form $\Gamma \cuentail M : A$ where the leaves are axioms and the internal nodes are deduced from their children nodes using the rules of $\cusystem$. Each edge of the tree is labeled by the rule used to make the deduction. The root of the tree is called the \emph{conclusion} of the derivation. The derivation tree is usually represented with leaves at the top and root at the bottom \cite{Hindley1997}.
+Terms-in-context of the simply-typed lambda calculus are then defined as the set of conclusions of derivations in $\cusystem$.
+
+An \defname{inhabitant} of a type $T\in \mathbb{T}$ is a term $M \in \Lambda$ such that for some typing-context $\Gamma$ we have $\Gamma \chentail M : T$.
+
+The type substitution operation from Def.~\ref{def:typesubstitution} naturally extends to finite sequences of types, contexts, terms-in-context and deductions. For instance for every context $\Gamma$, type $B$ and atomic type $\alpha$ we write $\Gamma\subst{B}{\alpha}$ to denote the context obtained by performing the substitution $\subst{B}{\alpha}$ on each type occurring in $\Gamma$.
+
+
+We now recall some standard results:
+\begin{proposition}[Weakening]
+Suppose $\Gamma \cuentail M : A$ and $\Gamma'$ is a typing-context with $\Gamma\subseteq\Gamma'$ then $\Gamma' \cuentail M : A$.
+\end{proposition}
+
+\begin{proposition}[Typability of subterms]
+Let $M'$ be a subterm of $M$. Then if $\Gamma \cuentail M : A$ then
+$\Gamma' \cuentail M' : A'$ for some context $\Gamma'$ and type $A'$.
+\end{proposition}
+
+\begin{lemma}[Substitution Lemma]\hfill
+\begin{enumerate}[(i)]
+\item If $\Gamma, x :A \cuentail M : B$ and $\Gamma \cuentail N : A$ then $\Gamma \cuentail M\subst{N}{x} : B$;
+\item If $\Gamma \cuentail M : A$ then $\Gamma\subst{B}{\alpha} \cuentail N : A\subst{B}{\alpha}$.
+\end{enumerate}
+\end{lemma}
+
+\begin{theorem}[Subject Reduction]
+Suppose that $M\betaredtr N$. Then
+$$ \Gamma \cuentail M : A \implies \Gamma \cuentail M' : A \enspace .$$
+\end{theorem}
+
+\subsubsection{Typing problems}
+
+\noindent The three following problems are often considered in type theory:
+\begin{itemize}
+\item \textsc{Type checking}: Given a term $M$, context $\Gamma$ and type $A$, do we have $\Gamma \cuentail M : A$?
+\item \textsc{Typability}: Given a term $M$ and context $\Gamma$, is there a type $A$ such that $\Gamma \cuentail M : A$?
+\item \textsc{Inhabitation}: Given a type $A$, is there a term $M$  such that $\cuentail M : A$?
+\end{itemize}
+
+
+\begin{definition}[Principality]
+A term $M$ has \defname{principal type} $A$ if $\Gamma \cuentail M : A$ for some context $\Gamma$, and for every possible derivation $\Gamma' \cuentail M : A'$, $A'$ is an instance of $A$. A \defname{principal deduction} for a term $M$ is a deduction $\Delta$ of the term-in-context $\Gamma \cuentail M : T$ such that every other deduction with the same conclusion is an instance of $\Delta$, so in particular $T$ is a \emph{principal type} of $M$.
+\end{definition}
+
+The principal type is unique up to variable renaming \cite{Hindley1997}.
+
+\begin{theorem}[PT Theorem, Curry, Hindley, Milner]
+\label{thm:pt}
+    It is decidable whether a term is typable in $\Lambda_\rightarrow$.
+    Moreover if $M$ is typable then it has a \defname{principal deduction} that is computable from $M$.
+\end{theorem}
+This implies that both \textsc{Type checking} and \textsc{Typability}
+are decidable.
+
+\begin{theorem}[Strong normalization, Tait \cite{DBLP:journals/jsyml/Tait67}]
+Every term that is typable in $\Lambda_\rightarrow$ is strongly normalizable (\ie, every reduction sequence leads to its (unique) normal form).
+\end{theorem}
+
+\begin{theorem}[Statman \cite{Statman1979}]
+  The problem \textsc{Inhabitation} for types defined over an infinite number of atoms is PSPACE-complete (and thus decidable).
+\end{theorem}
+
+
+\subsection{Simply-typed lambda calculus \ala Church}
+\label{sec:lambda_alachurch}
+The simply-typed lambda calculus that we have introduced corresponds to the \emph{Curry-style} version. There is another approach called the \emph{Church-style} presentation in which variable binders are annotated with types\footnote{In fact in the original Church presentation, variable occurrences are also annotated. The version that we present here is sometimes called the Bruijn-style simply-typed lambda calculus. These two presentations are essentially equivalent.}.
+The set of annotated-types $\Lambda_\mathbb{T}$ is formally given by the following grammar:
+$$ \Lambda_\mathbb{T} = \mathcal V \ | \ \Lambda_\mathbb{T}\, \Lambda_\mathbb{T} \ |\  \lambda_\mathbb{T} \mathcal V : \mathbb{T} . \Lambda_\mathbb{T} \enspace .$$
+Observe that in the abstraction case, the binder is annotated with a type. This is the only difference with untyped terms from $\Lambda$. For every annotated term $M \in \Lambda_\mathbb{T}$, the \emph{untyped term underlying} $M$, written $|M|$, is obtained by erasing all the type annotations from $M$.
+
+We can now introduce new judgements of the form $$\Gamma\chentail M:A$$ where $M$ ranges over \emph{annotated terms} $\Lambda_\mathbb{T}$.
+The simply-typed lambda calculus \ala Church, written $\chsystem$, is then given by the following typing system:
+$$ \rulef{}{\Gamma\chentail x : A}\ x:A \in \Gamma
+\qquad
+\rulef{\Gamma \chentail M : A\typear B \quad \Gamma \chentail N : A} {\Gamma \chentail M\, N : B}
+\qquad
+\rulef{\Gamma, x : A \chentail M : B} {\Gamma \chentail \lambda x^A . M : A\typear B}$$
+
+In contrast with the Curry version, terms of the Church typed lambda calculus have a unique type at most:
+\begin{proposition}[Uniqueness of types in $\chsystem$]
+  If $\Gamma \chentail M : T$ and $\Gamma \chentail M : T'$
+  then $T=T'$. Further if $\Gamma \chentail M : T$,
+  $\Gamma \chentail M' : T'$ and $M=_\beta M'$ then $T=T'$.
+\end{proposition}
+
+The Curry-style and Church-style systems are related by the following result:
+\begin{proposition}
+\begin{enumerate}[(i)]
+\item Let $M \in \Lambda_\mathbb{T}$. Then
+ $\Gamma \chentail M : A \implies \Gamma \cuentail |M| : A$.
+\item Let $M \in \Lambda$. Then
+$\Gamma \cuentail M : A \implies \exists M'\in \Lambda_\mathbb{T} \mbox{ s.t. } \Gamma \chentail M' : A \zand  |M'| = M$.
+\end{enumerate}
+\end{proposition}
+
+In particular this implies
+\begin{corollary} Let $T\in\mathbb{T}$. Then
+$T$ is inhabited in $\chsystem$ iff
+it is inhabited in $\cusystem$.
+\end{corollary}
+
+\begin{convention}
+In the rest of this thesis we will use judgements of the form $\Gamma \stentail M : A$ to denote both \ala Curry and \ala Church terms-in-context: if $M$ is an annotated term in $\Lambda_{\mathbb{T}}$ then the judgement stands for $\Gamma \chentail M : A$ whereas if $M$ is an untyped term in $\Lambda$ then it stands for $\Gamma \cuentail M : A$.
+\end{convention}
+
+
+
+\subsection{Extensions}
+The simply-typed lambda calculus can be extended with a set of typed constants $\Xi$. To allow the use of constants, the syntax of $\Lambda$ has an additional grammar rule: $\Lambda = \ldots \ | \ \Xi$. The typing system is also augmented with the rule
+$$\rulename{const} \ \rulef{}{\cuentail f : A}~f \in \Xi\enspace .$$
+
+A new notion of reduction is defined to allow contraction of terms whose head occurrence is a $\Xi$-constant: Every constant $c$ in $\Xi$ comes with a rewriting function $f_c:\Lambda^k \rightarrow \Lambda$ for some $k\in\nat$ determining the interpretation of the constant. We then extend the reduction relation of the lambda calculus with the rule $ c\, M_1 \ldots M_k \rightarrow f_c(M_1, \ldots, M_k)$ for every closed normal forms $M_1$, \ldots $M_k$ and constant $c$. 

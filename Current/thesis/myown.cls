@@ -141,8 +141,8 @@
   {\LARGE }
   \end{center}
   \vspace{0.5cm}
-  \begin{verse}\begin{center}}
-{\end{center}\end{verse}\end{alwayssingle}}
+  \begin{verse}\begin{flushright}}
+{\end{flushright}\end{verse}\end{alwayssingle}}
 
 
 % ACKNOWLEDGEMENTS

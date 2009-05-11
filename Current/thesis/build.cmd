@@ -15,7 +15,7 @@ dvips -z -t a4 thesis.dvi
 ps2pdf thesis.ps
 goto end
 
-pdftex -ini "&latex" -aux-directory=TeXAux thesis.tex
+::pdftex -ini "&latex" -aux-directory=TeXAux thesis.tex
 
 
 :pdflatex

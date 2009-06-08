@@ -61,7 +61,7 @@ calculus.
 We refer the reader to Mairson's original paper \cite{mairson1992spt} for a detailed account of his encoding. We show here why Mairson's encoding does not work in the safe lambda calculus. We then introduce a variation that eliminates some of the unsafety. Although the resulting encoding does not suffice to interpret type theory in the safe lambda calculus, it enables another interesting encoding: that of the True Quantifier Boolean Formula (TQBF) problem. This implies that deciding beta-eta equality of safe terms is PSPACE-hard.
 
 \subsubsection{Sources of unsafety}
-In Mairson's encoding, boolean values are encoded by terms of type
+In Mairson's encoding, Boolean values are encoded by terms of type
 $\booltype = \sigma \typear \sigma\typear \sigma$ for some type
 $\sigma$, and variables of order $k \geq 0$ are encoded by terms of
 type $\Delta_k$ defined as $\Delta_0 \equiv \booltype$ and
@@ -83,12 +83,12 @@ $\tau$ is instantiated as $\booltype$. This term is unsafe due to
 the underlined occurrence which is unsafely bound.
 
 More generally, nested binding will be encoded safely if and only if every variable $x$ in the formula is bound by the first quantifier $\exists z$ or
-$\forall z$ satisfying $\ord{z} \geq \ord{x}$ in the path to the root of the formula AST. So for example if set-membership
+$\forall z$ satisfying $\ord{z} \geq \ord{x}$ in the path to the root of the formula AST---we say that $x$ is \index{safe!binding}\emph{safely bound}. So for example if set-membership
 were safely encodable then the interpretation of ``$\forall x^k
 . \exists y^{k+1} . x^k \in y^{k+1}$'' would be unsafe whereas that of ``$\forall y^{k+1} . \exists x^k . x^k \in y^{k+1}$''
 would be safe.
 
-\item \emph{Elements of the type hierarchy.} The base set $\mathcal{D}_0$ of booleans is represented by a safe term $\mathbf{D}_0$ of type $\Delta_0$. Higher-order sets $\mathcal{D}_k$ for $k\geq 1$ are represented by unsafe terms $\mathbf{D}_k$: they are constructed from $\mathbf{D}_0$ using a powerset construction that is unsafe.
+\item \emph{Elements of the type hierarchy.} The base set $\mathcal{D}_0$ of Booleans is represented by a safe term $\mathbf{D}_0$ of type $\Delta_0$. Higher-order sets $\mathcal{D}_k$ for $k\geq 1$ are represented by unsafe terms $\mathbf{D}_k$: they are constructed from $\mathbf{D}_0$ using a powerset construction that is unsafe.
 \end{enumerate}
 \bigskip
 
@@ -101,7 +101,7 @@ For instance in the case of set-membership, Mairson's encoding (\ref{eqn:setmemb
 
 In the following paragraphs we present in detail a variation over Mairson's encoding in which quantifier elimination is safely encoded.
 
-\subsubsection{Encoding basic boolean operations}
+\subsubsection{Encoding basic Boolean operations}
 
 Let $o$ be a base type and define the family of types $\sigma_0
 \equiv o$, $\sigma_{n+1} \equiv \sigma_n\typear\sigma_n$ satisfying
@@ -167,21 +167,22 @@ Observe that the term $double$ is unsafe because the underlined variable occurre
 Consequently for all $n\geq0$, $\mathbf{D}_0^n$ is safe and $\mathbf{D}_k^n$ is unsafe for all $k>0$.
 
 \subsubsection{Quantifier elimination}
-Terms of type $\Delta_{k+1}^n$ are now used as iterators over lists of elements of type $\Delta_k^n$ and we set $\tau \equiv \booltype_n$ in the type $\Delta_{k+1}^n$ in order to iterate a level-$n$ Boolean function. Since $\ord{\Delta_k^n} \geq \ord{\booltype_n}$ for all $n$, all the instantiations of the terms $\mathbf{D}_k^n$ will be safe
-(although the terms $\mathbf{D}_k^n$ themselves are not safe for $k>1$).
-Following \cite{mairson1992spt}, quantifier elimination interprets the formula $\forall x^k.\Phi(x^k)$ as the iterated conjunction
-$$\mathbf{C}_0^{n\mapsto 0} \left( \mathbf{D}_k^n(\lambda x^{\Delta_k^n}.AND^n(\hat\Phi\,x))\,T^n \right) \enspace ,$$ where $\hat\Phi$ is the interpretation of $\Phi$
-and $n$ is the representation level chosen for the variable $x^k$. Similarly we interpret $\exists x^k.\Phi(x^k)$ by the disjunction $\mathbf{C}_0^{n\mapsto 0} \left( \mathbf{D}_k^n(\lambda x^{\Delta_k^n}.AND^n(\hat\Phi\,x))\,T^n\right)$.
+Following \cite{mairson1992spt}, we now instantiate the atoms $\alpha$ and $\tau$ in $\Delta_{k+1}^n$ with the types $\Delta_k^n$ and $\booltype_n$ respectively. This permits us to use terms of type $\Delta_{k+1}^n$ to iterate a level-$n$ Boolean function over lists of elements of type $\Delta_k^n$.
 
+Quantifier elimination interprets the formula $\forall x^k.\Phi(x^k)$ as the iterated conjunction
+$$\mathbf{C}_0^{n\mapsto 0} \left( \mathbf{D}_k^n(\lambda x^{\Delta_k^n}.AND^n(\hat\Phi\,x))\,T^n \right) \enspace ,$$ where $\hat\Phi$ is the interpretation of $\Phi$ and $n$ is the representation level chosen for the variable $x^k$. Similarly we interpret $\exists x^k.\Phi(x^k)$ by the disjunction $\mathbf{C}_0^{n\mapsto 0} \left( \mathbf{D}_k^n(\lambda x^{\Delta_k^n}.AND^n(\hat\Phi\,x))\,T^n\right)$.
+
+%We have $\ord{\Delta_k^n} \geq \ord{\booltype_n}$ for all $n$ therefore, by the previous observation, all the instantiations of the terms $\mathbf{D}_k^n$ will be safe
+%(although the terms $\mathbf{D}_k^n$ themselves are not safe for $k>1$).
 
 \subsubsection{Encoding the formula}
 
-Given a formula of type theory, it is possible to encode it in the lambda calculus by inductively applying on the formula the above encodings of boolean operations and quantifiers, each variable occurrence in the formula being assigned some domain of representation.
+Given a formula of type theory, we can encode it in the lambda calculus by inductively applying the encodings of Boolean operations and quantifiers defined in the previous paragraphs, each variable occurrence in the formula being assigned some domain of representation.
 
-We now show that there exists an assignment of representation domains for each variable occurrence such that the resulting term is safe. Let $x^{k_p}_p \ldots x^{k_1}_1$ for $p\geq1$ be the list of variables appearing in the formula, given in order of appearance of their binder in the formula (\ie,~$x^{k_p}_p$ is bound by the leftmost binder). We fix the domain of representation of each variable as follows. The right-most variable $x^{k_1}_1$ is encoded in the domain $\Delta^0_{k_1}$; and if for $1\leq i< p$ the domain of representation of $x^{k_i}_i$ is $\Delta^l_{k_l}$ then the domain of representation of $x^{k_{i+1}}_{i+1}$ is defined as
+We now define a procedure to assign a representation domain to each variable occurrence in the formula such that the corresponding occurrence in the encoding is safely bound. Let $x^{k_p}_p \ldots x^{k_1}_1$ for $p\geq1$ be the list of variables appearing in the formula, given in order of appearance of their binder in the formula (\ie,~$x^{k_p}_p$ is bound by the leftmost binder). We fix the domain of representation of each variable as follows. The right-most variable $x^{k_1}_1$ is encoded in the domain $\Delta^0_{k_1}$; and if for $1\leq i< p$ the domain of representation of $x^{k_i}_i$ is $\Delta^l_{k_l}$ then the domain of representation of $x^{k_{i+1}}_{i+1}$ is defined as
  $\Delta^{l'}_{k_{i+1}}$ where $l'$ is the smallest natural number such that $\ord{\Delta^{l'}_{k_{i+1}}}$ is strictly greater than $\ord{\Delta^{l}_{k_i}}$.
 
-This way, since variables that are bound first have higher order, variables that are bound in nested list-iterations---corresponding to nested quantifiers in the formula---are guaranteed to be safely bound.
+Since we assign higher orders to variables that are bound first, we guarantee that variables bound in the nested list-iterations---corresponding to the nested quantifiers of the formula---are safely bound.
 
 \begin{example}
 The formula  $\forall x^0 . \exists y^0 . x^0 \zor y^0$, which is

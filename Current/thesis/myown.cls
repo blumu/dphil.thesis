@@ -69,14 +69,22 @@
 % \setlength{\textheight}{9.0in} % 228.6mm
 % \setlength{\textwidth}{6.0in} % 152.4mm
 
+
 \hoffset -1in % readjust the left-hand corner of the page
 \voffset -1in
 
 \topmargin 10mm
 \headheight 10mm
 \headsep 7mm
+
+\ifbindingmargin% Mode where space is added in the inner-margins to accomodate for the biding
 \evensidemargin 2cm % for side margins of 2cm
 \oddsidemargin 3cm % for side margins of 3cm
+\else
+\evensidemargin 2.5cm % same margin for left
+\oddsidemargin 2.5cm % and right
+\fi
+
 \textheight 250mm
 \textwidth 160mm
 \marginparsep 5mm
@@ -84,6 +92,7 @@
 %\footheight 1cm
 %\setlength{\footheight}{2cm}
 \footskip 30mm
+
 
 %
 % Environments

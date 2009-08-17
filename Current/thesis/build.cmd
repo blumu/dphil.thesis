@@ -1,4 +1,5 @@
 @if [%1%]==[abstract] goto abstract
+@if [%1%]==[print] goto print
 @if [%1%]==[bodleian] goto bodleian
 @if [%1%]==[online] goto online
 @if [%1%]==[reviewer] goto reviewer
@@ -16,12 +17,13 @@ exit /b
 @echo Thesis preparation tool.
 @echo.
 @echo Syntax:
-@echo   build [abstract^|bodleian^|online^|reviewer^|examiner^|all]
+@echo   build [abstract^|print^|bodleian^|online^|reviewer^|examiner^|all]
 @echo.
 @GOTO :EOF
 
 :all
 CALL :abstract
+CALL :print
 CALL :bodleian
 CALL :online
 CALL :reviewer
@@ -31,6 +33,10 @@ CALL :examiner
 
 :abstract
 pdflatex -aux-directory=TeXAux abstract_submission.tex
+@GOTO :EOF
+
+:print
+CALL :build_pdf Print
 @GOTO :EOF
 
 :bodleian

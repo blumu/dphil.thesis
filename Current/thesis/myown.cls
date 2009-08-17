@@ -78,8 +78,8 @@
 \headsep 7mm
 
 \ifbindingmargin% Mode where space is added in the inner-margins to accomodate for the biding
-\evensidemargin 2cm % for side margins of 2cm
-\oddsidemargin 3cm % for side margins of 3cm
+\evensidemargin 22mm % for side margins of 2cm
+\oddsidemargin 28mm % for side margins of 3cm
 \else
 \evensidemargin 2.5cm % same margin for left
 \oddsidemargin 2.5cm % and right

@@ -1,0 +1,324 @@
+% -*- TeX -*- -*- Soft -*-
+
+We present the safety restriction in the context of higher-order grammars as it was originally defined
+\cite{KNU02}. We give a brief introduction to the concept of higher-order grammars. A more detailed introduction on the subject
+is de Miranda's thesis \cite{demirandathesis}.
+
+\subsection{Higher-order grammars}
+We consider simple types over a single atom $o$. Given a set of typed symbols $S$, the set of \defname{applicative terms} generated from $S$, written $\mathcal{A}(S)$ is defined as the closure of $S$ under the application rule (\ie, if $M : A\rightarrow B$ and $N :A$ are in $\mathcal{A}(S)$ then so is $M N :B$).
+
+\begin{definition}
+A \defname{higher-order grammar}\index{higher-order grammar} is a tuple $\langle
+\Sigma, \mathcal{N}, \mathcal{R}, S \rangle$, where
+\begin{itemize}[-]
+\item $\Sigma$ is a
+ranked alphabet (in the sense that each symbol $f \in \Sigma$ has a positive arity written $\arity(f)$) of \emph{terminals};
+\item $\mathcal{N}$ is a finite set of typed
+\emph{non-terminals};
+\item $S$ is a distinguished ground-type symbol of
+$\mathcal{N}$, called the start symbol;
+\item $\mathcal{R}$ is a finite set
+of production (or rewrite) rules. For each non-terminal $F : (A_1,
+\ldots, A_n, o) \in \mathcal{N}$ there is (at least) one rule of the form:
+$$ F z_1 \ldots z_m \rightarrow e$$
+where each $z_i$ (called \emph{parameter}) is a
+variable of type $A_i$ and $e$ is an applicative term of type $o$
+generated from the typed symbols in $\Sigma \union \mathcal{N} \union \{z_1:A_1, \ldots, z_m:A_m \}$.
+\end{itemize}
+We say that the grammar is \emph{order-$n$} just in case the order of the highest-order non-terminal is $n$.
+\end{definition}
+
+An applicative term generated from the terminals $\Sigma$ only (without non-terminals), and viewed as a $\Sigma$-labelled tree, is called a \defname{value term}.
+
+\subsubsection*{Higher-order grammars as generators of term tree languages}
+
+From now on we will consider higher-order grammars in which the
+ranked-alphabet $\Sigma$ is restricted to terminals of order $1$ at most so that each terminal $f \in\Sigma$ has type $o^r \typear o$ where $r \geq 0$ is the arity of $f$. The idea is that the base type $o$ inhabits the set of trees. An order-$0$ terminal thus represents a leaf-constructor while an order-$1$ terminal represents a node-constructor.
+
+A higher-order grammar $G$ determines a tree language denoted $L(G)$ consisting of all the \emph{finite} value terms that can be obtained by normalizing the start symbol $S$ using the reduction relation induced by the rewriting rules of $G$. This normalization can be done using different reduction strategies, also called \emph{derivation modes}. The main ones are: outside-in (OI), inside-out (IO), and unrestricted.
+As the names suggest, in the OI derivation mode the outermost redex is reduced first, in IO mode the innermost redex is reduced first, and no particular choice of redex is imposed in unrestricted mode.
+It can be shown that the OI derivation is sufficient in the sense that every value term obtained from an IO derivation can also be obtained from an OI derivation. The converse however does not hold \cite{Dam82}.
+
+
+
+
+
+
+\subsubsection*{Higher-order grammars as word language generators}
+
+Higher-order grammars can be used as generators of word languages by imposing the following constraints on the set of terminals $\Sigma$:
+\begin{itemize}
+  \item $\Sigma$ contains a special symbol $e:o$,
+  \item all other constants are of type $(o,o)$.
+\end{itemize}
+The idea is that the type $o$ represent the type of strings $\Sigma^*$, the symbol $e$ marks the end of the word and a constant $f:(o,o)$ represents the operation that appends the letter `$f$' as a prefix to a string.
+
+\subsubsection*{Higher-order grammars as tree generators}
+In order to generate infinite trees, higher-order grammars are specialized into a device called \emph{recursion scheme}. A \defname{higher-order recursion scheme}, HORS for short, is a higher-order grammar where the set of rewrite rules is deterministic (\ie, for each non-terminal $F \in \mathcal{N}$ there is exactly one production rule with $F$ on the left-hand side).
+
+A recursion scheme $R$ defines a (potentially infinite) value tree denoted $\sem{R}$ obtained by unfolding its rewrite rules \emph{ad infinitum}, replacing formal by actual parameters each time, starting from the start symbol $S$. Formally, $\sem{R}$ is defined as the least upper bound of the
+\emph{schematological tree grammar} induced by $R$ in the continuous algebra of ranked trees with the appropriate ordering \cite{KNU02,demirandathesis}.
+
+\parpic[r]{
+\raisebox{-30pt}
+{\begin{tikzpicture}[baseline=(root.base),level distance=3ex,inner ysep=0.5mm,sibling distance=13mm]
+\node (root) {$g$}
+child {node {$a$}}
+child {node {$g$}
+    child {node {$a$}}
+    child {node {$h$}
+           child {node {$h$}
+                  child {node {$\ldots$}}
+            }
+    }
+};
+\end{tikzpicture}
+}
+}
+\begin{example}\label{eg:running}
+  Let $G$ be the following order-2 recursion scheme:
+\[\begin{array}{rll}
+  S & \rightarrow & H \, a\\
+  H \, z & \rightarrow & F \, (g \,
+  z)\\
+  F \, \phi & \rightarrow & \phi \, (\phi \, (F \, h))\\
+\end{array}\]
+with non-terminals $S:o$, $F : ((o, o),o)$, $H:(o,o)$ and terminals $g, h, a$ of arity $2, 1, 0$ respectively.
+Then the tree generated by $G$ is defined by the infinite term
+$g \, a \, (g \, a \, (h \, (h \, (h \,
+\cdots))))$ pictured on the right.%  The only infinite \emph{path} in the
+% tree is the node-sequence $\epsilon \cdot 2 \cdot 22 \cdot 221 \cdot
+% 2211 \cdots$.
+
+%(with the corresponding \textbfit{trace} $g \, g \, h \, h \, h \,
+%\cdots \; \in \; \Sigma^\omega$).
+\end{example}
+
+
+\subsection{The safety restriction}
+\label{sec:safetygrammar}
+
+\emph{Safety} is a syntactic restriction for higher-order grammars
+introduced by Knapik et~al.\ in order to study the Monadic Second Order (MSO) theory of infinite trees generated by higher-order pushdown automata \cite{KNU02}. The safety restriction has appeared under different forms in the literature. The first formulation, due to Damm, appeared under the name \emph{restriction of derived types} \cite{Dam82}. De Miranda's thesis contains a comparison of the two formulations \cite{demirandathesis}. The presentation given here follows that of Knapik et~al.\ \cite{KNU02}.
+
+\subsubsection*{Type homogeneity}
+\label{subsec:typehomogeneity}
+We say that a type is \defname{homogeneous}
+if it is $o$ or if it is $(A_1, \cdots, A_n, o)$ with the condition
+that $\ord{A_1} \geq \ord{A_2}\geq \cdots \geq \ord{A_n}$ and
+each $A_1$, \ldots, $A_n$ is homogeneous \cite{KNU02}.
+
+\begin{notation}[Type partitioning]
+Suppose that $\overline{A_1}$, $\overline{A_2}$, \ldots,
+$\overline{A_n}$ are $n$ lists of types, where $A_{ij}$ denotes the
+$j^{th}$ type in the list $\overline{A_i}$ and $l_i$ the size of
+$\overline{A_i}$. We introduces the following notation that partitions the $A_{ij}$s according to their order:
+$$A \; = \; (\overline{A_1} \, |
+\, \cdots \, | \, \overline{A_r} \, | \, o)$$ to mean that
+\begin{itemize}
+  \item $A$ is the type $(A_{11},A_{12},\cdots, A_{1l_1}, A_{21}, \cdots,A_{2l_2}, \cdots A_{n1},\cdots, A_{nl_n},o)$,
+  \item $\forall i: \forall u,v \in A_i : \ord u = \ord v $,
+  \item $\forall i,j . \forall u \in A_i . \forall v \in A_j . i<j \implies \ord u > \ord v $.
+\end{itemize}
+So in particular $A$ is homogeneous.  If further we have $B =
+(\overline{B_1} \, | \, \cdots \, | \, \overline{B_m} \, | \, o)$
+then we use the notation $(\overline{A_1} \, | \, \cdots \, | \, \overline{A_n} \, |
+\, {B})$ as an abbreviation for
+$(\overline{A_1} \, | \, \cdots \, | \, \overline{A_n} \, | \,
+\overline{B_1} \, | \, \cdots \, | \, \overline{B_m} \, | \, o)$.
+\end{notation}
+
+\subsubsection*{Definition}
+
+\begin{definition}[Safe grammar]
+\label{def:safegrammar}
+  (All types are assumed to be homogeneous.) A term of order $k > 0$
+  is \emph{unsafe} if it contains an occurrence of a parameter of
+  order strictly less than $k$, otherwise the term is \emph{safe}. An
+  occurrence of an unsafe term $t$ as a subexpression of a term $t'$
+  is \emph{safe} if it is in the context $\cdots (ts) \cdots$,
+  otherwise the occurrence is \emph{unsafe}. A grammar is
+  \defname[safe!definition]{safe} if no unsafe term has an unsafe occurrence at a
+  right-hand side of any production.
+\end{definition}
+
+This definition is a bit opaque and does not seem to make a lot of sense at first. One can reformulate it in a slightly clearer way: A higher-order grammar $G$ whose non-terminals are of homogeneous type is \emph{unsafe} if and only if there is a rewrite rule $F z_1 \ldots z_m \rightarrow e$ where $e$ contains a subterm that:
+\begin{enumerate}
+\item occurs in {\em operand} position in $e$,
+\item contains a parameter of order strictly less than its order.
+\end{enumerate}
+(By ``operand position'' we mean ``in the second position of some
+occurrence of the implicit application operator of the lambda calculus''.)
+A grammar is \emph{safe} if it is not unsafe.
+
+\begin{example}[\cite{KNU02}] Let $f:(o,o,o)$, $g,h:(o,o)$ and $a,b:o$ be $\Sigma$ constants.
+ The grammar of level 3 with non-terminals $S:o$ and $F: ((o,o),o,o,o)$ and production rules:
+\begin{eqnarray*}
+    S &\rightarrow&  F g a b \\
+    F \varphi x y &\rightarrow& f ( F ( F \varphi x ) y (h y)) (f (\varphi x) y)
+\end{eqnarray*}
+is not safe because the subterm $F \varphi x$, in the right-hand side expression of the second rule, is of type $(o,o)$, contains a ground-type variable and occurs at an operand position.
+
+On the other hand, the following production rules are safe:
+\begin{eqnarray*}
+    S &\rightarrow&  G (g a) b \\
+    G z y &\rightarrow& f ( G ( G z y) (h y)) (f z y) \enspace .
+\end{eqnarray*}
+It can be shown \cite{KNU02} that these rules are equivalent to the ones given above in the sense that the induced recursion schemes generate the same infinite tree.
+\end{example}
+
+\begin{example}
+Let $F:{((o, o), o, o, o)}$, $G:{(o, o)}$ and $H : ((o, o), o)$ be non-terminals and $f : (o, o, o)$ be a terminal. Then the following rewrite rules are unsafe. (The unsafe occurrences of unsafe subterms are underlined.):
+\[\begin{array}{rll}
+G \, x & \quad \rightarrow \quad & H \, \underline{(f \, {x})} \\
+F \, z \, x \, y & \quad \rightarrow \quad & f \, (F \, \underline{(F \, z
+\, {y})} \, y \, (z \, x) ) \, x \enspace .
+\end{array}\]
+\end{example}
+
+\begin{example}
+The order-2 grammar defined in Example~\ref{eg:running} is
+  unsafe.
+\end{example}
+
+
+
+\subsection{Automata-theoretic Characterization}
+Although very technical, the safety restriction for higher-order recursion schemes has an appealing machine characterization. Knapik, Niwi\'nski and Urzyczyn showed that for generating infinite ranked trees, safe higher-order recursion schemes are as expressive as \emph{higher-order pushdown automata (PDA)} \cite{KNU02}.
+
+A \defname{pushdown automaton} (PDA) is an infinite-state transition system that can manipulate the content of a stack when performing a transition. Higher-order pushdown automata were introduced as a generalization of PDA \cite{Mas76}. Instead of manipulating a simple stack, a higher-order PDA manipulates iterated stacks. An order-$1$ PDA is an ordinary PDA, an order-$2$ PDA manipulates order-$2$ stacks which are stacks of order-$1$ stacks. In addition to the usual push and pop transitions of a PDA, an order-$2$ PDA has order-$2$ variants: a $push_2$ operation that duplicates the top order-$1$ stack, and a $pop_2$ that pops the entire top order-$1$ stack. This definition generalizes to any order $n\in\nat$.
+
+\begin{theorem}[Knapik, Niwi\'nski and Urzyczyn, \cite{KNU02}]
+  Let $L$ be a $\Sigma$-labelled term tree language. $L$ is the language of a safe order-$n$ grammar (using the OI derivation) if and only if it is accepted by an order-$n$ pushdown automaton.
+\end{theorem}
+So in particular, a (potentially) infinite tree $t$ is generated by a safe order-$n$ recursion scheme if and only if it is accepted by an order-$n$ pushdown automaton.
+
+A similar characterization has subsequently been obtained for unrestricted grammars: Hague, Murawski, Ong and Serre have introduced a new kind of pushdown automata called \emph{collapsible pushdown automata} (CPDA) and showed their equivalence with unrestricted higher-order grammars. The internal structure manipulated by a CPDA is a stack in which every symbol has a link pointing to some other substacks situated below it. There is an additional stack-operation called $collapse$ whose effect is to replace the content of the stack by the sub-stack indicated by the link attached to the top symbol of the stack.
+\begin{theorem}[Hague, Murawski, Ong and Serre, \cite{hmos-lics08}]
+  A potentially infinite (ranked) tree $t$ is generated by an order-$n$ recursion scheme if and only if it is accepted by an order-$n$ collapsible pushdown automaton.
+\end{theorem}
+
+
+We have defined higher-order grammars as generators of word languages and trees. Thanks to the machine characterization, it is possible to define the notion of graph generated by a higher-order grammars:
+the graph generated by a grammar is defined as the configuration graph of the corresponding collapsible higher-order pushdown automaton. In particular, the graph generated by a safe grammar is the configuration graph of the corresponding higher-order PDA.
+
+
+\subsection{Expressivity}
+
+Higher-order PDA/grammars can be used as generating device for word-languages, trees, or graphs, thus inducing strict infinite hierarchies as the order of the PDA varies.  For word-languages this is known as the Maslov hierarchy: orders 0, 1 and 2 correspond respectively to the regular, context-free and indexed languages. For trees, orders 0, 1 and 2 are respectively the regular, algebraic and hyperalgebraic trees.
+
+\subsection{Is safety a genuine restriction?}
+The implications that the safety constraint has on the expressivity of higher-order grammars are not completely understood. A partial answer has been given for word languages: Aehlig, de Miranda and Ong showed that up to order $2$, there is no intrinsically unsafe word language \cite{DBLP:conf/fossacs/AehligMO05}: any word language generated by an unsafe order-$2$ grammar can also be generated by some (potentially non-deterministic) order-$2$ safe grammar.
+For trees, Urzyczyn conjectured \cite{demirandathesis} that safety constrains expressivity. He even proposed a tree---known as Urzyczyn's tree---generated by an unsafe order-$2$ recursion scheme that he conjectured to not be generated by any safe order-$2$ recursion scheme. At the time of this writing, this still remains a conjecture.
+
+A similar question can be asked from a verification point of view: \emph{Are the structures generated by safe higher-order grammars easier to verify that those generated by unrestricted grammars?} The reason why the safety constraint was introduced in the first place was precisely to be able to show that the generated trees have decidable Monadic Second Order (MSO) theories \cite{KNU02}. In fact, it was subsequently shown that this result also holds in the general unrestricted case \cite{OngLics2006}:
+\begin{theorem}[Ong, 2006]
+\label{thm:modalmucalctree_decidable}
+The modal mu-calculus model checking problem for trees generated by order-$n$ recursion schemes is $n$-EXPTIME complete for each $n\geq 0$.
+\end{theorem}
+This result implies that these trees have decidable MSO theories since the two logics are equi-expressive over trees. The proof of this theorem relies on a game-semantic argument based on the theory of traversals (that will be presented in Chapter \ref{chap:concrete_gamesem}) which radically differs from the argument used by Knapik et~al.\ for the case of safe grammars \cite{KNU02}. A generalization of Theorem \ref{thm:modalmucalctree_decidable} for graphs was later obtained by Hague et~al.\ \cite{hmos-lics08}:
+\begin{theorem}[Hague et~al., 2008]
+For each $n\geq 0$, the modal mu-calculus model checking problem for configuration graphs of order-$n$ collapsible pushdown systems is $n$-EXPTIME complete.
+\end{theorem}
+For graphs, the MSO logic is strictly more expressive than the modal mu-calculus. In the same paper it is shown that MSO theories of collapsible pushdown graphs are undecidable while those of pushdown graphs are decidable \cite{hmos-lics08}. Hence from a verification point of view, safety can indeed be considered as a genuine constraint.
+
+
+\subsection{Higher-order grammars and the simply-typed lambda calculus}
+\newcommand\ymut{\ycomb_{\sf mut}}
+There is a natural correspondence between higher-order grammars and the simply-typed lambda calculus: deterministic higher-order grammars (\ie, recursion schemes) are essentially closed simply-typed lambda-terms of ground type extended with mutual recursion and generated from the terminal symbols $\Sigma$ of the grammar. A similar correspondence holds between (possibly non-deterministic) higher-order grammars and the simply-typed lambda calculus
+extended with a non-deterministic branching operator. We now show how this correspondence works in the deterministic case.
+
+Let $\Lambda_\rightarrow^{mut}(\Sigma)$ denote the simply-typed lambda calculus extended with mutual recursion and generated from the set of typed constants $\Sigma$. The syntax of the mutual recursion operator is given by the typing-rule
+ $$ (\ymut) \rulef{\Gamma \entail_\Sigma M_1 : A \typear A_1 \qquad \Gamma \entail_\Sigma M_q : A \typear A_q}{\Gamma \entail_\Sigma \ymut (M_1, \ldots, M_q):A_1}\ A = A_1 \times \ldots \times A_q, q \geq 0$$
+whose semantics is given by
+\begin{align*}
+\ymut (M_1, \ldots, M_q) &\rightarrow \pi_1 (\ycomb \langle M_1 \ldots M_q \rangle) \enspace , \\
+\ycomb \langle M_1, \ldots, M_q \rangle & \rightarrow
+\langle M_1 (\ycomb \langle M_1, \ldots, M_q \rangle),
+\ldots, M_q (\ycomb \langle M_1, \ldots, M_q \rangle) \rangle \enspace ,
+\end{align*}
+where $\pi_1$ denotes the first projection for $q$-tuples. (The operator $\ycomb$ denotes the usual $\ycomb$ combinator of \pcf\ extended to product types.)
+
+Let  $R = \langle \Sigma, \mathcal{N}, \mathcal{R}, F_0 \rangle$ be a higher-order recursion scheme with $\mathcal{N} = \{ F_0, \ldots, F_q \}$ and $\mathcal{R} = \{ F_i\ x_1 \ldots x_n \rightarrow e_i \ | \ 0\leq i \leq q \}$ for some $q\geq 0$.
+ We define the closed $\Lambda_\rightarrow^{mut}(\Sigma)$-term ${\sf HORStoLmd}(R)$ as follows:
+ \begin{align*}
+   {\sf HORStoLmd}(R) &\equiv \ymut ( \widetilde{F_0},\ \ldots,\  \widetilde{F_q}) \\
+   \widetilde{F_i} &\equiv \lambda F_0 \ldots F_q x_1 \ldots x_n . e_i & \mbox{for $0 \leq i\leq q$ \enspace .}
+ \end{align*}
+
+Conversely, every $\Lambda_\rightarrow^{mut}(\Sigma)$-term can be reformulated as a higher-order recursion scheme. The algorithm {\sf LmdToHORS} of Table \ref{tab:LmdToHORS}, described in an ML-like pseudo-code, takes a closed  $\Lambda_\rightarrow^{mut}(\Sigma)$-term and returns the corresponding higher-order recursion scheme.  It proceeds inductively over the syntax of the term. The local variables $\mathcal{N}$ and $\mathcal{R}$ are used to accumulate respectively the non-terminals and rewrite rules of the recursion scheme being built. The auxiliary function {\sf createRules} is responsible for creating the rules for a given open lambda-term; it adds them to the set $\mathcal{R}$ and returns and applicative term from $\mathcal{A}(\mathcal{N}\union\Sigma)$ corresponding to the input lambda-term. (The symbol `@' denotes the data-constructor used to build lambda-term applications.)
+
+
+\begin{FramedTableEx}{\caption[Algorithm to convert a lambda-term into a recursion scheme.]{Algorithm {\sf LmdToHORS} converting a mutually recursive lambda-term into a higher-order recursion scheme.}\label{tab:LmdToHORS}}
+\smallskip
+
+\hspace{1em}{\bf Input}: A closed $\Lambda_\rightarrow^{mut}(\Sigma)$-term $\entail_\Sigma M : T$.
+
+\hspace{1em}{\bf Output}: A higher-order recursion scheme $\langle \Sigma, \mathcal{N}, \mathcal{R}, S \rangle$.
+$$\begin{array}{ll}
+{\sf let\ LmdToHORS}(\entail_\Sigma M : T) \\
+\; {\sf let\ createRules} : \Lambda_\rightarrow^{mut}(\Sigma) \typear  \mathcal{A}(\mathcal{N}\union\Sigma)  = {\sf fun} \\
+\; \;
+    \begin{array}{lcl}
+     |\ \Gamma \entail_\Sigma \alpha : T \mbox{\quad with } \alpha \in \Gamma \union \Sigma &\rightarrow& \alpha\\
+     |\ \Gamma \entail_\Sigma M N : B
+      &\rightarrow&
+        {\sf createRules} (\Gamma \entail_\Sigma M : A\rightarrow B) \\
+        &&@ {\sf createRules} (\Gamma \entail_\Sigma N : A)
+      \\
+     |\ \overline{x} : \overline{A} \entail_\Sigma \lambda y_1^{B_1}\ldots y_k^{B_k}. M : (\overline{B},o)
+       &\rightarrow&
+         {\sf let\ } \Gamma = \overline{x}: \overline{A}, y_1:B_1, \ldots, y_n:B_n \\
+\mbox{ \it where $M$ is not an abstraction,}
+         && \mbox{\it for some fresh names $y_{k+1} \ldots y_n$} \ {\sf in} \\
+\mbox{ \it $\overline{B} = (B_1 \ldots B_n)$, and $1\leq k\leq n$,}
+         && {\sf let\ } e = {\sf createRules} (\Gamma \entail_\Sigma M \elnf{y_{k+1}} \ldots \elnf{y_n} : o) \\
+         && {\sf and \ } F \mbox{ be a fresh non-terminal name } {\sf in}\\
+         &&\mathcal{R} \leftarrow \mbox{``}F\ \overline{x}\ \overline{y} \rightarrow e\mbox{''}::\mathcal{R} \\
+         &&\mathcal{N} \leftarrow \mbox{``}F : (\overline{A},\overline{B},o)\mbox{''}::\mathcal{N} \\
+         && \mbox{``}F\ \overline{x}\mbox{''}
+     \\
+      |\ \overline{x} : \overline{A} \entail_\Sigma \ymut (M_1, \ldots, M_q):B_1 &\rightarrow&
+     {\sf for\ i = 1\ ..\ q\ do} \\
+\mbox{ \it where $M_i:B_i$ for $i\in\{1..q\}$,}     &&\quad     {\sf createRules} (\overline{x}: \overline{A} \entail_\Sigma M_i : B_i) \\
+     &&\quad     {\sf let\ }\mbox{``}F\, \overline{x}\, f_1 \ldots f_q\, \overline{y} \rightarrow e \mbox{''} \leftarrow hd\ \mathcal{R} {\sf\ in} \\
+     &&\quad \mathcal{R} \leftarrow \mbox{``}\widehat{F_i}\ \overline{x} \ \overline{y} \rightarrow e[\widehat{F_1} \overline{x}/f_1] \cdots [\widehat{F_q} \overline{x}/ f_q]\mbox{''} \\
+     &&\quad\qquad ::tail\ \mathcal{R} \\
+     &&\quad\mathcal{N} \leftarrow \mbox{``}\widehat{F_i} : (\overline{A},B_i)\mbox{''}::tail\ \mathcal{N} \\
+     &&{\sf done} \\
+     &&\mbox{``}\widehat{F_1}\ \overline{x}\mbox{''}
+   \end{array} \\
+\qquad {\sf in}\\
+\qquad \mathcal{N},\mathcal{R} \leftarrow [],[]  \\
+\qquad appterm \leftarrow {\sf createRules}(\entail_\Sigma M : T) \\
+\qquad \langle \Sigma, \mbox{``}S:o\mbox{''}::\mathcal{N}, \mbox{``}S\ \rightarrow appterm\mbox{''}::\mathcal{R}, S \rangle
+\end{array}$$
+\end{FramedTableEx}
+
+It is straightforward to check that for every higher-order recursion scheme $R$ the recursion scheme ${\sf LmdToHORS}({\sf HORSToLmd}(R))$ is the same as $R$ (up to renaming of the non-terminals and rule parameters).
+
+\begin{example}
+Let $R$ denote the recursion scheme of Example \ref{eg:running}. We have:
+\begin{align*}
+{\sf HORSToLmd}(R) &\equiv \ymut ( \widetilde{S}, \widetilde{H}, \widetilde{F}) \\
+\mbox{where }  \widetilde{S} &\equiv \lambda S H F . H\, a \\
+   \widetilde{H} &\equiv \lambda S H F z. F\, (g\, z) \\
+   \widetilde{F} &\equiv \lambda S H F \phi. \phi \, (\phi \, (F \, h)) \enspace .
+\end{align*}
+Converting this term back to a HOG gives
+${\sf LmdToHORS}({\sf HORSToLmd}(R)) =  \langle \Sigma, \mathcal{N}, \mathcal{R}, S \rangle$
+where $\mathcal{N}=\{ S : o, \widehat{F_1} : o, \widehat{F_2} : (o,o), \widehat{F_3} : ((o,o),o) \}$ and
+\begin{equation*}
+  \mathcal{R} = \{ S \rightarrow \widehat{F_1}, \quad
+                  \widehat{F_1} \rightarrow \widehat{F_2}\, a, \quad
+                  \widehat{F_2}\, z \rightarrow \widehat{F_3}\, (g\, z), \quad
+                  \widehat{F_3}\, \psi \rightarrow \psi(\psi(\widehat{F_3}\, h)) \} \enspace .
+\end{equation*}
+The following intermediary rules are created during the execution of the algorithm:
+\begin{equation*}
+      F_1\, S\, H\, F \rightarrow H\, a, \quad
+      F_2\, S\, H\, F\, z \rightarrow F\, (g\, z), \quad
+      F_3\, S\, H\, F \psi \rightarrow \psi(\psi(F\, h)) \enspace ,
+\end{equation*}
+where $F_1 : (o,(o,o),((o,o),o),o)$, $F_2 : (o,(o,o),((o,o),o),o,o)$, $F_3 : (o,(o,o),((o,o),o),(o,o),o)$.
+\end{example}

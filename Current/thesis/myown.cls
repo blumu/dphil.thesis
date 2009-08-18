@@ -69,20 +69,24 @@
 % \setlength{\textheight}{9.0in} % 228.6mm
 % \setlength{\textwidth}{6.0in} % 152.4mm
 
-
-\hoffset -1in % readjust the left-hand corner of the page
-\voffset -1in
+\hoffset -1in % Readjust the left-hand 
+\voffset -1in % corner of the page.
 
 \topmargin 10mm
 \headheight 10mm
 \headsep 7mm
 
-\ifbindingmargin% Mode where space is added in the inner-margins to accomodate for the biding
-\evensidemargin 22mm % for side margins of 2cm
-\oddsidemargin 28mm % for side margins of 3cm
+\ifbindingmargin% Add space to inner-margin to accomodate for binding
+\ifsingleside
+\evensidemargin 20mm  % 2cm right margin
+\oddsidemargin  30mm  % 3cm left margin (more space for binding)
 \else
-\evensidemargin 2.5cm % same margin for left
-\oddsidemargin 2.5cm % and right
+\evensidemargin 22mm  % 22mm outside margin
+\oddsidemargin  28mm  % 28mm inside margin (more space for binding)
+\fi
+\else % no binding: no need for extra margin space
+\evensidemargin 25mm  % same margin for left
+\oddsidemargin  25mm  % and right
 \fi
 
 \textheight 250mm

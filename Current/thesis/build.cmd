@@ -72,6 +72,7 @@ latex -aux-directory=TempAux "\def\%MODE%{}\input{thesis.tex}"
 latex -aux-directory=TempAux "\def\%MODE%{}\input{thesis.tex}"
 dvips -z -t a4 thesis.dvi -o thesis-%MODE%.ps
 ps2pdf thesis-%MODE%.ps thesis-%MODE%.pdf
+IF ERRORLEVEL 1 then pause
 rd /q /s TempAux
 @GOTO :EOF
 

@@ -10,35 +10,39 @@
 
 \maketitle
 
-\section {August 19, 2021}
+\section {August 19, 2021, updated November 29, 2021}
 
 \begin{enumerate}
 \item Remove lines 12-22 page 54. (Reported by Samuel Frontull).
-The remark that a version of the `no-variable capture lemma` holds without the safe typing convention 3.13 (Lemma 3.17) is false and the argument is incorrect.
-
-\item In Section 3.1.2, in Lemma 3.26 (Properties of safe reduction),
-the last two bullets (iii) and (iv) (uniqueness of $\beta_s$ normal form and Church Rosser property) should be moved
-after the definition of `long-safety' (Definition 3.31) with the added condition that we work in the stricter long-safe calculus ($\vdash_l$)
-rather than the safe calculus $\vdash_s$.
-
-These two properties may still be true in $\vdash_s$, but the proof given in the thesis only applies to the stricter `long' fragment of the safe calculus from Def 3.23-- which is also the one used in the original TLCA paper. The relevant sentence in the proof is ``Because a beta-redex can always be “widen” into consecutive beta-redexes of the
-shape of those in Def. 3.23'', which is only true for long-safe terms.
-
-The proofs of (i) and (ii) are still valid for $\vdash_s$ (with respect to $\beta_s$-normal forms).
-
-A remark should be added to show why, unlike in $\vdash_l$, safe reduction in $\vdash_s$ does not necessarily produce $\beta$-normal forms and therefore $\beta$-normal forms and $\beta_s$-normal forms do not coincide:
-Samuel Frontull's counterexample $y:o \vdash_s (\lambda x^0 y^0 .x) y $ cannot be safely reduced because $ \lambda y^0 .x$ is not an almost-safe application and therefore is not a safe-redex per Definition 3.21.
-
-After Definition 3.21 of a safe redex we could mention that when restricted to  the long-safe fragment, it coincides with the definition from the TLCA paper.
-
-Definition 3.23 and Lemma 3.24 (contracting a safe redex preserves safety) remain valid in the relaxed variant of the safe calculus.
+The remark that a version of the `no-variable capture lemma` holds without the safe typing convention 3.13
+ (Lemma 3.17) is false and the argument is incorrect.
 
 \item Small typo on line 2 with extra character `m' in Definition 3.23.
 
-\item \emph{Remark about the two versions of the safe calculus:} The notions of `Safe redex' and `Safe beta reduction' defined in the thesis are defined on
-a more relaxed version of safe lambda calculus than the one I originally introduced in the TLCA paper.
-When restricted to the long-safe fragment (Definition 3.31) of the safe calculus, they coincide with the definition
-from the TLCA paper: the system of rules of the calculus from the TLCA paper are precisely the `long safe' rules the thesis.
+\item A remark should be added to explain that in the safe lambda calculus (as defined in the thesis) substitution can indeed
+be implemented capture-permitting provided that the terms substituted is safe. When contracting a safe redex, however,
+capture-avoiding substitution is needed in the case $n>l$ (where there are less arguments than abstractions) if the body of the lambda in the redex is not itself safe.
+
+Definition 3.23 and Lemma 3.24 (contracting a safe redex preserves safety) remain valid but just like the TLCA paper mentions, we take the convention that substitution is implemented capture-permitting only when the substituted term itself is safe.
+
+In the stricter `long' fragment of the safe calculus from Def 3.23, however, safe redexes can always be contracted with capture-permitting substitution. Indeed, the problematic case where the body of the lambda is unsafe cannot happen:
+Take the safe redex $R = (\lambda x_1 .. x_l x_{l+1} .. x_n.  M) N_1 … N_l$ so that
+$ \Gamma \vdash R : T$ is a long safe term and $M$ and each of the $N_i$ are long-safe.
+Then consider the potentially problematic case $n > l$ and let $Q = \lambda x_{l+1} .. x_n.  M$ so that $Q$ is also a term of type $T$. The definition of safe reduction gives:
+ $ R \rightarrow_{\beta_s} \lambda x_{l+1} .. x_n . M[N_1..N_l/x_1..x_l]$.
+For a variable capture to occur in the substitution there must be a $k$ and $j$ such that $1<=j<= l < k <= n$  where $x_k$ occurs freely in $N_j$. But then $x_k$ also occurs freely in $R$ and therefore $|x_k|> | T| = |Q|$. But since $Q$ takes an argument $x_k$ we must have $|Q| > |x_k|$ which is a contradiction.
+
+
+Take Samuel Frontull's example $y:o \vdash (\lambda x^0 y^0 .x) y $. It is a safe-redex (It is not a safe term but can occur within a larger safe term). The body $ \lambda y^0 .x$ of the redex is not safe itself so
+the safe redex cannot be contracted with capture-permitting substitution.
+However the $\eta$-equivalent term $\lambda x^o . (\lambda x^0 y^0 .x) y z$ is also a safe-redex and is a long-safe term which can therefore be contracted with capture-permitting substitution without causing variable clashes.
+
+
+There are also other syntactic restrictions that eliminates the problematic case where capture-avoiding substitution is needed; homogeneity is one of them for instance.
+
+
+
+\item \emph{Remark about the two versions of the safe calculus:} In the thesis, we define `Safe redex' and `Safe beta reduction' on a more relaxed version of safe lambda calculus than the calculus I originally introduced in the TLCA paper, which I call 'long safe' in the thesis. When restricted to the long-safe fragment (Definition 3.31), the definitions coincide with TLCA paper.
 
 Recall that in the long safe system, the abstraction rule requires the body of the lambda to be a safe term,
 unlike the more relaxed version of Table 3.1 where the body can just be an `almost safe application'.
@@ -61,7 +65,7 @@ Hence, the game semantic characterization result from Chapter 5 (Theorem 5.19) c
 the calculus from Table 3.1 rather than just long-safety.
 The characterization result, however, implies that long safe terms are also denoted by P-incremental strategies.
 
-The variable-capture avoidance guarantees from `Lemma 3.15' still apply to both versions of the calculi. But if one looks for a safe calculus with a sounder notion of safe-reduction, as in `does not get stuck at terms that could be further reduced with regular $\beta$-reduction', then long-safety is the one to pick. On the other hand, to study the denotational game semantics of the language, the definition from Table 3.1 is more appropriate.
+The variable-capture avoidance guarantees from `Lemma 3.15' (pertaining to substitution rather than redex contraction) still apply to both versions of the calculi. But if one looks for a safe calculus where contracting safe redexes can always be done with capture permitting substitution, then long-safety is the one to pick. On the other hand,  the definition from Table 3.1 is more appropriate for a semantic analysis of safety.
 
 \end{enumerate}
 
